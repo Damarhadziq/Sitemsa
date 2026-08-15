@@ -46,7 +46,7 @@ export default function TeamPage() {
           <h1 className="text-4xl md:text-5xl font-semibold text-[#2E2D2D] mb-6 tracking-tight">
             Arsitek di Balik <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0400F4] to-[#8B5CF6]">Sitemsa</span>
           </h1>
-          <p className="text-[#737373] text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+          <p className="text-[#737373] text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
             Mengenal lebih dekat 24 inovator tangguh dari Tim PPL Lantip SMK Negeri 1 Semarang yang membangun platform pembelajaran ini.
           </p>
         </div>

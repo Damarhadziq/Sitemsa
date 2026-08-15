@@ -493,14 +493,11 @@ export default function MateriLandingPage() {
                       </span>
                     </div>
 
-                    {/* Title & Description */}
+                    {/* Title */}
                     <div>
-                      <h3 className="text-sm md:text-base font-semibold text-[#2E2D2D] mb-1.5 leading-snug group-hover:text-[#0400F4] transition-colors duration-200">
+                      <h3 className="text-sm md:text-base font-semibold text-[#2E2D2D] leading-snug group-hover:text-[#0400F4] transition-colors duration-200">
                         {modul.title}
                       </h3>
-                      <p className="text-xs text-[#737373] leading-relaxed line-clamp-2">
-                        {modul.description}
-                      </p>
                     </div>
 
                     {/* Topics Checklist Pills */}

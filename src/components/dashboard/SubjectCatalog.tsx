@@ -1,6 +1,6 @@
 import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react";
 import {
-  Book01Icon,
+  Layers01Icon,
   ComputerIcon,
   CpuIcon,
   UserGroupIcon,
@@ -27,8 +27,8 @@ const SUBJECTS: Subject[] = [
     name: "Informatika",
     isLastStudied: true,
     modulesCount: 12,
-    completedMateri: 3,
-    totalMateri: 5,
+    completedMateri: 9,
+    totalMateri: 12,
     description: "Pahami logika dan kuasai dunia digital.",
     icon: ComputerIcon,
   },
@@ -36,8 +36,8 @@ const SUBJECTS: Subject[] = [
     id: 2,
     name: "Elektronika",
     modulesCount: 12,
-    completedMateri: 3,
-    totalMateri: 5,
+    completedMateri: 5,
+    totalMateri: 12,
     description: "Dari sirkuit sederhana hingga inovasi masa depan.",
     icon: CpuIcon,
   },
@@ -46,7 +46,7 @@ const SUBJECTS: Subject[] = [
     name: "Bimbingan dan Konseling",
     modulesCount: 12,
     completedMateri: 3,
-    totalMateri: 5,
+    totalMateri: 12,
     description: "Kenali potensimu dan rancang masa depanmu.",
     icon: UserGroupIcon,
   },
@@ -54,8 +54,8 @@ const SUBJECTS: Subject[] = [
     id: 4,
     name: "Seni Tari",
     modulesCount: 12,
-    completedMateri: 3,
-    totalMateri: 5,
+    completedMateri: 7,
+    totalMateri: 12,
     description: "Ekspresikan dirimu melalui harmoni gerak.",
     icon: MusicNote01Icon,
   },
@@ -63,8 +63,8 @@ const SUBJECTS: Subject[] = [
     id: 5,
     name: "Otomotif",
     modulesCount: 12,
-    completedMateri: 3,
-    totalMateri: 5,
+    completedMateri: 12,
+    totalMateri: 12,
     description: "Bedah mesin dan pahami cara kerjanya.",
     icon: Car01Icon,
   },
@@ -72,8 +72,8 @@ const SUBJECTS: Subject[] = [
     id: 6,
     name: "Keolahragaan",
     modulesCount: 12,
-    completedMateri: 3,
-    totalMateri: 5,
+    completedMateri: 0,
+    totalMateri: 12,
     description: "Kuatkan fisik dan asah sportivitasmu.",
     icon: Dumbbell01Icon,
   },
@@ -122,11 +122,11 @@ export function SubjectCatalog() {
                 )}
               </div>
 
-              {/* Modules count */}
+              {/* Materi count */}
               <div className="flex items-center gap-1.5 text-[#0400F4]">
-                <HugeiconsIcon icon={Book01Icon} size={15} />
+                <HugeiconsIcon icon={Layers01Icon} size={15} />
                 <span className="text-xs font-medium">
-                  {subject.modulesCount} Modul Tersedia
+                  {subject.modulesCount} Materi Tersedia
                 </span>
               </div>
 

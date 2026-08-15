@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react";
 import {
@@ -14,7 +15,14 @@ import {
   UserGroupIcon,
   MusicNote01Icon,
   Car01Icon,
+  UserIcon,
+  Clock01Icon,
+  Settings02Icon,
+  Logout01Icon,
 } from "@hugeicons/core-free-icons";
+
+import { UserProfileModal, ProfileTab } from "@/components/profile/UserProfileModal";
+import { NotificationModal, NotificationItem } from "@/components/layout/NotificationModal";
 
 interface QuickSearchResult {
   id: number;
@@ -23,6 +31,45 @@ interface QuickSearchResult {
   level: string;
   icon: IconSvgElement;
 }
+
+const INITIAL_NAV_NOTIFS: NotificationItem[] = [
+  {
+    id: "n1",
+    type: "materi",
+    title: "Modul Praktik Baru Rilis",
+    message: "Pak Herman Susilo menambahkan modul baru 'Analisis Sirkuit Seri & Paralel Resistor'.",
+    time: "10 menit lalu",
+    isRead: false,
+    linkUrl: "/materi/2",
+  },
+  {
+    id: "n2",
+    type: "nilai",
+    title: "Nilai Kuis Berhasil Tercatat",
+    message: "Selamat! Kuis 'Operasi Logika & Tabel Kebenaran' milikmu mendapat skor 100/100.",
+    time: "1 jam lalu",
+    isRead: false,
+    linkUrl: "/materi/1",
+  },
+  {
+    id: "n3",
+    type: "tips",
+    title: "Tips Belajar Terbaru",
+    message: "Artikel '5 Strategi Efektif Menguasai Logika Pemrograman' kini siap dibaca.",
+    time: "3 jam lalu",
+    isRead: false,
+    linkUrl: "/tips-belajar?id=1",
+  },
+  {
+    id: "n4",
+    type: "pengingat",
+    title: "Pengingat Asesmen Vokasi",
+    message: "Jangan lupa menyelesaikan laporan praktikum multimeter digital sebelum hari esok.",
+    time: "Kemarin",
+    isRead: true,
+    linkUrl: "/materi/2",
+  },
+];
 
 const QUICK_SEARCH_DATA: QuickSearchResult[] = [
   { id: 1, subject: "Informatika", title: "Variabel, Tipe Data & Operasi Logika", level: "Pemula", icon: ComputerIcon },
@@ -39,11 +86,27 @@ export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isNavFocused, setIsNavFocused] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [modalQuery, setModalQuery] = useState("");
 
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [profileModalTab, setProfileModalTab] = useState<ProfileTab>("profile");
+  const [isNotifModalOpen, setIsNotifModalOpen] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NAV_NOTIFS);
+
+  const handleMarkAllRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  };
+
+  const openProfileModalTab = (tab: ProfileTab) => {
+    setProfileModalTab(tab);
+    setIsProfileModalOpen(true);
+    setIsProfileOpen(false);
+  };
   const pathname = usePathname();
   const router = useRouter();
   const modalInputRef = useRef<HTMLInputElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -64,27 +127,35 @@ export function Navbar() {
       }
     };
 
+    const handleClickOutside = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setIsProfileOpen(false);
+      }
+    };
+
     window.addEventListener("scroll", handleScroll);
     window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("mousedown", handleClickOutside);
     return () => {
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isModalOpen]);
 
   useEffect(() => {
     if (isModalOpen) {
+      document.documentElement.classList.add("modal-open");
       document.body.style.overflow = "hidden";
-      document.documentElement.style.overflow = "hidden";
       setTimeout(() => modalInputRef.current?.focus(), 50);
     } else {
+      document.documentElement.classList.remove("modal-open");
       document.body.style.overflow = "";
-      document.documentElement.style.overflow = "";
     }
 
     return () => {
+      document.documentElement.classList.remove("modal-open");
       document.body.style.overflow = "";
-      document.documentElement.style.overflow = "";
     };
   }, [isModalOpen]);
 
@@ -97,7 +168,7 @@ export function Navbar() {
     : QUICK_SEARCH_DATA.slice(0, 4);
 
   const handleSelectResult = (id: number) => {
-    setIsModalOpen(false);
+    handleCloseModal();
     router.push(`/materi/${id}`);
   };
 
@@ -142,32 +213,42 @@ export function Navbar() {
                 Materi
               </Link>
               <Link
-                href="#"
-                className="text-sm font-medium text-[#8E8E8E] hover:text-[#2E2D2D] transition-colors duration-200"
+                href="/tips-belajar"
+                className={`text-sm font-medium relative py-1 transition-colors duration-200 ${
+                  pathname.startsWith("/tips-belajar")
+                    ? "text-[#2E2D2D] after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#0400F4] after:rounded-full"
+                    : "text-[#8E8E8E] hover:text-[#2E2D2D]"
+                }`}
+              >
+                Tips Belajar
+              </Link>
+              <Link
+                href="/dokumentasi"
+                className={`text-sm font-medium relative py-1 transition-colors duration-200 ${
+                  pathname.startsWith("/dokumentasi")
+                    ? "text-[#2E2D2D] after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#0400F4] after:rounded-full"
+                    : "text-[#8E8E8E] hover:text-[#2E2D2D]"
+                }`}
               >
                 Dokumentasi
               </Link>
               <Link
-                href="#"
-                className="text-sm font-medium text-[#8E8E8E] hover:text-[#2E2D2D] transition-colors duration-200"
+                href="/team"
+                className={`text-sm font-medium relative py-1 transition-colors duration-200 ${
+                  pathname.startsWith("/team")
+                    ? "text-[#2E2D2D] after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#0400F4] after:rounded-full"
+                    : "text-[#8E8E8E] hover:text-[#2E2D2D]"
+                }`}
               >
-                Kontak
+                Tim
               </Link>
             </nav>
           </div>
 
-          {/* Right: Notification & Interactive Nav Search Bar */}
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              className="w-9 h-9 rounded-[8px] bg-white border border-[#ECECEC] flex items-center justify-center text-[#2E2D2D] hover:bg-gray-50 active:scale-95 transition-all duration-200"
-              aria-label="Notifikasi"
-            >
-              <HugeiconsIcon icon={BellIcon} size={18} />
-            </button>
-
-            {/* Interactive Search Bar: Focus toggles Left Icon & Right Action Button */}
-            <div className="relative w-48 sm:w-60 md:w-64">
+          {/* Right: Search Bar > Notification (Frameless) > Profile Avatar (Full Rounded 100%) */}
+          <div className="flex items-center gap-2.5">
+            {/* 1. Interactive Search Bar */}
+            <div className="relative w-44 sm:w-56 md:w-60">
               {/* Left Search Icon (Fades out when focused) */}
               <div
                 className={`absolute left-3 top-1/2 -translate-y-1/2 text-[#AAAAAA] flex items-center transition-all duration-200 pointer-events-none ${
@@ -203,13 +284,112 @@ export function Navbar() {
                 </span>
               </div>
             </div>
+
+            {/* 2. Notification Button (Triggers Notification Center Modal) */}
+            <button
+              type="button"
+              onClick={() => setIsNotifModalOpen(true)}
+              className="relative w-9 h-9 flex items-center justify-center text-[#2E2D2D] hover:bg-gray-100/80 active:scale-95 transition-all duration-200 rounded-[8px] cursor-pointer"
+              aria-label="Notifikasi"
+            >
+              <HugeiconsIcon icon={BellIcon} size={20} />
+              {notifications.some((n) => !n.isRead) && (
+                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-[#0400F4] border-2 border-white animate-pulse" />
+              )}
+            </button>
+
+            {/* 3. User Profile Avatar with Dropdown Menu (Full Rounded 100%) */}
+            <div className="relative" ref={profileRef}>
+              <button
+                type="button"
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                className={`w-9 h-9 rounded-full border overflow-hidden transition-colors duration-200 flex items-center justify-center shrink-0 ${
+                  isProfileOpen ? "border-[#0400F4] bg-[#F4EFFF]" : "border-[#ECECEC] hover:border-[#0400F4]"
+                }`}
+                aria-label="Profil Pengguna"
+              >
+                <Image
+                  src="https://i.pravatar.cc/100?img=12"
+                  alt="Budi Santoso"
+                  width={36}
+                  height={36}
+                  className="object-cover w-full h-full rounded-full"
+                />
+              </button>
+
+              {/* Profile Dropdown Menu */}
+              {isProfileOpen && (
+                <div className="absolute right-0 top-[calc(100%+8px)] w-64 bg-white border border-[#ECECEC] rounded-[12px] p-2 z-50 origin-top-right animate-in fade-in slide-in-from-top-1 duration-150">
+                  {/* User Info Header */}
+                  <div className="p-3 bg-[#F9F9FF] rounded-[8px] mb-1.5 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full overflow-hidden relative shrink-0 border border-[#ECECEC]">
+                      <Image
+                        src="https://i.pravatar.cc/100?img=12"
+                        alt="Budi Santoso"
+                        fill
+                        className="object-cover rounded-full"
+                      />
+                    </div>
+                    <div className="overflow-hidden">
+                      <p className="text-xs font-bold text-[#2E2D2D] truncate">Budi Santoso</p>
+                      <p className="text-[11px] text-[#737373] truncate">budi@siswa.belajar.id</p>
+                    </div>
+                  </div>
+
+                  {/* Navigation Links (Opens UserProfileModal) */}
+                  <div className="space-y-0.5">
+                    <button
+                      type="button"
+                      onClick={() => openProfileModalTab("profile")}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#2E2D2D] hover:bg-[#F6F5FF] hover:text-[#0400F4] rounded-[6px] transition-colors text-left"
+                    >
+                      <HugeiconsIcon icon={UserIcon} size={16} />
+                      Profil Saya
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => openProfileModalTab("history")}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#2E2D2D] hover:bg-[#F6F5FF] hover:text-[#0400F4] rounded-[6px] transition-colors text-left"
+                    >
+                      <HugeiconsIcon icon={Clock01Icon} size={16} />
+                      Riwayat Belajar
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => openProfileModalTab("settings")}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#2E2D2D] hover:bg-[#F6F5FF] hover:text-[#0400F4] rounded-[6px] transition-colors text-left"
+                    >
+                      <HugeiconsIcon icon={Settings02Icon} size={16} />
+                      Pengaturan
+                    </button>
+                  </div>
+
+                  <div className="my-1 border-t border-[#ECECEC]" />
+
+                  {/* Logout Button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                      router.push('/login');
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 rounded-[6px] transition-colors"
+                  >
+                    <HugeiconsIcon icon={Logout01Icon} size={16} />
+                    Keluar dari Akun
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
 
       {/* Spotlight Command Palette Modal (Center-Focused with Dark Overlay) */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-start justify-center pt-20 px-4 animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-start justify-center pt-20 px-4 animate-in fade-in duration-150 overscroll-contain">
           {/* Backdrop Click Listener */}
           <div
             className="absolute inset-0"
@@ -232,9 +412,10 @@ export function Navbar() {
               <button
                 type="button"
                 onClick={handleCloseModal}
-                className="text-[#737373] hover:text-[#2E2D2D] p-1 rounded-[4px] hover:bg-gray-200 transition-colors shrink-0"
+                className="w-8 h-8 rounded-full bg-white border border-[#ECECEC] text-[#737373] hover:text-[#0400F4] hover:bg-[#F6F5FF] hover:border-[#0400F4]/40 flex items-center justify-center transition-all shrink-0 cursor-pointer"
+                aria-label="Tutup Pencarian"
               >
-                <HugeiconsIcon icon={Cancel01Icon} size={18} />
+                <HugeiconsIcon icon={Cancel01Icon} size={16} />
               </button>
             </div>
 
@@ -295,6 +476,21 @@ export function Navbar() {
           </div>
         </div>
       )}
+
+      {/* User Profile & Settings IDE-style Center Modal */}
+      <UserProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        initialTab={profileModalTab}
+      />
+
+      {/* Notification Center Modal (With In/Out Light Animations) */}
+      <NotificationModal
+        isOpen={isNotifModalOpen}
+        onClose={() => setIsNotifModalOpen(false)}
+        notifications={notifications}
+        onMarkAllRead={handleMarkAllRead}
+      />
     </>
   );
 }

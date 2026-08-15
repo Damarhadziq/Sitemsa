@@ -1,5 +1,5 @@
 import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowRight01Icon, Book01Icon } from "@hugeicons/core-free-icons";
+import { ArrowRight01Icon, SparklesIcon } from "@hugeicons/core-free-icons";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -13,8 +13,8 @@ export function PromoBanner() {
       <div className="flex-1 flex flex-col justify-between space-y-4 z-10">
         <div className="space-y-3">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="inline-flex items-center gap-1.5 bg-white/15 text-white border border-white/20 px-2.5 py-1 rounded-[6px] text-xs font-medium backdrop-blur-sm">
-              <HugeiconsIcon icon={Book01Icon} size={14} />
+            <span className="inline-flex items-center gap-1.5 text-white border border-white px-2.5 py-1 rounded-[6px] text-xs font-medium bg-transparent">
+              <HugeiconsIcon icon={SparklesIcon} size={14} />
               <span>Inovasi Pembelajaran</span>
             </span>
           </div>

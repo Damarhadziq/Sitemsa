@@ -92,8 +92,15 @@
   }
   html {
     @apply font-sans;
-    overflow-y: scroll;
     scrollbar-gutter: stable;
+  }
+  button,
+  [role="button"],
+  a,
+  input[type="submit"],
+  input[type="button"],
+  select {
+    cursor: pointer;
   }
 }
 
@@ -126,4 +133,17 @@
 * {
   scrollbar-width: thin;
   scrollbar-color: #D4D3FF transparent;
+}
+
+/* Modal open: kill global scrollbar entirely */
+html.modal-open,
+html.modal-open body {
+  overflow: hidden !important;
+  scrollbar-gutter: auto !important;
+}
+html.modal-open::-webkit-scrollbar {
+  display: none !important;
+}
+html.modal-open {
+  scrollbar-width: none !important;
 }

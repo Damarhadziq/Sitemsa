@@ -40,16 +40,16 @@ export default function LoginPage() {
             Dari logika hingga seni, pelajari semua materi favoritmu dalam satu platform yang dirancang khusus untukmu.
           </p>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <AvatarGroup>
               {[11, 12, 13, 14].map((id) => (
-                <Avatar key={id} size="lg">
+                <Avatar key={id} size="default">
                   <AvatarImage src={`https://i.pravatar.cc/100?img=${id}`} alt={`Student ${id}`} />
                   <AvatarFallback>S</AvatarFallback>
                 </Avatar>
               ))}
             </AvatarGroup>
-            <p className="text-[16px] font-medium leading-[22px] tracking-[-0.4px] max-w-[449px]" style={{ color: 'var(--foreground, #2E2D2D)' }}>
+            <p className="text-xs text-[#737373] font-medium leading-[18px] max-w-[340px]">
               Bergabunglah dengan ratusan siswa lainnya yang sudah membuktikan keseruan belajar di Sitemsa.
             </p>
           </div>

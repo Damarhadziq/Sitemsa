@@ -481,14 +481,15 @@ export default function MaterialDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const resolvedParams = use(params);
-  const materialId = parseInt(resolvedParams.id, 10) || 1;
+  const { id } = use(params);
+  const materialId = parseInt(id, 10) || 1;
   const material = MATERIAL_DATABASE[materialId] || MATERIAL_DATABASE[1];
   const [activeSection, setActiveSection] = useState(material.contentSections[0]?.id || "pengantar");
   const [copiedCode, setCopiedCode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [activeQuizModal, setActiveQuizModal] = useState<"none" | "barcode" | "link_confirm">("none");
+  const [isTocOpen, setIsTocOpen] = useState(false);
 
   const handleStartQuizClick = (e: React.MouseEvent) => {
     const qSource = material.quizSource;
@@ -913,22 +914,89 @@ export default function MaterialDetailPage({
         )}
       </main>
 
-      {/* Floating Back to Top Arrow Button */}
-      {showBackToTop && (
+      {/* Floating Action Buttons: Floating Table of Contents & Back to Top */}
+      <div className="fixed right-6 z-40 flex flex-col items-end gap-3 pointer-events-none">
+        {/* Floating Table of Contents Button */}
         <button
           type="button"
-          onClick={scrollToTop}
-          aria-label="Kembali ke Atas"
-          className="fixed bottom-6 right-6 z-50 w-10 h-10 rounded-full bg-white border border-[#ECECEC] text-[#0400F4] hover:bg-[#F6F5FF] hover:border-[#0400F4]/40 flex items-center justify-center transition-all duration-200 cursor-pointer animate-in fade-in zoom-in-90"
+          onClick={() => setIsTocOpen(!isTocOpen)}
+          aria-label="Daftar Isi Pembahasan"
+          title="Daftar Isi Pembahasan"
+          className={`w-11 h-11 rounded-full bg-white border border-[#ECECEC] text-[#0400F4] hover:bg-[#F6F5FF] hover:border-[#0400F4]/50 flex items-center justify-center transition-all duration-300 cursor-pointer shadow-lg pointer-events-auto ${
+            showBackToTop ? "fixed bottom-20 right-6" : "fixed bottom-6 right-6"
+          }`}
         >
-          <HugeiconsIcon icon={ArrowUp01Icon} size={18} />
+          <HugeiconsIcon icon={isTocOpen ? Cancel01Icon : Task01Icon} size={20} />
         </button>
+
+        {/* Floating Back to Top Arrow Button */}
+        {showBackToTop && (
+          <button
+            type="button"
+            onClick={scrollToTop}
+            aria-label="Kembali ke Atas"
+            className="fixed bottom-6 right-6 z-40 w-11 h-11 rounded-full bg-white border border-[#ECECEC] text-[#0400F4] hover:bg-[#F6F5FF] hover:border-[#0400F4]/50 flex items-center justify-center transition-all duration-200 cursor-pointer animate-in fade-in zoom-in-90 shadow-lg pointer-events-auto"
+          >
+            <HugeiconsIcon icon={ArrowUp01Icon} size={20} />
+          </button>
+        )}
+      </div>
+
+      {/* Floating Table of Contents Popover Sheet */}
+      {isTocOpen && (
+        <div
+          className={`fixed right-6 z-50 w-72 max-w-[calc(100vw-3rem)] bg-white border border-[#ECECEC] rounded-[16px] p-4 shadow-2xl space-y-3 animate-in fade-in zoom-in-95 duration-200 ${
+            showBackToTop ? "bottom-32" : "bottom-20"
+          }`}
+        >
+          <div className="flex items-center justify-between border-b border-[#ECECEC] pb-2.5">
+            <h4 className="text-xs font-bold text-[#2E2D2D] flex items-center gap-1.5">
+              <HugeiconsIcon icon={Task01Icon} size={16} className="text-[#0400F4]" />
+              <span>Daftar Isi Pembahasan</span>
+            </h4>
+            <button
+              type="button"
+              onClick={() => setIsTocOpen(false)}
+              className="w-6 h-6 rounded-full bg-gray-50 border border-[#ECECEC] text-[#737373] hover:text-[#0400F4] hover:bg-[#F6F5FF] flex items-center justify-center transition-colors cursor-pointer"
+            >
+              <HugeiconsIcon icon={Cancel01Icon} size={12} />
+            </button>
+          </div>
+
+          <div className="max-h-64 overflow-y-auto space-y-1.5 pr-1">
+            {material.contentSections.map((sec, idx) => (
+              <button
+                key={sec.id}
+                type="button"
+                onClick={() => {
+                  setIsTocOpen(false);
+                  const el = document.getElementById(sec.id);
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="w-full text-left p-2.5 rounded-[8px] hover:bg-[#F6F5FF] hover:text-[#0400F4] transition-colors text-xs text-[#2E2D2D] flex items-start gap-2.5 group cursor-pointer border border-transparent hover:border-[#0400F4]/20"
+              >
+                <span className="bg-[#E8E7FF] text-[#0400F4] w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 group-hover:bg-[#0400F4] group-hover:text-white transition-colors">
+                  {idx + 1}
+                </span>
+                <span className="truncate font-medium leading-tight group-hover:text-[#0400F4] transition-colors">
+                  {sec.title}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
       )}
 
-      {/* Quiz Barcode Modal */}
+      {/* Quiz Barcode Modal (Mobile Bottom Sheet & Desktop Dialog) */}
       {activeQuizModal === "barcode" && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 overscroll-contain">
-          <div className="bg-white rounded-[16px] max-w-md w-full p-6 space-y-5 animate-in fade-in zoom-in-95 duration-200 border border-[#ECECEC]">
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-in fade-in duration-200 overscroll-contain">
+          {/* Backdrop Click Listener */}
+          <div className="absolute inset-0" onClick={() => setActiveQuizModal("none")} />
+
+          <div className="bg-white rounded-t-[20px] rounded-b-none md:rounded-[16px] max-w-md w-full p-6 space-y-4 animate-in slide-in-from-bottom duration-300 md:animate-in md:fade-in md:zoom-in-95 md:duration-200 border-t md:border border-[#ECECEC] z-10 relative">
+            {/* Drag Handle Indicator for Mobile */}
+            <div className="w-12 h-1.5 bg-[#D4D4D4] rounded-full mx-auto -mt-2 mb-1 md:hidden shrink-0" />
+
             {/* Header: Pure white seamless header */}
             <div className="flex items-center justify-between">
               <h3 className="text-base font-bold text-[#2E2D2D]">
@@ -965,8 +1033,8 @@ export default function MaterialDetailPage({
             </div>
 
             {/* Actions */}
-            <div className="space-y-2 pt-2">
-              {material.quizSource.externalUrl && (
+            {material.quizSource.externalUrl && (
+              <div className="pt-2">
                 <a
                   href={material.quizSource.externalUrl}
                   target="_blank"
@@ -977,23 +1045,22 @@ export default function MaterialDetailPage({
                   <span>Atau Buka Tautan Langsung</span>
                   <HugeiconsIcon icon={ArrowRight01Icon} size={14} />
                 </a>
-              )}
-              <button
-                type="button"
-                onClick={() => setActiveQuizModal("none")}
-                className="w-full bg-[#FAFAFA] border border-[#ECECEC] hover:bg-[#F6F5FF] hover:border-[#0400F4]/40 text-[#737373] hover:text-[#0400F4] py-2.5 rounded-[6px] text-xs font-semibold transition-all duration-200 cursor-pointer"
-              >
-                Tutup Modal
-              </button>
-            </div>
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* Quiz External Link Confirmation Modal */}
+      {/* Quiz External Link Confirmation Modal (Mobile Bottom Sheet & Desktop Dialog) */}
       {activeQuizModal === "link_confirm" && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 overscroll-contain">
-          <div className="bg-white rounded-[16px] max-w-md w-full p-6 space-y-5 animate-in fade-in zoom-in-95 duration-200 border border-[#ECECEC]">
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-in fade-in duration-200 overscroll-contain">
+          {/* Backdrop Click Listener */}
+          <div className="absolute inset-0" onClick={() => setActiveQuizModal("none")} />
+
+          <div className="bg-white rounded-t-[20px] rounded-b-none md:rounded-[16px] max-w-md w-full p-6 space-y-4 animate-in slide-in-from-bottom duration-300 md:animate-in md:fade-in md:zoom-in-95 md:duration-200 border-t md:border border-[#ECECEC] z-10 relative">
+            {/* Drag Handle Indicator for Mobile */}
+            <div className="w-12 h-1.5 bg-[#D4D4D4] rounded-full mx-auto -mt-2 mb-1 md:hidden shrink-0" />
+
             {/* Header: Pure white seamless header */}
             <div className="flex items-center justify-between">
               <h3 className="text-base font-bold text-[#2E2D2D]">

@@ -267,7 +267,7 @@ function TipsBelajarContent() {
       {/* 2-Column Clean Canvas Layout */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-2">
         {/* Left Sidebar List (4 Columns) */}
-        <aside className="lg:col-span-4 space-y-5 sticky top-28">
+        <aside className="lg:col-span-4 space-y-5 lg:sticky lg:top-28">
           <div className="bg-white border border-[#ECECEC] rounded-[10px] p-5 space-y-3">
             {/* Sidebar Title (No Count Badge) */}
             <div className="flex items-center justify-between mb-1">

@@ -45,12 +45,12 @@ export const ChromaGrid = ({
   useEffect(() => {
     const el = rootRef.current;
     if (!el) return;
-    setX.current = gsap.quickSetter(el, '--x', 'px');
-    setY.current = gsap.quickSetter(el, '--y', 'px');
+    setX.current = gsap.quickSetter(el, '--x', 'px') as (value: number | string) => void;
+    setY.current = gsap.quickSetter(el, '--y', 'px') as (value: number | string) => void;
     const { width, height } = el.getBoundingClientRect();
     pos.current = { x: width / 2, y: height / 2 };
-    setX.current(pos.current.x);
-    setY.current(pos.current.y);
+    setX.current?.(pos.current.x);
+    setY.current?.(pos.current.y);
   }, []);
 
   const moveTo = (x: number, y: number) => {

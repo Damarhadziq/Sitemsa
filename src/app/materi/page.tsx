@@ -335,11 +335,11 @@ export default function MateriLandingPage() {
                       className="block p-2.5 rounded-[8px] hover:bg-[#F6F5FF] border border-transparent hover:border-[#0400F4]/30 transition-all duration-200 group"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
                           <span className="bg-[#E8E7FF] text-[#0400F4] px-2 py-0.5 rounded-[4px] text-[10px] font-semibold shrink-0">
                             {item.subject}
                           </span>
-                          <span className="text-xs font-semibold text-[#2E2D2D] group-hover:text-[#0400F4] transition-colors truncate max-w-[260px]">
+                          <span className="text-xs font-semibold text-[#2E2D2D] group-hover:text-[#0400F4] transition-colors truncate min-w-0 flex-1">
                             {item.title}
                           </span>
                         </div>

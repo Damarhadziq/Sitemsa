@@ -19,6 +19,7 @@ import {
   Clock01Icon,
   Settings02Icon,
   Logout01Icon,
+  Menu01Icon,
 } from "@hugeicons/core-free-icons";
 
 import { UserProfileModal, ProfileTab } from "@/components/profile/UserProfileModal";
@@ -87,6 +88,7 @@ export function Navbar() {
   const [isNavFocused, setIsNavFocused] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [modalQuery, setModalQuery] = useState("");
 
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -245,50 +247,29 @@ export function Navbar() {
             </nav>
           </div>
 
-          {/* Right: Search Bar > Notification (Frameless) > Profile Avatar (Full Rounded 100%) */}
-          <div className="flex items-center gap-2.5">
-            {/* 1. Interactive Search Bar */}
-            <div className="relative w-44 sm:w-56 md:w-60">
-              {/* Left Search Icon (Fades out when focused) */}
-              <div
-                className={`absolute left-3 top-1/2 -translate-y-1/2 text-[#AAAAAA] flex items-center transition-all duration-200 pointer-events-none ${
-                  isNavFocused ? "opacity-0 -translate-x-2" : "opacity-100 translate-x-0"
-                }`}
-              >
-                <HugeiconsIcon icon={Search01Icon} size={16} />
-              </div>
-
-              <input
-                type="text"
-                placeholder="Cari materi..."
-                onFocus={() => {
-                  setIsNavFocused(true);
-                  setIsModalOpen(true);
-                }}
-                onBlur={() => setIsNavFocused(false)}
-                onClick={() => setIsModalOpen(true)}
-                readOnly
-                className={`w-full h-9 pr-8 bg-[#F3F3F3] rounded-[8px] text-xs text-[#2E2D2D] placeholder:text-[#AAAAAA] border border-transparent focus:bg-white focus:border-[#0400F4] outline-none transition-all duration-200 cursor-pointer ${
-                  isNavFocused ? "pl-3.5" : "pl-9"
-                }`}
-              />
-
-              {/* Right Action Icon (Appears when focused with distinct brand color) */}
-              <div
-                className={`absolute right-1.5 top-1/2 -translate-y-1/2 transition-all duration-200 flex items-center ${
-                  isNavFocused ? "opacity-100 translate-x-0" : "opacity-0 translate-x-1 pointer-events-none"
-                }`}
-              >
-                <span className="w-6 h-6 rounded-[5px] bg-[#0400F4] text-white flex items-center justify-center">
-                  <HugeiconsIcon icon={ArrowRight01Icon} size={13} />
-                </span>
-              </div>
-            </div>
-
-            {/* 2. Notification Button (Triggers Notification Center Modal) */}
+          {/* Right: Search Icon > Notification > Profile Avatar > Mobile Menu */}
+          <div className="flex items-center gap-2">
+            {/* 1. Search Icon Button Trigger */}
             <button
               type="button"
-              onClick={() => setIsNotifModalOpen(true)}
+              onClick={() => setIsModalOpen(true)}
+              className="w-9 h-9 flex items-center justify-center text-[#2E2D2D] hover:bg-gray-100/80 active:scale-95 transition-all duration-200 rounded-[8px] cursor-pointer"
+              aria-label="Cari Materi"
+              title="Cari Materi"
+            >
+              <HugeiconsIcon icon={Search01Icon} size={20} />
+            </button>
+
+            {/* 2. Notification Button */}
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== "undefined" && window.innerWidth < 768) {
+                  router.push("/notifikasi");
+                } else {
+                  setIsNotifModalOpen(true);
+                }
+              }}
               className="relative w-9 h-9 flex items-center justify-center text-[#2E2D2D] hover:bg-gray-100/80 active:scale-95 transition-all duration-200 rounded-[8px] cursor-pointer"
               aria-label="Notifikasi"
             >
@@ -298,7 +279,7 @@ export function Navbar() {
               )}
             </button>
 
-            {/* 3. User Profile Avatar with Dropdown Menu (Full Rounded 100%) */}
+            {/* 3. User Profile Avatar */}
             <div className="relative" ref={profileRef}>
               <button
                 type="button"
@@ -320,7 +301,6 @@ export function Navbar() {
               {/* Profile Dropdown Menu */}
               {isProfileOpen && (
                 <div className="absolute right-0 top-[calc(100%+8px)] w-64 bg-white border border-[#ECECEC] rounded-[12px] p-2 z-50 origin-top-right animate-in fade-in slide-in-from-top-1 duration-150">
-                  {/* User Info Header */}
                   <div className="p-3 bg-[#F9F9FF] rounded-[8px] mb-1.5 flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full overflow-hidden relative shrink-0 border border-[#ECECEC]">
                       <Image
@@ -336,12 +316,11 @@ export function Navbar() {
                     </div>
                   </div>
 
-                  {/* Navigation Links (Opens UserProfileModal) */}
                   <div className="space-y-0.5">
                     <button
                       type="button"
                       onClick={() => openProfileModalTab("profile")}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#2E2D2D] hover:bg-[#F6F5FF] hover:text-[#0400F4] rounded-[6px] transition-colors text-left"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#2E2D2D] hover:bg-[#F6F5FF] hover:text-[#0400F4] rounded-[6px] transition-colors text-left cursor-pointer"
                     >
                       <HugeiconsIcon icon={UserIcon} size={16} />
                       Profil Saya
@@ -350,35 +329,22 @@ export function Navbar() {
                     <button
                       type="button"
                       onClick={() => openProfileModalTab("history")}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#2E2D2D] hover:bg-[#F6F5FF] hover:text-[#0400F4] rounded-[6px] transition-colors text-left"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#2E2D2D] hover:bg-[#F6F5FF] hover:text-[#0400F4] rounded-[6px] transition-colors text-left cursor-pointer"
                     >
                       <HugeiconsIcon icon={Clock01Icon} size={16} />
                       Riwayat Belajar
-                    </button>
-
-                    <button
-                      type="button"
-                      disabled
-                      className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-[#AAAAAA] cursor-not-allowed rounded-[6px] text-left"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <HugeiconsIcon icon={Settings02Icon} size={16} />
-                        Pengaturan
-                      </div>
-                      <span className="text-[9px] px-1.5 py-0.5 bg-gray-100 rounded text-gray-400 font-semibold leading-none">Segera</span>
                     </button>
                   </div>
 
                   <div className="my-1 border-t border-[#ECECEC]" />
 
-                  {/* Logout Button */}
                   <button
                     type="button"
                     onClick={() => {
                       setIsProfileOpen(false);
                       router.push('/login');
                     }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 rounded-[6px] transition-colors"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 rounded-[6px] transition-colors cursor-pointer"
                   >
                     <HugeiconsIcon icon={Logout01Icon} size={16} />
                     Keluar dari Akun
@@ -386,101 +352,198 @@ export function Navbar() {
                 </div>
               )}
             </div>
+
+            {/* 4. Mobile Hamburger Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="w-9 h-9 md:hidden flex items-center justify-center text-[#2E2D2D] hover:bg-gray-100/80 active:scale-95 transition-all duration-200 rounded-[8px] cursor-pointer"
+              aria-label="Toggle Mobile Menu"
+            >
+              <HugeiconsIcon icon={isMobileMenuOpen ? Cancel01Icon : Menu01Icon} size={20} />
+            </button>
           </div>
         </div>
       </header>
 
-      {/* Spotlight Command Palette Modal (Center-Focused with Dark Overlay) */}
+      {/* Fullscreen Mobile Side Drawer */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 z-50 bg-white flex flex-col p-6 animate-in slide-in-from-right duration-200 overflow-y-auto">
+          {/* Drawer Header */}
+          <div className="flex items-center justify-between pb-6 border-b border-[#ECECEC]">
+            <Link
+              href="/"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="text-2xl font-bold text-[#292929] tracking-tight"
+            >
+              Sitemsa
+            </Link>
+
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="w-10 h-10 rounded-full bg-white border border-[#ECECEC] text-[#737373] hover:text-[#0400F4] hover:bg-[#F6F5FF] flex items-center justify-center transition-all cursor-pointer"
+              aria-label="Tutup Menu"
+            >
+              <HugeiconsIcon icon={Cancel01Icon} size={20} />
+            </button>
+          </div>
+
+          {/* Navigation Links - Text only, active item in blue font */}
+          <nav className="flex flex-col py-6 space-y-2 flex-1">
+            <Link
+              href="/"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`py-3.5 border-b border-gray-100 text-lg transition-colors ${
+                pathname === "/"
+                  ? "text-[#0400F4] font-bold"
+                  : "text-[#2E2D2D] font-medium hover:text-[#0400F4]"
+              }`}
+            >
+              Beranda
+            </Link>
+            <Link
+              href="/materi"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`py-3.5 border-b border-gray-100 text-lg transition-colors ${
+                pathname.startsWith("/materi")
+                  ? "text-[#0400F4] font-bold"
+                  : "text-[#2E2D2D] font-medium hover:text-[#0400F4]"
+              }`}
+            >
+              Materi
+            </Link>
+            <Link
+              href="/tips-belajar"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`py-3.5 border-b border-gray-100 text-lg transition-colors ${
+                pathname.startsWith("/tips-belajar")
+                  ? "text-[#0400F4] font-bold"
+                  : "text-[#2E2D2D] font-medium hover:text-[#0400F4]"
+              }`}
+            >
+              Tips Belajar
+            </Link>
+            <Link
+              href="/dokumentasi"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`py-3.5 border-b border-gray-100 text-lg transition-colors ${
+                pathname.startsWith("/dokumentasi")
+                  ? "text-[#0400F4] font-bold"
+                  : "text-[#2E2D2D] font-medium hover:text-[#0400F4]"
+              }`}
+            >
+              Dokumentasi
+            </Link>
+            <Link
+              href="/team"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`py-3.5 border-b border-gray-100 text-lg transition-colors ${
+                pathname.startsWith("/team")
+                  ? "text-[#0400F4] font-bold"
+                  : "text-[#2E2D2D] font-medium hover:text-[#0400F4]"
+              }`}
+            >
+              Tim
+            </Link>
+          </nav>
+        </div>
+      )}
+
+      {/* Full-Width Navbar Search Header Overlay */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-start justify-center pt-20 px-4 animate-in fade-in duration-150 overscroll-contain">
+        <div className="fixed inset-0 z-50 pointer-events-none">
           {/* Backdrop Click Listener */}
           <div
-            className="absolute inset-0"
+            className="absolute inset-0 bg-black/40 pointer-events-auto animate-in fade-in duration-150"
             onClick={handleCloseModal}
           />
 
-          {/* Centered Modal Card */}
-          <div className="relative w-full max-w-xl bg-white border border-[#ECECEC] rounded-[14px] overflow-hidden space-y-0 z-10">
-            {/* Modal Input Row */}
-            <div className="p-4 border-b border-[#ECECEC] flex items-center gap-3 bg-[#FAFAFA]">
-              <HugeiconsIcon icon={Search01Icon} size={20} className="text-[#0400F4] shrink-0" />
-              <input
-                ref={modalInputRef}
-                type="text"
-                placeholder="Ketik nama materi, topik, atau modul..."
-                value={modalQuery}
-                onChange={(e) => setModalQuery(e.target.value)}
-                className="w-full bg-transparent text-sm text-[#2E2D2D] placeholder:text-[#737373] outline-none font-medium"
-              />
-              <button
-                type="button"
-                onClick={handleCloseModal}
-                className="w-8 h-8 rounded-full bg-white border border-[#ECECEC] text-[#737373] hover:text-[#0400F4] hover:bg-[#F6F5FF] hover:border-[#0400F4]/40 flex items-center justify-center transition-all shrink-0 cursor-pointer"
-                aria-label="Tutup Pencarian"
-              >
-                <HugeiconsIcon icon={Cancel01Icon} size={16} />
-              </button>
-            </div>
+          {/* Full-Width Top Bar Search Header */}
+          <div className="absolute top-0 left-0 right-0 h-16 bg-white border-b border-[#ECECEC] px-4 md:px-12 flex items-center gap-3 z-50 pointer-events-auto animate-in slide-in-from-top duration-150 shadow-sm">
+            <HugeiconsIcon icon={Search01Icon} size={20} className="text-[#0400F4] shrink-0" />
+            <input
+              ref={modalInputRef}
+              type="text"
+              placeholder="Ketik nama materi, topik, atau modul..."
+              value={modalQuery}
+              onChange={(e) => setModalQuery(e.target.value)}
+              className="w-full bg-transparent text-sm md:text-base text-[#2E2D2D] placeholder:text-[#AAAAAA] outline-none font-medium"
+            />
+            {/* Cancel (X) icon button on the right side next to search bar */}
+            <button
+              type="button"
+              onClick={handleCloseModal}
+              className="w-9 h-9 rounded-full bg-white border border-[#ECECEC] text-[#737373] hover:text-[#0400F4] hover:bg-[#F6F5FF] hover:border-[#0400F4]/40 flex items-center justify-center transition-all shrink-0 cursor-pointer"
+              aria-label="Tutup Pencarian"
+              title="Tutup Pencarian"
+            >
+              <HugeiconsIcon icon={Cancel01Icon} size={18} />
+            </button>
+          </div>
 
-            {/* Quick Keyword Suggestion Chips */}
-            <div className="px-4 py-2.5 bg-[#F9F9FF] border-b border-[#ECECEC] flex items-center gap-2 overflow-x-auto">
-              <span className="text-[11px] font-semibold text-[#737373] shrink-0">Rekomendasi:</span>
-              {["Informatika", "Resistor", "Variabel", "Pomodoro", "Otomotif"].map((keyword) => (
-                <button
-                  key={keyword}
-                  type="button"
-                  onClick={() => setModalQuery(keyword)}
-                  className="px-2.5 py-1 rounded-[5px] bg-white border border-[#ECECEC] text-[11px] font-medium text-[#2E2D2D] hover:bg-[#F4EFFF] hover:text-[#0400F4] transition-all shrink-0"
-                >
-                  {keyword}
-                </button>
-              ))}
-            </div>
-
-            {/* Results List */}
-            <div className="p-3 max-h-80 overflow-y-auto space-y-1">
-              {filteredResults.length > 0 ? (
-                filteredResults.map((item) => (
+          {/* Recommendations & Results Dropdown below Navbar */}
+          <div className="absolute top-16 left-0 right-0 bg-white border-b border-[#ECECEC] shadow-2xl z-50 pointer-events-auto animate-in fade-in duration-200 max-h-[75vh] overflow-y-auto">
+            <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-4">
+              {/* Quick Keyword Suggestion Chips */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                <span className="text-xs font-semibold text-[#737373] shrink-0">Rekomendasi:</span>
+                {["Informatika", "Resistor", "Variabel", "Pomodoro", "Otomotif"].map((keyword) => (
                   <button
-                    key={item.id}
+                    key={keyword}
                     type="button"
-                    onClick={() => handleSelectResult(item.id)}
-                    className="w-full text-left p-3 rounded-[8px] hover:bg-[#F6F5FF] hover:border-[#0400F4]/30 border border-transparent flex items-center justify-between transition-all duration-200 group"
+                    onClick={() => setModalQuery(keyword)}
+                    className="px-3 py-1 rounded-[6px] bg-[#FAFAFA] border border-[#ECECEC] text-xs font-medium text-[#2E2D2D] hover:bg-[#F4EFFF] hover:text-[#0400F4] transition-all shrink-0 cursor-pointer"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-[6px] bg-[#E8E7FF] text-[#0400F4] flex items-center justify-center shrink-0 group-hover:bg-[#0400F4] group-hover:text-white transition-colors">
-                        <HugeiconsIcon icon={item.icon} size={16} />
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold text-[#2E2D2D] group-hover:text-[#0400F4] transition-colors">
-                          {item.title}
-                        </p>
-                        <p className="text-[11px] text-[#737373]">{item.subject}</p>
-                      </div>
-                    </div>
-
-                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-[4px] bg-gray-100 text-gray-700 shrink-0">
-                      {item.level}
-                    </span>
+                    {keyword}
                   </button>
-                ))
-              ) : (
-                <div className="py-8 text-center text-xs text-[#737373]">
-                  Tidak ada materi yang cocok dengan pencarian &quot;{modalQuery}&quot;
-                </div>
-              )}
-            </div>
+                ))}
+              </div>
 
-            {/* Modal Footer Keyboard Shortcuts */}
-            <div className="px-4 py-2.5 bg-[#FAFAFA] border-t border-[#ECECEC] flex items-center justify-between text-[11px] text-[#737373]">
-              <span>Tekan <kbd className="px-1.5 py-0.5 bg-white border border-[#ECECEC] rounded text-[#2E2D2D] font-mono">ESC</kbd> untuk menutup</span>
-              <span>Pilih materi untuk membaca</span>
+              {/* Results List */}
+              <div className="space-y-1">
+                {filteredResults.length > 0 ? (
+                  filteredResults.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => handleSelectResult(item.id)}
+                      className="w-full text-left p-3 rounded-[8px] hover:bg-[#F6F5FF] border border-transparent hover:border-[#0400F4]/30 flex items-center justify-between transition-all duration-200 group cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className="w-8 h-8 rounded-[6px] bg-[#F4EFFF] text-[#0400F4] flex items-center justify-center shrink-0">
+                          <HugeiconsIcon icon={item.icon} size={16} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <span className="bg-[#E8E7FF] text-[#0400F4] px-2 py-0.5 rounded-[4px] text-[10px] font-semibold inline-block mb-0.5">
+                            {item.subject}
+                          </span>
+                          <h4 className="text-xs md:text-sm font-semibold text-[#2E2D2D] group-hover:text-[#0400F4] transition-colors truncate">
+                            {item.title}
+                          </h4>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-[10px] px-2 py-0.5 bg-gray-100 text-gray-600 rounded font-medium">
+                          {item.level}
+                        </span>
+                        <HugeiconsIcon icon={ArrowRight01Icon} size={14} className="text-[#0400F4] opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    </button>
+                  ))
+                ) : (
+                  <div className="py-8 text-center text-xs text-[#737373]">
+                    Tidak ada materi yang cocok dengan pencarian "{modalQuery}"
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* User Profile & Settings IDE-style Center Modal */}
+      {/* User Profile & Settings Modal */}
       <UserProfileModal
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}

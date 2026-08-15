@@ -32,7 +32,7 @@ export default function LoginPage() {
         <div className="w-full lg:w-1/2 flex flex-col justify-center lg:pr-16 xl:pr-24 mb-12 lg:mb-0">
           <h2 className="text-xl font-bold text-gray-900 mb-10 tracking-tight">Sitemsa</h2>
 
-          <h1 className="text-[2.75rem] lg:text-5xl font-bold text-gray-900 leading-[1.15] mb-6">
+          <h1 className="text-3xl sm:text-[2.75rem] lg:text-5xl font-bold text-gray-900 leading-[1.15] mb-6">
             Kuasai Keahlian Baru<br />di Setiap Langkah
           </h1>
 

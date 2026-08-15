@@ -3,7 +3,7 @@ export function HeroSection() {
     <section className="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
       {/* Left Greeting */}
       <div>
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#2E2D2D] tracking-tight leading-tight">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#2E2D2D] tracking-tight leading-tight">
           Selamat Pagi, Budi!
         </h1>
       </div>

@@ -105,7 +105,7 @@ export function SubjectCatalog() {
               className="bg-white border border-[#ECECEC] rounded-[10px] p-4 space-y-3 hover:bg-[#F6F5FF] hover:border-[#0400F4]/40 transition-all duration-300 ease-out group cursor-pointer block"
             >
               {/* Header: Title + Optional Badge */}
-              <div className="flex items-start justify-between gap-2">
+              <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-[6px] bg-[#F4EFFF] flex items-center justify-center text-[#0400F4] shrink-0 group-hover:bg-[#0400F4] group-hover:text-white transition-colors duration-300">
                     <HugeiconsIcon icon={subject.icon} size={16} />

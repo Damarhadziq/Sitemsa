@@ -51,7 +51,7 @@ export default function TeamPage() {
           </p>
         </div>
 
-        <div className="relative w-full" style={{ minHeight: '800px' }}>
+        <div className="relative w-full min-h-[800px] h-auto">
           <ChromaGrid 
             items={teamMembers}
             radius={250}

@@ -99,12 +99,15 @@ export function NotificationModal({
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 animate-in fade-in duration-150 overscroll-contain">
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-end justify-center md:items-center p-0 md:p-4 animate-in fade-in duration-200 overscroll-contain">
       {/* Backdrop Listener */}
       <div className="absolute inset-0" onClick={onClose} />
 
-      {/* Centered Notification Modal — Clean List */}
-      <div className="relative w-full max-w-md bg-white border border-[#ECECEC] rounded-[16px] overflow-hidden flex flex-col px-6 pt-5 pb-4 space-y-3 z-10 animate-in fade-in zoom-in-95 duration-150">
+      {/* Notification Sheet (Mobile Bottom Sheet & Desktop Dialog) */}
+      <div className="relative w-full max-w-md bg-white border-t md:border border-[#ECECEC] rounded-t-[20px] rounded-b-none md:rounded-[16px] overflow-hidden flex flex-col px-6 pt-3 md:pt-5 pb-4 space-y-3 z-10 animate-in slide-in-from-bottom duration-300 md:animate-in md:fade-in md:zoom-in-95 md:duration-150">
+        {/* Drag Handle Indicator for Mobile */}
+        <div className="w-12 h-1.5 bg-[#D4D4D4] rounded-full mx-auto mb-1 md:hidden shrink-0" />
+
         {/* Modal Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

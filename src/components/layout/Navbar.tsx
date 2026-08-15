@@ -358,11 +358,14 @@ export function Navbar() {
 
                     <button
                       type="button"
-                      onClick={() => openProfileModalTab("settings")}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#2E2D2D] hover:bg-[#F6F5FF] hover:text-[#0400F4] rounded-[6px] transition-colors text-left"
+                      disabled
+                      className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-[#AAAAAA] cursor-not-allowed rounded-[6px] text-left"
                     >
-                      <HugeiconsIcon icon={Settings02Icon} size={16} />
-                      Pengaturan
+                      <div className="flex items-center gap-2.5">
+                        <HugeiconsIcon icon={Settings02Icon} size={16} />
+                        Pengaturan
+                      </div>
+                      <span className="text-[9px] px-1.5 py-0.5 bg-gray-100 rounded text-gray-400 font-semibold leading-none">Segera</span>
                     </button>
                   </div>
 

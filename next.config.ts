@@ -1,6 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    serverActions: {
+      allowedOrigins: [
+        'localhost:3000',
+        '*.devtunnels.ms',
+        '*.asse.devtunnels.ms',
+        'zf59gcqr-3000.asse.devtunnels.ms',
+      ],
+    },
+  },
   images: {
     remotePatterns: [
       {

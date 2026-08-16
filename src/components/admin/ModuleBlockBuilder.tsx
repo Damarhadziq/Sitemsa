@@ -421,7 +421,7 @@ export default function ModuleBlockBuilder({
   return (
     <div
       onClick={() => setSelectedBlockId(null)}
-      className="fixed inset-0 z-50 bg-white flex flex-col font-sans text-[#2E2D2D] overflow-hidden select-none"
+      className="fixed inset-0 z-50 bg-white flex flex-col font-sans text-[#2E2D2D] overflow-hidden select-none animate-in fade-in zoom-in-95 duration-200"
     >
       
       {/* 1. FIXED TOP HEADER BAR */}
@@ -824,7 +824,7 @@ export default function ModuleBlockBuilder({
                           {block.testType === 'link_eksternal' && (
                             <div className="p-5 rounded-[12px] bg-slate-50 border border-[#ECECEC] space-y-3">
                               <div className="flex items-center justify-between">
-                                <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wide flex items-center gap-1">
+                                <span className="text-[11px] font-bold text-blue-600 tracking-wide flex items-center gap-1">
                                   <ExternalLink className="w-3.5 h-3.5" /> Link Eksternal
                                 </span>
                               </div>
@@ -861,8 +861,8 @@ export default function ModuleBlockBuilder({
                           {block.testType === 'qr_code' && (
                             <div className="p-5 rounded-[12px] bg-slate-50 border border-[#ECECEC] space-y-4">
                               <div className="flex items-center justify-between">
-                                <span className="text-[11px] font-bold text-purple-600 uppercase tracking-wide flex items-center gap-1">
-                                  <QrCode className="w-3.5 h-3.5" /> Barcode / QR Code
+                                <span className="text-[11px] font-bold text-purple-600 tracking-wide flex items-center gap-1">
+                                  <QrCode className="w-3.5 h-3.5" /> Barcode / Qr Code
                                 </span>
                               </div>
 
@@ -1179,9 +1179,9 @@ export default function ModuleBlockBuilder({
       {editingImageId && (
         <div
           onClick={(e) => e.stopPropagation()}
-          className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200"
         >
-          <div className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md space-y-5 shadow-2xl">
+          <div className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md space-y-5 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-[#2E2D2D]">
                 Upload & Pengaturan Gambar
@@ -1249,13 +1249,13 @@ export default function ModuleBlockBuilder({
                 <div className="flex justify-end gap-2">
                   <button
                     onClick={() => setEditingImageId(null)}
-                    className="px-4 py-2 rounded-[8px] bg-slate-100 text-xs font-semibold text-[#2E2D2D] hover:bg-slate-200 cursor-pointer"
+                    className="px-4 py-2 rounded-[8px] bg-slate-100 text-xs font-semibold text-[#2E2D2D] hover:bg-slate-200 cursor-pointer transition-all duration-200 ease-in-out active:scale-[0.98]"
                   >
                     Batal
                   </button>
                   <button
                     onClick={handleConfirmImageChange}
-                    className="px-4 py-2 rounded-[8px] bg-[#2563EB] text-xs font-semibold text-white hover:bg-blue-700 cursor-pointer shadow-2xs"
+                    className="px-4 py-2 rounded-[8px] bg-[#2563EB] text-xs font-semibold text-white hover:bg-blue-700 cursor-pointer shadow-2xs transition-all duration-200 ease-in-out active:scale-[0.98]"
                   >
                     Gunakan URL
                   </button>
@@ -1271,9 +1271,9 @@ export default function ModuleBlockBuilder({
       {editingVideoId && (
         <div
           onClick={(e) => e.stopPropagation()}
-          className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200"
         >
-          <div className="bg-white rounded-[12px] border border-[#ECECEC] p-6 w-full max-w-md space-y-4 shadow-xl">
+          <div className="bg-white rounded-[12px] border border-[#ECECEC] p-6 w-full max-w-md space-y-4 shadow-xl animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-[#2E2D2D]">
                 Pengaturan Media Video YouTube
@@ -1298,13 +1298,13 @@ export default function ModuleBlockBuilder({
             <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 onClick={() => setEditingVideoId(null)}
-                className="px-4 py-2 rounded-[8px] bg-slate-100 text-xs font-semibold text-[#2E2D2D] hover:bg-slate-200 cursor-pointer"
+                className="px-4 py-2 rounded-[8px] bg-slate-100 text-xs font-semibold text-[#2E2D2D] hover:bg-slate-200 cursor-pointer transition-all duration-200 ease-in-out active:scale-[0.98]"
               >
                 Batal
               </button>
               <button
                 onClick={handleConfirmVideoChange}
-                className="px-4 py-2 rounded-[8px] bg-[#2563EB] text-xs font-semibold text-white hover:bg-blue-700 cursor-pointer"
+                className="px-4 py-2 rounded-[8px] bg-[#2563EB] text-xs font-semibold text-white hover:bg-blue-700 cursor-pointer transition-all duration-200 ease-in-out active:scale-[0.98]"
               >
                 Simpan Video
               </button>
@@ -1317,11 +1317,11 @@ export default function ModuleBlockBuilder({
       {activeQrModalUrl && (
         <div
           onClick={() => setActiveQrModalUrl(null)}
-          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-[#2E2D2D] text-[#ECECEC] rounded-[16px] p-6 w-full max-w-sm text-center space-y-4 shadow-2xl relative"
+            className="bg-[#2E2D2D] text-[#ECECEC] rounded-[16px] p-6 w-full max-w-sm text-center space-y-4 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200"
           >
             <button
               onClick={() => setActiveQrModalUrl(null)}

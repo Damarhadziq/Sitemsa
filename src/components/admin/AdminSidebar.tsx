@@ -49,13 +49,16 @@ export function AdminSidebar() {
   return (
     <aside className="w-64 bg-white border-r border-[#ECECEC] flex flex-col justify-between h-screen sticky top-0 font-sans z-40 shrink-0 overflow-y-auto">
       <div>
-        {/* Brand Logo (NO BORDER LINE) */}
+        {/* Role-Based Brand SVG Logo (Sized compactly for header alignment) */}
         <div className="h-16 px-6 flex items-center">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-xl font-bold text-[#2E2D2D] tracking-tight">
-              Sitemsa
-            </span>
-          </Link>
+          <div className="flex items-center select-none">
+            {/* eslint-disable-next-next/no-img-element */}
+            <img
+              src={isSuperadmin ? "/logos/logo-sitemsa-superadmin.svg" : "/logos/logo-sitemsa-guru.svg"}
+              alt={isSuperadmin ? "Sitemsa Superadmin" : "Sitemsa Guru"}
+              className="h-6 max-h-6 max-w-[130px] object-contain object-left cursor-default"
+            />
+          </div>
         </div>
 
         {/* Navigation Items */}
@@ -128,15 +131,18 @@ export function AdminSidebar() {
                   </button>
                 </div>
 
-                {/* EXPANDED TREE DROPDOWN CONTAINER */}
+                {/* EXPANDED TREE DROPDOWN CONTAINER (SMOOTH IN-OUT FADE/SLIDE ANIMATION) */}
                 {isTreeExpanded && (
-                  <div className="pl-3 pr-1 space-y-3 pt-1 border-l-2 border-slate-100 ml-4">
+                  <div className="pl-3 pr-1 space-y-3 pt-1 border-l-2 border-slate-100 ml-4 animate-in fade-in slide-in-from-top-1 duration-200">
                     
                     {/* TREE NODE 1: MATERI */}
                     <div className="space-y-1">
                       <div className="flex items-center gap-1.5 px-2 text-xs font-semibold text-[#737373]">
                         <ChevronDown className="w-3.5 h-3.5 text-[#2563EB]" />
-                        <span>Materi ({currentModules.length})</span>
+                        <span>Materi</span>
+                        <span className="w-3.5 h-3.5 rounded-[2px] bg-blue-50 text-[#2563EB] text-[9px] font-bold flex items-center justify-center shrink-0 ml-0.5">
+                          {currentModules.length}
+                        </span>
                       </div>
 
                       <div className="pl-3 space-y-1 border-l border-slate-200/80 ml-2">
@@ -147,13 +153,13 @@ export function AdminSidebar() {
                             <Link
                               key={mod.id}
                               href={`/admin/guru/pelajaran?item=${mod.id}`}
-                              className={`flex items-center gap-2 px-2.5 py-1.5 rounded-[6px] text-xs transition-all truncate ${
+                              className={`flex items-center gap-2 px-2.5 py-1.5 rounded-[6px] text-xs transition-all truncate group ${
                                 isItemActive
                                   ? 'bg-blue-50/80 text-[#2563EB] font-bold'
                                   : 'text-[#737373] hover:text-[#2563EB] hover:bg-slate-50 font-medium'
                               }`}
                             >
-                              <FileCode className={`w-3.5 h-3.5 shrink-0 ${isItemActive ? 'text-[#2563EB]' : 'text-[#737373]'}`} />
+                              <FileCode className={`w-3.5 h-3.5 shrink-0 transition-colors ${isItemActive ? 'text-[#2563EB]' : 'text-[#737373] group-hover:text-[#2563EB]'}`} />
                               <span className="truncate">{mod.title}</span>
                             </Link>
                           );
@@ -166,7 +172,10 @@ export function AdminSidebar() {
                       <div className="space-y-1 pt-1">
                         <div className="flex items-center gap-1.5 px-2 text-xs font-semibold text-[#737373]">
                           <ChevronDown className="w-3.5 h-3.5 text-indigo-600" />
-                          <span>Kuis ({currentQuizzes.length})</span>
+                          <span>Kuis</span>
+                          <span className="w-3.5 h-3.5 rounded-[2px] bg-indigo-50 text-indigo-600 text-[9px] font-bold flex items-center justify-center shrink-0 ml-0.5">
+                            {currentQuizzes.length}
+                          </span>
                         </div>
 
                         <div className="pl-3 space-y-1 border-l border-indigo-200 ml-2">
@@ -177,13 +186,13 @@ export function AdminSidebar() {
                               <Link
                                 key={qz.id}
                                 href={`/admin/guru/pelajaran?item=${qz.id}`}
-                                className={`flex items-center gap-2 px-2.5 py-1.5 rounded-[6px] text-xs transition-all truncate ${
+                                className={`flex items-center gap-2 px-2.5 py-1.5 rounded-[6px] text-xs transition-all truncate group ${
                                   isQuizActive
                                     ? 'bg-indigo-50/80 text-indigo-600 font-bold'
                                     : 'text-[#737373] hover:text-indigo-600 hover:bg-slate-50 font-medium'
                                 }`}
                               >
-                                <Play className={`w-3.5 h-3.5 shrink-0 ${isQuizActive ? 'text-indigo-600' : 'text-[#737373]'}`} />
+                                <Play className={`w-3.5 h-3.5 shrink-0 transition-colors ${isQuizActive ? 'text-indigo-600' : 'text-[#737373] group-hover:text-indigo-600'}`} />
                                 <span className="truncate">{qz.title}</span>
                               </Link>
                             );
@@ -214,7 +223,7 @@ export function AdminSidebar() {
         </div>
       </div>
 
-      {/* Footer Copyright (NO BORDER LINE) */}
+      {/* Footer Copyright */}
       <div className="p-6 pt-2">
         <p className="text-[11px] text-[#AAAAAA] leading-relaxed">
           &copy; 2026 Sitemsa. All rights reserved.

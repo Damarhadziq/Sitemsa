@@ -103,9 +103,16 @@ export default function SuperadminKontenPage() {
     setShowArticleModal(false);
   };
 
+  const [deleteTargetArticle, setDeleteTargetArticle] = useState<{ id: string; title: string } | null>(null);
+
   const handleDeleteArticle = (id: string, title: string) => {
-    if (confirm(`Apakah Anda yakin ingin menghapus artikel "${title}"?`)) {
-      deleteArticle(id);
+    setDeleteTargetArticle({ id, title });
+  };
+
+  const confirmDeleteArticle = () => {
+    if (deleteTargetArticle) {
+      deleteArticle(deleteTargetArticle.id);
+      setDeleteTargetArticle(null);
     }
   };
 
@@ -375,7 +382,7 @@ export default function SuperadminKontenPage() {
 
       {/* Article Modal */}
       {showArticleModal && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-lg rounded-[10px] border border-[#ECECEC] overflow-hidden font-sans">
             <div className="p-6 bg-white flex items-center justify-between">
               <h3 className="text-base font-bold text-[#2E2D2D]">
@@ -491,7 +498,7 @@ export default function SuperadminKontenPage() {
 
       {/* Subject Modal */}
       {showSubjectModal && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-lg rounded-[10px] border border-[#ECECEC] overflow-hidden font-sans">
             <div className="p-6 bg-white flex items-center justify-between">
               <h3 className="text-base font-bold text-[#2E2D2D]">
@@ -567,6 +574,46 @@ export default function SuperadminKontenPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* CUSTOM DELETE CONFIRMATION MODAL (DARK BG OVERLAY, LEFT ALIGNED, NO BLUR) */}
+      {deleteTargetArticle && (
+        <div
+          onClick={() => setDeleteTargetArticle(null)}
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md text-left space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+          >
+            {/* Icon above header */}
+            <div className="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100 shrink-0">
+              <Trash2 className="w-5 h-5 text-rose-600" />
+            </div>
+
+            {/* Header Title */}
+            <h3 className="font-bold text-base text-[#2E2D2D]">Hapus Artikel Website</h3>
+
+            <p className="text-xs text-[#737373] leading-relaxed bg-slate-50 p-3 rounded-[8px] border border-[#ECECEC]">
+              Apakah Anda yakin ingin menghapus artikel &ldquo;<strong className="text-[#2E2D2D]">{deleteTargetArticle.title}</strong>&rdquo;? Artikel ini akan terhapus dari halaman publik.
+            </p>
+
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button
+                onClick={() => setDeleteTargetArticle(null)}
+                className="px-4 py-2 rounded-[8px] bg-slate-100 text-[#2E2D2D] text-xs font-semibold hover:bg-slate-200 cursor-pointer transition-all duration-200 ease-in-out active:scale-[0.98]"
+              >
+                Batal
+              </button>
+              <button
+                onClick={confirmDeleteArticle}
+                className="px-4 py-2 rounded-[8px] bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 cursor-pointer shadow-xs transition-all duration-200 ease-in-out active:scale-[0.98]"
+              >
+                Hapus Artikel
+              </button>
+            </div>
           </div>
         </div>
       )}

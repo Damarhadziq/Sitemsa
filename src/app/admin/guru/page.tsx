@@ -142,56 +142,41 @@ export default function AdminGuruDashboard() {
             animated={true}
             colors={['#2563EB', '#6366F1', '#a855f7']}
           >
-            <div className="bg-gradient-to-b from-blue-50/50 via-purple-50/20 to-white p-6 flex flex-col justify-between items-center text-center w-full h-full relative overflow-hidden">
+            <div className="bg-gradient-to-b from-blue-50/50 via-purple-50/20 to-white p-6 flex flex-col justify-center items-center text-center w-full h-full relative overflow-hidden space-y-6">
               
-              {/* Top Centered Icon Badge */}
-              <div className="mt-2">
+              {/* Header Section: Icon + Titles in tight vertical layout */}
+              <div className="flex flex-col items-center space-y-2.5 max-w-sm">
                 <div className="w-10 h-10 rounded-[8px] bg-white border border-[#ECECEC] flex items-center justify-center text-[#2E2D2D] shadow-xs">
                   <Sparkles className="w-5 h-5 text-[#2563EB]" />
                 </div>
+
+                <div className="space-y-1">
+                  <div className="flex items-center justify-center gap-2 flex-wrap">
+                    <h2 className="text-lg md:text-xl font-semibold text-[#2E2D2D] tracking-tight">
+                      Tanyakan AI Sitemsa
+                    </h2>
+                    <span className="px-2 py-0.5 rounded-[4px] bg-blue-50 text-[#2563EB] border border-blue-100 text-[10px] font-bold tracking-wide shrink-0">
+                      Coming Soon
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#737373] leading-normal">
+                    Asisten kecerdasan buatan untuk analisis belajar & kuis
+                  </p>
+                </div>
               </div>
 
-              {/* Center Titles & Subtitle */}
-              <div className="my-2 space-y-1 max-w-sm">
-                <h2 className="text-lg md:text-xl font-semibold text-[#2E2D2D] tracking-tight">
-                  Tanyakan AI Sitemsa
-                </h2>
-                <p className="text-xs text-[#737373] leading-normal">
-                  Asisten kecerdasan buatan untuk analisis belajar & kuis
-                </p>
-              </div>
-
-              {/* Centered Input Box & Bottom Recommendation Pills Container */}
-              <div className="w-full space-y-3 mb-1">
-                {/* Input Field Box with Send Icon */}
+              {/* Disabled Text Box with increased top gap */}
+              <div className="w-full pt-2">
                 <div className="relative w-full">
                   <input
                     type="text"
-                    value={aiPrompt}
-                    onChange={(e) => setAiPrompt(e.target.value)}
-                    placeholder="Tulis pertanyaan..."
-                    className="w-full h-11 pl-4 pr-11 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] placeholder:text-[#AAAAAA] focus:border-[#2563EB] outline-none shadow-xs"
+                    disabled
+                    placeholder="Fitur Asisten AI segera hadir..."
+                    className="w-full h-11 pl-4 pr-11 rounded-[8px] bg-slate-100/70 border border-[#ECECEC] text-xs text-slate-400 placeholder:text-slate-400 cursor-not-allowed outline-none select-none"
                   />
-                  <button className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-[6px] text-[#2563EB] hover:bg-blue-50 flex items-center justify-center transition-colors cursor-pointer">
+                  <button disabled className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-[6px] text-slate-300 flex items-center justify-center cursor-not-allowed">
                     <Send className="w-4 h-4" />
                   </button>
-                </div>
-
-                {/* Bottom Centered Recommendation Pills */}
-                <div className="flex flex-wrap justify-center gap-2 pt-1">
-                  {quickPrompts.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => setAiPrompt(item.text)}
-                      className={`px-3.5 py-1.5 rounded-[6px] text-xs font-semibold transition-all cursor-pointer ${
-                        item.primary
-                          ? 'bg-white border border-blue-200 text-[#2563EB] hover:bg-blue-50'
-                          : 'bg-white border border-[#ECECEC] text-[#737373] hover:border-blue-200 hover:text-[#2563EB]'
-                      }`}
-                    >
-                      {item.text}
-                    </button>
-                  ))}
                 </div>
               </div>
 

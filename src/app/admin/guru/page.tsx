@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import {
   TrendingUp,
@@ -22,7 +22,6 @@ import BorderGlow from '@/components/ui/BorderGlow';
 export default function AdminGuruDashboard() {
   const { user, activeSubjectFilter } = useAuth();
   const { modules, quizzes, students } = useAdminStore();
-  const [aiPrompt, setAiPrompt] = useState('');
 
   const assignedSubjects = user?.assignedSubjects || ['Informatika'];
   const currentSubject = activeSubjectFilter || assignedSubjects[0] || 'Informatika';
@@ -42,12 +41,6 @@ export default function AdminGuruDashboard() {
       });
   });
   const avgSubjectScore = scoreCount > 0 ? Math.round(totalScore / scoreCount) : 0;
-
-  const quickPrompts = [
-    { id: 1, text: 'Buat 5 soal kuis pilihan ganda', primary: true },
-    { id: 2, text: 'Terakhir kamu pelajari', primary: false },
-    { id: 3, text: 'Analisis nilai siswa', primary: false },
-  ];
 
   return (
     <div className="font-sans text-[#2E2D2D] bg-white space-y-6">

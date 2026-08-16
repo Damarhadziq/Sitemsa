@@ -11,18 +11,14 @@ import {
   Play,
   FileText,
   Clock,
-  Layers,
-  Sparkles,
   CheckCircle2,
   FileCode,
   TrendingUp,
   Users,
   Eye,
-  BarChart3,
   ArrowUpRight,
   AlertCircle,
   ArrowLeft,
-  Activity,
   QrCode,
   ExternalLink,
   Download,
@@ -102,7 +98,6 @@ export default function AdminGuruPelajaranPage() {
 
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
   const [showQrModal, setShowQrModal] = useState(false);
-  const [showExternalLinkModal, setShowExternalLinkModal] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
   const handleDeleteModuleItem = (id: string, title: string) => {
@@ -916,54 +911,6 @@ export default function AdminGuruPelajaranPage() {
                 >
                   <Download className="w-3.5 h-3.5" />
                   <span>Unduh Qr Code</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL EXTERNAL FORM TEST LINK PREVIEW */}
-      {showExternalLinkModal && (
-        <div
-          onClick={() => setShowExternalLinkModal(false)}
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md text-left space-y-4 shadow-2xl animate-in zoom-in-95 duration-200 relative"
-          >
-            <button
-              onClick={() => setShowExternalLinkModal(false)}
-              className="absolute right-4 top-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="flex flex-col items-center text-center space-y-3 pt-2">
-              <div className="w-12 h-12 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center">
-                <ExternalLink className="w-6 h-6 text-[#2563EB]" />
-              </div>
-
-              <div>
-                <h3 className="text-base font-bold text-[#2E2D2D]">Tautan Tes & Evaluasi Eksternal</h3>
-                <p className="text-xs text-[#737373]">Ujian diselenggarakan melalui platform Google Forms</p>
-              </div>
-
-              <div className="w-full bg-slate-50 border border-[#ECECEC] p-3 rounded-[8px] text-xs text-[#2563EB] font-mono break-all my-2 select-all text-left">
-                https://forms.google.com/d/e/1FAIpQLSc_Sitemsa_Elektronika_Quiz_2026/viewform
-              </div>
-
-              <div className="w-full pt-2">
-                <button
-                  onClick={() => {
-                    window.open('https://forms.google.com', '_blank');
-                    setShowExternalLinkModal(false);
-                  }}
-                  className="w-full py-2.5 rounded-[8px] bg-[#2563EB] text-white text-xs font-medium hover:bg-blue-700 transition-all cursor-pointer active:scale-[0.98] flex items-center justify-center gap-1.5"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>Buka Tautan Ujian</span>
                 </button>
               </div>
             </div>

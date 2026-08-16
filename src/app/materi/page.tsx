@@ -295,7 +295,7 @@ export default function MateriLandingPage() {
                 onFocus={() => setIsSearchFocused(true)}
                 onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                className={`w-full h-11 pr-10 bg-[#F3F3F3] rounded-[8px] text-sm text-[#2E2D2D] placeholder:text-[#AAAAAA] border border-transparent focus:bg-white focus:border-[#0400F4] outline-none transition-all duration-200 ${
+                className={`w-full h-11 pr-10 bg-[#F3F3F3] rounded-[8px] text-sm text-[#2E2D2D] placeholder:text-[#AAAAAA] border border-transparent focus:bg-white focus:border-[#2563EB] outline-none transition-all duration-200 ${
                   isSearchFocused ? "pl-4" : "pl-10"
                 }`}
               />
@@ -308,7 +308,7 @@ export default function MateriLandingPage() {
               >
                 <button
                   type="button"
-                  className="w-7 h-7 rounded-[6px] bg-[#0400F4] text-white flex items-center justify-center hover:bg-[#0300d4] transition-colors"
+                  className="w-7 h-7 rounded-[6px] bg-[#2563EB] text-white flex items-center justify-center hover:bg-[#1D4ED8] transition-colors"
                 >
                   <HugeiconsIcon icon={ArrowRight01Icon} size={15} />
                 </button>
@@ -319,7 +319,7 @@ export default function MateriLandingPage() {
             {isSearchFocused && (searchQuery.trim() ? filteredModul.length > 0 : true) && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-[#ECECEC] rounded-[12px] p-3 z-30 space-y-2 text-left animate-in fade-in duration-200">
                 <div className="flex items-center justify-between px-2 pb-1.5 border-b border-[#ECECEC]">
-                  <span className="text-[11px] font-semibold text-[#0400F4]">
+                  <span className="text-[11px] font-semibold text-[#2563EB]">
                     {searchQuery.trim() ? "Hasil Pencarian Cepat" : "Rekomendasi Pencarian"}
                   </span>
                   <span className="text-[10px] text-[#737373]">
@@ -332,14 +332,14 @@ export default function MateriLandingPage() {
                     <Link
                       key={item.id}
                       href={`/materi/${item.id}`}
-                      className="block p-2.5 rounded-[8px] hover:bg-[#F6F5FF] border border-transparent hover:border-[#0400F4]/30 transition-all duration-200 group"
+                      className="block p-2.5 rounded-[8px] hover:bg-[#F6F5FF] border border-transparent hover:border-[#2563EB]/30 transition-all duration-200 group"
                     >
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
-                          <span className="bg-[#E8E7FF] text-[#0400F4] px-2 py-0.5 rounded-[4px] text-[10px] font-semibold shrink-0">
+                          <span className="bg-[#E8E7FF] text-[#2563EB] px-2 py-0.5 rounded-[4px] text-[10px] font-semibold shrink-0">
                             {item.subject}
                           </span>
-                          <span className="text-xs font-semibold text-[#2E2D2D] group-hover:text-[#0400F4] transition-colors truncate min-w-0 flex-1">
+                          <span className="text-xs font-semibold text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors truncate min-w-0 flex-1">
                             {item.title}
                           </span>
                         </div>
@@ -366,7 +366,7 @@ export default function MateriLandingPage() {
                   onClick={() => handleCategoryChange(category)}
                   className={`px-3.5 py-1.5 rounded-[6px] text-xs font-medium transition-all duration-200 ${
                     isActive
-                      ? "bg-[#0400F4] text-white"
+                      ? "bg-[#2563EB] text-white"
                       : "bg-[#FAFAFA] border border-[#ECECEC] text-[#737373] hover:text-[#2E2D2D] hover:bg-gray-100"
                   }`}
                 >
@@ -381,11 +381,11 @@ export default function MateriLandingPage() {
         {selectedCategory === "Semua" && !searchQuery && (
           <section className="mb-10 bg-gradient-to-br from-[#FAFAFF] via-[#F4EFFF] to-[#EBE4FF] rounded-[14px] p-5 lg:p-6 border border-[#E0D7FF] relative overflow-hidden space-y-4 transition-all duration-300">
             {/* Ambient Background Glow */}
-            <div className="absolute -right-12 -top-12 w-56 h-56 bg-[#0400F4]/10 rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute -right-12 -top-12 w-56 h-56 bg-[#2563EB]/10 rounded-full blur-2xl pointer-events-none" />
 
             {/* Frame Header - Popping Gradient Badge */}
             <div className="flex items-center z-10 relative">
-              <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-[#0400F4] via-[#6366F1] to-[#EC4899] text-white px-3.5 py-1.5 rounded-[8px] text-xs font-semibold">
+              <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-[#2563EB] via-[#6366F1] to-[#EC4899] text-white px-3.5 py-1.5 rounded-[8px] text-xs font-semibold">
                 <HugeiconsIcon icon={SparklesIcon} size={14} />
                 <span>Rekomendasi AI</span>
               </span>
@@ -397,11 +397,11 @@ export default function MateriLandingPage() {
                 <Link
                   key={item.id}
                   href={`/materi/${item.id}`}
-                  className="bg-white/90 backdrop-blur-md border border-[#E0D7FF] rounded-[10px] p-4 flex flex-col justify-between transition-all duration-300 group hover:border-[#0400F4]/50 hover:bg-white"
+                  className="bg-white/90 backdrop-blur-md border border-[#E0D7FF] rounded-[10px] p-4 flex flex-col justify-between transition-all duration-300 group hover:border-[#2563EB]/50 hover:bg-white"
                 >
                   <div className="space-y-2.5">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="bg-[#E8E7FF] text-[#0400F4] px-2 py-0.5 rounded-[4px] text-[11px] font-semibold">
+                      <span className="bg-[#E8E7FF] text-[#2563EB] px-2 py-0.5 rounded-[4px] text-[11px] font-semibold">
                         {item.subject}
                       </span>
                       <span className="text-[11px] font-medium text-[#737373]">
@@ -409,7 +409,7 @@ export default function MateriLandingPage() {
                       </span>
                     </div>
 
-                    <h3 className="text-xs md:text-sm font-semibold text-[#2E2D2D] leading-snug group-hover:text-[#0400F4] transition-colors duration-200">
+                    <h3 className="text-xs md:text-sm font-semibold text-[#2E2D2D] leading-snug group-hover:text-[#2563EB] transition-colors duration-200">
                       {item.title}
                     </h3>
 
@@ -418,7 +418,7 @@ export default function MateriLandingPage() {
                     </p>
                   </div>
 
-                  <div className="pt-3 mt-3 flex items-center justify-between text-[11px] font-medium text-[#0400F4]">
+                  <div className="pt-3 mt-3 flex items-center justify-between text-[11px] font-medium text-[#2563EB]">
                     <span>Lihat Materi</span>
                     <HugeiconsIcon icon={ArrowRight01Icon} size={12} className="group-hover:translate-x-1 transition-transform duration-200" />
                   </div>
@@ -473,16 +473,16 @@ export default function MateriLandingPage() {
                 <Link
                   key={modul.id}
                   href={`/materi/${modul.id}`}
-                  className="bg-white border border-[#ECECEC] rounded-[10px] p-5 flex flex-col justify-between hover:bg-[#F6F5FF] hover:border-[#0400F4]/40 transition-all duration-300 ease-out group cursor-pointer"
+                  className="bg-white border border-[#ECECEC] rounded-[10px] p-5 flex flex-col justify-between hover:bg-[#F6F5FF] hover:border-[#2563EB]/40 transition-all duration-300 ease-out group cursor-pointer"
                 >
                   <div className="space-y-3">
                     {/* Header Top: Icon + Subject + Color-Coded Level Badge */}
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-[6px] bg-[#F4EFFF] flex items-center justify-center text-[#0400F4] shrink-0 group-hover:bg-[#0400F4] group-hover:text-white transition-colors duration-300">
+                        <div className="w-7 h-7 rounded-[6px] bg-[#F4EFFF] flex items-center justify-center text-[#2563EB] shrink-0 group-hover:bg-[#2563EB] group-hover:text-white transition-colors duration-300">
                           <HugeiconsIcon icon={modul.icon} size={16} />
                         </div>
-                        <span className="text-xs font-semibold text-[#0400F4]">
+                        <span className="text-xs font-semibold text-[#2563EB]">
                           {modul.subject}
                         </span>
                       </div>
@@ -495,7 +495,7 @@ export default function MateriLandingPage() {
 
                     {/* Title */}
                     <div>
-                      <h3 className="text-sm md:text-base font-semibold text-[#2E2D2D] leading-snug group-hover:text-[#0400F4] transition-colors duration-200">
+                      <h3 className="text-sm md:text-base font-semibold text-[#2E2D2D] leading-snug group-hover:text-[#2563EB] transition-colors duration-200">
                         {modul.title}
                       </h3>
                     </div>
@@ -511,7 +511,7 @@ export default function MateriLandingPage() {
                             key={idx}
                             className="inline-flex items-center gap-1 bg-[#FAFAFA] border border-[#ECECEC] text-[#2E2D2D] px-2.5 py-1 rounded-[6px] text-[11px] font-medium"
                           >
-                            <HugeiconsIcon icon={CheckmarkCircle01Icon} size={11} className="text-[#0400F4]" />
+                            <HugeiconsIcon icon={CheckmarkCircle01Icon} size={11} className="text-[#2563EB]" />
                             <span>{topic}</span>
                           </span>
                         ))}
@@ -546,7 +546,7 @@ export default function MateriLandingPage() {
                     onClick={() => setCurrentPage(page)}
                     className={`w-8 h-8 rounded-full text-xs font-semibold transition-all flex items-center justify-center ${
                       isActive
-                        ? "bg-[#0400F4] text-white"
+                        ? "bg-[#2563EB] text-white"
                         : "bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-gray-100"
                     }`}
                   >

@@ -88,7 +88,7 @@ export function SubjectCatalog() {
         </h2>
         <Link
           href="/materi"
-          className="text-xs font-semibold text-[#0400F4] hover:underline"
+          className="text-xs font-semibold text-[#2563EB] hover:underline"
         >
           Lihat Semua Materi
         </Link>
@@ -102,28 +102,28 @@ export function SubjectCatalog() {
             <Link
               key={subject.id}
               href={`/materi/${subject.id}`}
-              className="bg-white border border-[#ECECEC] rounded-[10px] p-4 space-y-3 hover:bg-[#F6F5FF] hover:border-[#0400F4]/40 transition-all duration-300 ease-out group cursor-pointer block"
+              className="bg-white border border-[#ECECEC] rounded-[10px] p-4 space-y-3 hover:bg-[#F6F5FF] hover:border-[#2563EB]/40 transition-all duration-300 ease-out group cursor-pointer block"
             >
               {/* Header: Title + Optional Badge */}
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-[6px] bg-[#F4EFFF] flex items-center justify-center text-[#0400F4] shrink-0 group-hover:bg-[#0400F4] group-hover:text-white transition-colors duration-300">
+                  <div className="w-7 h-7 rounded-[6px] bg-[#F4EFFF] flex items-center justify-center text-[#2563EB] shrink-0 group-hover:bg-[#2563EB] group-hover:text-white transition-colors duration-300">
                     <HugeiconsIcon icon={subject.icon} size={16} />
                   </div>
-                  <h3 className="text-sm md:text-base font-semibold text-[#2E2D2D] group-hover:text-[#0400F4] transition-colors duration-200">
+                  <h3 className="text-sm md:text-base font-semibold text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors duration-200">
                     {subject.name}
                   </h3>
                 </div>
 
                 {subject.isLastStudied && (
-                  <span className="shrink-0 bg-[#E8E7FF] text-[#0400F4] px-2 py-0.5 rounded-[4px] text-[11px] font-medium">
+                  <span className="shrink-0 bg-[#E8E7FF] text-[#2563EB] px-2 py-0.5 rounded-[4px] text-[11px] font-medium">
                     Terakhir Kamu Pelajari
                   </span>
                 )}
               </div>
 
               {/* Materi count */}
-              <div className="flex items-center gap-1.5 text-[#0400F4]">
+              <div className="flex items-center gap-1.5 text-[#2563EB]">
                 <HugeiconsIcon icon={Layers01Icon} size={15} />
                 <span className="text-xs font-medium">
                   {subject.modulesCount} Materi Tersedia
@@ -134,7 +134,7 @@ export function SubjectCatalog() {
               <div className="flex items-center justify-between gap-3">
                 <div className="flex-1 h-1.5 bg-[#ECECEC] rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[#0400F4] rounded-full transition-all duration-500 ease-out"
+                    className="h-full bg-[#2563EB] rounded-full transition-all duration-500 ease-out"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>

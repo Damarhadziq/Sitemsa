@@ -109,6 +109,57 @@ export const ChromaGrid = ({
       onPointerMove={handleMove}
       onPointerLeave={handleLeave}
     >
+      {/* SVG Definitions for Abstract Organic Morphing Blob Mask */}
+      <svg className="chroma-svg-defs" aria-hidden="true">
+        <defs>
+          <filter id="chroma-blob-feather" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="35" />
+          </filter>
+
+          {/* Reveal Mask (White background with Black organic morphing blob in center) */}
+          <mask id="chroma-reveal-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="100%" height="100%">
+            <rect width="100%" height="100%" fill="white" />
+            <g className="chroma-blob-group">
+              <path className="chroma-organic-blob" fill="black" filter="url(#chroma-blob-feather)">
+                <animate
+                  attributeName="d"
+                  dur="10s"
+                  repeatCount="indefinite"
+                  values="
+                    M 0 -220 C 140 -250, 250 -130, 220 0 C 190 140, 130 240, 0 210 C -140 190, -240 120, -210 0 C -190 -140, -130 -210, 0 -220 Z;
+                    M 25 -200 C 175 -230, 230 -75, 255 35 C 215 175, 105 255, -25 235 C -165 215, -255 95, -215 -35 C -225 -165, -95 -225, 25 -200 Z;
+                    M -30 -240 C 105 -215, 265 -145, 215 -25 C 235 145, 145 215, -35 235 C -135 255, -225 165, -245 -25 C -255 -125, -145 -215, -30 -240 Z;
+                    M 15 -210 C 155 -265, 235 -95, 215 20 C 225 140, 155 225, 15 210 C -135 200, -215 150, -225 -20 C -235 -140, -115 -210, 15 -210 Z;
+                    M 0 -220 C 140 -250, 250 -130, 220 0 C 190 140, 130 240, 0 210 C -140 190, -240 120, -210 0 C -190 -140, -130 -210, 0 -220 Z
+                  "
+                />
+              </path>
+            </g>
+          </mask>
+
+          {/* Fade Mask (Black background with White organic morphing blob in center) */}
+          <mask id="chroma-fade-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="100%" height="100%">
+            <rect width="100%" height="100%" fill="black" />
+            <g className="chroma-blob-group">
+              <path className="chroma-organic-blob" fill="white" filter="url(#chroma-blob-feather)">
+                <animate
+                  attributeName="d"
+                  dur="10s"
+                  repeatCount="indefinite"
+                  values="
+                    M 0 -220 C 140 -250, 250 -130, 220 0 C 190 140, 130 240, 0 210 C -140 190, -240 120, -210 0 C -190 -140, -130 -210, 0 -220 Z;
+                    M 25 -200 C 175 -230, 230 -75, 255 35 C 215 175, 105 255, -25 235 C -165 215, -255 95, -215 -35 C -225 -165, -95 -225, 25 -200 Z;
+                    M -30 -240 C 105 -215, 265 -145, 215 -25 C 235 145, 145 215, -35 235 C -135 255, -225 165, -245 -25 C -255 -125, -145 -215, -30 -240 Z;
+                    M 15 -210 C 155 -265, 235 -95, 215 20 C 225 140, 155 225, 15 210 C -135 200, -215 150, -225 -20 C -235 -140, -115 -210, 15 -210 Z;
+                    M 0 -220 C 140 -250, 250 -130, 220 0 C 190 140, 130 240, 0 210 C -140 190, -240 120, -210 0 C -190 -140, -130 -210, 0 -220 Z
+                  "
+                />
+              </path>
+            </g>
+          </mask>
+        </defs>
+      </svg>
+
       {data.map((c, i) => (
         <article
           key={i}

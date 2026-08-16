@@ -89,7 +89,7 @@ export function UserProfileModal({
               <button
                 type="button"
                 onClick={() => setHistorySubView("overview")}
-                className="p-1 rounded-[6px] text-[#2E2D2D] hover:text-[#0400F4] hover:bg-[#F6F5FF] transition-colors shrink-0 cursor-pointer flex items-center justify-center"
+                className="p-1 rounded-[6px] text-[#2E2D2D] hover:text-[#2563EB] hover:bg-[#F6F5FF] transition-colors shrink-0 cursor-pointer flex items-center justify-center"
                 aria-label="Kembali"
                 title="Kembali"
               >
@@ -112,7 +112,7 @@ export function UserProfileModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white border border-[#ECECEC] text-[#737373] hover:text-[#0400F4] hover:bg-[#F6F5FF] hover:border-[#0400F4]/40 flex items-center justify-center transition-all shrink-0 cursor-pointer"
+            className="w-8 h-8 rounded-full bg-white border border-[#ECECEC] text-[#737373] hover:text-[#2563EB] hover:bg-[#F6F5FF] hover:border-[#2563EB]/40 flex items-center justify-center transition-all shrink-0 cursor-pointer"
             aria-label="Tutup Modal"
           >
             <HugeiconsIcon icon={Cancel01Icon} size={16} />
@@ -165,7 +165,7 @@ export function UserProfileModal({
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#F3F3F3] border border-transparent rounded-[6px] text-xs text-[#2E2D2D] focus:bg-white focus:border-[#0400F4] outline-none transition-all"
+                    className="w-full px-3 py-2 bg-[#F3F3F3] border border-transparent rounded-[6px] text-xs text-[#2E2D2D] focus:bg-white focus:border-[#2563EB] outline-none transition-all"
                     required
                   />
                 </div>
@@ -178,7 +178,7 @@ export function UserProfileModal({
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#F3F3F3] border border-transparent rounded-[6px] text-xs text-[#2E2D2D] focus:bg-white focus:border-[#0400F4] outline-none transition-all"
+                    className="w-full px-3 py-2 bg-[#F3F3F3] border border-transparent rounded-[6px] text-xs text-[#2E2D2D] focus:bg-white focus:border-[#2563EB] outline-none transition-all"
                     required
                   />
                 </div>
@@ -191,7 +191,7 @@ export function UserProfileModal({
                     type="text"
                     value={school}
                     onChange={(e) => setSchool(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#F3F3F3] border border-transparent rounded-[6px] text-xs text-[#2E2D2D] focus:bg-white focus:border-[#0400F4] outline-none transition-all"
+                    className="w-full px-3 py-2 bg-[#F3F3F3] border border-transparent rounded-[6px] text-xs text-[#2E2D2D] focus:bg-white focus:border-[#2563EB] outline-none transition-all"
                     required
                   />
                 </div>
@@ -204,7 +204,7 @@ export function UserProfileModal({
                     type="text"
                     value={nisn}
                     onChange={(e) => setNisn(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#F3F3F3] border border-transparent rounded-[6px] text-xs text-[#2E2D2D] focus:bg-white focus:border-[#0400F4] outline-none transition-all font-mono"
+                    className="w-full px-3 py-2 bg-[#F3F3F3] border border-transparent rounded-[6px] text-xs text-[#2E2D2D] focus:bg-white focus:border-[#2563EB] outline-none transition-all font-mono"
                     required
                   />
                 </div>
@@ -217,7 +217,7 @@ export function UserProfileModal({
                     type="text"
                     value={grade}
                     onChange={(e) => setGrade(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#F3F3F3] border border-transparent rounded-[6px] text-xs text-[#2E2D2D] focus:bg-white focus:border-[#0400F4] outline-none transition-all"
+                    className="w-full px-3 py-2 bg-[#F3F3F3] border border-transparent rounded-[6px] text-xs text-[#2E2D2D] focus:bg-white focus:border-[#2563EB] outline-none transition-all"
                     required
                   />
                 </div>
@@ -227,13 +227,13 @@ export function UserProfileModal({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 bg-[#FAFAFA] border border-[#ECECEC] hover:bg-[#F6F5FF] hover:border-[#0400F4]/40 text-[#737373] hover:text-[#0400F4] text-xs font-semibold rounded-[6px] transition-all duration-200 cursor-pointer"
+                  className="px-4 py-2 bg-[#FAFAFA] border border-[#ECECEC] hover:bg-[#F6F5FF] hover:border-[#2563EB]/40 text-[#737373] hover:text-[#2563EB] text-xs font-semibold rounded-[6px] transition-all duration-200 cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#0400F4] hover:bg-[#0300d4] active:scale-95 text-white text-xs font-semibold rounded-[6px] transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
+                  className="px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-95 text-white text-xs font-semibold rounded-[6px] transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
                 >
                   <HugeiconsIcon icon={FloppyDiskIcon} size={15} />
                   Simpan Perubahan
@@ -252,14 +252,14 @@ export function UserProfileModal({
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-xs font-bold text-[#2E2D2D] flex items-center gap-2">
-                        <HugeiconsIcon icon={Award01Icon} size={15} className="text-[#0400F4]" />
+                        <HugeiconsIcon icon={Award01Icon} size={15} className="text-[#2563EB]" />
                         Materi yang Telah Dipelajari
                       </h3>
 
                       <button
                         type="button"
                         onClick={() => setHistorySubView("all-materials")}
-                        className="text-xs font-semibold text-[#0400F4] hover:underline cursor-pointer flex items-center gap-1"
+                        className="text-xs font-semibold text-[#2563EB] hover:underline cursor-pointer flex items-center gap-1"
                       >
                         Lihat semua (6)
                       </button>
@@ -293,7 +293,7 @@ export function UserProfileModal({
                           >
                             <div className="flex items-center gap-2.5 min-w-0">
                               <span className="font-semibold text-[#2E2D2D] truncate">{item.title}</span>
-                              <span className="bg-[#E8E7FF] text-[#0400F4] px-2 py-0.5 rounded-[4px] text-[10px] font-semibold shrink-0">
+                              <span className="bg-[#E8E7FF] text-[#2563EB] px-2 py-0.5 rounded-[4px] text-[10px] font-semibold shrink-0">
                                 {item.subject}
                               </span>
                             </div>
@@ -301,7 +301,7 @@ export function UserProfileModal({
                             <div className="flex items-center gap-3 shrink-0 text-[11px]">
                               <span
                                 className={`font-semibold ${
-                                  item.progress === 100 ? "text-emerald-600" : "text-[#0400F4]"
+                                  item.progress === 100 ? "text-emerald-600" : "text-[#2563EB]"
                                 }`}
                               >
                                 {item.progress}% ({item.status})
@@ -317,14 +317,14 @@ export function UserProfileModal({
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-xs font-bold text-[#2E2D2D] flex items-center gap-2">
-                        <HugeiconsIcon icon={Award01Icon} size={15} className="text-[#0400F4]" />
+                        <HugeiconsIcon icon={Award01Icon} size={15} className="text-[#2563EB]" />
                         Hasil &amp; Nilai Uji Pemahaman (Kuis)
                       </h3>
 
                       <button
                         type="button"
                         onClick={() => setHistorySubView("all-quizzes")}
-                        className="text-xs font-semibold text-[#0400F4] hover:underline cursor-pointer flex items-center gap-1"
+                        className="text-xs font-semibold text-[#2563EB] hover:underline cursor-pointer flex items-center gap-1"
                       >
                         Lihat semua (6)
                       </button>
@@ -358,7 +358,7 @@ export function UserProfileModal({
 
                           <div className="flex items-baseline justify-between pt-2 border-t border-[#ECECEC]">
                             <div>
-                              <span className="text-lg font-bold text-[#0400F4]">{quiz.score}</span>
+                              <span className="text-lg font-bold text-[#2563EB]">{quiz.score}</span>
                               <span className="text-[11px] text-[#737373] ml-2">({quiz.correct})</span>
                             </div>
                             <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-semibold rounded-[4px]">
@@ -397,7 +397,7 @@ export function UserProfileModal({
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
                             <span className="font-semibold text-[#2E2D2D] truncate">{item.title}</span>
-                            <span className="bg-[#E8E7FF] text-[#0400F4] px-2 py-0.5 rounded-[4px] text-[10px] font-semibold shrink-0">
+                            <span className="bg-[#E8E7FF] text-[#2563EB] px-2 py-0.5 rounded-[4px] text-[10px] font-semibold shrink-0">
                               {item.subject}
                             </span>
                           </div>
@@ -405,7 +405,7 @@ export function UserProfileModal({
                           <div className="flex items-center gap-3 shrink-0 text-[11px]">
                             <span
                               className={`font-semibold ${
-                                item.progress === 100 ? "text-emerald-600" : "text-[#0400F4]"
+                                item.progress === 100 ? "text-emerald-600" : "text-[#2563EB]"
                               }`}
                             >
                               {item.progress}% ({item.status})
@@ -447,7 +447,7 @@ export function UserProfileModal({
 
                         <div className="flex items-baseline justify-between pt-2 border-t border-[#ECECEC]">
                           <div>
-                            <span className="text-lg font-bold text-[#0400F4]">{quiz.score}</span>
+                            <span className="text-lg font-bold text-[#2563EB]">{quiz.score}</span>
                             <span className="text-[11px] text-[#737373] ml-2">({quiz.correct})</span>
                           </div>
                           <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-semibold rounded-[4px]">
@@ -469,11 +469,11 @@ export function UserProfileModal({
                 <h4 className="font-bold text-[#2E2D2D] text-xs">Preferensi Notifikasi Pembelajaran</h4>
                 <label className="flex items-center justify-between cursor-pointer py-1">
                   <span className="text-[#737373]">Kirim Notifikasi Pembelajaran &amp; Modul Baru via Email</span>
-                  <input type="checkbox" defaultChecked className="w-4 h-4 accent-[#0400F4] cursor-pointer" />
+                  <input type="checkbox" defaultChecked className="w-4 h-4 accent-[#2563EB] cursor-pointer" />
                 </label>
                 <label className="flex items-center justify-between cursor-pointer py-1 border-t border-[#ECECEC]">
                   <span className="text-[#737373]">Pengingat Jadwal Belajar Harian Siswa</span>
-                  <input type="checkbox" defaultChecked className="w-4 h-4 accent-[#0400F4] cursor-pointer" />
+                  <input type="checkbox" defaultChecked className="w-4 h-4 accent-[#2563EB] cursor-pointer" />
                 </label>
               </div>
 

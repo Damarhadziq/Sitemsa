@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export function PromoBanner() {
   return (
-    <section className="mb-10 bg-[#0400F4] text-white rounded-[14px] p-6 lg:p-8 overflow-hidden relative flex flex-col md:flex-row items-stretch justify-between gap-6 lg:gap-8 transition-all duration-300">
+    <section className="mb-10 bg-[#2563EB] text-white rounded-[14px] p-6 lg:p-8 overflow-hidden relative flex flex-col md:flex-row items-stretch justify-between gap-6 lg:gap-8 transition-all duration-300">
       {/* Decorative subtle ambient pattern */}
       <div className="absolute -right-16 -top-16 w-64 h-64 bg-white/5 rounded-full blur-2xl pointer-events-none" />
 
@@ -31,7 +31,7 @@ export function PromoBanner() {
         <div className="pt-2 flex items-center">
           <Link
             href="#"
-            className="bg-white text-[#0400F4] hover:bg-gray-100 active:scale-98 px-4 py-2.5 rounded-[8px] text-xs lg:text-sm font-semibold flex items-center gap-2 transition-all duration-200"
+            className="bg-white text-[#2563EB] hover:bg-gray-100 active:scale-98 px-4 py-2.5 rounded-[8px] text-xs lg:text-sm font-semibold flex items-center gap-2 transition-all duration-200"
           >
             <span>Eksplorasi Pembelajaran</span>
             <HugeiconsIcon icon={ArrowRight01Icon} size={16} />

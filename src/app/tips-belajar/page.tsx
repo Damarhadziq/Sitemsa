@@ -259,7 +259,7 @@ function TipsBelajarContent() {
             placeholder="Cari tips belajar (misal: logika, pomodoro, sirkuit)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#FAFAFA] border border-[#ECECEC] rounded-[8px] pl-10 pr-4 py-2 text-xs md:text-sm text-[#2E2D2D] placeholder-[#737373] focus:outline-none focus:border-[#0400F4] focus:bg-white transition-all duration-200"
+            className="w-full bg-[#FAFAFA] border border-[#ECECEC] rounded-[8px] pl-10 pr-4 py-2 text-xs md:text-sm text-[#2E2D2D] placeholder-[#737373] focus:outline-none focus:border-[#2563EB] focus:bg-white transition-all duration-200"
           />
         </div>
       </section>
@@ -289,7 +289,7 @@ function TipsBelajarContent() {
                       onClick={() => setSelectedArticleId(art.id)}
                       className={`block w-full text-left py-2 px-3 text-xs transition-colors duration-200 cursor-pointer ${
                         isActive
-                          ? "text-[#0400F4] font-semibold border-l-2 border-[#0400F4] bg-[#F6F5FF]"
+                          ? "text-[#2563EB] font-semibold border-l-2 border-[#2563EB] bg-[#F6F5FF]"
                           : "text-[#737373] font-medium hover:text-[#2E2D2D] border-l-2 border-transparent"
                       }`}
                     >
@@ -325,7 +325,7 @@ function TipsBelajarContent() {
                 </p>
 
                 {sec.callout && (
-                  <div className="bg-[#F4EFFF] border-l-4 border-[#0400F4] rounded-r-[8px] p-4 text-xs md:text-sm text-[#2E2D2D] font-medium leading-relaxed my-3">
+                  <div className="bg-[#F4EFFF] border-l-4 border-[#2563EB] rounded-r-[8px] p-4 text-xs md:text-sm text-[#2E2D2D] font-medium leading-relaxed my-3">
                     {sec.callout}
                   </div>
                 )}

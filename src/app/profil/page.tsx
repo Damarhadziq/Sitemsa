@@ -78,7 +78,7 @@ export default function ProfilePage() {
             <button
               type="button"
               onClick={() => openModal("history")}
-              className="w-full md:w-auto px-4 py-2 bg-[#0400F4] hover:bg-[#0300d4] text-white text-xs font-semibold rounded-[6px] transition-colors flex items-center justify-center gap-2"
+              className="w-full md:w-auto px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-semibold rounded-[6px] transition-colors flex items-center justify-center gap-2"
             >
               <HugeiconsIcon icon={Clock01Icon} size={14} />
               Riwayat &amp; Nilai Kuis
@@ -89,7 +89,7 @@ export default function ProfilePage() {
         {/* Stats Grid */}
         <section className="mb-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="p-4 bg-white border border-[#ECECEC] rounded-[8px] flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-[6px] bg-[#E8E7FF] text-[#0400F4] flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-[6px] bg-[#E8E7FF] text-[#2563EB] flex items-center justify-center shrink-0">
               <HugeiconsIcon icon={Award01Icon} size={20} />
             </div>
             <div>
@@ -164,23 +164,23 @@ export default function ProfilePage() {
                 ].map((item) => (
                   <div
                     key={item.id}
-                    className="p-4 bg-white border border-[#ECECEC] rounded-[8px] hover:bg-[#F6F5FF] hover:border-[#0400F4]/30 transition-all duration-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group"
+                    className="p-4 bg-white border border-[#ECECEC] rounded-[8px] hover:bg-[#F6F5FF] hover:border-[#2563EB]/30 transition-all duration-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group"
                   >
                     <div className="space-y-1 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 text-[10px] font-semibold bg-[#E8E7FF] text-[#0400F4] rounded-[4px]">
+                        <span className="px-2 py-0.5 text-[10px] font-semibold bg-[#E8E7FF] text-[#2563EB] rounded-[4px]">
                           {item.subject}
                         </span>
                         <span className="text-[11px] text-[#737373]">
                           Terakhir dibaca: {item.lastRead}
                         </span>
                       </div>
-                      <h3 className="text-sm font-semibold text-[#2E2D2D] group-hover:text-[#0400F4] transition-colors">
+                      <h3 className="text-sm font-semibold text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors">
                         {item.title}
                       </h3>
                       <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden mt-2">
                         <div
-                          className="bg-[#0400F4] h-full rounded-full transition-all duration-500"
+                          className="bg-[#2563EB] h-full rounded-full transition-all duration-500"
                           style={{ width: `${item.progress}%` }}
                         />
                       </div>
@@ -189,7 +189,7 @@ export default function ProfilePage() {
                     <Link href={`/materi/${item.id}`} className="shrink-0">
                       <button
                         type="button"
-                        className="px-3.5 py-1.5 bg-[#FAFAFA] border border-[#ECECEC] hover:bg-[#0400F4] hover:text-white text-xs font-medium text-[#2E2D2D] rounded-[6px] transition-all"
+                        className="px-3.5 py-1.5 bg-[#FAFAFA] border border-[#ECECEC] hover:bg-[#2563EB] hover:text-white text-xs font-medium text-[#2E2D2D] rounded-[6px] transition-all"
                       >
                         Lanjutkan
                       </button>

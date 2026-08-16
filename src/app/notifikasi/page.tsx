@@ -103,7 +103,7 @@ export default function NotifikasiPage() {
             <button
               type="button"
               onClick={() => router.back()}
-              className="w-9 h-9 rounded-full bg-white border border-[#ECECEC] text-[#2E2D2D] hover:text-[#0400F4] hover:bg-[#F6F5FF] flex items-center justify-center transition-all shrink-0 cursor-pointer"
+              className="w-9 h-9 rounded-full bg-white border border-[#ECECEC] text-[#2E2D2D] hover:text-[#2563EB] hover:bg-[#F6F5FF] flex items-center justify-center transition-all shrink-0 cursor-pointer"
               aria-label="Kembali"
             >
               <HugeiconsIcon icon={ArrowLeft01Icon} size={18} />
@@ -113,7 +113,7 @@ export default function NotifikasiPage() {
               <div className="flex items-center gap-2">
                 <h1 className="text-xl md:text-2xl font-bold text-[#2E2D2D]">Notifikasi</h1>
                 {unreadCount > 0 && (
-                  <span className="bg-[#0400F4] text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+                  <span className="bg-[#2563EB] text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full">
                     {unreadCount} Baru
                   </span>
                 )}
@@ -128,7 +128,7 @@ export default function NotifikasiPage() {
             <button
               type="button"
               onClick={handleMarkAllRead}
-              className="px-3.5 py-1.5 rounded-[6px] bg-[#F4EFFF] border border-[#0400F4]/30 text-[#0400F4] hover:bg-[#0400F4] hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
+              className="px-3.5 py-1.5 rounded-[6px] bg-[#F4EFFF] border border-[#2563EB]/30 text-[#2563EB] hover:bg-[#2563EB] hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
             >
               <HugeiconsIcon icon={Tick01Icon} size={14} />
               <span>Tandai Semua Dibaca</span>
@@ -143,7 +143,7 @@ export default function NotifikasiPage() {
             onClick={() => setActiveFilter("semua")}
             className={`px-3.5 py-1.5 rounded-[6px] text-xs font-medium transition-all ${
               activeFilter === "semua"
-                ? "bg-[#0400F4] text-white"
+                ? "bg-[#2563EB] text-white"
                 : "bg-[#FAFAFA] border border-[#ECECEC] text-[#737373] hover:text-[#2E2D2D]"
             }`}
           >
@@ -154,7 +154,7 @@ export default function NotifikasiPage() {
             onClick={() => setActiveFilter("unread")}
             className={`px-3.5 py-1.5 rounded-[6px] text-xs font-medium transition-all ${
               activeFilter === "unread"
-                ? "bg-[#0400F4] text-white"
+                ? "bg-[#2563EB] text-white"
                 : "bg-[#FAFAFA] border border-[#ECECEC] text-[#737373] hover:text-[#2E2D2D]"
             }`}
           >
@@ -166,7 +166,7 @@ export default function NotifikasiPage() {
         <section className="space-y-3">
           {filteredNotifs.length === 0 ? (
             <div className="p-12 text-center bg-[#FAFAFA] border border-[#ECECEC] rounded-[12px] space-y-3">
-              <div className="w-12 h-12 rounded-full bg-[#F4EFFF] text-[#0400F4] mx-auto flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-[#F4EFFF] text-[#2563EB] mx-auto flex items-center justify-center">
                 <HugeiconsIcon icon={BellIcon} size={24} />
               </div>
               <h3 className="text-sm font-bold text-[#2E2D2D]">Tidak ada notifikasi</h3>
@@ -183,8 +183,8 @@ export default function NotifikasiPage() {
                 onClick={() => handleMarkAsRead(item.id)}
                 className={`p-4 rounded-[12px] border transition-all duration-200 flex items-start gap-4 cursor-pointer group ${
                   item.isRead
-                    ? "bg-white border-[#ECECEC] hover:border-[#0400F4]/30"
-                    : "bg-[#F6F5FF] border-[#0400F4]/30 hover:border-[#0400F4]"
+                    ? "bg-white border-[#ECECEC] hover:border-[#2563EB]/30"
+                    : "bg-[#F6F5FF] border-[#2563EB]/30 hover:border-[#2563EB]"
                 }`}
               >
                 {/* Type Icon */}
@@ -192,7 +192,7 @@ export default function NotifikasiPage() {
                   className={`w-10 h-10 rounded-[8px] flex items-center justify-center shrink-0 mt-0.5 ${
                     item.isRead
                       ? "bg-[#FAFAFA] text-[#737373] border border-[#ECECEC]"
-                      : "bg-[#0400F4] text-white"
+                      : "bg-[#2563EB] text-white"
                   }`}
                 >
                   <HugeiconsIcon icon={item.icon} size={20} />
@@ -203,7 +203,7 @@ export default function NotifikasiPage() {
                   <div className="flex items-start justify-between gap-2">
                     <h2
                       className={`text-sm font-semibold leading-snug truncate ${
-                        item.isRead ? "text-[#2E2D2D]" : "text-[#0400F4]"
+                        item.isRead ? "text-[#2E2D2D]" : "text-[#2563EB]"
                       }`}
                     >
                       {item.title}
@@ -221,7 +221,7 @@ export default function NotifikasiPage() {
                     <div className="pt-2">
                       <Link
                         href={item.linkUrl}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-[#0400F4] hover:underline"
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-[#2563EB] hover:underline"
                       >
                         Buka Selengkapnya &rarr;
                       </Link>
@@ -231,7 +231,7 @@ export default function NotifikasiPage() {
 
                 {/* Unread dot */}
                 {!item.isRead && (
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#0400F4] shrink-0 mt-2" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#2563EB] shrink-0 mt-2" />
                 )}
               </div>
             ))

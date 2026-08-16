@@ -188,7 +188,7 @@ export default function DocumentationPage() {
               placeholder="Cari panduan (misal: barcode kuis, alur modul, profil)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#FAFAFA] border border-[#ECECEC] rounded-[8px] pl-10 pr-4 py-2 text-xs md:text-sm text-[#2E2D2D] placeholder-[#737373] focus:outline-none focus:border-[#0400F4] focus:bg-white transition-all duration-200"
+              className="w-full bg-[#FAFAFA] border border-[#ECECEC] rounded-[8px] pl-10 pr-4 py-2 text-xs md:text-sm text-[#2E2D2D] placeholder-[#737373] focus:outline-none focus:border-[#2563EB] focus:bg-white transition-all duration-200"
             />
           </div>
         </section>
@@ -222,7 +222,7 @@ export default function DocumentationPage() {
                           }}
                           className={`block w-full text-left py-2 px-3 text-xs transition-colors duration-200 cursor-pointer ${
                             isActive
-                              ? "text-[#0400F4] font-semibold border-l-2 border-[#0400F4] bg-[#F6F5FF]"
+                              ? "text-[#2563EB] font-semibold border-l-2 border-[#2563EB] bg-[#F6F5FF]"
                               : "text-[#737373] font-medium hover:text-[#2E2D2D] border-l-2 border-transparent"
                           }`}
                         >
@@ -249,7 +249,7 @@ export default function DocumentationPage() {
                     }}
                     className={`block w-full text-left py-2 px-3 text-xs transition-colors duration-200 cursor-pointer ${
                       isFaqActive
-                        ? "text-[#0400F4] font-semibold border-l-2 border-[#0400F4] bg-[#F6F5FF]"
+                        ? "text-[#2563EB] font-semibold border-l-2 border-[#2563EB] bg-[#F6F5FF]"
                         : "text-[#737373] font-medium hover:text-[#2E2D2D] border-l-2 border-transparent"
                     }`}
                   >
@@ -277,7 +277,7 @@ export default function DocumentationPage() {
                 <div className="space-y-4">
                   {FAQ_LIST.map((faq, fIdx) => (
                     <section key={fIdx} className="space-y-2">
-                      <h3 className="text-sm md:text-base font-semibold text-[#0400F4] flex items-center gap-2">
+                      <h3 className="text-sm md:text-base font-semibold text-[#2563EB] flex items-center gap-2">
                         <HugeiconsIcon icon={HelpCircleIcon} size={16} />
                         <span>{faq.question}</span>
                       </h3>
@@ -329,7 +329,7 @@ export default function DocumentationPage() {
                       </p>
 
                       {sec.callout && (
-                        <div className="bg-[#F4EFFF] border-l-4 border-[#0400F4] rounded-r-[8px] p-4 text-xs md:text-sm text-[#2E2D2D] font-medium leading-relaxed my-3">
+                        <div className="bg-[#F4EFFF] border-l-4 border-[#2563EB] rounded-r-[8px] p-4 text-xs md:text-sm text-[#2E2D2D] font-medium leading-relaxed my-3">
                           {sec.callout}
                         </div>
                       )}
@@ -346,7 +346,7 @@ export default function DocumentationPage() {
                 onClick={handleCopyArticleLink}
                 className="inline-flex items-center gap-1.5 bg-[#FAFAFA] hover:bg-[#F6F5FF] border border-[#ECECEC] text-[#2E2D2D] px-3.5 py-2 rounded-[6px] font-medium transition-colors cursor-pointer"
               >
-                <HugeiconsIcon icon={copiedLink ? Tick01Icon : Copy01Icon} size={14} className="text-[#0400F4]" />
+                <HugeiconsIcon icon={copiedLink ? Tick01Icon : Copy01Icon} size={14} className="text-[#2563EB]" />
                 <span>{copiedLink ? "Link Tersalin!" : "Bagikan Panduan Ini"}</span>
               </button>
 
@@ -358,7 +358,7 @@ export default function DocumentationPage() {
                     onClick={() => setFeedback("helpful")}
                     className={`p-2 rounded-[6px] border transition-all cursor-pointer ${
                       feedback === "helpful"
-                        ? "bg-[#E8E7FF] text-[#0400F4] border-[#0400F4]"
+                        ? "bg-[#E8E7FF] text-[#2563EB] border-[#2563EB]"
                         : "bg-white border-[#ECECEC] hover:bg-[#F6F5FF]"
                     }`}
                     aria-label="Bermanfaat"

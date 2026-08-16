@@ -17,12 +17,12 @@ export function FeaturedSection() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Card 1: Informatika */}
-        <div className="bg-white rounded-[10px] p-4 flex flex-col justify-between border border-[#ECECEC] hover:border-[#0400F4]/30 transition-colors duration-300 ease-out group">
+        <div className="bg-white rounded-[10px] p-4 flex flex-col justify-between border border-[#ECECEC] hover:border-[#2563EB]/30 transition-colors duration-300 ease-out group">
           <div>
-            <span className="inline-block bg-[#E8E7FF] text-[#0400F4] px-2 py-0.5 rounded-[4px] text-xs font-medium mb-2.5">
+            <span className="inline-block bg-[#E8E7FF] text-[#2563EB] px-2 py-0.5 rounded-[4px] text-xs font-medium mb-2.5">
               Informatika
             </span>
-            <h3 className="text-sm font-semibold text-[#2E2D2D] mb-3 leading-snug group-hover:text-[#0400F4] transition-colors duration-200">
+            <h3 className="text-sm font-semibold text-[#2E2D2D] mb-3 leading-snug group-hover:text-[#2563EB] transition-colors duration-200">
               Logika Dasar dan Algoritma
             </h3>
             <div className="flex items-center gap-2.5 text-[#737373] text-xs mb-5">
@@ -40,7 +40,7 @@ export function FeaturedSection() {
           <div className="flex justify-end">
             <Link
               href="/materi/1"
-              className="bg-[#0400F4] hover:bg-[#0300d4] active:scale-95 text-white px-3.5 py-2 rounded-[6px] text-xs font-semibold flex items-center gap-1.5 transition-all duration-200"
+              className="bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-95 text-white px-3.5 py-2 rounded-[6px] text-xs font-semibold flex items-center gap-1.5 transition-all duration-200"
             >
               <span>Mulai Belajar</span>
               <HugeiconsIcon icon={ArrowRight01Icon} size={14} className="group-hover:translate-x-0.5 transition-transform duration-200" />
@@ -49,12 +49,12 @@ export function FeaturedSection() {
         </div>
 
         {/* Card 2: Bimbingan & Konseling */}
-        <div className="bg-white rounded-[10px] p-4 flex flex-col justify-between border border-[#ECECEC] hover:border-[#0400F4]/30 transition-colors duration-300 ease-out group">
+        <div className="bg-white rounded-[10px] p-4 flex flex-col justify-between border border-[#ECECEC] hover:border-[#2563EB]/30 transition-colors duration-300 ease-out group">
           <div>
-            <span className="inline-block bg-[#E8E7FF] text-[#0400F4] px-2 py-0.5 rounded-[4px] text-xs font-medium mb-2.5">
+            <span className="inline-block bg-[#E8E7FF] text-[#2563EB] px-2 py-0.5 rounded-[4px] text-xs font-medium mb-2.5">
               Bimbingan & Konseling
             </span>
-            <h3 className="text-sm font-semibold text-[#2E2D2D] mb-3 leading-snug group-hover:text-[#0400F4] transition-colors duration-200">
+            <h3 className="text-sm font-semibold text-[#2E2D2D] mb-3 leading-snug group-hover:text-[#2563EB] transition-colors duration-200">
               Manajemen Waktu untuk Pelajar
             </h3>
             <div className="flex items-center gap-3 text-[#737373] text-xs mb-5">
@@ -72,7 +72,7 @@ export function FeaturedSection() {
           <div className="flex justify-end">
             <Link
               href="/materi/3"
-              className="bg-[#0400F4] hover:bg-[#0300d4] active:scale-95 text-white px-3.5 py-2 rounded-[6px] text-xs font-semibold flex items-center gap-1.5 transition-all duration-200"
+              className="bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-95 text-white px-3.5 py-2 rounded-[6px] text-xs font-semibold flex items-center gap-1.5 transition-all duration-200"
             >
               <span>Mulai Belajar</span>
               <HugeiconsIcon icon={ArrowRight01Icon} size={14} className="group-hover:translate-x-0.5 transition-transform duration-200" />
@@ -81,12 +81,12 @@ export function FeaturedSection() {
         </div>
 
         {/* Card 3: Elektronika */}
-        <div className="bg-white rounded-[10px] p-4 flex flex-col justify-between border border-[#ECECEC] hover:border-[#0400F4]/30 transition-colors duration-300 ease-out group">
+        <div className="bg-white rounded-[10px] p-4 flex flex-col justify-between border border-[#ECECEC] hover:border-[#2563EB]/30 transition-colors duration-300 ease-out group">
           <div>
-            <span className="inline-block bg-[#E8E7FF] text-[#0400F4] px-2 py-0.5 rounded-[4px] text-xs font-medium mb-2.5">
+            <span className="inline-block bg-[#E8E7FF] text-[#2563EB] px-2 py-0.5 rounded-[4px] text-xs font-medium mb-2.5">
               Elektronika
             </span>
-            <h3 className="text-sm font-semibold text-[#2E2D2D] mb-3 leading-snug group-hover:text-[#0400F4] transition-colors duration-200">
+            <h3 className="text-sm font-semibold text-[#2E2D2D] mb-3 leading-snug group-hover:text-[#2563EB] transition-colors duration-200">
               Mengenal Komponen Resistor & Kapasitor
             </h3>
             <div className="flex items-center gap-1.5 text-[#737373] text-xs mb-5">
@@ -98,7 +98,7 @@ export function FeaturedSection() {
           <div className="flex justify-end">
             <Link
               href="/materi/2"
-              className="bg-[#0400F4] hover:bg-[#0300d4] active:scale-95 text-white px-3.5 py-2 rounded-[6px] text-xs font-semibold flex items-center gap-1.5 transition-all duration-200"
+              className="bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-95 text-white px-3.5 py-2 rounded-[6px] text-xs font-semibold flex items-center gap-1.5 transition-all duration-200"
             >
               <span>Mulai Belajar</span>
               <HugeiconsIcon icon={ArrowRight01Icon} size={14} className="group-hover:translate-x-0.5 transition-transform duration-200" />

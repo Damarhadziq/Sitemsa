@@ -113,7 +113,7 @@ export function NotificationModal({
           <div className="flex items-center gap-2">
             <h3 className="text-base font-bold text-[#2E2D2D]">Notifikasi</h3>
             {unreadCount > 0 && (
-              <span className="bg-[#0400F4] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+              <span className="bg-[#2563EB] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                 {unreadCount} Baru
               </span>
             )}
@@ -122,7 +122,7 @@ export function NotificationModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white border border-[#ECECEC] text-[#737373] hover:text-[#0400F4] hover:bg-[#F6F5FF] hover:border-[#0400F4]/40 flex items-center justify-center transition-all shrink-0 cursor-pointer"
+            className="w-8 h-8 rounded-full bg-white border border-[#ECECEC] text-[#737373] hover:text-[#2563EB] hover:bg-[#F6F5FF] hover:border-[#2563EB]/40 flex items-center justify-center transition-all shrink-0 cursor-pointer"
             aria-label="Tutup Notifikasi"
           >
             <HugeiconsIcon icon={Cancel01Icon} size={16} />
@@ -151,14 +151,14 @@ export function NotificationModal({
                       : BellIcon
                   }
                   size={16}
-                  className={!item.isRead ? "text-[#0400F4]" : "text-[#2E2D2D]"}
+                  className={!item.isRead ? "text-[#2563EB]" : "text-[#2E2D2D]"}
                 />
               </div>
 
               {/* Content */}
               <div className="flex-1 min-w-0 space-y-0.5">
                 <div className="flex items-center justify-between gap-2">
-                  <h4 className={`text-xs leading-tight truncate ${!item.isRead ? "font-semibold text-[#0400F4]" : "font-medium text-[#2E2D2D]"}`}>
+                  <h4 className={`text-xs leading-tight truncate ${!item.isRead ? "font-semibold text-[#2563EB]" : "font-medium text-[#2E2D2D]"}`}>
                     {item.title}
                   </h4>
                   <span className="text-[10px] text-[#AAAAAA] shrink-0">
@@ -179,7 +179,7 @@ export function NotificationModal({
             <button
               type="button"
               onClick={onMarkAllRead}
-              className="text-[#0400F4] font-semibold hover:underline cursor-pointer"
+              className="text-[#2563EB] font-semibold hover:underline cursor-pointer"
             >
               Tandai semua dibaca
             </button>

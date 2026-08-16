@@ -812,10 +812,10 @@ export default function MaterialDetailPage({
 
             {/* Sticky Sidebar Navigation (4 Columns) */}
             <aside className="lg:col-span-4 space-y-5 sticky top-28">
-              {/* Table of Contents Box */}
-              <div className="bg-white border border-[#ECECEC] rounded-[12px] p-5 space-y-3">
+              {/* Table of Contents Box (Desktop Only) */}
+              <div className="hidden md:block bg-white border border-[#ECECEC] rounded-[12px] p-5 space-y-3">
                 <div className="flex items-center gap-2 border-b border-[#ECECEC] pb-3">
-                  <HugeiconsIcon icon={Task01Icon} size={18} className="text-[#0400F4]" />
+                  <HugeiconsIcon icon={Task01Icon} size={18} className="text-[#2563EB]" />
                   <h3 className="text-sm font-bold text-[#2E2D2D]">Daftar Isi Pembahasan</h3>
                 </div>
 
@@ -827,7 +827,7 @@ export default function MaterialDetailPage({
                       onClick={(e) => handleScrollToSection(e, "video-tutorial")}
                       className={`block px-3.5 py-2 text-xs font-medium transition-all duration-200 ${
                         activeSection === "video-tutorial"
-                          ? "bg-[#F4EFFF] text-[#0400F4] font-semibold border-l-2 border-[#0400F4]"
+                          ? "bg-[#F4EFFF] text-[#2563EB] font-semibold border-l-2 border-[#2563EB]"
                           : "text-[#737373] hover:text-[#2E2D2D] hover:bg-[#FAFAFA] border-l-2 border-transparent"
                       }`}
                     >
@@ -844,7 +844,7 @@ export default function MaterialDetailPage({
                         onClick={(e) => handleScrollToSection(e, sec.id)}
                         className={`block px-3.5 py-2.5 text-xs font-medium transition-all duration-200 ${
                           isActive
-                            ? "bg-[#F4EFFF] text-[#0400F4] font-semibold border-l-2 border-[#0400F4]"
+                            ? "bg-[#F4EFFF] text-[#2563EB] font-semibold border-l-2 border-[#2563EB]"
                             : "text-[#737373] hover:text-[#2E2D2D] hover:bg-[#FAFAFA] border-l-2 border-transparent"
                         }`}
                       >
@@ -859,7 +859,7 @@ export default function MaterialDetailPage({
                       onClick={(e) => handleScrollToSection(e, "langkah-praktik")}
                       className={`block px-3.5 py-2 text-xs font-medium transition-all duration-200 ${
                         activeSection === "langkah-praktik"
-                          ? "bg-[#F4EFFF] text-[#0400F4] font-semibold border-l-2 border-[#0400F4]"
+                          ? "bg-[#F4EFFF] text-[#2563EB] font-semibold border-l-2 border-[#2563EB]"
                           : "text-[#737373] hover:text-[#2E2D2D] hover:bg-[#FAFAFA] border-l-2 border-transparent"
                       }`}
                     >
@@ -872,7 +872,7 @@ export default function MaterialDetailPage({
               {/* Start Quiz Card */}
               <div className="bg-gradient-to-br from-[#FAFAFF] via-[#F4EFFF] to-[#EBE4FF] border border-[#E0D7FF] rounded-[12px] p-5 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="bg-[#0400F4]/10 text-[#0400F4] px-2.5 py-0.5 rounded-[4px] text-[11px] font-semibold flex items-center gap-1">
+                  <span className="bg-[#2563EB]/10 text-[#2563EB] px-2.5 py-0.5 rounded-[4px] text-[11px] font-semibold flex items-center gap-1">
                     {material.quizSource.type === "barcode" && (
                       <>
                         <HugeiconsIcon icon={QrCode01Icon} size={12} />
@@ -903,7 +903,7 @@ export default function MaterialDetailPage({
                 <Link
                   href={material.quizSource.internalUrl || "#"}
                   onClick={handleStartQuizClick}
-                  className="w-full bg-[#0400F4] hover:bg-[#0300d4] active:scale-95 text-white py-2.5 rounded-[6px] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer"
+                  className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-95 text-white py-2.5 rounded-[6px] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer"
                 >
                   <span>Mulai Uji Pemahaman</span>
                   <HugeiconsIcon icon={ArrowRight01Icon} size={14} />
@@ -914,15 +914,15 @@ export default function MaterialDetailPage({
         )}
       </main>
 
-      {/* Floating Action Buttons: Floating Table of Contents & Back to Top */}
+      {/* Floating Action Buttons: Floating Table of Contents & Back to Top (Mobile Only) */}
       <div className="fixed right-6 z-40 flex flex-col items-end gap-3 pointer-events-none">
-        {/* Floating Table of Contents Button */}
+        {/* Floating Table of Contents Button (Mobile Only, Soft Smooth Shadow) */}
         <button
           type="button"
           onClick={() => setIsTocOpen(!isTocOpen)}
           aria-label="Daftar Isi Pembahasan"
           title="Daftar Isi Pembahasan"
-          className={`w-11 h-11 rounded-full bg-white border border-[#ECECEC] text-[#0400F4] hover:bg-[#F6F5FF] hover:border-[#0400F4]/50 flex items-center justify-center transition-all duration-300 cursor-pointer shadow-lg pointer-events-auto ${
+          className={`md:hidden w-11 h-11 rounded-full bg-white border border-[#ECECEC] text-[#2563EB] hover:bg-[#F6F5FF] hover:border-[#2563EB]/50 flex items-center justify-center transition-all duration-300 cursor-pointer shadow-[0_6px_20px_rgba(0,0,0,0.06)] pointer-events-auto ${
             showBackToTop ? "fixed bottom-20 right-6" : "fixed bottom-6 right-6"
           }`}
         >
@@ -935,36 +935,52 @@ export default function MaterialDetailPage({
             type="button"
             onClick={scrollToTop}
             aria-label="Kembali ke Atas"
-            className="fixed bottom-6 right-6 z-40 w-11 h-11 rounded-full bg-white border border-[#ECECEC] text-[#0400F4] hover:bg-[#F6F5FF] hover:border-[#0400F4]/50 flex items-center justify-center transition-all duration-200 cursor-pointer animate-in fade-in zoom-in-90 shadow-lg pointer-events-auto"
+            className="fixed bottom-6 right-6 z-40 w-11 h-11 rounded-full bg-white border border-[#ECECEC] text-[#2563EB] hover:bg-[#F6F5FF] hover:border-[#2563EB]/50 flex items-center justify-center transition-all duration-200 cursor-pointer animate-in fade-in zoom-in-90 shadow-[0_6px_20px_rgba(0,0,0,0.06)] pointer-events-auto"
           >
             <HugeiconsIcon icon={ArrowUp01Icon} size={20} />
           </button>
         )}
       </div>
 
-      {/* Floating Table of Contents Popover Sheet */}
+      {/* Floating Table of Contents Popover Sheet (Mobile Only, Soft Smooth Shadow) */}
       {isTocOpen && (
         <div
-          className={`fixed right-6 z-50 w-72 max-w-[calc(100vw-3rem)] bg-white border border-[#ECECEC] rounded-[16px] p-4 shadow-2xl space-y-3 animate-in fade-in zoom-in-95 duration-200 ${
+          className={`md:hidden fixed right-6 z-50 w-72 max-w-[calc(100vw-3rem)] bg-white border border-[#ECECEC] rounded-[16px] p-4 shadow-[0_10px_30px_rgba(0,0,0,0.08)] space-y-3 animate-in fade-in zoom-in-95 duration-200 ${
             showBackToTop ? "bottom-32" : "bottom-20"
           }`}
         >
-          <div className="flex items-center justify-between border-b border-[#ECECEC] pb-2.5">
+          {/* Header without border divider */}
+          <div className="flex items-center justify-between">
             <h4 className="text-xs font-bold text-[#2E2D2D] flex items-center gap-1.5">
-              <HugeiconsIcon icon={Task01Icon} size={16} className="text-[#0400F4]" />
+              <HugeiconsIcon icon={Task01Icon} size={16} className="text-[#2563EB]" />
               <span>Daftar Isi Pembahasan</span>
             </h4>
             <button
               type="button"
               onClick={() => setIsTocOpen(false)}
-              className="w-6 h-6 rounded-full bg-gray-50 border border-[#ECECEC] text-[#737373] hover:text-[#0400F4] hover:bg-[#F6F5FF] flex items-center justify-center transition-colors cursor-pointer"
+              className="w-6 h-6 rounded-full bg-gray-50 border border-[#ECECEC] text-[#737373] hover:text-[#2563EB] hover:bg-[#F6F5FF] flex items-center justify-center transition-colors cursor-pointer"
             >
               <HugeiconsIcon icon={Cancel01Icon} size={12} />
             </button>
           </div>
 
-          <div className="max-h-64 overflow-y-auto space-y-1.5 pr-1">
-            {material.contentSections.map((sec, idx) => (
+          {/* Clean list without numbers */}
+          <div className="max-h-64 overflow-y-auto space-y-0.5 pr-1">
+            {material.videoSection && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsTocOpen(false);
+                  const el = document.getElementById("video-tutorial");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="w-full text-left px-3 py-2 rounded-[8px] hover:bg-[#F6F5FF] text-xs font-medium text-[#2E2D2D] hover:text-[#2563EB] transition-colors cursor-pointer block truncate"
+              >
+                Video Tutorial Pembelajaran
+              </button>
+            )}
+
+            {material.contentSections.map((sec) => (
               <button
                 key={sec.id}
                 type="button"
@@ -973,16 +989,25 @@ export default function MaterialDetailPage({
                   const el = document.getElementById(sec.id);
                   if (el) el.scrollIntoView({ behavior: "smooth" });
                 }}
-                className="w-full text-left p-2.5 rounded-[8px] hover:bg-[#F6F5FF] hover:text-[#0400F4] transition-colors text-xs text-[#2E2D2D] flex items-start gap-2.5 group cursor-pointer border border-transparent hover:border-[#0400F4]/20"
+                className="w-full text-left px-3 py-2 rounded-[8px] hover:bg-[#F6F5FF] text-xs font-medium text-[#2E2D2D] hover:text-[#2563EB] transition-colors cursor-pointer block truncate"
               >
-                <span className="bg-[#E8E7FF] text-[#0400F4] w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 group-hover:bg-[#0400F4] group-hover:text-white transition-colors">
-                  {idx + 1}
-                </span>
-                <span className="truncate font-medium leading-tight group-hover:text-[#0400F4] transition-colors">
-                  {sec.title}
-                </span>
+                {sec.title}
               </button>
             ))}
+
+            {material.stepByStepSection && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsTocOpen(false);
+                  const el = document.getElementById("langkah-praktik");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="w-full text-left px-3 py-2 rounded-[8px] hover:bg-[#F6F5FF] text-xs font-medium text-[#2E2D2D] hover:text-[#2563EB] transition-colors cursor-pointer block truncate"
+              >
+                Langkah Kerja &amp; Panduan Praktik
+              </button>
+            )}
           </div>
         </div>
       )}

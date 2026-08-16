@@ -77,7 +77,7 @@ export default function LoginPage() {
                     name="email"
                     type="text"
                     placeholder="Masukkan email"
-                    className="w-full h-[47px] px-3 py-[14px] rounded-[10px] bg-[#f3f3f3] border border-transparent text-base text-[#292929] placeholder:text-[#aaaaaa] focus:bg-white focus:border-[#0400F4] focus:ring-2 focus:ring-blue-100 transition-all outline-none"
+                    className="w-full h-[47px] px-3 py-[14px] rounded-[10px] bg-[#f3f3f3] border border-transparent text-base text-[#292929] placeholder:text-[#aaaaaa] focus:bg-white focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 transition-all outline-none"
                   />
                 </div>
 
@@ -92,7 +92,7 @@ export default function LoginPage() {
                       name="password"
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Masukkan kata sandi"
-                      className="w-full h-[47px] px-3 py-[14px] rounded-[10px] bg-[#f3f3f3] border border-transparent text-base text-[#292929] placeholder:text-[#aaaaaa] focus:bg-white focus:border-[#0400F4] focus:ring-2 focus:ring-blue-100 transition-all outline-none pr-12"
+                      className="w-full h-[47px] px-3 py-[14px] rounded-[10px] bg-[#f3f3f3] border border-transparent text-base text-[#292929] placeholder:text-[#aaaaaa] focus:bg-white focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 transition-all outline-none pr-12"
                     />
                     <button
                       type="button"
@@ -103,7 +103,7 @@ export default function LoginPage() {
                     </button>
                   </div>
                   <div className="flex justify-end">
-                    <Link href="#" className="text-base font-medium text-[#0400F4] hover:opacity-80 transition-opacity">
+                    <Link href="#" className="text-base font-medium text-[#2563EB] hover:opacity-80 transition-opacity">
                       Lupa kata sandi?
                     </Link>
                   </div>
@@ -116,7 +116,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="w-full h-[47px] bg-[#0400F4] hover:bg-[#0300d4] text-white font-semibold rounded-[10px] transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center text-base"
+                  className="w-full h-[47px] bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold rounded-[10px] transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center text-base"
                 >
                   {isPending ? 'Masuk...' : 'Masuk ke Sitemsa'}
                 </button>

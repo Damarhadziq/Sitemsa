@@ -31,7 +31,7 @@ export function QuizHeader() {
       
       <div className="max-w-3xl mx-auto w-full text-center">
         <p className="text-white/80 text-xs font-medium mb-2">Soal 1 dari 5</p>
-        <Progress value={20} className="h-2 rounded-[4px] bg-white/10 [&>div]:bg-[#0400F4]" />
+        <Progress value={20} className="h-2 rounded-[4px] bg-white/10 [&>div]:bg-[#2563EB]" />
       </div>
     </header>
   );

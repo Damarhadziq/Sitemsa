@@ -32,14 +32,14 @@ export function QuestionArea() {
             className={cn(
               "cursor-pointer rounded-[8px] overflow-hidden transition-all duration-200",
               selectedId === option.id 
-                ? "bg-[#0400F4] border-2 border-white text-white" 
+                ? "bg-[#2563EB] border-2 border-white text-white" 
                 : "bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/30"
             )}
           >
             <CardContent className="p-5 flex items-center gap-4">
               <div className={cn(
                 "w-9 h-9 rounded-[6px] flex items-center justify-center text-sm font-bold transition-colors",
-                selectedId === option.id ? "bg-white text-[#0400F4]" : "bg-white/20 text-white"
+                selectedId === option.id ? "bg-white text-[#2563EB]" : "bg-white/20 text-white"
               )}>
                 {option.id}
               </div>

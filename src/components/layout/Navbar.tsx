@@ -198,7 +198,7 @@ export function Navbar() {
                 href="/"
                 className={`text-sm font-medium relative py-1 transition-colors duration-200 ${
                   pathname === "/"
-                    ? "text-[#2E2D2D] after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#0400F4] after:rounded-full"
+                    ? "text-[#2E2D2D] after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#2563EB] after:rounded-full"
                     : "text-[#8E8E8E] hover:text-[#2E2D2D]"
                 }`}
               >
@@ -208,7 +208,7 @@ export function Navbar() {
                 href="/materi"
                 className={`text-sm font-medium relative py-1 transition-colors duration-200 ${
                   pathname.startsWith("/materi")
-                    ? "text-[#2E2D2D] after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#0400F4] after:rounded-full"
+                    ? "text-[#2E2D2D] after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#2563EB] after:rounded-full"
                     : "text-[#8E8E8E] hover:text-[#2E2D2D]"
                 }`}
               >
@@ -218,7 +218,7 @@ export function Navbar() {
                 href="/tips-belajar"
                 className={`text-sm font-medium relative py-1 transition-colors duration-200 ${
                   pathname.startsWith("/tips-belajar")
-                    ? "text-[#2E2D2D] after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#0400F4] after:rounded-full"
+                    ? "text-[#2E2D2D] after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#2563EB] after:rounded-full"
                     : "text-[#8E8E8E] hover:text-[#2E2D2D]"
                 }`}
               >
@@ -228,7 +228,7 @@ export function Navbar() {
                 href="/dokumentasi"
                 className={`text-sm font-medium relative py-1 transition-colors duration-200 ${
                   pathname.startsWith("/dokumentasi")
-                    ? "text-[#2E2D2D] after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#0400F4] after:rounded-full"
+                    ? "text-[#2E2D2D] after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#2563EB] after:rounded-full"
                     : "text-[#8E8E8E] hover:text-[#2E2D2D]"
                 }`}
               >
@@ -238,7 +238,7 @@ export function Navbar() {
                 href="/team"
                 className={`text-sm font-medium relative py-1 transition-colors duration-200 ${
                   pathname.startsWith("/team")
-                    ? "text-[#2E2D2D] after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#0400F4] after:rounded-full"
+                    ? "text-[#2E2D2D] after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#2563EB] after:rounded-full"
                     : "text-[#8E8E8E] hover:text-[#2E2D2D]"
                 }`}
               >
@@ -260,7 +260,7 @@ export function Navbar() {
                 onClick={() => setIsModalOpen(true)}
                 onFocus={() => setIsModalOpen(true)}
                 readOnly
-                className="w-full h-9 pl-9 pr-3 bg-[#F3F3F3] rounded-[8px] text-xs text-[#2E2D2D] placeholder:text-[#AAAAAA] border border-transparent hover:border-[#0400F4]/30 outline-none transition-all duration-200 cursor-pointer"
+                className="w-full h-9 pl-9 pr-3 bg-[#F3F3F3] rounded-[8px] text-xs text-[#2E2D2D] placeholder:text-[#AAAAAA] border border-transparent hover:border-[#2563EB]/30 outline-none transition-all duration-200 cursor-pointer"
               />
             </div>
 
@@ -290,7 +290,7 @@ export function Navbar() {
             >
               <HugeiconsIcon icon={BellIcon} size={20} />
               {notifications.some((n) => !n.isRead) && (
-                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-[#0400F4] border-2 border-white animate-pulse" />
+                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-[#2563EB] border-2 border-white animate-pulse" />
               )}
             </button>
 
@@ -300,7 +300,7 @@ export function Navbar() {
                 type="button"
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className={`w-9 h-9 rounded-full border overflow-hidden transition-colors duration-200 flex items-center justify-center shrink-0 ${
-                  isProfileOpen ? "border-[#0400F4] bg-[#F4EFFF]" : "border-[#ECECEC] hover:border-[#0400F4]"
+                  isProfileOpen ? "border-[#2563EB] bg-[#F4EFFF]" : "border-[#ECECEC] hover:border-[#2563EB]"
                 }`}
                 aria-label="Profil Pengguna"
               >
@@ -335,7 +335,7 @@ export function Navbar() {
                     <button
                       type="button"
                       onClick={() => openProfileModalTab("profile")}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#2E2D2D] hover:bg-[#F6F5FF] hover:text-[#0400F4] rounded-[6px] transition-colors text-left cursor-pointer"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#2E2D2D] hover:bg-[#F6F5FF] hover:text-[#2563EB] rounded-[6px] transition-colors text-left cursor-pointer"
                     >
                       <HugeiconsIcon icon={UserIcon} size={16} />
                       Profil Saya
@@ -344,7 +344,7 @@ export function Navbar() {
                     <button
                       type="button"
                       onClick={() => openProfileModalTab("history")}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#2E2D2D] hover:bg-[#F6F5FF] hover:text-[#0400F4] rounded-[6px] transition-colors text-left cursor-pointer"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#2E2D2D] hover:bg-[#F6F5FF] hover:text-[#2563EB] rounded-[6px] transition-colors text-left cursor-pointer"
                     >
                       <HugeiconsIcon icon={Clock01Icon} size={16} />
                       Riwayat Belajar
@@ -397,7 +397,7 @@ export function Navbar() {
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="w-10 h-10 rounded-full bg-white border border-[#ECECEC] text-[#737373] hover:text-[#0400F4] hover:bg-[#F6F5FF] flex items-center justify-center transition-all cursor-pointer"
+              className="w-10 h-10 rounded-full bg-white border border-[#ECECEC] text-[#737373] hover:text-[#2563EB] hover:bg-[#F6F5FF] flex items-center justify-center transition-all cursor-pointer"
               aria-label="Tutup Menu"
             >
               <HugeiconsIcon icon={Cancel01Icon} size={20} />
@@ -411,8 +411,8 @@ export function Navbar() {
               onClick={() => setIsMobileMenuOpen(false)}
               className={`py-3.5 border-b border-gray-100 text-lg transition-colors ${
                 pathname === "/"
-                  ? "text-[#0400F4] font-bold"
-                  : "text-[#2E2D2D] font-medium hover:text-[#0400F4]"
+                  ? "text-[#2563EB] font-bold"
+                  : "text-[#2E2D2D] font-medium hover:text-[#2563EB]"
               }`}
             >
               Beranda
@@ -422,8 +422,8 @@ export function Navbar() {
               onClick={() => setIsMobileMenuOpen(false)}
               className={`py-3.5 border-b border-gray-100 text-lg transition-colors ${
                 pathname.startsWith("/materi")
-                  ? "text-[#0400F4] font-bold"
-                  : "text-[#2E2D2D] font-medium hover:text-[#0400F4]"
+                  ? "text-[#2563EB] font-bold"
+                  : "text-[#2E2D2D] font-medium hover:text-[#2563EB]"
               }`}
             >
               Materi
@@ -433,8 +433,8 @@ export function Navbar() {
               onClick={() => setIsMobileMenuOpen(false)}
               className={`py-3.5 border-b border-gray-100 text-lg transition-colors ${
                 pathname.startsWith("/tips-belajar")
-                  ? "text-[#0400F4] font-bold"
-                  : "text-[#2E2D2D] font-medium hover:text-[#0400F4]"
+                  ? "text-[#2563EB] font-bold"
+                  : "text-[#2E2D2D] font-medium hover:text-[#2563EB]"
               }`}
             >
               Tips Belajar
@@ -444,8 +444,8 @@ export function Navbar() {
               onClick={() => setIsMobileMenuOpen(false)}
               className={`py-3.5 border-b border-gray-100 text-lg transition-colors ${
                 pathname.startsWith("/dokumentasi")
-                  ? "text-[#0400F4] font-bold"
-                  : "text-[#2E2D2D] font-medium hover:text-[#0400F4]"
+                  ? "text-[#2563EB] font-bold"
+                  : "text-[#2E2D2D] font-medium hover:text-[#2563EB]"
               }`}
             >
               Dokumentasi
@@ -455,8 +455,8 @@ export function Navbar() {
               onClick={() => setIsMobileMenuOpen(false)}
               className={`py-3.5 border-b border-gray-100 text-lg transition-colors ${
                 pathname.startsWith("/team")
-                  ? "text-[#0400F4] font-bold"
-                  : "text-[#2E2D2D] font-medium hover:text-[#0400F4]"
+                  ? "text-[#2563EB] font-bold"
+                  : "text-[#2E2D2D] font-medium hover:text-[#2563EB]"
               }`}
             >
               Tim
@@ -478,7 +478,7 @@ export function Navbar() {
           <div className="relative w-full max-w-xl bg-white border border-[#ECECEC] rounded-[14px] overflow-hidden space-y-0 z-10 animate-in fade-in zoom-in-95 duration-150">
             {/* Modal Input Row */}
             <div className="p-4 border-b border-[#ECECEC] flex items-center gap-3 bg-[#FAFAFA]">
-              <HugeiconsIcon icon={Search01Icon} size={20} className="text-[#0400F4] shrink-0" />
+              <HugeiconsIcon icon={Search01Icon} size={20} className="text-[#2563EB] shrink-0" />
               <input
                 ref={modalInputRef}
                 type="text"
@@ -490,7 +490,7 @@ export function Navbar() {
               <button
                 type="button"
                 onClick={handleCloseModal}
-                className="w-8 h-8 rounded-full bg-white border border-[#ECECEC] text-[#737373] hover:text-[#0400F4] hover:bg-[#F6F5FF] hover:border-[#0400F4]/40 flex items-center justify-center transition-all shrink-0 cursor-pointer"
+                className="w-8 h-8 rounded-full bg-white border border-[#ECECEC] text-[#737373] hover:text-[#2563EB] hover:bg-[#F6F5FF] hover:border-[#2563EB]/40 flex items-center justify-center transition-all shrink-0 cursor-pointer"
                 aria-label="Tutup Pencarian"
                 title="Tutup Pencarian"
               >
@@ -506,7 +506,7 @@ export function Navbar() {
                   key={keyword}
                   type="button"
                   onClick={() => setModalQuery(keyword)}
-                  className="px-2.5 py-1 rounded-[5px] bg-white border border-[#ECECEC] text-[11px] font-medium text-[#2E2D2D] hover:bg-[#F4EFFF] hover:text-[#0400F4] transition-all shrink-0 cursor-pointer"
+                  className="px-2.5 py-1 rounded-[5px] bg-white border border-[#ECECEC] text-[11px] font-medium text-[#2E2D2D] hover:bg-[#F4EFFF] hover:text-[#2563EB] transition-all shrink-0 cursor-pointer"
                 >
                   {keyword}
                 </button>
@@ -521,17 +521,17 @@ export function Navbar() {
                     key={item.id}
                     type="button"
                     onClick={() => handleSelectResult(item.id)}
-                    className="w-full text-left p-3 rounded-[8px] hover:bg-[#F6F5FF] border border-transparent hover:border-[#0400F4]/30 flex items-center justify-between transition-all duration-200 group cursor-pointer"
+                    className="w-full text-left p-3 rounded-[8px] hover:bg-[#F6F5FF] border border-transparent hover:border-[#2563EB]/30 flex items-center justify-between transition-all duration-200 group cursor-pointer"
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <div className="w-8 h-8 rounded-[6px] bg-[#F4EFFF] text-[#0400F4] flex items-center justify-center shrink-0">
+                      <div className="w-8 h-8 rounded-[6px] bg-[#F4EFFF] text-[#2563EB] flex items-center justify-center shrink-0">
                         <HugeiconsIcon icon={item.icon} size={16} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="bg-[#E8E7FF] text-[#0400F4] px-2 py-0.5 rounded-[4px] text-[10px] font-semibold inline-block mb-0.5">
+                        <span className="bg-[#E8E7FF] text-[#2563EB] px-2 py-0.5 rounded-[4px] text-[10px] font-semibold inline-block mb-0.5">
                           {item.subject}
                         </span>
-                        <h4 className="text-xs md:text-sm font-semibold text-[#2E2D2D] group-hover:text-[#0400F4] transition-colors truncate">
+                        <h4 className="text-xs md:text-sm font-semibold text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors truncate">
                           {item.title}
                         </h4>
                       </div>
@@ -541,7 +541,7 @@ export function Navbar() {
                       <span className="text-[10px] px-2 py-0.5 bg-gray-100 text-gray-600 rounded font-medium">
                         {item.level}
                       </span>
-                      <HugeiconsIcon icon={ArrowRight01Icon} size={14} className="text-[#0400F4] opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <HugeiconsIcon icon={ArrowRight01Icon} size={14} className="text-[#2563EB] opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                   </button>
                 ))

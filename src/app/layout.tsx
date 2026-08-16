@@ -16,13 +16,17 @@ export const metadata: Metadata = {
   },
 };
 
+import { AuthProvider } from "@/lib/auth-context";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="id"
       className={`${plusJakartaSans.variable} font-sans h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }

@@ -39,7 +39,7 @@ export function LearningArticles() {
         </h2>
         <Link
           href="/tips-belajar"
-          className="text-xs font-semibold text-[#0400F4] hover:opacity-80 transition-opacity flex items-center gap-1 group"
+          className="text-xs font-semibold text-[#2563EB] hover:opacity-80 transition-opacity flex items-center gap-1 group"
         >
           <span>Lihat Semua</span>
           <HugeiconsIcon icon={ArrowRight01Icon} size={14} className="group-hover:translate-x-0.5 transition-transform duration-200" />
@@ -50,10 +50,10 @@ export function LearningArticles() {
         {ARTICLES.map((article) => (
           <div
             key={article.id}
-            className="bg-white border border-[#ECECEC] rounded-[10px] p-4 flex flex-col justify-between hover:bg-[#F6F5FF] hover:border-[#0400F4]/40 transition-all duration-300 ease-out group"
+            className="bg-white border border-[#ECECEC] rounded-[10px] p-4 flex flex-col justify-between hover:bg-[#F6F5FF] hover:border-[#2563EB]/40 transition-all duration-300 ease-out group"
           >
             <div>
-              <h3 className="text-sm md:text-base font-semibold text-[#2E2D2D] mb-2 leading-snug group-hover:text-[#0400F4] transition-colors duration-200">
+              <h3 className="text-sm md:text-base font-semibold text-[#2E2D2D] mb-2 leading-snug group-hover:text-[#2563EB] transition-colors duration-200">
                 {article.title}
               </h3>
 
@@ -68,7 +68,7 @@ export function LearningArticles() {
               </span>
               <Link
                 href={`/tips-belajar?id=${article.id}`}
-                className="text-xs font-semibold text-[#0400F4] hover:opacity-80 transition-opacity flex items-center gap-1 group/link"
+                className="text-xs font-semibold text-[#2563EB] hover:opacity-80 transition-opacity flex items-center gap-1 group/link"
               >
                 <span>Baca</span>
                 <HugeiconsIcon icon={ArrowRight01Icon} size={14} className="group-hover/link:translate-x-0.5 transition-transform duration-200" />

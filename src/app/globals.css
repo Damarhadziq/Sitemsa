@@ -55,18 +55,18 @@
   --card-foreground: #2E2D2D;
   --popover: #ffffff;
   --popover-foreground: #2E2D2D;
-  --primary: #0400F4;
+  --primary: #2563EB;
   --primary-foreground: #ffffff;
   --secondary: #F4EFFF;
   --secondary-foreground: #2E2D2D;
   --muted: #FAFAFA;
   --muted-foreground: #737373;
   --accent: #E8E7FF;
-  --accent-foreground: #0400F4;
+  --accent-foreground: #2563EB;
   --destructive: oklch(0.577 0.245 27.325);
   --border: #ECECEC;
   --input: #F3F3F3;
-  --ring: #0400F4;
+  --ring: #2563EB;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -75,12 +75,12 @@
   --radius: 0.75rem;
   --sidebar: #ffffff;
   --sidebar-foreground: #2E2D2D;
-  --sidebar-primary: #0400F4;
+  --sidebar-primary: #2563EB;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #F4EFFF;
   --sidebar-accent-foreground: #2E2D2D;
   --sidebar-border: #ECECEC;
-  --sidebar-ring: #0400F4;
+  --sidebar-ring: #2563EB;
 }
 
 @layer base {
@@ -123,7 +123,7 @@
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #0400F4;
+  background: #2563EB;
   border-radius: 9999px;
   border: 2px solid transparent;
   background-clip: content-box;

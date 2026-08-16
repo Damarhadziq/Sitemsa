@@ -1,576 +1,615 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
-  FileQuestion,
+  BookOpen,
+  HelpCircle,
   Plus,
   Edit2,
   Trash2,
-  CheckCircle2,
-  X,
+  Play,
+  FileText,
+  Clock,
   Layers,
-  ChevronDown,
-  Check,
+  Sparkles,
+  CheckCircle2,
+  FileCode,
+  TrendingUp,
+  Users,
+  Eye,
+  BarChart3,
+  ArrowUpRight,
+  AlertCircle,
+  ArrowLeft,
+  Activity,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
-import { useAdminStore, ModuleItem, QuizItem, QuizQuestion } from '@/lib/admin-store';
+import { useAdminStore, ModuleItem } from '@/lib/admin-store';
+import ModuleBlockBuilder, { CanvasBlock } from '@/components/admin/ModuleBlockBuilder';
+
+// Skeleton Component for smooth loading states
+function Skeleton({ className }: { className?: string }) {
+  return <div className={`animate-pulse bg-slate-200 rounded-[8px] ${className || ''}`} />;
+}
 
 export default function AdminGuruPelajaranPage() {
+  const searchParams = useSearchParams();
+  const itemIdParam = searchParams.get('item');
+
   const { user, activeSubjectFilter } = useAuth();
-  const { modules, addModule, updateModule, deleteModule, quizzes, addQuiz, updateQuiz, deleteQuiz } = useAdminStore();
+  const { modules, quizzes, addModule, deleteModule } = useAdminStore();
 
   const assignedSubjects = user?.assignedSubjects || ['Informatika'];
   const currentSubject = activeSubjectFilter || assignedSubjects[0] || 'Informatika';
 
-  const [activeTab, setActiveTab] = useState<'modules' | 'quizzes'>('modules');
+  const subjectModules = modules.filter((m) => m.subject === currentSubject);
+  const subjectQuizzes = quizzes.filter((q) => q.subject === currentSubject);
 
-  // Module Modal state
-  const [showModuleModal, setShowModuleModal] = useState(false);
+  // Selected item ID from query param (null = Landing Overview mode)
+  const selectedItemId = itemIdParam || null;
+
+  const selectedModule = selectedItemId ? subjectModules.find((m) => m.id === selectedItemId) : null;
+  const selectedQuiz = selectedItemId ? subjectQuizzes.find((q) => q.id === selectedItemId) : null;
+
+  // Loading state simulation
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [selectedItemId, currentSubject]);
+
+  // DRIBBBLE BLOCK BUILDER MODAL STATE
+  const [showBlockBuilder, setShowBlockBuilder] = useState(false);
   const [editingModule, setEditingModule] = useState<ModuleItem | null>(null);
-  const [showLevelDropdown, setShowLevelDropdown] = useState(false);
-  const [moduleForm, setModuleForm] = useState({
-    title: '',
-    level: 'Pemula' as 'Pemula' | 'Menengah' | 'Mahir',
-    duration: '30 Menit',
-    topicsStr: 'Variabel, Tipe Data',
-    description: '',
-  });
 
-  // Quiz Modal state
-  const [showQuizModal, setShowQuizModal] = useState(false);
-  const [editingQuiz, setEditingQuiz] = useState<QuizItem | null>(null);
-  const [quizForm, setQuizForm] = useState({
-    title: '',
-    duration: '20 Menit',
-    passScore: 75,
-    questions: [
-      {
-        id: 'q-new-1',
-        text: 'Soal evaluasi pemahaman...',
-        options: ['Pilihan A', 'Pilihan B', 'Pilihan C', 'Pilihan D'],
-        correctAnswer: 0,
-        explanation: 'Penjelasan kunci jawaban...',
-      },
-    ] as QuizQuestion[],
-  });
-
-  const currentModules = modules.filter((m) => m.subject === currentSubject);
-  const currentQuizzes = quizzes.filter((q) => q.subject === currentSubject);
-
-  const levelOptions = ['Pemula', 'Menengah', 'Mahir'] as const;
-
-  const handleOpenAddModule = () => {
-    setEditingModule(null);
-    setModuleForm({
-      title: '',
-      level: 'Pemula',
-      duration: '30 Menit',
-      topicsStr: 'Konsep dasar, Latihan',
-      description: '',
-    });
-    setShowModuleModal(true);
+  // Open Block Builder
+  const handleOpenBlockBuilder = (mod?: ModuleItem) => {
+    setEditingModule(mod || null);
+    setShowBlockBuilder(true);
   };
 
-  const handleOpenEditModule = (mod: ModuleItem) => {
-    setEditingModule(mod);
-    setModuleForm({
-      title: mod.title,
-      level: mod.level,
-      duration: mod.duration,
-      topicsStr: mod.topics.join(', '),
-      description: mod.description,
-    });
-    setShowModuleModal(true);
-  };
-
-  const handleSaveModule = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!moduleForm.title.trim()) return;
-
-    const topicsArray = moduleForm.topicsStr.split(',').map((t) => t.trim()).filter(Boolean);
-
+  // Handle Save from Block Builder
+  const handleSaveFromBuilder = (
+    moduleData: Partial<ModuleItem>,
+    blocks: CanvasBlock[]
+  ) => {
     if (editingModule) {
-      updateModule(editingModule.id, {
-        title: moduleForm.title,
-        level: moduleForm.level,
-        duration: moduleForm.duration,
-        topics: topicsArray,
-        description: moduleForm.description,
-      });
+      // Edit existing module
     } else {
       addModule({
         subject: currentSubject,
-        title: moduleForm.title,
-        level: moduleForm.level,
-        duration: moduleForm.duration,
-        topics: topicsArray,
-        description: moduleForm.description,
+        title: moduleData.title || 'Modul Materi Baru',
+        level: moduleData.level || 'Pemula',
+        duration: moduleData.duration || '30 Menit',
+        topics: ['Materi Sintesa', 'Praktikum'],
+        description: blocks.find((b) => b.type === 'text')?.textValue || 'Deskripsi modul materi.',
         teacherId: user?.id || 't-1',
-        teacherName: user?.name || 'Admin guru',
+        teacherName: user?.name || 'Pak Budi Prasetyo, M.Kom.',
       });
     }
-
-    setShowModuleModal(false);
   };
 
-  const handleDeleteModule = (id: string, title: string) => {
+  const handleDeleteModuleItem = (id: string, title: string) => {
     if (confirm(`Apakah Anda yakin ingin menghapus modul "${title}"?`)) {
       deleteModule(id);
     }
   };
 
-  const handleOpenAddQuiz = () => {
-    setEditingQuiz(null);
-    setQuizForm({
-      title: `Kuis ujian ${currentSubject}`,
-      duration: '20 Menit',
-      passScore: 75,
-      questions: [
-        {
-          id: 'q-new-1',
-          text: 'Pertanyaan pertama...',
-          options: ['Pilihan A', 'Pilihan B', 'Pilihan C', 'Pilihan D'],
-          correctAnswer: 0,
-          explanation: 'Pembahasan soal...',
-        },
-      ],
-    });
-    setShowQuizModal(true);
-  };
+  // Access frequency data for Line Chart
+  const weeklyAccessData = [
+    { day: 'Sen', views: 24, x: 40, y: 110 },
+    { day: 'Sel', views: 38, x: 125, y: 80 },
+    { day: 'Rab', views: 45, x: 210, y: 65 },
+    { day: 'Kam', views: 32, x: 295, y: 92 },
+    { day: 'Jum', views: 56, x: 380, y: 40 },
+    { day: 'Sab', views: 18, x: 465, y: 122 },
+    { day: 'Min', views: 12, x: 550, y: 135 },
+  ];
 
-  const handleOpenEditQuiz = (qz: QuizItem) => {
-    setEditingQuiz(qz);
-    setQuizForm({
-      title: qz.title,
-      duration: qz.duration,
-      passScore: qz.passScore,
-      questions: [...qz.questions],
-    });
-    setShowQuizModal(true);
-  };
+  const svgPathPoints = weeklyAccessData.map((d) => `${d.x},${d.y}`).join(' L ');
+  const svgAreaPoints = `M 40,150 L ${svgPathPoints} L 550,150 Z`;
 
-  const handleSaveQuiz = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!quizForm.title.trim()) return;
-
-    if (editingQuiz) {
-      updateQuiz(editingQuiz.id, {
-        title: quizForm.title,
-        duration: quizForm.duration,
-        passScore: Number(quizForm.passScore),
-        questionCount: quizForm.questions.length,
-        questions: quizForm.questions,
-      });
-    } else {
-      addQuiz({
-        subject: currentSubject,
-        title: quizForm.title,
-        duration: quizForm.duration,
-        passScore: Number(quizForm.passScore),
-        questionCount: quizForm.questions.length,
-        questions: quizForm.questions,
-        teacherId: user?.id || 't-1',
-        teacherName: user?.name || 'Admin guru',
-        published: true,
-      });
-    }
-
-    setShowQuizModal(false);
-  };
-
-  const handleDeleteQuiz = (id: string, title: string) => {
-    if (confirm(`Apakah Anda yakin ingin menghapus kuis "${title}"?`)) {
-      deleteQuiz(id);
-    }
-  };
+  const recentReaders = [
+    { name: 'Ahmad Fauzi', class: 'X RPL 1', time: '10 menit lalu', status: 'Selesai (100%)' },
+    { name: 'Bintang Permata', class: 'X RPL 2', time: '25 menit lalu', status: 'Membaca (75%)' },
+    { name: 'Citra Dewi', class: 'X TKJ 1', time: '1 jam lalu', status: 'Selesai (100%)' },
+    { name: 'Dian Sastro', class: 'X RPL 1', time: '3 jam lalu', status: 'Membaca (40%)' },
+  ];
 
   return (
-    <div className="space-y-6 font-sans text-[#2E2D2D] bg-white">
-      {/* Big Page Title in Content */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#2E2D2D]">
-          Manajemen Pelajaran
-        </h1>
+    <div className="font-sans text-[#2E2D2D] bg-white space-y-6 pb-6">
+      
+      {/* Dynamic Headline Header (NO SUBTITLE & NO DIVIDER LINE) */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          {isLoading ? (
+            <Skeleton className="h-9 w-64 sm:w-80" />
+          ) : (
+            /* CLEAN HEADLINE (NO SUBTITLE BELOW) */
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#2E2D2D] tracking-tight">
+              {selectedModule
+                ? selectedModule.title
+                : selectedQuiz
+                ? selectedQuiz.title
+                : `Modul & Kuis ${currentSubject}`}
+            </h1>
+          )}
+        </div>
+
+        {/* Dynamic Header Actions */}
+        <div className="flex items-center gap-3 shrink-0">
+          {isLoading ? (
+            <Skeleton className="h-10 w-36" />
+          ) : (
+            <>
+              {/* SHOW "+ Tambah Modul Materi Baru" ONLY IN LANDING OVERVIEW MODE */}
+              {!selectedItemId && (
+                <button
+                  onClick={() => handleOpenBlockBuilder()}
+                  className="px-4 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Tambah Modul Materi Baru</span>
+                </button>
+              )}
+
+              {/* MATERIAL DETAIL MODE ACTIONS */}
+              {selectedModule && (
+                <div className="flex items-center gap-2">
+                  <a
+                    href="/admin/guru/pelajaran"
+                    className="px-3.5 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-[#2E2D2D] font-semibold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span>Semua Modul</span>
+                  </a>
+                  <button
+                    onClick={() => handleOpenBlockBuilder(selectedModule)}
+                    className="px-4 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                    <span>Edit Blok Kanvas</span>
+                  </button>
+                  <button
+                    onClick={() => handleDeleteModuleItem(selectedModule.id, selectedModule.title)}
+                    title="Hapus Modul"
+                    className="p-2 rounded-[8px] bg-slate-50 hover:bg-rose-50 text-slate-500 hover:text-rose-600 border border-[#ECECEC] transition-all cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
-      {/* Tabs Switcher */}
-      <div className="flex items-center gap-2 border-b border-[#ECECEC]">
-        <button
-          onClick={() => setActiveTab('modules')}
-          className={`pb-3.5 px-4 text-xs font-bold transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
-            activeTab === 'modules'
-              ? 'border-[#2563EB] text-[#2563EB]'
-              : 'border-transparent text-[#737373] hover:text-[#2E2D2D]'
-          }`}
-        >
-          <Layers className="w-4 h-4" />
-          <span>Modul materi ({currentModules.length})</span>
-        </button>
+      {/* MAIN CONTENT AREA */}
+      <div className="space-y-6">
+        
+        {/* SKELETON LOADING STATE FOR WHOLE PAGE CONTENT */}
+        {isLoading ? (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="p-5 rounded-[12px] border border-[#ECECEC] space-y-3">
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-7 w-16" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
+              ))}
+            </div>
 
-        <button
-          onClick={() => setActiveTab('quizzes')}
-          className={`pb-3.5 px-4 text-xs font-bold transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
-            activeTab === 'quizzes'
-              ? 'border-[#2563EB] text-[#2563EB]'
-              : 'border-transparent text-[#737373] hover:text-[#2E2D2D]'
-          }`}
-        >
-          <FileQuestion className="w-4 h-4" />
-          <span>Kuis interaktif & bank soal ({currentQuizzes.length})</span>
-        </button>
-      </div>
+            <div className="p-6 rounded-[12px] border border-[#ECECEC] space-y-4">
+              <Skeleton className="h-5 w-48" />
+              <Skeleton className="h-44 w-full" />
+            </div>
 
-      {/* Tab 1: Modules List */}
-      {activeTab === 'modules' && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-[#2E2D2D]">Modul pembelajaran {currentSubject}</h2>
-            <button
-              onClick={handleOpenAddModule}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs transition-all cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Tambah modul baru</span>
-            </button>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Skeleton className="md:col-span-2 h-44 w-full" />
+              <Skeleton className="h-44 w-full" />
+            </div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {currentModules.map((mod) => (
-              <div
-                key={mod.id}
-                className="bg-white rounded-[10px] border border-[#ECECEC] p-6 flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-[10px] font-bold bg-blue-50 text-[#2563EB] px-2.5 py-0.5 rounded-[4px]">
-                      {mod.level}
-                    </span>
-                    <span className="text-[11px] text-[#737373] font-medium">{mod.duration}</span>
+        ) : (
+          <>
+            {/* LANDING OVERVIEW VIEW (WHEN NO ITEM IS SELECTED) */}
+            {!selectedItemId && (
+              <div className="space-y-6">
+                
+                {/* STATS OVERVIEW CARDS */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="bg-white p-5 rounded-[12px] border border-[#ECECEC] space-y-1 shadow-2xs">
+                    <p className="text-xs font-semibold text-[#737373]">Total Modul Pembelajaran</p>
+                    <p className="text-2xl font-bold text-[#2563EB]">{subjectModules.length}</p>
+                    <p className="text-[11px] text-[#AAAAAA]">Modul Aktif {currentSubject}</p>
                   </div>
 
-                  <h3 className="text-xs font-bold text-[#2E2D2D] mt-2">{mod.title}</h3>
-                  <p className="text-[11px] text-[#737373] mt-1 line-clamp-3 leading-relaxed">{mod.description}</p>
+                  <div className="bg-white p-5 rounded-[12px] border border-[#ECECEC] space-y-1 shadow-2xs">
+                    <p className="text-xs font-semibold text-[#737373]">Total Kuis & Evaluasi</p>
+                    <p className="text-2xl font-bold text-indigo-600">{subjectQuizzes.length}</p>
+                    <p className="text-[11px] text-[#AAAAAA]">Kuis Terdaftar</p>
+                  </div>
 
-                  <div className="mt-3 flex flex-wrap gap-1">
-                    {mod.topics.map((tp) => (
-                      <span key={tp} className="text-[10px] bg-slate-50 text-slate-600 px-2 py-0.5 rounded-[4px] font-medium">
-                        #{tp}
+                  <div className="bg-white p-5 rounded-[12px] border border-[#ECECEC] space-y-1 shadow-2xs">
+                    <p className="text-xs font-semibold text-[#737373]">Tingkat Kesulitan</p>
+                    <p className="text-2xl font-bold text-[#2E2D2D]">Pemula &mdash; Mahir</p>
+                    <p className="text-[11px] text-[#AAAAAA]">Kurikulum Merdeka SMK</p>
+                  </div>
+                </div>
+
+                {/* ALL MODULES & QUIZZES LANDING GRID */}
+                <div className="bg-white rounded-[12px] border border-[#ECECEC] p-6 space-y-5 shadow-2xs">
+                  <div className="flex items-center justify-between pb-2">
+                    <div>
+                      <h3 className="text-base font-bold text-[#2E2D2D]">Semua Modul & Kuis {currentSubject}</h3>
+                      <p className="text-xs text-[#737373]">Pilih salah satu materi di bawah atau via menu sidebar tree untuk melihat detail.</p>
+                    </div>
+                    <span className="text-xs font-semibold text-[#2563EB] bg-blue-50 px-3 py-1 rounded-[6px]">
+                      {subjectModules.length} Modul &bull; {subjectQuizzes.length} Kuis
+                    </span>
+                  </div>
+
+                  {/* MODULES LIST CARDS */}
+                  <div className="space-y-3">
+                    <h4 className="text-xs font-bold text-[#737373] flex items-center gap-1.5">
+                      <FileCode className="w-4 h-4 text-[#2563EB]" /> Modul Pembelajaran
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {subjectModules.map((mod) => (
+                        <div
+                          key={mod.id}
+                          className="p-5 rounded-[10px] bg-slate-50/60 border border-[#ECECEC] hover:border-[#2563EB] hover:bg-blue-50/20 transition-all flex flex-col justify-between space-y-4"
+                        >
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-bold text-[#2563EB] bg-white px-2 py-0.5 rounded border border-[#ECECEC]">
+                                {mod.level}
+                              </span>
+                              <span className="text-xs text-[#737373] flex items-center gap-1">
+                                <Clock className="w-3.5 h-3.5" /> {mod.duration}
+                              </span>
+                            </div>
+                            <h5 className="font-bold text-sm text-[#2E2D2D]">{mod.title}</h5>
+                            <p className="text-xs text-[#737373] line-clamp-2">{mod.description}</p>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-2">
+                            <a
+                              href={`/admin/guru/pelajaran?item=${mod.id}`}
+                              className="text-xs font-bold text-[#2563EB] hover:underline"
+                            >
+                              Lihat Detail Modul &rarr;
+                            </a>
+                            <button
+                              onClick={() => handleOpenBlockBuilder(mod)}
+                              className="px-3 py-1 rounded-[6px] bg-white border border-[#ECECEC] hover:border-[#2563EB] text-xs font-semibold text-[#2E2D2D] hover:text-[#2563EB] cursor-pointer shadow-2xs"
+                            >
+                              Edit Modul
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* QUIZZES LIST CARDS */}
+                  {subjectQuizzes.length > 0 && (
+                    <div className="space-y-3 pt-4">
+                      <h4 className="text-xs font-bold text-[#737373] flex items-center gap-1.5">
+                        <HelpCircle className="w-4 h-4 text-indigo-600" /> Kuis & Evaluasi
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {subjectQuizzes.map((qz) => (
+                          <div
+                            key={qz.id}
+                            className="p-5 rounded-[10px] bg-slate-50/60 border border-[#ECECEC] hover:border-indigo-500 hover:bg-indigo-50/20 transition-all flex flex-col justify-between space-y-4"
+                          >
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-bold text-indigo-600 bg-white px-2 py-0.5 rounded border border-[#ECECEC]">
+                                  Kuis Interactive
+                                </span>
+                                <span className="text-xs text-[#737373] flex items-center gap-1">
+                                  <Clock className="w-3.5 h-3.5" /> {qz.duration}
+                                </span>
+                              </div>
+                              <h5 className="font-bold text-sm text-[#2E2D2D]">{qz.title}</h5>
+                              <p className="text-xs text-[#737373]">Jumlah Soal: {qz.questions.length} Soal &bull; Passing Score: {qz.passScore}</p>
+                            </div>
+
+                            <div className="pt-2">
+                              <a
+                                href={`/admin/guru/pelajaran?item=${qz.id}`}
+                                className="text-xs font-bold text-indigo-600 hover:underline"
+                              >
+                                Lihat Detail Kuis &rarr;
+                              </a>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+
+              </div>
+            )}
+
+            {/* MATERIAL DETAIL VIEW (WITH LINE CHART & NO DIVIDER BORDERS) */}
+            {selectedModule && (
+              <div className="space-y-6">
+                
+                {/* 1. TOP ANALYTICS STATS CARDS */}
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                  <div className="bg-white p-5 rounded-[12px] border border-[#ECECEC] space-y-2 shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-[#737373]">Total Akses Siswa</span>
+                      <Eye className="w-4 h-4 text-[#2563EB]" />
+                    </div>
+                    <p className="text-2xl font-bold text-[#2E2D2D]">225 <span className="text-xs font-normal text-emerald-600 flex items-center inline-flex gap-0.5"><TrendingUp className="w-3 h-3" /> +18%</span></p>
+                    <p className="text-[11px] text-[#AAAAAA]">Dibaca 225 kali bulan ini</p>
+                  </div>
+
+                  <div className="bg-white p-5 rounded-[12px] border border-[#ECECEC] space-y-2 shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-[#737373]">Rata-rata Durasi</span>
+                      <Clock className="w-4 h-4 text-purple-600" />
+                    </div>
+                    <p className="text-2xl font-bold text-[#2E2D2D]">18.5 <span className="text-xs font-normal text-[#737373]">Menit</span></p>
+                    <p className="text-[11px] text-[#AAAAAA]">Estimasi membaca 25 menit</p>
+                  </div>
+
+                  <div className="bg-white p-5 rounded-[12px] border border-[#ECECEC] space-y-2 shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-[#737373]">Tingkat Penyelesaian</span>
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    </div>
+                    <p className="text-2xl font-bold text-emerald-600">94.2%</p>
+                    <p className="text-[11px] text-[#AAAAAA]">34 dari 36 siswa lulus</p>
+                  </div>
+
+                  <div className="bg-white p-5 rounded-[12px] border border-[#ECECEC] space-y-2 shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-[#737373]">Perlu Perhatian</span>
+                      <AlertCircle className="w-4 h-4 text-amber-500" />
+                    </div>
+                    <p className="text-2xl font-bold text-amber-600">2 <span className="text-xs font-normal text-[#737373]">Siswa</span></p>
+                    <p className="text-[11px] text-[#AAAAAA]">Belum tuntas membaca</p>
+                  </div>
+                </div>
+
+                {/* 2. FREQUENCY ACCESS GRAPH (SMOOTH SVG LINE CHART) */}
+                <div className="bg-white rounded-[12px] border border-[#ECECEC] p-6 space-y-4 shadow-2xs">
+                  <div className="flex items-center justify-between pb-2">
+                    <div>
+                      <h3 className="text-base font-bold text-[#2E2D2D] flex items-center gap-2">
+                        <Activity className="w-4 h-4 text-[#2563EB]" />
+                        Grafik Frekuensi Akses Materi (7 Hari Terakhir)
+                      </h3>
+                      <p className="text-xs text-[#737373]">Trend harian siswa yang membaca modul materi ini.</p>
+                    </div>
+                    <span className="text-xs font-semibold text-[#2563EB] bg-blue-50 px-3 py-1 rounded-[6px]">
+                      Puncak: Jumat (56 akses)
+                    </span>
+                  </div>
+
+                  {/* SVG LINE CHART VISUALIZATION */}
+                  <div className="relative pt-2">
+                    <svg viewBox="0 0 600 170" className="w-full h-48 overflow-visible">
+                      <defs>
+                        <linearGradient id="lineChartGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#2563EB" stopOpacity="0.25" />
+                          <stop offset="100%" stopColor="#2563EB" stopOpacity="0.0" />
+                        </linearGradient>
+                      </defs>
+
+                      {/* Area Fill */}
+                      <path d={svgAreaPoints} fill="url(#lineChartGradient)" />
+
+                      {/* Line Stroke */}
+                      <path
+                        d={`M ${svgPathPoints}`}
+                        fill="none"
+                        stroke="#2563EB"
+                        strokeWidth="3.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+
+                      {/* Data Dots & Tooltips */}
+                      {weeklyAccessData.map((d, i) => (
+                        <g key={i} className="group cursor-pointer">
+                          {/* Dot Circle */}
+                          <circle
+                            cx={d.x}
+                            cy={d.y}
+                            r="5"
+                            className="fill-white stroke-[#2563EB] stroke-[3] group-hover:r-7 transition-all"
+                          />
+                          {/* Day Label */}
+                          <text
+                            x={d.x}
+                            y="165"
+                            textAnchor="middle"
+                            className="text-[11px] font-bold fill-[#737373] group-hover:fill-[#2563EB]"
+                          >
+                            {d.day}
+                          </text>
+
+                          {/* Hover Tooltip Box */}
+                          <g className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            <rect
+                              x={d.x - 30}
+                              y={d.y - 32}
+                              width="60"
+                              height="22"
+                              rx="4"
+                              fill="#2E2D2D"
+                            />
+                            <text
+                              x={d.x}
+                              y={d.y - 18}
+                              textAnchor="middle"
+                              fill="#FFFFFF"
+                              fontSize="10"
+                              fontWeight="bold"
+                            >
+                              {d.views} Akses
+                            </text>
+                          </g>
+                        </g>
+                      ))}
+                    </svg>
+                  </div>
+                </div>
+
+                {/* 3. MATERIAL CONTENT & DRIBBBLE BLOCK BUILDER BANNER */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Left Column: Metadata & Canvas Banner */}
+                  <div className="md:col-span-2 space-y-6">
+                    <div className="bg-white rounded-[12px] border border-[#ECECEC] p-6 space-y-4 shadow-2xs">
+                      <h3 className="text-sm font-bold text-[#2E2D2D]">Deskripsi & Konten Kanvas</h3>
+                      <p className="text-xs text-[#737373] leading-relaxed bg-slate-50 p-4 rounded-[8px] border border-[#ECECEC]">
+                        {selectedModule.description}
+                      </p>
+
+                      <h3 className="text-sm font-bold text-[#2E2D2D] pt-2">Topik Pembahasan</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedModule.topics.map((tp, idx) => (
+                          <span key={idx} className="text-xs font-semibold text-[#2563EB] bg-blue-50 border border-blue-100 px-3 py-1 rounded-[6px]">
+                            {tp}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Dribbble Block Builder Banner */}
+                    <div className="p-5 rounded-[12px] bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-[10px] bg-[#2563EB] text-white flex items-center justify-center shrink-0">
+                          <Sparkles className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-sm text-[#2E2D2D]">Disusun dengan Editor Kanvas Blok Dribbble</p>
+                          <p className="text-xs text-[#737373]">Tambahkan teks, gambar, lampiran PDF, atau kuis langsung di kanvas.</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleOpenBlockBuilder(selectedModule)}
+                        className="px-4 py-2 rounded-[8px] bg-[#2563EB] text-white text-xs font-semibold hover:bg-blue-700 cursor-pointer shadow-xs shrink-0"
+                      >
+                        Buka Kanvas
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Recent Readers Student Table (NO DIVIDER BORDER) */}
+                  <div className="bg-white rounded-[12px] border border-[#ECECEC] p-5 space-y-4 shadow-2xs flex flex-col justify-between">
+                    <div>
+                      <h3 className="text-sm font-bold text-[#2E2D2D] pb-2 flex items-center gap-2">
+                        <Users className="w-4 h-4 text-[#2563EB]" />
+                        Siswa Terakhir Akses
+                      </h3>
+                      <div className="divide-y divide-slate-100">
+                        {recentReaders.map((rr, idx) => (
+                          <div key={idx} className="py-3 flex items-center justify-between">
+                            <div>
+                              <p className="text-xs font-bold text-[#2E2D2D]">{rr.name}</p>
+                              <p className="text-[10px] text-[#737373]">{rr.class} &bull; {rr.time}</p>
+                            </div>
+                            <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
+                              {rr.status}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <a
+                      href="/admin/guru/monitoring"
+                      className="text-xs font-bold text-[#2563EB] hover:underline flex items-center justify-center gap-1 pt-2"
+                    >
+                      <span>Lihat Semua Monitoring Siswa</span>
+                      <ArrowUpRight className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+            {/* DETAIL VIEW: IF A QUIZ IS SELECTED */}
+            {selectedQuiz && (
+              <div className="bg-white rounded-[12px] border border-[#ECECEC] p-6 space-y-6 shadow-2xs">
+                <div className="flex items-start justify-between pb-4">
+                  <div>
+                    <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-[4px] inline-block mb-2">
+                      Kuis Interaktif Sintesa
+                    </span>
+                    <h2 className="text-xl font-bold text-[#2E2D2D] tracking-tight">{selectedQuiz.title}</h2>
+                    <div className="flex items-center gap-3 text-xs text-[#737373] mt-2">
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5 text-[#737373]" />
+                        Durasi: {selectedQuiz.duration}
                       </span>
+                      <span className="flex items-center gap-1 text-emerald-600 font-semibold">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                        Passing Score: {selectedQuiz.passScore}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Questions List */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-bold text-[#2E2D2D]">Soal Kuis Terdaftar ({selectedQuiz.questions.length} Soal)</h3>
+                  <div className="space-y-3">
+                    {selectedQuiz.questions.map((q, qIdx) => (
+                      <div key={q.id} className="p-4 rounded-[8px] bg-slate-50 border border-[#ECECEC] space-y-2">
+                        <p className="font-semibold text-xs text-[#2E2D2D]">
+                          {qIdx + 1}. {q.text}
+                        </p>
+                        <div className="grid grid-cols-2 gap-2 pt-1">
+                          {q.options.map((opt, oIdx) => (
+                            <div
+                              key={oIdx}
+                              className={`p-2 rounded-[6px] text-xs ${
+                                q.correctAnswer === oIdx
+                                  ? 'bg-emerald-100 text-emerald-900 font-bold border border-emerald-300'
+                                  : 'bg-white text-[#737373] border border-[#ECECEC]'
+                              }`}
+                            >
+                              {opt}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>
-
-                <div className="mt-5 pt-1 flex items-center justify-between text-[11px] text-[#737373]">
-                  <span>Dibuat: {mod.createdAt}</span>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleOpenEditModule(mod)}
-                      className="p-1.5 rounded-[6px] bg-slate-50 hover:bg-blue-50 text-[#2E2D2D] hover:text-[#2563EB] transition-colors cursor-pointer"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteModule(mod.id, mod.title)}
-                      className="p-1.5 rounded-[6px] bg-slate-50 hover:bg-rose-50 text-[#737373] hover:text-rose-600 transition-colors cursor-pointer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {currentModules.length === 0 && (
-              <div className="col-span-full py-12 text-center text-[#737373] text-xs bg-white rounded-[10px] border border-[#ECECEC]">
-                Belum ada modul untuk {currentSubject}. Klik &ldquo;Tambah modul baru&rdquo; untuk membuat materi.
               </div>
             )}
-          </div>
-        </div>
+          </>
+        )}
+
+      </div>
+
+      {/* FULL-SCREEN DRIBBBLE ADD-SHOT BLOCK BUILDER MODAL */}
+      {showBlockBuilder && (
+        <ModuleBlockBuilder
+          initialModule={editingModule}
+          subjectName={currentSubject}
+          onClose={() => setShowBlockBuilder(false)}
+          onSave={handleSaveFromBuilder}
+        />
       )}
 
-      {/* Tab 2: Quizzes List */}
-      {activeTab === 'quizzes' && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-[#2E2D2D]">Ujian & kuis evaluasi {currentSubject}</h2>
-            <button
-              onClick={handleOpenAddQuiz}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs transition-all cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Buat kuis & bank soal</span>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {currentQuizzes.map((qz) => (
-              <div
-                key={qz.id}
-                className="bg-white rounded-[10px] border border-[#ECECEC] p-6 flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-[10px] font-bold bg-blue-50 text-[#2563EB] px-2.5 py-0.5 rounded-[4px]">
-                      Target nilai: {qz.passScore}
-                    </span>
-                    <span className="text-[11px] text-[#737373] font-medium">{qz.duration}</span>
-                  </div>
-
-                  <h3 className="text-xs font-bold text-[#2E2D2D]">{qz.title}</h3>
-
-                  <div className="mt-4 p-4 rounded-[8px] bg-slate-50 text-xs space-y-2">
-                    <div className="flex items-center justify-between text-[#2E2D2D]">
-                      <span>Jumlah soal:</span>
-                      <strong className="text-[#2E2D2D] font-bold">{qz.questions.length} soal pilihan ganda</strong>
-                    </div>
-                    <div className="flex items-center justify-between text-[#2E2D2D]">
-                      <span>Status publikasi:</span>
-                      <span className="text-emerald-600 font-semibold flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3" /> Dipublikasikan
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-5 pt-1 flex items-center justify-between text-[11px] text-[#737373]">
-                  <span>Pengampu: {qz.teacherName}</span>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleOpenEditQuiz(qz)}
-                      className="px-3 py-1.5 rounded-[6px] bg-slate-50 hover:bg-blue-50 text-[#2E2D2D] hover:text-[#2563EB] font-semibold text-xs transition-colors flex items-center gap-1 cursor-pointer"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                      <span>Edit soal</span>
-                    </button>
-                    <button
-                      onClick={() => handleDeleteQuiz(qz.id, qz.title)}
-                      className="p-2 rounded-[6px] bg-slate-50 hover:bg-rose-50 text-[#737373] hover:text-rose-600 transition-colors cursor-pointer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {currentQuizzes.length === 0 && (
-              <div className="col-span-full py-12 text-center text-[#737373] text-xs bg-white rounded-[10px] border border-[#ECECEC]">
-                Belum ada kuis untuk {currentSubject}.
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Module Modal */}
-      {showModuleModal && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg rounded-[10px] border border-[#ECECEC] overflow-hidden font-sans">
-            <div className="p-6 bg-white flex items-center justify-between">
-              <h3 className="text-base font-bold text-[#2E2D2D]">
-                {editingModule ? 'Edit modul materi' : `Tambah modul materi (${currentSubject})`}
-              </h3>
-              <button onClick={() => setShowModuleModal(false)} className="text-[#737373] hover:text-[#2E2D2D] p-1">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveModule} className="p-6 pt-0 space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-[#2E2D2D] mb-1">Judul modul materi</label>
-                <input
-                  type="text"
-                  value={moduleForm.title}
-                  onChange={(e) => setModuleForm({ ...moduleForm, title: e.target.value })}
-                  placeholder="Contoh: Pemrograman dasar & algoritma"
-                  required
-                  className="w-full h-10 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] focus:border-[#2563EB] outline-none"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                {/* Custom Level Dropdown */}
-                <div>
-                  <label className="block text-xs font-bold text-[#2E2D2D] mb-1">Tingkat kesulitan</label>
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() => setShowLevelDropdown(!showLevelDropdown)}
-                      className="w-full h-10 px-3 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] font-medium flex items-center justify-between cursor-pointer"
-                    >
-                      <span>{moduleForm.level}</span>
-                      <ChevronDown className="w-3.5 h-3.5 text-[#737373]" />
-                    </button>
-
-                    {showLevelDropdown && (
-                      <div className="absolute left-0 mt-1 w-full bg-white rounded-[8px] border border-[#ECECEC] p-1 z-50 shadow-xs">
-                        {levelOptions.map((lvl) => (
-                          <button
-                            key={lvl}
-                            type="button"
-                            onClick={() => {
-                              setModuleForm({ ...moduleForm, level: lvl });
-                              setShowLevelDropdown(false);
-                            }}
-                            className={`w-full text-left px-3 py-2 rounded-[6px] text-xs font-semibold flex items-center justify-between cursor-pointer ${
-                              moduleForm.level === lvl ? 'bg-blue-50 text-[#2563EB]' : 'text-[#2E2D2D] hover:bg-slate-50'
-                            }`}
-                          >
-                            <span>{lvl}</span>
-                            {moduleForm.level === lvl && <Check className="w-3.5 h-3.5 text-[#2563EB]" />}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#2E2D2D] mb-1">Durasi belajar</label>
-                  <input
-                    type="text"
-                    value={moduleForm.duration}
-                    onChange={(e) => setModuleForm({ ...moduleForm, duration: e.target.value })}
-                    placeholder="25 Menit"
-                    className="w-full h-10 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] focus:border-[#2563EB] outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#2E2D2D] mb-1">Topik bahasan (Pisahkan dengan koma)</label>
-                <input
-                  type="text"
-                  value={moduleForm.topicsStr}
-                  onChange={(e) => setModuleForm({ ...moduleForm, topicsStr: e.target.value })}
-                  placeholder="Variabel, Tipe data, Operasi logika"
-                  className="w-full h-10 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] focus:border-[#2563EB] outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#2E2D2D] mb-1">Deskripsi singkat</label>
-                <textarea
-                  rows={3}
-                  value={moduleForm.description}
-                  onChange={(e) => setModuleForm({ ...moduleForm, description: e.target.value })}
-                  placeholder="Penjelasan singkat cakupan materi..."
-                  className="w-full p-3 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] focus:border-[#2563EB] outline-none"
-                />
-              </div>
-
-              <div className="pt-4 flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowModuleModal(false)}
-                  className="px-4 py-2.5 rounded-[8px] bg-white border border-[#ECECEC] text-[#2E2D2D] font-semibold text-xs hover:bg-slate-50"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs"
-                >
-                  Simpan modul materi
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Quiz Modal */}
-      {showQuizModal && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg rounded-[10px] border border-[#ECECEC] overflow-hidden font-sans">
-            <div className="p-6 bg-white flex items-center justify-between">
-              <h3 className="text-base font-bold text-[#2E2D2D]">
-                {editingQuiz ? 'Edit kuis & soal ujian' : `Buat kuis ujian baru (${currentSubject})`}
-              </h3>
-              <button onClick={() => setShowQuizModal(false)} className="text-[#737373] hover:text-[#2E2D2D] p-1">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveQuiz} className="p-6 pt-0 space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-[#2E2D2D] mb-1">Judul kuis ujian</label>
-                <input
-                  type="text"
-                  value={quizForm.title}
-                  onChange={(e) => setQuizForm({ ...quizForm, title: e.target.value })}
-                  placeholder="Contoh: Evaluasi pemahaman logika"
-                  required
-                  className="w-full h-10 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] focus:border-[#2563EB] outline-none"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-[#2E2D2D] mb-1">Durasi pengerjaan</label>
-                  <input
-                    type="text"
-                    value={quizForm.duration}
-                    onChange={(e) => setQuizForm({ ...quizForm, duration: e.target.value })}
-                    placeholder="20 Menit"
-                    className="w-full h-10 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] focus:border-[#2563EB] outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#2E2D2D] mb-1">Target nilai kelulusan</label>
-                  <input
-                    type="number"
-                    value={quizForm.passScore}
-                    onChange={(e) => setQuizForm({ ...quizForm, passScore: Number(e.target.value) })}
-                    placeholder="75"
-                    className="w-full h-10 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] focus:border-[#2563EB] outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="p-4 rounded-[8px] bg-slate-50 space-y-3">
-                <h4 className="text-xs font-bold text-[#2E2D2D]">Bank soal ({quizForm.questions.length} soal)</h4>
-
-                {quizForm.questions.map((q, idx) => (
-                  <div key={q.id || idx} className="p-3 bg-white rounded-[8px] text-xs space-y-2 border border-[#ECECEC]">
-                    <p className="font-semibold text-[#2E2D2D]">Soal #{idx + 1}</p>
-                    <input
-                      type="text"
-                      value={q.text}
-                      onChange={(e) => {
-                        const updatedQ = [...quizForm.questions];
-                        updatedQ[idx].text = e.target.value;
-                        setQuizForm({ ...quizForm, questions: updatedQ });
-                      }}
-                      className="w-full p-2 rounded-[6px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D]"
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <div className="pt-4 flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowQuizModal(false)}
-                  className="px-4 py-2.5 rounded-[8px] bg-white border border-[#ECECEC] text-[#2E2D2D] font-semibold text-xs hover:bg-slate-50"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs"
-                >
-                  Simpan kuis ujian
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

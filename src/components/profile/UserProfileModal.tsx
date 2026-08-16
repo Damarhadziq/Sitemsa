@@ -493,7 +493,7 @@ export function UserProfileModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-3 bg-[#FAFAFA] border-t border-[#ECECEC] flex items-center justify-between text-[11px] text-[#737373] shrink-0">
+        <div className="px-6 py-3 bg-[#FAFAFA] flex items-center justify-between text-[11px] text-[#737373] shrink-0">
           <span>Tekan <kbd className="px-1.5 py-0.5 bg-white border border-[#ECECEC] rounded text-[#2E2D2D] font-mono">ESC</kbd> untuk menutup</span>
           <span>Sitemsa Platform Pembelajaran Digital</span>
         </div>

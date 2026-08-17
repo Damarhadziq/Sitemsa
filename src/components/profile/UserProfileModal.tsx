@@ -233,9 +233,8 @@ export function UserProfileModal({
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-95 text-white text-xs font-semibold rounded-[6px] transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
+                  className="px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-95 text-white text-xs font-semibold rounded-[6px] transition-all duration-200 cursor-pointer"
                 >
-                  <HugeiconsIcon icon={FloppyDiskIcon} size={15} />
                   Simpan Perubahan
                 </button>
               </div>
@@ -490,12 +489,6 @@ export function UserProfileModal({
               </div>
             </div>
           )}
-        </div>
-
-        {/* Modal Footer */}
-        <div className="px-6 py-3 bg-[#FAFAFA] flex items-center justify-between text-[11px] text-[#737373] shrink-0">
-          <span>Tekan <kbd className="px-1.5 py-0.5 bg-white border border-[#ECECEC] rounded text-[#2E2D2D] font-mono">ESC</kbd> untuk menutup</span>
-          <span>Sitemsa Platform Pembelajaran Digital</span>
         </div>
       </div>
     </div>

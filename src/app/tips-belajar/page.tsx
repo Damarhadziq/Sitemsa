@@ -333,10 +333,6 @@ function TipsBelajarContent() {
             ))}
           </div>
 
-          {/* Footer Metadata */}
-          <footer className="pt-6 border-t border-[#ECECEC] flex items-center justify-between text-xs text-[#737373]">
-            <span>Penulis: {activeArticle.author}</span>
-          </footer>
         </article>
       </section>
     </main>

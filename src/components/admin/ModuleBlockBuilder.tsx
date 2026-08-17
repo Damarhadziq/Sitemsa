@@ -15,6 +15,7 @@ import {
   ListOrdered,
   HelpCircle,
   ChevronRight,
+  ChevronDown,
   CheckCircle2,
   FileText,
   RefreshCw,
@@ -27,10 +28,11 @@ import {
   Download,
   Laptop,
   Link as LinkIcon,
+  Sparkles,
 } from 'lucide-react';
 import { ModuleItem } from '@/lib/admin-store';
 
-export type BlockType = 'text' | 'image' | 'video' | 'attachment' | 'steps' | 'test';
+export type BlockType = 'text' | 'image' | 'video' | 'attachment' | 'steps' | 'test' | 'callout';
 export type TestType = 'link_eksternal' | 'qr_code' | 'kuis_sitemsa';
 
 export interface AttachedFileItem {
@@ -105,6 +107,50 @@ function AutoResizeTextarea({
     resize();
   }, [value]);
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const newValue = value.substring(0, start) + '\n\n' + value.substring(end);
+      onChange(newValue);
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.selectionStart = textareaRef.current.selectionEnd = start + 2;
+          resize();
+        }
+      }, 0);
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const pasteText = e.clipboardData.getData('text');
+    if (!pasteText) return;
+    e.preventDefault();
+    
+    // Normalize single newlines \n into double newlines \n\n for clean paragraph spacing
+    const normalizedPaste = pasteText
+      .replace(/\r\n/g, '\n')
+      .replace(/([^\n])\n([^\n])/g, '$1\n\n$2');
+
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const newValue = value.substring(0, start) + normalizedPaste + value.substring(end);
+    onChange(newValue);
+    
+    setTimeout(() => {
+      if (textareaRef.current) {
+        const newCursorPos = start + normalizedPaste.length;
+        textareaRef.current.selectionStart = textareaRef.current.selectionEnd = newCursorPos;
+        resize();
+      }
+    }, 0);
+  };
+
   return (
     <textarea
       ref={textareaRef}
@@ -114,6 +160,8 @@ function AutoResizeTextarea({
         onChange(e.target.value);
         resize();
       }}
+      onKeyDown={handleKeyDown}
+      onPaste={handlePaste}
       placeholder={placeholder}
       className={`overflow-hidden resize-none ${className || ''}`}
       style={{ ...style, height: 'auto' }}
@@ -173,8 +221,22 @@ export default function ModuleBlockBuilder({
   // Attachment file upload state
   const [changingAttachmentFileId, setChangingAttachmentFileId] = useState<string | null>(null);
 
+  // Test block custom dropdown & QR image upload state
+  const [openTestTypeMenuId, setOpenTestTypeMenuId] = useState<string | null>(null);
+  const [editingQrBlockId, setEditingQrBlockId] = useState<string | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const attachmentFileInputRef = useRef<HTMLInputElement | null>(null);
+  const qrFileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleQrFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && editingQrBlockId) {
+      const objectUrl = URL.createObjectURL(file);
+      updateBlockById(editingQrBlockId, { qrImageUrl: objectUrl });
+      setEditingQrBlockId(null);
+    }
+  };
 
   const selectedBlock = blocks.find((b) => b.id === selectedBlockId);
 
@@ -221,6 +283,8 @@ export default function ModuleBlockBuilder({
       newBlock.testQuestion = 'Tuliskan pertanyaan kuis mini di sini...';
       newBlock.testOptions = ['Pilihan A', 'Pilihan B', 'Pilihan C', 'Pilihan D'];
       newBlock.correctAnswer = 0;
+    } else if (type === 'callout') {
+      newBlock.textValue = 'Prinsip Utama: Deklarasikan variabel dengan nama yang deskriptif dan mencerminkan isi datanya agar kode mudah dibaca oleh tim pengembangan.';
     }
 
     if (actualIndex !== undefined) {
@@ -239,24 +303,49 @@ export default function ModuleBlockBuilder({
     }
   };
 
+  const [animatingBlockId, setAnimatingBlockId] = useState<string | null>(null);
+  const [animatingDir, setAnimatingDir] = useState<'up' | 'down' | null>(null);
+
   // Move block up
   const handleMoveUp = (index: number) => {
-    if (index === 0) return;
-    const updated = [...blocks];
-    const temp = updated[index - 1];
-    updated[index - 1] = updated[index];
-    updated[index] = temp;
-    setBlocks(updated);
+    if (index === 0 || animatingBlockId) return;
+    const currentId = blocks[index].id;
+    setAnimatingBlockId(currentId);
+    setAnimatingDir('up');
+
+    setTimeout(() => {
+      const updated = [...blocks];
+      const temp = updated[index - 1];
+      updated[index - 1] = updated[index];
+      updated[index] = temp;
+      setBlocks(updated);
+
+      setTimeout(() => {
+        setAnimatingBlockId(null);
+        setAnimatingDir(null);
+      }, 250);
+    }, 120);
   };
 
   // Move block down
   const handleMoveDown = (index: number) => {
-    if (index === blocks.length - 1) return;
-    const updated = [...blocks];
-    const temp = updated[index + 1];
-    updated[index + 1] = updated[index];
-    updated[index] = temp;
-    setBlocks(updated);
+    if (index === blocks.length - 1 || animatingBlockId) return;
+    const currentId = blocks[index].id;
+    setAnimatingBlockId(currentId);
+    setAnimatingDir('down');
+
+    setTimeout(() => {
+      const updated = [...blocks];
+      const temp = updated[index + 1];
+      updated[index + 1] = updated[index];
+      updated[index] = temp;
+      setBlocks(updated);
+
+      setTimeout(() => {
+        setAnimatingBlockId(null);
+        setAnimatingDir(null);
+      }, 250);
+    }, 120);
   };
 
   // Duplicate block
@@ -489,7 +578,7 @@ export default function ModuleBlockBuilder({
           onClick={() => setSelectedBlockId(null)}
           className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-12 flex justify-center bg-white cursor-default"
         >
-          <div className="w-full max-w-3xl space-y-4 pb-32">
+          <div className="w-full max-w-3xl space-y-2 pb-32">
 
             {/* EMPTY STATE CANVAS */}
             {blocks.length === 0 && (
@@ -523,9 +612,29 @@ export default function ModuleBlockBuilder({
             <div className="space-y-4 pt-2">
               {blocks.map((block, index) => {
                 const isSelected = selectedBlockId === block.id;
+                const isAnimatingThis = animatingBlockId === block.id;
+                const animatingIndex = blocks.findIndex((b) => b.id === animatingBlockId);
+                const isSwappingOther =
+                  animatingBlockId !== null &&
+                  !isAnimatingThis &&
+                  ((animatingDir === 'up' && index === animatingIndex - 1) ||
+                    (animatingDir === 'down' && index === animatingIndex + 1));
 
                 return (
-                  <div key={block.id} className="relative">
+                  <div
+                    key={block.id}
+                    className={`relative transition-all duration-300 ease-in-out transform ${
+                      isAnimatingThis && animatingDir === 'up'
+                        ? '-translate-y-8 scale-[0.98] opacity-80 z-20'
+                        : isAnimatingThis && animatingDir === 'down'
+                        ? 'translate-y-8 scale-[0.98] opacity-80 z-20'
+                        : isSwappingOther && animatingDir === 'up'
+                        ? 'translate-y-6 opacity-80'
+                        : isSwappingOther && animatingDir === 'down'
+                        ? '-translate-y-6 opacity-80'
+                        : 'translate-y-0 scale-100 opacity-100'
+                    }`}
+                  >
                     
                     {/* BLOCK CONTENT WRAPPER WITH FLOATING TOOLBAR SCOPED TO BLOCK HOVER/FOCUS */}
                     <div className="relative group/blockContent">
@@ -588,7 +697,7 @@ export default function ModuleBlockBuilder({
                             setShowRightSidebar(true);
                           }
                         }}
-                        className={`rounded-[12px] p-4 transition-all duration-200 cursor-text relative h-auto ${
+                        className={`rounded-[12px] p-2 transition-all duration-200 cursor-text relative h-auto ${
                           isSelected
                             ? 'outline outline-2 outline-[#2563EB] outline-offset-2 bg-white shadow-2xs'
                             : 'outline outline-2 outline-transparent outline-offset-2 bg-transparent hover:outline-slate-300'
@@ -611,7 +720,7 @@ export default function ModuleBlockBuilder({
                             value={block.textValue || ''}
                             onChange={(val) => updateBlockById(block.id, { textValue: val })}
                             placeholder="Enter your text here...."
-                            className="w-full text-sm text-[#2E2D2D] leading-relaxed placeholder:text-[#AAAAAA] border-none focus:ring-0 outline-none bg-transparent"
+                            className="w-full text-sm text-[#2E2D2D] leading-relaxed placeholder:text-[#AAAAAA] border-none focus:ring-0 outline-none bg-transparent whitespace-pre-line"
                             style={{ textAlign: block.alignment || 'left' }}
                           />
                         </div>
@@ -807,95 +916,203 @@ export default function ModuleBlockBuilder({
                               </span>
                             </div>
 
+                            {/* CUSTOM DROPDOWN SELECTOR FOR JENIS TEST */}
                             <div
                               onClick={(e) => e.stopPropagation()}
-                              className="flex items-center gap-2"
+                              className="relative"
                             >
-                              <label className="text-xs font-semibold text-[#737373]">Jenis Test:</label>
-                              <select
-                                value={block.testType || 'kuis_sitemsa'}
-                                onChange={(e) => updateBlockById(block.id, { testType: e.target.value as TestType })}
-                                className="text-xs font-bold bg-white border border-[#ECECEC] rounded-[6px] px-2.5 py-1 text-[#2563EB] outline-none cursor-pointer focus:border-[#2563EB]"
-                              >
-                                <option value="link_eksternal">Link Eksternal (Quizizz / GForms)</option>
-                                <option value="qr_code">Barcode / QR Code Modal</option>
-                                <option value="kuis_sitemsa">Kuis Native Sitemsa</option>
-                              </select>
+                              <div className="flex items-center gap-2">
+                                <label className="text-xs font-semibold text-[#737373]">Jenis Test:</label>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenTestTypeMenuId(openTestTypeMenuId === block.id ? null : block.id);
+                                  }}
+                                  className="text-xs font-bold bg-white border border-[#ECECEC] hover:border-[#2563EB] rounded-[8px] px-3 py-1.5 text-[#2563EB] outline-none cursor-pointer flex items-center gap-2 shadow-2xs transition-all"
+                                >
+                                  <span>
+                                    {block.testType === 'link_eksternal'
+                                      ? 'Link Eksternal'
+                                      : block.testType === 'qr_code'
+                                      ? 'Barcode / QR Code Modal'
+                                      : 'Kuis Native Sitemsa'}
+                                  </span>
+                                  <ChevronDown className={`w-3.5 h-3.5 text-[#2563EB] transition-transform duration-200 ${openTestTypeMenuId === block.id ? 'rotate-180' : ''}`} />
+                                </button>
+                              </div>
+
+                              {/* FLOATING MENU POPOVER */}
+                              {openTestTypeMenuId === block.id && (
+                                <div
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="absolute right-0 top-full mt-1.5 w-60 bg-white border border-[#ECECEC] rounded-[10px] shadow-lg py-1.5 z-40 animate-in fade-in zoom-in-95 duration-150"
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      updateBlockById(block.id, { testType: 'kuis_sitemsa', testTitle: '' });
+                                      setOpenTestTypeMenuId(null);
+                                    }}
+                                    className={`w-full px-3 py-2 text-left text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                                      block.testType === 'kuis_sitemsa' || !block.testType
+                                        ? 'bg-blue-50 text-[#2563EB] font-bold'
+                                        : 'text-[#2E2D2D] hover:bg-slate-50'
+                                    }`}
+                                  >
+                                    <span>Kuis Native Sitemsa</span>
+                                    {(block.testType === 'kuis_sitemsa' || !block.testType) && <CheckCircle2 className="w-3.5 h-3.5 text-[#2563EB]" />}
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      updateBlockById(block.id, { testType: 'link_eksternal', testTitle: '', testUrl: '' });
+                                      setOpenTestTypeMenuId(null);
+                                    }}
+                                    className={`w-full px-3 py-2 text-left text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                                      block.testType === 'link_eksternal'
+                                        ? 'bg-blue-50 text-[#2563EB] font-bold'
+                                        : 'text-[#2E2D2D] hover:bg-slate-50'
+                                    }`}
+                                  >
+                                    <span>Link Eksternal (Quizizz / GForms)</span>
+                                    {block.testType === 'link_eksternal' && <CheckCircle2 className="w-3.5 h-3.5 text-[#2563EB]" />}
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      updateBlockById(block.id, { testType: 'qr_code', testTitle: '', testUrl: '', qrImageUrl: '' });
+                                      setOpenTestTypeMenuId(null);
+                                    }}
+                                    className={`w-full px-3 py-2 text-left text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                                      block.testType === 'qr_code'
+                                        ? 'bg-blue-50 text-[#2563EB] font-bold'
+                                        : 'text-[#2E2D2D] hover:bg-slate-50'
+                                    }`}
+                                  >
+                                    <span>Barcode / QR Code Modal</span>
+                                    {block.testType === 'qr_code' && <CheckCircle2 className="w-3.5 h-3.5 text-[#2563EB]" />}
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           </div>
 
+                          {/* 1. LINK EKSTERNAL FRAME */}
                           {block.testType === 'link_eksternal' && (
-                            <div className="p-5 rounded-[12px] bg-slate-50 border border-[#ECECEC] space-y-3">
+                            <div className="p-5 rounded-[12px] bg-slate-50 border border-[#ECECEC] space-y-3.5">
                               <div className="flex items-center justify-between">
                                 <span className="text-[11px] font-bold text-blue-600 tracking-wide flex items-center gap-1">
                                   <ExternalLink className="w-3.5 h-3.5" /> Link Eksternal
                                 </span>
                               </div>
+
                               <input
                                 type="text"
                                 value={block.testTitle || ''}
                                 onChange={(e) => updateBlockById(block.id, { testTitle: e.target.value })}
-                                placeholder="Judul Kuis (contoh: Kuis Quizizz Lab Elektronika)"
-                                className="w-full font-bold text-sm text-[#2E2D2D] border-b border-dashed border-slate-300 focus:border-[#2563EB] outline-none bg-transparent pb-1"
+                                placeholder="Judul Kuis Eksternal (contoh: Kuis Quizizz Lab Elektronika)..."
+                                className="w-full font-bold text-sm text-[#2E2D2D] border-b border-dashed border-slate-300 focus:border-[#2563EB] outline-none bg-transparent pb-1 placeholder:text-[#AAAAAA]"
                               />
-                              <textarea
-                                rows={2}
-                                value={block.testDescription || ''}
-                                onChange={(e) => updateBlockById(block.id, { testDescription: e.target.value })}
-                                placeholder="Deskripsi atau petunjuk singkat kuis..."
-                                className="w-full text-xs text-[#737373] border-none focus:ring-0 outline-none bg-transparent resize-none"
-                              />
-                              <div className="pt-2 flex items-center gap-3">
+
+                              <div className="space-y-1">
+                                <label className="text-xs font-semibold text-[#2E2D2D]">Tautan / Link Eksternal:</label>
                                 <input
                                   type="text"
                                   value={block.testUrl || ''}
                                   onChange={(e) => updateBlockById(block.id, { testUrl: e.target.value })}
-                                  placeholder="URL Tautan Kuis (https://...)"
-                                  className="flex-1 h-9 px-3 rounded-[6px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] outline-none"
+                                  placeholder="Tempelkan tautan / link kuis eksternal di sini (misal: https://quizizz.com/join?gc=123456)..."
+                                  className="w-full h-10 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] outline-none focus:border-[#2563EB] placeholder:text-[#AAAAAA]"
                                 />
-                                <button className="px-4 py-2 rounded-[8px] bg-[#2563EB] text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs">
-                                  <span>Mulai Uji Pemahaman</span>
-                                  <ExternalLink className="w-3.5 h-3.5" />
-                                </button>
                               </div>
                             </div>
                           )}
 
+                          {/* 2. BARCODE / QR CODE MODAL FRAME */}
                           {block.testType === 'qr_code' && (
                             <div className="p-5 rounded-[12px] bg-slate-50 border border-[#ECECEC] space-y-4">
                               <div className="flex items-center justify-between">
                                 <span className="text-[11px] font-bold text-purple-600 tracking-wide flex items-center gap-1">
-                                  <QrCode className="w-3.5 h-3.5" /> Barcode / Qr Code
+                                  <QrCode className="w-3.5 h-3.5" /> Barcode / QR Code Modal
                                 </span>
                               </div>
 
-                              <div className="flex flex-col sm:flex-row items-center gap-4">
-                                <div className="w-24 h-24 rounded-[10px] bg-white p-2 border border-[#ECECEC] shrink-0 flex items-center justify-center">
-                                  {/* eslint-disable-next-next/no-img-element */}
-                                  <img
-                                    src={block.qrImageUrl || 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://quizizz.com'}
-                                    alt="QR Code Kuis"
-                                    className="w-full h-full object-contain"
-                                  />
+                              {/* BARCODE UPLOAD SECTION (IMAGE UPLOAD MODEL) */}
+                              {!block.qrImageUrl ? (
+                                <div
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEditingQrBlockId(block.id);
+                                    qrFileInputRef.current?.click();
+                                  }}
+                                  className="border-2 border-dashed border-slate-300 hover:border-[#2563EB] bg-white rounded-[10px] p-6 text-center cursor-pointer transition-all space-y-2 group"
+                                >
+                                  <div className="w-10 h-10 rounded-full bg-purple-50 text-purple-600 group-hover:bg-blue-50 group-hover:text-[#2563EB] flex items-center justify-center mx-auto transition-colors">
+                                    <Upload className="w-5 h-5" />
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-bold text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors">Klik untuk Upload Gambar Barcode / QR Code</p>
+                                    <p className="text-[11px] text-[#737373] mt-0.5">Format file gambar (PNG, JPG, SVG)</p>
+                                  </div>
                                 </div>
-                                <div className="flex-1 space-y-2 w-full">
+                              ) : (
+                                <div className="flex flex-col sm:flex-row items-center gap-4 bg-white p-3 rounded-[10px] border border-[#ECECEC]">
+                                  <div className="w-24 h-24 rounded-[8px] bg-white p-1.5 border border-[#ECECEC] shrink-0 flex items-center justify-center">
+                                    <img
+                                      src={block.qrImageUrl}
+                                      alt="QR Code Kuis"
+                                      className="w-full h-full object-contain"
+                                    />
+                                  </div>
+                                  <div className="flex-1 space-y-2 w-full">
+                                    <p className="text-xs font-bold text-[#2E2D2D]">Gambar Barcode Terpasang</p>
+                                    <div className="flex items-center gap-2">
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setEditingQrBlockId(block.id);
+                                          qrFileInputRef.current?.click();
+                                        }}
+                                        className="px-3 py-1.5 rounded-[6px] bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-[#2E2D2D] cursor-pointer transition-colors"
+                                      >
+                                        Ganti Gambar Barcode
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          updateBlockById(block.id, { qrImageUrl: '' });
+                                        }}
+                                        className="px-3 py-1.5 rounded-[6px] bg-rose-50 hover:bg-rose-100 text-xs font-semibold text-rose-600 cursor-pointer transition-colors"
+                                      >
+                                        Hapus
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* LINK FRAME BELOW BARCODE */}
+                              <div className="space-y-2 pt-1">
+                                <label className="text-xs font-semibold text-[#2E2D2D]">Tautan / URL Tujuan Barcode:</label>
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                                   <input
                                     type="text"
-                                    value={block.testTitle || ''}
-                                    onChange={(e) => updateBlockById(block.id, { testTitle: e.target.value })}
-                                    placeholder="Judul Barcode Kuis"
-                                    className="w-full font-bold text-sm text-[#2E2D2D] border-b border-dashed border-slate-300 focus:border-[#2563EB] outline-none bg-transparent pb-1"
-                                  />
-                                  <input
-                                    type="text"
-                                    value={block.qrImageUrl || ''}
-                                    onChange={(e) => updateBlockById(block.id, { qrImageUrl: e.target.value })}
-                                    placeholder="URL Gambar Barcode QR Code"
-                                    className="w-full h-8 px-2.5 rounded-[6px] bg-white border border-[#ECECEC] text-xs text-[#737373] outline-none"
+                                    value={block.testUrl || ''}
+                                    onChange={(e) => updateBlockById(block.id, { testUrl: e.target.value })}
+                                    placeholder="Masukkan tautan / URL tujuan Barcode..."
+                                    className="flex-1 h-9 px-3 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] outline-none focus:border-[#2563EB] placeholder:text-[#AAAAAA]"
                                   />
                                   <button
-                                    onClick={() => setActiveQrModalUrl(block.qrImageUrl || 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://quizizz.com')}
-                                    className="px-4 py-2 rounded-[8px] bg-[#2563EB] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setActiveQrModalUrl(block.qrImageUrl || 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://quizizz.com');
+                                    }}
+                                    className="px-3.5 py-2 rounded-[8px] bg-[#2563EB] text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover:bg-blue-700 shadow-2xs whitespace-nowrap"
                                   >
                                     <QrCode className="w-3.5 h-3.5" />
                                     <span>Tampilkan Barcode Modal (Preview)</span>
@@ -905,58 +1122,75 @@ export default function ModuleBlockBuilder({
                             </div>
                           )}
 
+                          {/* 3. KUIS NATIVE SITEMSA FRAME */}
                           {(block.testType === 'kuis_sitemsa' || !block.testType) && (
-                            <div className="space-y-3">
-                              <div className="space-y-1">
-                                <label className="text-[11px] font-semibold text-[#737373]">Pertanyaan Kuis Native Sitemsa:</label>
-                                <input
-                                  type="text"
-                                  value={block.testQuestion || ''}
-                                  onChange={(e) => updateBlockById(block.id, { testQuestion: e.target.value })}
-                                  placeholder="Tuliskan pertanyaan kuis di sini..."
-                                  className="w-full font-bold text-sm text-[#2E2D2D] border-b border-dashed border-slate-300 focus:border-[#2563EB] outline-none bg-transparent pb-1"
-                                />
+                            <div className="p-5 rounded-[12px] bg-slate-50 border border-[#ECECEC] space-y-3">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[11px] font-bold text-indigo-600 tracking-wide flex items-center gap-1">
+                                  <HelpCircle className="w-3.5 h-3.5" /> Kuis Native Sitemsa
+                                </span>
                               </div>
 
-                              <div className="space-y-2 pt-1">
-                                <label className="text-[11px] font-semibold text-[#737373]">Opsi Jawaban (Pilih radio button untuk kunci jawaban):</label>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                  {(block.testOptions || []).map((opt, oIdx) => (
-                                    <div
-                                      key={oIdx}
-                                      className={`p-2.5 rounded-[8px] border text-xs font-medium flex items-center gap-2 ${
-                                        block.correctAnswer === oIdx
-                                          ? 'bg-emerald-50 border-emerald-300 text-emerald-900 font-semibold'
-                                          : 'bg-white border-[#ECECEC] text-[#2E2D2D]'
-                                      }`}
-                                    >
-                                      <input
-                                        type="radio"
-                                        name={`correctOption_${block.id}`}
-                                        checked={block.correctAnswer === oIdx}
-                                        onChange={() => updateBlockById(block.id, { correctAnswer: oIdx })}
-                                        className="accent-emerald-600 cursor-pointer"
-                                      />
-                                      <input
-                                        type="text"
-                                        value={opt}
-                                        onChange={(e) => {
-                                          const newOpts = [...(block.testOptions || [])];
-                                          newOpts[oIdx] = e.target.value;
-                                          updateBlockById(block.id, { testOptions: newOpts });
-                                        }}
-                                        className="flex-1 bg-transparent border-none focus:ring-0 outline-none text-xs font-medium"
-                                      />
-                                      {block.correctAnswer === oIdx && (
-                                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                                      )}
-                                    </div>
-                                  ))}
+                              {!block.testTitle ? (
+                                <div className="space-y-2 pt-1">
+                                  <label className="text-xs font-semibold text-[#2E2D2D]">Pilih Kuis yang Telah Dibuat:</label>
+                                  <select
+                                    value=""
+                                    onChange={(e) => updateBlockById(block.id, { testTitle: e.target.value })}
+                                    className="w-full h-10 px-3 rounded-[8px] bg-white border border-[#ECECEC] text-xs font-bold text-[#2563EB] outline-none focus:border-[#2563EB] cursor-pointer"
+                                  >
+                                    <option value="" disabled>-- + Tambah / Pilih Kuis Sitemsa --</option>
+                                    <option value="Kuis 1: Daspro & Variabel Python">Kuis 1: Daspro & Variabel Python (3 Soal)</option>
+                                    <option value="Kuis 2: Rangkaian Listrik Seri & Paralel">Kuis 2: Rangkaian Listrik Seri & Paralel (5 Soal)</option>
+                                    <option value="Kuis 3: Logika & Algoritma Lanjutan">Kuis 3: Logika & Algoritma Lanjutan (4 Soal)</option>
+                                  </select>
                                 </div>
-                              </div>
+                              ) : (
+                                <div className="p-4 rounded-[10px] bg-white border border-[#ECECEC] hover:border-[#2563EB] shadow-2xs flex items-center justify-between transition-all">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-[8px] bg-blue-50 text-[#2563EB] flex items-center justify-center shrink-0">
+                                      <HelpCircle className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                      <h4 className="text-xs font-bold text-[#2E2D2D]">{block.testTitle}</h4>
+                                      <p className="text-[11px] text-[#737373] mt-0.5">Redirect langsung ke halaman kuis Sitemsa</p>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        updateBlockById(block.id, { testTitle: '' });
+                                      }}
+                                      className="px-3 py-1.5 rounded-[6px] bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-[#737373] transition-colors cursor-pointer"
+                                    >
+                                      Ubah Kuis
+                                    </button>
+                                    <span className="px-3 py-1.5 rounded-[6px] bg-[#2563EB] text-white text-xs font-bold inline-flex items-center gap-1">
+                                      <span>Buka Kuis</span>
+                                      <ChevronRight className="w-3.5 h-3.5" />
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           )}
 
+                        </div>
+                      )}
+
+                      {/* 7. CATATAN HIGHLIGHT / CALLOUT BLOCK */}
+                      {block.type === 'callout' && (
+                        <div className="bg-[#F4EFFF] border-l-4 border-[#0400F4] rounded-r-[8px] p-3.5 text-xs md:text-sm text-[#2E2D2D] leading-relaxed font-medium transition-all h-fit">
+                          <AutoResizeTextarea
+                            value={block.textValue || ''}
+                            onChange={(val) => updateBlockById(block.id, { textValue: val })}
+                            placeholder="Tuliskan catatan highlight / prinsip utama di sini..."
+                            className="w-full bg-transparent border-none text-xs md:text-sm font-medium text-[#2E2D2D] outline-none placeholder:text-[#AAAAAA] focus:ring-0 p-0 m-0 leading-relaxed block whitespace-pre-line"
+                            rows={1}
+                          />
                         </div>
                       )}
 
@@ -968,8 +1202,10 @@ export default function ModuleBlockBuilder({
                       const isInsertActive = insertTargetIndex === index && showRightSidebar;
                       return (
                         <div
-                          className={`relative py-5 flex items-center justify-center z-20 transition-opacity duration-200 group/insertArea ${
-                            isInsertActive ? 'opacity-100' : 'opacity-0 hover:opacity-100'
+                          className={`relative flex items-center justify-center z-20 transition-all duration-200 group/insertArea ${
+                            isInsertActive
+                              ? 'opacity-100 py-3.5 my-1'
+                              : 'opacity-0 hover:opacity-100 py-1 my-0.5 hover:py-3.5 hover:my-1'
                           }`}
                         >
                           <div className="absolute inset-0 flex items-center pointer-events-none">
@@ -1164,6 +1400,17 @@ export default function ModuleBlockBuilder({
                       </div>
                       <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
                     </button>
+
+                    <button
+                      onClick={() => handleAddBlock('callout')}
+                      className="w-full p-3 rounded-[8px] bg-white border border-[#ECECEC] hover:border-[#2563EB] hover:bg-blue-50/50 text-left flex items-center justify-between text-xs font-semibold transition-all cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Sparkles className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
+                        <span className="text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors">Catatan Highlight (Callout)</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
+                    </button>
                   </div>
                 </div>
               </>
@@ -1189,6 +1436,15 @@ export default function ModuleBlockBuilder({
         type="file"
         accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar,image/*"
         onChange={handleAttachmentFileSelect}
+        className="hidden"
+      />
+
+      {/* HIDDEN FILE INPUT FOR QR CODE IMAGE UPLOAD */}
+      <input
+        ref={qrFileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleQrFileSelect}
         className="hidden"
       />
 
@@ -1330,7 +1586,7 @@ export default function ModuleBlockBuilder({
         </div>
       )}
 
-      {/* QR CODE POPUP MODAL PREVIEW FOR TEST BLOCK (CLEAN TEXT HEADLINE - NO ICON) */}
+      {/* QR CODE POPUP MODAL PREVIEW FOR TEST BLOCK (LIGHT MODE) */}
       {activeQrModalUrl && (
         <div
           onClick={() => setActiveQrModalUrl(null)}
@@ -1338,19 +1594,19 @@ export default function ModuleBlockBuilder({
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-[#2E2D2D] text-[#ECECEC] rounded-[16px] p-6 w-full max-w-sm text-center space-y-4 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200"
+            className="bg-white text-[#2E2D2D] rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-sm text-center space-y-4 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200"
           >
             <button
               onClick={() => setActiveQrModalUrl(null)}
-              className="absolute right-4 top-4 w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              className="absolute right-4 top-4 w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer"
               aria-label="Tutup Modal"
             >
               <X className="w-4 h-4" />
             </button>
 
-            <h3 className="font-bold text-base text-white pt-2">Pindai Barcode Kuis</h3>
+            <h3 className="font-bold text-base text-[#2E2D2D] pt-2">Pindai Barcode Kuis</h3>
 
-            <div className="w-56 h-56 mx-auto bg-white p-3 rounded-[12px] border border-[#ECECEC] shadow-inner flex items-center justify-center">
+            <div className="w-56 h-56 mx-auto bg-white p-3 rounded-[12px] border border-[#ECECEC] shadow-xs flex items-center justify-center">
               {/* eslint-disable-next-next/no-img-element */}
               <img
                 src={activeQrModalUrl}
@@ -1359,13 +1615,13 @@ export default function ModuleBlockBuilder({
               />
             </div>
 
-            <p className="text-xs text-slate-300 leading-relaxed">
+            <p className="text-xs text-[#737373] leading-relaxed">
               Pindai Barcode / QR Code di atas menggunakan kamera ponsel Anda untuk masuk ke kuis pengajar.
             </p>
 
             <button
               onClick={() => setActiveQrModalUrl(null)}
-              className="w-full py-2.5 rounded-[8px] bg-[#2563EB] text-white text-xs font-bold hover:bg-blue-700 shadow-xs"
+              className="w-full py-2.5 rounded-[8px] bg-[#2563EB] text-white text-xs font-bold hover:bg-blue-700 shadow-xs cursor-pointer"
             >
               Atau Buka Tautan Langsung &rarr;
             </button>

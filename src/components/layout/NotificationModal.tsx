@@ -165,7 +165,7 @@ export function NotificationModal({
                     {item.time}
                   </span>
                 </div>
-                <p className="text-xs leading-relaxed line-clamp-2 text-[#737373]">
+                <p className="text-xs leading-relaxed line-clamp-2 text-[#737373] font-medium">
                   {item.message}
                 </p>
               </div>

@@ -101,7 +101,7 @@ export function SubjectCatalog() {
           return (
             <Link
               key={subject.id}
-              href={`/materi/${subject.id}`}
+              href={`/materi?bidang=${encodeURIComponent(subject.name)}`}
               className="bg-white border border-[#ECECEC] rounded-[10px] p-4 space-y-3 hover:bg-[#F6F5FF] hover:border-[#2563EB]/40 transition-all duration-300 ease-out group cursor-pointer block"
             >
               {/* Header: Title + Optional Badge */}

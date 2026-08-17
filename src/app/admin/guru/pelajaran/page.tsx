@@ -163,7 +163,7 @@ export default function AdminGuruPelajaranPage() {
   ];
 
   return (
-    <div className="font-sans text-[#2E2D2D] bg-white space-y-6 pb-6">
+    <div className="font-sans text-[#2E2D2D] bg-white space-y-8 pb-6">
       
       {/* Dynamic Headline Header (NO SUBTITLE & NO DIVIDER LINE) */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -188,15 +188,24 @@ export default function AdminGuruPelajaranPage() {
             <Skeleton className="h-10 w-36" />
           ) : (
             <>
-              {/* SHOW "+ Tambah Modul Materi Baru" ONLY IN LANDING OVERVIEW MODE */}
+              {/* SHOW "+ Tambah Materi Baru" AND "+ Tambah Kuis Baru" ONLY IN LANDING OVERVIEW MODE */}
               {!selectedItemId && (
-                <button
-                  onClick={() => handleOpenBlockBuilder()}
-                  className="px-4 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Tambah Modul Materi Baru</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleOpenBlockBuilder()}
+                    className="px-4 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Tambah Materi Baru</span>
+                  </button>
+                  <button
+                    onClick={() => handleOpenBlockBuilder()}
+                    className="px-4 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Tambah Kuis Baru</span>
+                  </button>
+                </div>
               )}
 
               {/* MATERIAL DETAIL MODE ACTIONS (REMOVED 'SEMUA MODUL', COPY UPDATED TO 'EDIT MATERI') */}
@@ -255,117 +264,121 @@ export default function AdminGuruPelajaranPage() {
             {!selectedItemId && (
               <div className="space-y-6">
                 
-                {/* Subject Banner Summary */}
-                <div className="p-6 rounded-[12px] bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-white border border-blue-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
-                  <div className="space-y-1">
-                    <span className="text-[11px] font-bold text-[#2563EB] tracking-wide bg-blue-100/60 px-2.5 py-0.5 rounded">
-                      Bidang: {currentSubject}
-                    </span>
-                    <h2 className="text-xl font-bold text-[#2E2D2D]">
-                      Kelola Kurikulum & Materi {currentSubject}
-                    </h2>
-                    <p className="text-xs text-[#737373]">
-                      Total {subjectModules.length} Modul Pembelajaran dan {subjectQuizzes.length} Kuis Interaktif aktif.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleOpenBlockBuilder()}
-                    className="px-4 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-2 shadow-xs cursor-pointer shrink-0"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Buat Modul Baru</span>
-                  </button>
-                </div>
-
                 {/* MODULES & QUIZZES GRID */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-[#2E2D2D] flex items-center gap-2">
-                      <BookOpen className="w-4 h-4 text-[#2563EB]" />
-                      Daftar Modul Materi
-                    </h3>
-                    <span className="text-xs font-semibold text-[#737373]">
-                      {subjectModules.length} Modul Tersedia
-                    </span>
-                  </div>
+                <div className="space-y-6">
+                  
+                  {/* SECTION 1: DAFTAR MODUL MATERI */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2.5">
+                      <h3 className="text-base font-bold text-[#2E2D2D]">
+                        Daftar Modul Materi
+                      </h3>
+                      <span className="px-2.5 py-0.5 rounded-[6px] bg-[#2563EB] text-white text-xs font-bold">
+                        {subjectModules.length} Materi
+                      </span>
+                    </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {subjectModules.map((mod) => (
-                      <div
-                        key={mod.id}
-                        className="bg-white p-5 rounded-[12px] border border-[#ECECEC] hover:border-blue-300 hover:shadow-xs transition-all flex flex-col justify-between space-y-4 group"
-                      >
-                        <div className="space-y-2.5">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-bold text-[#2563EB] bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
-                              {mod.level}
-                            </span>
-                            <span className="text-xs text-[#737373] flex items-center gap-1">
-                              <Clock className="w-3.5 h-3.5" /> {mod.duration}
-                            </span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {subjectModules.map((mod) => (
+                        <div
+                          key={mod.id}
+                          className="bg-white p-5 rounded-[12px] border border-[#ECECEC] hover:border-blue-300 hover:shadow-xs transition-all flex flex-col justify-between space-y-4 group"
+                        >
+                          <div className="space-y-2.5">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-bold text-[#2563EB] bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
+                                {mod.level}
+                              </span>
+                            </div>
+
+                            <h4 className="font-bold text-sm text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors leading-snug">
+                              {mod.title}
+                            </h4>
+
+                            <p className="text-xs text-[#737373] line-clamp-2 leading-relaxed">
+                              {mod.description}
+                            </p>
                           </div>
 
-                          <h4 className="font-bold text-sm text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors leading-snug">
-                            {mod.title}
-                          </h4>
+                          <div className="pt-2 flex items-center justify-end gap-2.5">
+                            <a
+                              href={`/admin/guru/pelajaran?item=${mod.id}`}
+                              title="Pratinjau Materi"
+                              className="p-1.5 rounded-[6px] bg-slate-50 hover:bg-blue-50 text-[#737373] hover:text-[#2563EB] transition-colors cursor-pointer"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </a>
 
-                          <p className="text-xs text-[#737373] line-clamp-2 leading-relaxed">
-                            {mod.description}
-                          </p>
+                            <button
+                              onClick={() => handleOpenBlockBuilder(mod)}
+                              title="Edit Materi"
+                              className="p-1.5 rounded-[6px] bg-slate-50 hover:bg-blue-50 text-[#737373] hover:text-[#2563EB] transition-colors cursor-pointer"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
-
-                        <div className="pt-2 flex items-center justify-between">
-                          <a
-                            href={`/admin/guru/pelajaran?item=${mod.id}`}
-                            className="text-xs font-bold text-[#2563EB] hover:underline flex items-center gap-1"
-                          >
-                            <span>Lihat Data Detail</span>
-                            <ArrowUpRight className="w-3.5 h-3.5" />
-                          </a>
-
-                          <button
-                            onClick={() => handleOpenBlockBuilder(mod)}
-                            className="text-xs font-semibold text-[#737373] hover:text-[#2E2D2D] p-1 rounded hover:bg-slate-100"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
 
-                  {/* QUIZZES LIST CARDS */}
+                  {/* SECTION 2: KUIS & EVALUASI */}
                   {subjectQuizzes.length > 0 && (
-                    <div className="space-y-3 pt-4">
-                      <h4 className="text-xs font-bold text-[#737373] flex items-center gap-1.5">
-                        <HelpCircle className="w-4 h-4 text-indigo-600" /> Kuis & Evaluasi
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-4 pt-2">
+                      <div className="flex items-center gap-2.5">
+                        <h3 className="text-base font-bold text-[#2E2D2D]">
+                          Kuis & Evaluasi
+                        </h3>
+                        <span className="px-2.5 py-0.5 rounded-[6px] bg-[#2563EB] text-white text-xs font-bold">
+                          {subjectQuizzes.length} Kuis
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {subjectQuizzes.map((qz) => (
                           <div
                             key={qz.id}
-                            className="p-5 rounded-[10px] bg-slate-50/60 border border-[#ECECEC] hover:border-indigo-500 hover:bg-indigo-50/20 transition-all flex flex-col justify-between space-y-4"
+                            className="bg-white p-5 rounded-[12px] border border-[#ECECEC] hover:border-indigo-300 hover:shadow-xs transition-all flex flex-col justify-between space-y-4 group"
                           >
-                            <div className="space-y-2">
+                            <div className="space-y-2.5">
                               <div className="flex items-center justify-between">
-                                <span className="text-[10px] font-bold text-indigo-600 bg-white px-2 py-0.5 rounded border border-[#ECECEC]">
-                                  Kuis Interactive
-                                </span>
-                                <span className="text-xs text-[#737373] flex items-center gap-1">
-                                  <Clock className="w-3.5 h-3.5" /> {qz.duration}
+                                <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                                  Kuis Interaktif
                                 </span>
                               </div>
-                              <h5 className="font-bold text-sm text-[#2E2D2D]">{qz.title}</h5>
-                              <p className="text-xs text-[#737373]">Jumlah Soal: {qz.questions.length} Soal &bull; Passing Score: {qz.passScore}</p>
+
+                              <h4 className="font-bold text-sm text-[#2E2D2D] group-hover:text-indigo-600 transition-colors leading-snug">
+                                {qz.title}
+                              </h4>
+
+                              <div className="flex items-center gap-3 text-xs text-[#737373] pt-0.5">
+                                <span className="flex items-center gap-1.5 font-medium">
+                                  <FileText className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                                  <span>{qz.questions.length} Soal</span>
+                                </span>
+                                <span className="flex items-center gap-1.5 font-medium">
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                  <span>Pass Score {qz.passScore}</span>
+                                </span>
+                              </div>
                             </div>
 
-                            <div className="pt-2">
+                            <div className="pt-2 flex items-center justify-end gap-2.5">
                               <a
                                 href={`/admin/guru/pelajaran?item=${qz.id}`}
-                                className="text-xs font-bold text-indigo-600 hover:underline"
+                                title="Pratinjau Kuis"
+                                className="p-1.5 rounded-[6px] bg-slate-50 hover:bg-indigo-50 text-[#737373] hover:text-indigo-600 transition-colors cursor-pointer"
                               >
-                                Lihat Detail Kuis &rarr;
+                                <Eye className="w-4 h-4" />
                               </a>
+
+                              <button
+                                onClick={() => handleOpenBlockBuilder()}
+                                title="Edit Kuis"
+                                className="p-1.5 rounded-[6px] bg-slate-50 hover:bg-indigo-50 text-[#737373] hover:text-indigo-600 transition-colors cursor-pointer"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
                             </div>
                           </div>
                         ))}

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -206,11 +207,22 @@ const getLevelBadgeClass = (level: string) => {
   }
 };
 
-export default function MateriLandingPage() {
-  const [selectedCategory, setSelectedCategory] = useState("Semua");
+function MateriLandingContent() {
+  const searchParams = useSearchParams();
+  const bidangParam = searchParams.get('bidang') || searchParams.get('subject');
+
+  const [selectedCategory, setSelectedCategory] = useState(
+    bidangParam && CATEGORIES.includes(bidangParam) ? bidangParam : "Semua"
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (bidangParam && CATEGORIES.includes(bidangParam)) {
+      setSelectedCategory(bidangParam);
+    }
+  }, [bidangParam]);
 
   // Simulate skeleton loading on mount
   useEffect(() => {
@@ -572,5 +584,13 @@ export default function MateriLandingPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function MateriLandingPage() {
+  return (
+    <Suspense fallback={null}>
+      <MateriLandingContent />
+    </Suspense>
   );
 }

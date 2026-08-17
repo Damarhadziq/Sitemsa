@@ -213,7 +213,7 @@ export default function NotifikasiPage() {
                     </span>
                   </div>
 
-                  <p className="text-xs text-[#737373] leading-relaxed">
+                  <p className="text-xs text-[#737373] leading-relaxed font-medium">
                     {item.description}
                   </p>
 

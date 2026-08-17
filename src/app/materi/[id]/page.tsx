@@ -484,7 +484,8 @@ export default function MaterialDetailPage({
   const { id } = use(params);
   const materialId = parseInt(id, 10) || 1;
   const material = MATERIAL_DATABASE[materialId] || MATERIAL_DATABASE[1];
-  const [activeSection, setActiveSection] = useState(material.contentSections[0]?.id || "pengantar");
+  const initialSectionId = material.videoSection ? "video-tutorial" : (material.contentSections[0]?.id || "pengantar");
+  const [activeSection, setActiveSection] = useState(initialSectionId);
   const [copiedCode, setCopiedCode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [showBackToTop, setShowBackToTop] = useState(false);
@@ -560,8 +561,8 @@ export default function MaterialDetailPage({
     );
 
     const observeIds = [
-      ...material.contentSections.map((s) => s.id),
       ...(material.videoSection ? ["video-tutorial"] : []),
+      ...material.contentSections.map((s) => s.id),
       ...(material.stepByStepSection ? ["langkah-praktik"] : []),
     ];
 
@@ -694,14 +695,14 @@ export default function MaterialDetailPage({
                     </h2>
 
                     {section.paragraphs.map((p, pIdx) => (
-                      <p key={pIdx} className="text-xs md:text-sm text-[#4A4A4A] leading-relaxed">
+                      <p key={pIdx} className="text-xs md:text-sm text-[#4A4A4A] leading-relaxed whitespace-pre-line">
                         {p}
                       </p>
                     ))}
 
                     {/* Highlighted Note Callout Box */}
                     {section.callout && (
-                      <div className="bg-[#F4EFFF] border-l-4 border-[#0400F4] rounded-r-[8px] p-4 text-xs md:text-sm text-[#2E2D2D] leading-relaxed font-medium">
+                      <div className="bg-[#F4EFFF] border-l-4 border-[#0400F4] rounded-r-[8px] p-4 text-xs md:text-sm text-[#2E2D2D] leading-relaxed font-medium whitespace-pre-line">
                         {section.callout}
                       </div>
                     )}

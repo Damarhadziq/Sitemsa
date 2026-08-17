@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sitemsa — Platform Pembelajaran Digital Vokasi
 
-## Getting Started
+Sitemsa (Sintesa Learning Space) adalah platform pembelajaran interaktif vokasi untuk siswa, pengajar/guru, dan superadministrator yang dikembangkan oleh Tim PPL Lantip 7 SMK Negeri 1 Semarang & Universitas Negeri Semarang (UNNES).
 
-First, run the development server:
+---
 
+## 🚀 Panduan Jalankan Proyek untuk Tim (GitHub Clone)
+
+Untuk anggota tim yang baru saja mengklon (*clone*) repositori ini dari GitHub, ikuti langkah-langkah berikut:
+
+### 1. Klon Repositori
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <URL_REPOSITORI_GITHUB>
+cd SINTESA
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Install Dependensi
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Salin Environment Variables
+Salin file templat `.env.example` menjadi `.env.local`:
+```bash
+cp .env.example .env.local
+# Pada Windows PowerShell:
+# Copy-Item .env.example .env.local
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 4. Jalankan Server Pengembang (Local Dev)
+```bash
+npm run dev
+```
 
-## Learn More
+Buka peramban di [http://localhost:3000](http://localhost:3000).
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🔐 Akun Akses Demo (Local Test)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Peran | Email | Kata Sandi | Halaman Utama |
+| :--- | :--- | :--- | :--- |
+| **Siswa** | `siswa@sintesa.id` | *(Bebas)* | `/` |
+| **Guru / Pengajar** | `budi.guru@sintesa.id` | *(Bebas)* | `/admin/guru` |
+| **Superadministrator** | `admin@sintesa.id` | *(Bebas)* | `/admin/superadmin` |
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🛠️ Teknologi & Fitur Utama
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Framework**: Next.js 16 (App Router & Turbopack)
+- **UI & Iconography**: React, Tailwind CSS, Lucide React, Hugeicons
+- **Desain & Responsif**: Mobile-First Responsive, CSS Glassmorphism, Zero Layout Shift
+- **State & Auth**: Client-side Mock State & Role Auth Context (`useAuth`)

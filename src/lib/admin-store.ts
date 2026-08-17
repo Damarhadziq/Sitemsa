@@ -239,7 +239,7 @@ const INITIAL_HERO: HeroContent = {
   badgeText: 'Platform Pembelajaran Vokasi Modern',
   ctaText: 'Mulai Belajar Sekarang',
   ctaLink: '/materi',
-  bannerImage: '/WAVE VECTOR LOGIN.svg',
+  bannerImage: '/svg/wave-vector-login.svg',
 };
 
 const INITIAL_ARTICLES: WebArticle[] = [

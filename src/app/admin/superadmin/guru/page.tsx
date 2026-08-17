@@ -330,7 +330,7 @@ export default function SuperadminGuruPage() {
                   Penugasan hak akses pelajaran (Ditetapkan Superadmin)
                 </label>
                 <p className="text-xs text-blue-700 mb-3 leading-relaxed">
-                  Centang mata pelajaran yang boleh dikelola oleh guru ini. Guru hanya memiliki akses pada mapel yang diizinkan!
+                  Centang bidang yang boleh dikelola oleh guru ini. Guru hanya memiliki akses pada bidang yang diizinkan!
                 </p>
 
                 <div className="grid grid-cols-2 gap-2">

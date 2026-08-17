@@ -62,10 +62,10 @@ export default function SuperadminDashboard() {
             </div>
           </div>
 
-          {/* Stat 2: Mata Pelajaran */}
+          {/* Stat 2: Bidang Keahlian */}
           <div className="bg-white rounded-[10px] border border-[#ECECEC] p-6 flex flex-col justify-between min-h-[160px]">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-[#737373]">Mata pelajaran</span>
+              <span className="text-xs font-semibold text-[#737373]">Bidang keahlian</span>
               <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-[4px] flex items-center gap-0.5">
                 <TrendingUp className="w-3 h-3" /> 01.1%
               </span>
@@ -98,7 +98,7 @@ export default function SuperadminDashboard() {
           <div className="bg-white rounded-[10px] border border-[#ECECEC] p-6 flex flex-col justify-between min-h-[160px]">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-[#737373]">Siswa terdaftar</span>
-              <span className="text-[11px] font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-[4px] flex items-center gap-0.5">
+              <span className="text-[11px] font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-[4px] flex items-center gap-0.5">
                 <TrendingDown className="w-3 h-3" /> 03.7%
               </span>
             </div>
@@ -244,14 +244,14 @@ export default function SuperadminDashboard() {
           </div>
         </div>
 
-        {/* BOTTOM RIGHT CARD: Ringkasan Akun Guru & Mapel */}
+        {/* BOTTOM RIGHT CARD: Ringkasan Akun Guru & Bidang */}
         <div className="lg:col-span-5 bg-white rounded-[10px] border border-[#ECECEC] p-6 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2.5">
-                <h3 className="text-base font-semibold text-[#2E2D2D]">Ringkasan Akun & Mapel</h3>
+                <h3 className="text-base font-semibold text-[#2E2D2D]">Ringkasan Akun & Bidang</h3>
                 <span className="text-[11px] font-semibold text-white bg-[#2563EB] px-2.5 py-0.5 rounded-[4px]">
-                  4 Mapel
+                  {subjects.length} Bidang
                 </span>
               </div>
               <Link href="/admin/superadmin/konten" className="text-xs font-semibold text-[#2563EB] hover:underline">
@@ -262,7 +262,7 @@ export default function SuperadminDashboard() {
             <div className="divide-y divide-[#ECECEC]">
               <div className="py-3.5 first:pt-0 last:pb-0 flex items-center justify-between">
                 <div className="space-y-1.5">
-                  <p className="font-semibold text-[#2E2D2D] text-sm">4 Kategori Mapel Utama</p>
+                  <p className="font-semibold text-[#2E2D2D] text-sm">{subjects.length} Kategori Bidang Utama</p>
                   <div className="flex items-center gap-3 text-xs text-[#737373]">
                     <span className="flex items-center gap-1">
                       <Layers className="w-3.5 h-3.5 text-[#737373]" />

@@ -243,7 +243,7 @@ export default function AdminGuruPelajaranPage() {
                 <div className="p-6 rounded-[12px] bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-white border border-blue-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
                   <div className="space-y-1">
                     <span className="text-[11px] font-bold text-[#2563EB] tracking-wide bg-blue-100/60 px-2.5 py-0.5 rounded">
-                      Mata Pelajaran: {currentSubject}
+                      Bidang: {currentSubject}
                     </span>
                     <h2 className="text-xl font-bold text-[#2E2D2D]">
                       Kelola Kurikulum & Materi {currentSubject}
@@ -373,7 +373,7 @@ export default function AdminGuruPelajaranPage() {
                       <span className="text-xs font-semibold text-[#737373]">Total Akses Siswa</span>
                       <Eye className="w-4 h-4 text-[#2563EB]" />
                     </div>
-                    <p className="text-2xl font-bold text-[#2E2D2D]">225 <span className="text-xs font-normal text-emerald-600 flex items-center inline-flex gap-0.5"><TrendingUp className="w-3 h-3" /> +18%</span></p>
+                    <p className="text-2xl font-bold text-[#2E2D2D]">225 <span className="text-xs font-normal text-emerald-600 flex items-center inline-flex gap-0.5"><TrendingUp className="w-3 h-3" /> 18%</span></p>
                     <p className="text-[11px] text-[#AAAAAA]">Dibaca 225 kali bulan ini</p>
                   </div>
 
@@ -448,9 +448,31 @@ export default function AdminGuruPelajaranPage() {
                           strokeLinejoin="round"
                         />
 
-                        {/* Data Dots & Labels */}
+                        {/* Data Dots, Vertical Guides & Labels */}
                         {weeklyAccessData.map((d, i) => (
                           <g key={i} className="group cursor-pointer">
+                            {/* Invisible full-height vertical hit area column */}
+                            <rect
+                              x={d.x - 35}
+                              y="10"
+                              width="70"
+                              height="140"
+                              fill="transparent"
+                              className="cursor-pointer"
+                            />
+
+                            {/* Vertical Guide Line on Hover */}
+                            <line
+                              x1={d.x}
+                              y1="25"
+                              x2={d.x}
+                              y2="145"
+                              stroke="#2563EB"
+                              strokeWidth="1.5"
+                              strokeDasharray="3 3"
+                              className="opacity-0 group-hover:opacity-60 transition-opacity pointer-events-none"
+                            />
+
                             <circle
                               cx={d.x}
                               cy={d.y}
@@ -461,12 +483,12 @@ export default function AdminGuruPelajaranPage() {
                               x={d.x}
                               y="160"
                               textAnchor="middle"
-                              className="text-[11px] font-semibold fill-[#737373] group-hover:fill-[#2563EB]"
+                              className="text-[11px] font-semibold fill-[#737373] group-hover:fill-[#2563EB] transition-colors"
                             >
                               {d.day}
                             </text>
 
-                            <g className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            <g className="opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                               <rect
                                 x={d.x - 28}
                                 y={d.y - 30}
@@ -532,9 +554,31 @@ export default function AdminGuruPelajaranPage() {
                           strokeLinejoin="round"
                         />
 
-                        {/* Data Dots & Labels */}
+                        {/* Data Dots, Vertical Guides & Labels */}
                         {weeklyDurationData.map((d, i) => (
                           <g key={i} className="group cursor-pointer">
+                            {/* Invisible full-height vertical hit area column */}
+                            <rect
+                              x={d.x - 35}
+                              y="10"
+                              width="70"
+                              height="140"
+                              fill="transparent"
+                              className="cursor-pointer"
+                            />
+
+                            {/* Vertical Guide Line on Hover */}
+                            <line
+                              x1={d.x}
+                              y1="25"
+                              x2={d.x}
+                              y2="145"
+                              stroke="#4F46E5"
+                              strokeWidth="1.5"
+                              strokeDasharray="3 3"
+                              className="opacity-0 group-hover:opacity-60 transition-opacity pointer-events-none"
+                            />
+
                             <circle
                               cx={d.x}
                               cy={d.y}
@@ -545,12 +589,12 @@ export default function AdminGuruPelajaranPage() {
                               x={d.x}
                               y="160"
                               textAnchor="middle"
-                              className="text-[11px] font-semibold fill-[#737373] group-hover:fill-[#4F46E5]"
+                              className="text-[11px] font-semibold fill-[#737373] group-hover:fill-[#4F46E5] transition-colors"
                             >
                               {d.day}
                             </text>
 
-                            <g className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            <g className="opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                               <rect
                                 x={d.x - 28}
                                 y={d.y - 30}
@@ -595,7 +639,7 @@ export default function AdminGuruPelajaranPage() {
 
                       {/* Evaluasi / Tes & Tautan Akses - SINGLE OPTION PER MODULE */}
                       <div className="space-y-1.5">
-                        <p className="text-[11px] font-medium text-[#737373] tracking-wide">Akses Ujian & Evaluasi</p>
+                        <p className="text-[11px] font-medium text-[#737373]">Akses Ujian & Evaluasi</p>
                         
                         {/* Single Test Display based on selected module */}
                         {selectedModule.id === 'mod-1' ? (
@@ -622,7 +666,7 @@ export default function AdminGuruPelajaranPage() {
                                   href="https://forms.google.com/d/e/1FAIpQLSc_Sitemsa_Elektronika_Quiz_2026/viewform"
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="text-[#2563EB] hover:underline font-mono text-[11px] truncate block flex-1"
+                                  className="text-[#2563EB] hover:underline font-medium text-[11px] truncate block flex-1"
                                   title="https://forms.google.com/d/e/1FAIpQLSc_Sitemsa_Elektronika_Quiz_2026/viewform"
                                 >
                                   https://forms.google.com/d/e/1FAIpQLSc_Sitemsa_Elektronika_Quiz_2026/viewform
@@ -657,7 +701,7 @@ export default function AdminGuruPelajaranPage() {
 
                       {/* File & Lampiran Materi Buttons */}
                       <div className="space-y-1.5">
-                        <p className="text-[11px] font-medium text-[#737373] tracking-wide">File & Berkas Lampiran</p>
+                        <p className="text-[11px] font-medium text-[#737373]">File & Berkas Lampiran</p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <a
                             href="#"
@@ -695,7 +739,7 @@ export default function AdminGuruPelajaranPage() {
 
                       {/* Topik Pembahasan */}
                       <div className="space-y-1.5">
-                        <p className="text-[11px] font-medium text-[#737373] tracking-wide">Topik Pembahasan</p>
+                        <p className="text-[11px] font-medium text-[#737373]">Topik Pembahasan</p>
                         <div className="flex flex-wrap gap-2">
                           {selectedModule.topics.map((tp, idx) => (
                             <span key={idx} className="text-xs font-medium text-[#2563EB] bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded-[6px]">

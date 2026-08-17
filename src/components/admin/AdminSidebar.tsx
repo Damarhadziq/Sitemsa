@@ -73,13 +73,13 @@ export function AdminSidebar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-[8px] font-bold transition-all cursor-pointer ${
+                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-[8px] font-bold transition-all cursor-pointer group ${
                     isActive
                       ? 'bg-blue-50/50 text-[#2563EB]'
-                      : 'text-[#737373] hover:bg-slate-50 hover:text-[#2E2D2D]'
+                      : 'text-[#737373] hover:bg-slate-50 hover:text-[#2563EB]'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-[#2563EB]' : 'text-[#737373]'}`} />
+                  <Icon className={`w-4 h-4 transition-colors ${isActive ? 'text-[#2563EB]' : 'text-[#737373] group-hover:text-[#2563EB]'}`} />
                   <span>{item.name}</span>
                 </Link>
               );
@@ -89,13 +89,13 @@ export function AdminSidebar() {
               {/* Dashboard Guru Link */}
               <Link
                 href="/admin/guru"
-                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-[8px] font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-[8px] font-bold transition-all cursor-pointer group ${
                   pathname === '/admin/guru'
                     ? 'bg-blue-50/50 text-[#2563EB]'
-                    : 'text-[#737373] hover:bg-slate-50 hover:text-[#2E2D2D]'
+                    : 'text-[#737373] hover:bg-slate-50 hover:text-[#2563EB]'
                 }`}
               >
-                <LayoutDashboard className={`w-4 h-4 ${pathname === '/admin/guru' ? 'text-[#2563EB]' : 'text-[#737373]'}`} />
+                <LayoutDashboard className={`w-4 h-4 transition-colors ${pathname === '/admin/guru' ? 'text-[#2563EB]' : 'text-[#737373] group-hover:text-[#2563EB]'}`} />
                 <span>Dashboard Guru</span>
               </Link>
 
@@ -104,17 +104,17 @@ export function AdminSidebar() {
                 
                 {/* Parent Title Row */}
                 <div
-                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-[8px] transition-all ${
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-[8px] transition-all group ${
                     isLandingActive
                       ? 'bg-blue-50/50 text-[#2563EB]'
-                      : 'text-[#737373] hover:bg-slate-50 hover:text-[#2E2D2D]'
+                      : 'text-[#737373] hover:bg-slate-50 hover:text-[#2563EB]'
                   }`}
                 >
                   <Link
                     href="/admin/guru/pelajaran"
                     className="flex-1 flex items-center gap-3 font-bold text-xs cursor-pointer truncate"
                   >
-                    <BookOpen className={`w-4 h-4 shrink-0 ${isLandingActive ? 'text-[#2563EB]' : 'text-[#737373]'}`} />
+                    <BookOpen className={`w-4 h-4 shrink-0 transition-colors ${isLandingActive ? 'text-[#2563EB]' : 'text-[#737373] group-hover:text-[#2563EB]'}`} />
                     <span className="truncate">Modul & Kuis</span>
                   </Link>
 
@@ -124,9 +124,9 @@ export function AdminSidebar() {
                     className="p-0.5 hover:opacity-80 cursor-pointer ml-1"
                   >
                     {isTreeExpanded ? (
-                      <ChevronDown className={`w-4 h-4 ${isLandingActive ? 'text-[#2563EB]' : 'text-[#737373]'}`} />
+                      <ChevronDown className={`w-4 h-4 ${isLandingActive ? 'text-[#2563EB]' : 'text-[#737373] group-hover:text-[#2563EB]'}`} />
                     ) : (
-                      <ChevronRight className={`w-4 h-4 ${isLandingActive ? 'text-[#2563EB]' : 'text-[#737373]'}`} />
+                      <ChevronRight className={`w-4 h-4 ${isLandingActive ? 'text-[#2563EB]' : 'text-[#737373] group-hover:text-[#2563EB]'}`} />
                     )}
                   </button>
                 </div>
@@ -208,13 +208,13 @@ export function AdminSidebar() {
               {/* Monitoring Siswa Link */}
               <Link
                 href="/admin/guru/monitoring"
-                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-[8px] font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-[8px] font-bold transition-all cursor-pointer group ${
                   pathname === '/admin/guru/monitoring'
                     ? 'bg-blue-50/50 text-[#2563EB]'
-                    : 'text-[#737373] hover:bg-slate-50 hover:text-[#2E2D2D]'
+                    : 'text-[#737373] hover:bg-slate-50 hover:text-[#2563EB]'
                 }`}
               >
-                <GraduationCap className={`w-4 h-4 ${pathname === '/admin/guru/monitoring' ? 'text-[#2563EB]' : 'text-[#737373]'}`} />
+                <GraduationCap className={`w-4 h-4 transition-colors ${pathname === '/admin/guru/monitoring' ? 'text-[#2563EB]' : 'text-[#737373] group-hover:text-[#2563EB]'}`} />
                 <span>Monitoring Siswa</span>
               </Link>
             </>

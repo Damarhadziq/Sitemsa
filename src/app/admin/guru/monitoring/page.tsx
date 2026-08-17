@@ -51,7 +51,7 @@ export default function AdminGuruMonitoringPage() {
         <div className="p-3 rounded-[8px] bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold flex items-center justify-between animate-in fade-in duration-200 shadow-2xs">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>File rekap nilai siswa mata pelajaran <strong>{currentSubject}</strong> (.XLSX) berhasil diunduh.</span>
+            <span>File rekap nilai siswa bidang <strong>{currentSubject}</strong> (.XLSX) berhasil diunduh.</span>
           </div>
           <button onClick={() => setExportToast(false)} className="text-emerald-700 hover:text-emerald-900">
             <X className="w-4 h-4" />
@@ -187,7 +187,7 @@ export default function AdminGuruMonitoringPage() {
               {filteredStudents.length === 0 && (
                 <tr>
                   <td colSpan={5} className="py-12 text-center text-[#737373] text-xs">
-                    Tidak ada siswa terdaftar pada mata pelajaran {currentSubject}.
+                    Tidak ada siswa terdaftar pada bidang {currentSubject}.
                   </td>
                 </tr>
               )}

@@ -89,7 +89,7 @@ export default function SuperadminSiswaPage() {
               <tr className="bg-white border-b border-[#ECECEC] text-xs font-bold text-[#737373]">
                 <th className="py-4 px-6">Profil siswa</th>
                 <th className="py-4 px-6">Nisn & kelas</th>
-                <th className="py-4 px-6">Mata pelajaran diikuti</th>
+                <th className="py-4 px-6">Bidang diikuti</th>
                 <th className="py-4 px-6">Rata-rata nilai kuis</th>
                 <th className="py-4 px-6 text-right">Aktivitas terakhir</th>
               </tr>

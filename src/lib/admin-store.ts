@@ -185,6 +185,16 @@ const INITIAL_SUBJECTS: SubjectItem[] = [
     totalModules: 9,
     totalQuizzes: 4,
   },
+  {
+    id: 'sub-5',
+    name: 'Bimbingan Konseling',
+    code: 'BK',
+    category: 'Pengembangan Diri',
+    description: 'Bimbingan karir, konsultasi akademik, pengembangan kepribadian, serta konseling siswa.',
+    iconName: 'UserCheck',
+    totalModules: 6,
+    totalQuizzes: 3,
+  },
 ];
 
 const INITIAL_TEACHERS: TeacherAccount[] = [

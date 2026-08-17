@@ -108,7 +108,7 @@ export default function AdminGuruDashboard() {
           <div className="bg-white rounded-[10px] border border-[#ECECEC] p-6 flex flex-col justify-between min-h-[160px]">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-[#737373]">Rata-rata ujian</span>
-              <span className="text-[11px] font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-[4px] flex items-center gap-0.5">
+              <span className="text-[11px] font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-[4px] flex items-center gap-0.5">
                 <TrendingDown className="w-3 h-3" /> 03.7%
               </span>
             </div>

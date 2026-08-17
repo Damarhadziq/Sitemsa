@@ -197,7 +197,7 @@ export default function SuperadminKontenPage() {
           }`}
         >
           <BookOpen className="w-4 h-4" />
-          <span>Katalog mata pelajaran ({subjects.length})</span>
+          <span>Katalog bidang ({subjects.length})</span>
         </button>
       </div>
 
@@ -341,13 +341,13 @@ export default function SuperadminKontenPage() {
       {activeTab === 'subjects' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-[#2E2D2D]">Katalog mata pelajaran utama</h2>
+            <h2 className="text-base font-bold text-[#2E2D2D]">Katalog bidang utama</h2>
             <button
               onClick={handleOpenAddSubject}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span>Tambah mata pelajaran baru</span>
+              <span>Tambah bidang baru</span>
             </button>
           </div>
 
@@ -502,7 +502,7 @@ export default function SuperadminKontenPage() {
           <div className="bg-white w-full max-w-lg rounded-[10px] border border-[#ECECEC] overflow-hidden font-sans">
             <div className="p-6 bg-white flex items-center justify-between">
               <h3 className="text-base font-bold text-[#2E2D2D]">
-                {editingSubject ? 'Edit mata pelajaran utama' : 'Tambah mata pelajaran baru'}
+                {editingSubject ? 'Edit bidang utama' : 'Tambah bidang baru'}
               </h3>
               <button onClick={() => setShowSubjectModal(false)} className="text-[#737373] hover:text-[#2E2D2D] p-1">
                 <X className="w-5 h-5" />
@@ -511,7 +511,7 @@ export default function SuperadminKontenPage() {
 
             <form onSubmit={handleSaveSubject} className="p-6 pt-0 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-[#2E2D2D] mb-1">Nama mata pelajaran</label>
+                <label className="block text-xs font-bold text-[#2E2D2D] mb-1">Nama bidang</label>
                 <input
                   type="text"
                   value={subjectForm.name}
@@ -548,7 +548,7 @@ export default function SuperadminKontenPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#2E2D2D] mb-1">Deskripsi mata pelajaran</label>
+                <label className="block text-xs font-bold text-[#2E2D2D] mb-1">Deskripsi bidang</label>
                 <textarea
                   rows={3}
                   value={subjectForm.description}
@@ -570,7 +570,7 @@ export default function SuperadminKontenPage() {
                   type="submit"
                   className="px-5 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs"
                 >
-                  Simpan mata pelajaran
+                  Simpan bidang
                 </button>
               </div>
             </form>

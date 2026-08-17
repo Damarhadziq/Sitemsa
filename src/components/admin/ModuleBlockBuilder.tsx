@@ -525,72 +525,75 @@ export default function ModuleBlockBuilder({
                 const isSelected = selectedBlockId === block.id;
 
                 return (
-                  <div
-                    key={block.id}
-                    className="relative group/blockItem transition-all duration-200 ease-in-out"
-                  >
+                  <div key={block.id} className="relative">
                     
-                    {/* FLOATING ACTION TOOLBAR ON HOVER BLOCK */}
-                    <div className="absolute -right-14 top-1/2 -translate-y-1/2 opacity-0 group-hover/blockItem:opacity-100 transition-opacity bg-white border border-[#ECECEC] rounded-[8px] p-1 shadow-md flex flex-col gap-1 z-30">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleMoveUp(index);
-                        }}
-                        disabled={index === 0}
-                        title="Pindah ke Atas"
-                        className="p-1.5 hover:bg-slate-100 rounded-[4px] text-[#737373] hover:text-[#2E2D2D] disabled:opacity-30 cursor-pointer"
-                      >
-                        <ArrowUp className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleMoveDown(index);
-                        }}
-                        disabled={index === blocks.length - 1}
-                        title="Pindah ke Bawah"
-                        className="p-1.5 hover:bg-slate-100 rounded-[4px] text-[#737373] hover:text-[#2E2D2D] disabled:opacity-30 cursor-pointer"
-                      >
-                        <ArrowDown className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDuplicateBlock(block, index);
-                        }}
-                        title="Duplikat Blok"
-                        className="p-1.5 hover:bg-slate-100 rounded-[4px] text-[#737373] hover:text-[#2563EB] cursor-pointer"
-                      >
-                        <Copy className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteBlock(block.id);
-                        }}
-                        title="Hapus Blok"
-                        className="p-1.5 hover:bg-rose-50 rounded-[4px] text-rose-600 cursor-pointer"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                    {/* BLOCK CONTENT WRAPPER WITH FLOATING TOOLBAR SCOPED TO BLOCK HOVER/FOCUS */}
+                    <div className="relative group/blockContent">
+                      
+                      {/* FLOATING ACTION TOOLBAR ON HOVER/FOCUS OF ACTIVE BLOCK ONLY */}
+                      <div className={`absolute -right-14 top-1/2 -translate-y-1/2 transition-opacity bg-white border border-[#ECECEC] rounded-[8px] p-1 shadow-md flex flex-col gap-1 z-30 ${
+                        isSelected ? 'opacity-100' : 'opacity-0 group-hover/blockContent:opacity-100'
+                      }`}>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMoveUp(index);
+                          }}
+                          disabled={index === 0}
+                          title="Pindah ke Atas"
+                          className="p-1.5 hover:bg-slate-100 rounded-[4px] text-[#737373] hover:text-[#2E2D2D] disabled:opacity-30 cursor-pointer"
+                        >
+                          <ArrowUp className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMoveDown(index);
+                          }}
+                          disabled={index === blocks.length - 1}
+                          title="Pindah ke Bawah"
+                          className="p-1.5 hover:bg-slate-100 rounded-[4px] text-[#737373] hover:text-[#2E2D2D] disabled:opacity-30 cursor-pointer"
+                        >
+                          <ArrowDown className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDuplicateBlock(block, index);
+                          }}
+                          title="Duplikat Blok"
+                          className="p-1.5 hover:bg-slate-100 rounded-[4px] text-[#737373] hover:text-[#2563EB] cursor-pointer"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteBlock(block.id);
+                          }}
+                          title="Hapus Blok"
+                          className="p-1.5 hover:bg-rose-50 rounded-[4px] text-rose-600 cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
 
-                    {/* BLOCK CONTAINER WITH OUTSIDE OUTLINE STROKE (NO INSET BORDER, NO SCALE) */}
-                    <div
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedBlockId(block.id);
-                        if (block.type === 'attachment') {
-                          setShowRightSidebar(true);
-                        }
-                      }}
-                      className={`rounded-[12px] p-4 transition-all duration-200 cursor-text relative h-auto ${
-                        isSelected
-                          ? 'outline outline-2 outline-[#2563EB] outline-offset-2 bg-white shadow-2xs'
-                          : 'outline outline-2 outline-transparent outline-offset-2 bg-transparent hover:outline-slate-300'
-                      }`}
-                    >
+                      {/* BLOCK CONTAINER WITH OUTSIDE OUTLINE STROKE (NO INSET BORDER, NO SCALE) */}
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedBlockId(block.id);
+                          setInsertTargetIndex(undefined);
+                          if (block.type === 'attachment') {
+                            setShowRightSidebar(true);
+                          }
+                        }}
+                        className={`rounded-[12px] p-4 transition-all duration-200 cursor-text relative h-auto ${
+                          isSelected
+                            ? 'outline outline-2 outline-[#2563EB] outline-offset-2 bg-white shadow-2xs'
+                            : 'outline outline-2 outline-transparent outline-offset-2 bg-transparent hover:outline-slate-300'
+                        }`}
+                      >
                       
                       {/* 1. TEXT SECTION BLOCK */}
                       {block.type === 'text' && (
@@ -958,26 +961,40 @@ export default function ModuleBlockBuilder({
                       )}
 
                     </div>
-
-                    {/* BETWEEN-BLOCKS "INSERT BLOCK" DIVIDER LINE — OPACITY APPLIES ONLY WHEN HOVERING THIS INSERT AREA DIRECTLY */}
-                    <div className="relative py-5 flex items-center justify-center z-20 opacity-0 hover:opacity-100 transition-opacity duration-200 group/insertArea">
-                      <div className="absolute inset-0 flex items-center pointer-events-none">
-                        <div className="w-full border-t border-dashed border-[#2563EB]" />
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedBlockId(null);
-                          setInsertTargetIndex(index);
-                          setShowRightSidebar(true);
-                        }}
-                        title="Insert block"
-                        className="relative z-10 px-4 py-2 rounded-full bg-white border border-[#2563EB] text-[#2563EB] shadow-2xs inline-flex items-center justify-center gap-2 text-xs font-bold cursor-pointer transition-colors"
-                      >
-                        <Plus className="w-4 h-4 text-[#2563EB] shrink-0" strokeWidth={2.5} />
-                        <span className="inline-block leading-none transform translate-y-[0.5px]">Insert block</span>
-                      </button>
                     </div>
+
+                    {/* BETWEEN-BLOCKS "INSERT BLOCK" DIVIDER LINE — REMAINS VISIBLE WHEN RIGHT SIDEBAR IS OPEN FOR THIS INSERT INDEX */}
+                    {(() => {
+                      const isInsertActive = insertTargetIndex === index && showRightSidebar;
+                      return (
+                        <div
+                          className={`relative py-5 flex items-center justify-center z-20 transition-opacity duration-200 group/insertArea ${
+                            isInsertActive ? 'opacity-100' : 'opacity-0 hover:opacity-100'
+                          }`}
+                        >
+                          <div className="absolute inset-0 flex items-center pointer-events-none">
+                            <div className={`w-full border-t border-dashed ${isInsertActive ? 'border-[#2563EB] border-t-2' : 'border-[#2563EB]'}`} />
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedBlockId(null);
+                              setInsertTargetIndex(index);
+                              setShowRightSidebar(true);
+                            }}
+                            title="Insert block"
+                            className={`relative z-10 px-4 py-2 rounded-full shadow-2xs inline-flex items-center justify-center gap-2 text-xs font-bold cursor-pointer transition-all ${
+                              isInsertActive
+                                ? 'bg-[#2563EB] text-white border border-[#2563EB] shadow-md scale-105'
+                                : 'bg-white border border-[#2563EB] text-[#2563EB] hover:bg-blue-50'
+                            }`}
+                          >
+                            <Plus className={`w-4 h-4 shrink-0 ${isInsertActive ? 'text-white' : 'text-[#2563EB]'}`} strokeWidth={2.5} />
+                            <span className="inline-block leading-none transform translate-y-[0.5px]">Insert block</span>
+                          </button>
+                        </div>
+                      );
+                    })()}
 
                   </div>
                 );

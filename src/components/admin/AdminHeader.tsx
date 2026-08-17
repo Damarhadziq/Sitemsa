@@ -26,7 +26,6 @@ export function AdminHeader() {
   const { subjects } = useAdminStore();
 
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [showSubjectMenu, setShowSubjectMenu] = useState(false);
   const [showNotifMenu, setShowNotifMenu] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -34,7 +33,6 @@ export function AdminHeader() {
   const [unreadCount, setUnreadCount] = useState(2);
 
   const profileRef = useRef<HTMLDivElement>(null);
-  const subjectRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
 
   // Settings form states
@@ -47,9 +45,6 @@ export function AdminHeader() {
     function handleClickOutside(event: MouseEvent) {
       if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
         setShowProfileMenu(false);
-      }
-      if (subjectRef.current && !subjectRef.current.contains(event.target as Node)) {
-        setShowSubjectMenu(false);
       }
       if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
         setShowNotifMenu(false);
@@ -122,40 +117,10 @@ export function AdminHeader() {
 
   return (
     <header className="h-16 bg-white border-b border-[#ECECEC] px-6 flex items-center justify-between font-sans sticky top-0 z-30">
-      {/* LEFT: Switch Mapel Dropdown Button */}
-      <div className="relative" ref={subjectRef}>
-        <button
-          onClick={() => setShowSubjectMenu(!showSubjectMenu)}
-          className="h-9 px-3 rounded-[8px] bg-white border border-[#ECECEC] hover:border-blue-200 text-xs font-semibold text-[#2E2D2D] flex items-center gap-2 transition-all cursor-pointer"
-        >
-          <BookOpen className="w-4 h-4 text-[#2563EB]" />
-          <span>Bidang: <strong className="font-bold">{mounted ? currentSubject : 'Informatika'}</strong></span>
-          <ChevronDown className="w-3.5 h-3.5 text-[#737373]" />
-        </button>
-
-        {/* Custom Subject Switcher Menu */}
-        {showSubjectMenu && (
-          <div className="absolute left-0 mt-1.5 w-52 bg-white rounded-[10px] border border-[#ECECEC] p-1.5 z-50 shadow-xs space-y-0.5 animate-in fade-in zoom-in-95 duration-150">
-            <p className="px-2.5 py-1 text-[11px] font-semibold text-[#737373]">Pilih Bidang:</p>
-            {availableSubjects.map((subj) => (
-              <button
-                key={subj}
-                onClick={() => {
-                  setTeacherSubjectFilter(subj);
-                  setShowSubjectMenu(false);
-                }}
-                className={`w-full text-left px-2.5 py-1.5 rounded-[6px] text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
-                  currentSubject === subj
-                    ? 'bg-blue-50 text-[#2563EB] font-bold'
-                    : 'text-[#2E2D2D] hover:bg-slate-50'
-                }`}
-              >
-                <span>{subj}</span>
-                {currentSubject === subj && <Check className="w-3.5 h-3.5 text-[#2563EB]" />}
-              </button>
-            ))}
-          </div>
-        )}
+      {/* LEFT: Static Subject Indicator Badge */}
+      <div className="h-9 px-3 rounded-[8px] bg-white border border-[#ECECEC] text-xs font-semibold text-[#2E2D2D] flex items-center gap-2 select-none">
+        <BookOpen className="w-4 h-4 text-[#2563EB]" />
+        <span>Bidang: <strong className="font-bold">{mounted ? currentSubject : 'Informatika'}</strong></span>
       </div>
 
       {/* RIGHT: Action Icons & Profile */}

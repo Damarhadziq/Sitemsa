@@ -274,7 +274,7 @@ function TipsBelajarContent() {
               <h3 className="text-sm font-semibold text-[#2E2D2D]">Daftar Tips Belajar</h3>
             </div>
 
-            <nav className="space-y-1 max-h-[540px] overflow-y-auto pr-1">
+            <nav className="space-y-1">
               {filteredArticles.length === 0 ? (
                 <div className="py-4 text-xs text-[#737373]">
                   Tidak ada tips yang cocok

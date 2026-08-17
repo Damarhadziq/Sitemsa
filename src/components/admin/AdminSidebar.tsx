@@ -47,10 +47,10 @@ export function AdminSidebar() {
   const isLandingActive = isPelajaranActive && !currentItemParam;
 
   return (
-    <aside className="w-64 bg-white border-r border-[#ECECEC] flex flex-col justify-between h-screen sticky top-0 font-sans z-40 shrink-0 overflow-y-auto">
-      <div>
+    <aside className="w-64 bg-white border-r border-[#ECECEC] flex flex-col justify-between h-screen sticky top-0 font-sans z-40 shrink-0">
+      <div className="flex flex-col h-full overflow-hidden">
         {/* Role-Based Brand SVG Logo (Sized compactly for header alignment) */}
-        <div className="h-16 px-6 flex items-center">
+        <div className="h-16 px-6 flex items-center shrink-0">
           <div className="flex items-center select-none">
             {/* eslint-disable-next-next/no-img-element */}
             <img
@@ -62,7 +62,7 @@ export function AdminSidebar() {
         </div>
 
         {/* Navigation Items */}
-        <div className="p-4 pt-2 space-y-1.5 text-xs">
+        <div className="p-4 pt-2 space-y-1.5 text-xs overflow-y-auto flex-1 scrollbar-none">
           
           {isSuperadmin ? (
             superadminNav.map((item) => {
@@ -224,7 +224,7 @@ export function AdminSidebar() {
       </div>
 
       {/* Footer Copyright */}
-      <div className="p-6 pt-2">
+      <div className="p-6 pt-2 shrink-0">
         <p className="text-[11px] text-[#AAAAAA] leading-relaxed">
           &copy; 2026 Sitemsa. All rights reserved.
         </p>

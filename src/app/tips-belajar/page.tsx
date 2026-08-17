@@ -246,29 +246,29 @@ function TipsBelajarContent() {
         <h1 className="text-2xl md:text-3xl font-semibold text-[#2E2D2D] tracking-tight">
           Tips Belajar
         </h1>
-
-        {/* Search Bar */}
-        <div className="relative max-w-lg">
-          <HugeiconsIcon
-            icon={Search01Icon}
-            size={18}
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#737373]"
-          />
-          <input
-            type="text"
-            placeholder="Cari tips belajar (misal: logika, pomodoro, sirkuit)..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#FAFAFA] border border-[#ECECEC] rounded-[8px] pl-10 pr-4 py-2 text-xs md:text-sm text-[#2E2D2D] placeholder-[#737373] focus:outline-none focus:border-[#2563EB] focus:bg-white transition-all duration-200"
-          />
-        </div>
       </section>
 
       {/* 2-Column Clean Canvas Layout */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-2">
         {/* Left Sidebar List (4 Columns) */}
         <aside className="lg:col-span-4 space-y-5 lg:sticky lg:top-28">
-          <div className="bg-white border border-[#ECECEC] rounded-[10px] p-5 space-y-3">
+          <div className="bg-white border border-[#ECECEC] rounded-[10px] p-5 space-y-4">
+            {/* Search Bar Inside Frame */}
+            <div className="relative w-full">
+              <HugeiconsIcon
+                icon={Search01Icon}
+                size={16}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#737373]"
+              />
+              <input
+                type="text"
+                placeholder="Cari tips belajar (misal: logika, pomodoro)..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-[#FAFAFA] border border-[#ECECEC] rounded-[8px] pl-9 pr-3 py-2 text-xs text-[#2E2D2D] placeholder-[#737373] focus:outline-none focus:border-[#2563EB] focus:bg-white transition-all duration-200"
+              />
+            </div>
+
             {/* Sidebar Title (No Count Badge) */}
             <div className="flex items-center justify-between mb-1">
               <h3 className="text-sm font-semibold text-[#2E2D2D]">Daftar Tips Belajar</h3>

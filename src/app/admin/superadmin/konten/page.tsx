@@ -53,6 +53,23 @@ export default function SuperadminKontenPage() {
   });
 
   const categoryOptions = ['Tips Belajar', 'Teknologi', 'Strategi Belajar', 'Berita Vokasi'];
+  const [deleteTargetArticle, setDeleteTargetArticle] = useState<WebArticle | null>(null);
+
+  const isAnyModalOpen = showArticleModal || showSubjectModal || !!deleteTargetArticle;
+
+  React.useEffect(() => {
+    if (isAnyModalOpen) {
+      document.documentElement.classList.add("modal-open");
+      document.body.style.overflow = "hidden";
+    } else {
+      document.documentElement.classList.remove("modal-open");
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.documentElement.classList.remove("modal-open");
+      document.body.style.overflow = "";
+    };
+  }, [isAnyModalOpen]);
 
   // Handle Save Hero
   const handleSaveHero = (e: React.FormEvent) => {
@@ -103,10 +120,8 @@ export default function SuperadminKontenPage() {
     setShowArticleModal(false);
   };
 
-  const [deleteTargetArticle, setDeleteTargetArticle] = useState<{ id: string; title: string } | null>(null);
-
   const handleDeleteArticle = (id: string, title: string) => {
-    setDeleteTargetArticle({ id, title });
+    setDeleteTargetArticle({ id, title } as WebArticle);
   };
 
   const confirmDeleteArticle = () => {
@@ -388,8 +403,8 @@ export default function SuperadminKontenPage() {
               <h3 className="text-base font-bold text-[#2E2D2D]">
                 {editingArticle ? 'Edit artikel tips belajar' : 'Tambah artikel baru'}
               </h3>
-              <button onClick={() => setShowArticleModal(false)} className="text-[#737373] hover:text-[#2E2D2D] p-1">
-                <X className="w-5 h-5" />
+              <button onClick={() => setShowArticleModal(false)} className="w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer" aria-label="Tutup Modal">
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -504,8 +519,8 @@ export default function SuperadminKontenPage() {
               <h3 className="text-base font-bold text-[#2E2D2D]">
                 {editingSubject ? 'Edit bidang utama' : 'Tambah bidang baru'}
               </h3>
-              <button onClick={() => setShowSubjectModal(false)} className="text-[#737373] hover:text-[#2E2D2D] p-1">
-                <X className="w-5 h-5" />
+              <button onClick={() => setShowSubjectModal(false)} className="w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer" aria-label="Tutup Modal">
+                <X className="w-4 h-4" />
               </button>
             </div>
 

@@ -1203,7 +1203,7 @@ export default function ModuleBlockBuilder({
               <h3 className="text-sm font-bold text-[#2E2D2D]">
                 Upload & Pengaturan Gambar
               </h3>
-              <button onClick={() => setEditingImageId(null)} className="p-1 text-[#737373] hover:text-[#2E2D2D]">
+              <button onClick={() => setEditingImageId(null)} className="w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer" aria-label="Tutup Modal">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -1295,7 +1295,7 @@ export default function ModuleBlockBuilder({
               <h3 className="text-sm font-bold text-[#2E2D2D]">
                 Pengaturan Media Video YouTube
               </h3>
-              <button onClick={() => setEditingVideoId(null)} className="p-1 text-[#737373] hover:text-[#2E2D2D]">
+              <button onClick={() => setEditingVideoId(null)} className="w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer" aria-label="Tutup Modal">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -1342,7 +1342,8 @@ export default function ModuleBlockBuilder({
           >
             <button
               onClick={() => setActiveQrModalUrl(null)}
-              className="absolute right-4 top-4 text-slate-400 hover:text-white p-1 rounded-full hover:bg-slate-800"
+              className="absolute right-4 top-4 w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              aria-label="Tutup Modal"
             >
               <X className="w-4 h-4" />
             </button>

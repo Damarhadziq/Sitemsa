@@ -106,12 +106,16 @@ export const AnimatedList = <T extends any = any>({
 
   const handleItemClick = useCallback(
     (item: T, index: number) => {
-      setSelectedIndex(index);
+      if (layout === 'list') {
+        setSelectedIndex(index);
+      } else {
+        setSelectedIndex(-1);
+      }
       if (onItemSelect) {
         onItemSelect(item, index);
       }
     },
-    [onItemSelect]
+    [onItemSelect, layout]
   );
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {

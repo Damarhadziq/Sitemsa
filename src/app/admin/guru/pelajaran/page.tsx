@@ -100,6 +100,22 @@ export default function AdminGuruPelajaranPage() {
   const [showQrModal, setShowQrModal] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
+  const isAnyModalOpen = showBlockBuilder || showQrModal || !!deleteTarget;
+
+  useEffect(() => {
+    if (isAnyModalOpen) {
+      document.documentElement.classList.add("modal-open");
+      document.body.style.overflow = "hidden";
+    } else {
+      document.documentElement.classList.remove("modal-open");
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.documentElement.classList.remove("modal-open");
+      document.body.style.overflow = "";
+    };
+  }, [isAnyModalOpen]);
+
   const handleDeleteModuleItem = (id: string, title: string) => {
     setDeleteTarget({ id, title });
   };
@@ -910,7 +926,8 @@ export default function AdminGuruPelajaranPage() {
           >
             <button
               onClick={() => setShowQrModal(false)}
-              className="absolute right-4 top-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors cursor-pointer"
+              className="absolute right-4 top-4 w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer"
+              aria-label="Tutup Modal"
             >
               <X className="w-4 h-4" />
             </button>

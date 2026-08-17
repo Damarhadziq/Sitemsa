@@ -24,6 +24,7 @@ import {
 
 import { UserProfileModal, ProfileTab } from "@/components/profile/UserProfileModal";
 import { NotificationModal, NotificationItem } from "@/components/layout/NotificationModal";
+import { useAuth } from "@/lib/auth-context";
 
 interface QuickSearchResult {
   id: number;
@@ -107,6 +108,7 @@ export function Navbar() {
   };
   const pathname = usePathname();
   const router = useRouter();
+  const { logout } = useAuth();
   const modalInputRef = useRef<HTMLInputElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
@@ -357,7 +359,7 @@ export function Navbar() {
                     type="button"
                     onClick={() => {
                       setIsProfileOpen(false);
-                      router.push('/login');
+                      logout();
                     }}
                     className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 rounded-[6px] transition-colors cursor-pointer"
                   >

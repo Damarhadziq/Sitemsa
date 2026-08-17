@@ -30,8 +30,8 @@ export function PromoBanner() {
 
         <div className="pt-2 flex items-center">
           <Link
-            href="#"
-            className="bg-white text-[#2563EB] hover:bg-gray-100 active:scale-98 px-4 py-2.5 rounded-[8px] text-xs lg:text-sm font-semibold flex items-center gap-2 transition-all duration-200"
+            href="/materi"
+            className="bg-white text-[#2563EB] hover:bg-gray-100 active:scale-98 px-4 py-2.5 rounded-[8px] text-xs lg:text-sm font-semibold flex items-center gap-2 transition-all duration-200 cursor-pointer"
           >
             <span>Eksplorasi Pembelajaran</span>
             <HugeiconsIcon icon={ArrowRight01Icon} size={16} />

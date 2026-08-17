@@ -22,6 +22,23 @@ export default function SuperadminGuruPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingTeacher, setEditingTeacher] = useState<TeacherAccount | null>(null);
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [deleteTeacherTarget, setDeleteTeacherTarget] = useState<TeacherAccount | null>(null);
+
+  const isAnyModalOpen = showAddModal || !!deleteTeacherTarget;
+
+  React.useEffect(() => {
+    if (isAnyModalOpen) {
+      document.documentElement.classList.add("modal-open");
+      document.body.style.overflow = "hidden";
+    } else {
+      document.documentElement.classList.remove("modal-open");
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.documentElement.classList.remove("modal-open");
+      document.body.style.overflow = "";
+    };
+  }, [isAnyModalOpen]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -280,9 +297,10 @@ export default function SuperadminGuruPage() {
               </div>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="text-[#737373] hover:text-[#2E2D2D] p-1"
+                className="w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer"
+                aria-label="Tutup Modal"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 

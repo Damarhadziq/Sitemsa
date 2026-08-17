@@ -22,6 +22,20 @@ export default function AdminGuruMonitoringPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStudentModal, setSelectedStudentModal] = useState<StudentRecord | null>(null);
 
+  React.useEffect(() => {
+    if (selectedStudentModal) {
+      document.documentElement.classList.add("modal-open");
+      document.body.style.overflow = "hidden";
+    } else {
+      document.documentElement.classList.remove("modal-open");
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.documentElement.classList.remove("modal-open");
+      document.body.style.overflow = "";
+    };
+  }, [selectedStudentModal]);
+
   const subjectStudents = students.filter((s) => s.enrolledSubjects.includes(currentSubject));
 
   const filteredStudents = subjectStudents.filter(
@@ -217,9 +231,10 @@ export default function AdminGuruMonitoringPage() {
               </div>
               <button
                 onClick={() => setSelectedStudentModal(null)}
-                className="text-[#737373] hover:text-[#2E2D2D] p-1"
+                className="w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer"
+                aria-label="Tutup Modal"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 

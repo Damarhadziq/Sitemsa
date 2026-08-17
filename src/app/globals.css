@@ -135,15 +135,31 @@
   scrollbar-color: #D4D3FF transparent;
 }
 
-/* Modal open: kill global scrollbar entirely */
+/* Modal open: kill global scrollbar & scrollbar-gutter entirely */
 html.modal-open,
-html.modal-open body {
+body.modal-open,
+html:has(.fixed.inset-0),
+body:has(.fixed.inset-0),
+html:has([role="dialog"]),
+body:has([role="dialog"]) {
   overflow: hidden !important;
   scrollbar-gutter: auto !important;
 }
-html.modal-open::-webkit-scrollbar {
+
+html.modal-open::-webkit-scrollbar,
+body.modal-open::-webkit-scrollbar,
+html:has(.fixed.inset-0)::-webkit-scrollbar,
+body:has(.fixed.inset-0)::-webkit-scrollbar,
+html:has([role="dialog"])::-webkit-scrollbar,
+body:has([role="dialog"])::-webkit-scrollbar {
   display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
-html.modal-open {
+
+html.modal-open,
+body.modal-open,
+html:has(.fixed.inset-0),
+body:has(.fixed.inset-0) {
   scrollbar-width: none !important;
 }

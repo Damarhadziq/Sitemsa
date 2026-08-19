@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useAdminStore, StudentRecord } from '@/lib/admin-store';
+import { Skeleton } from '@/components/ui/skeleton';
+import { LoadingTimeoutBoundary } from '@/components/ui/LoadingTimeoutBoundary';
 
 export default function AdminGuruMonitoringPage() {
   const { user, activeSubjectFilter } = useAuth();
@@ -26,6 +28,17 @@ export default function AdminGuruMonitoringPage() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStudentModal, setSelectedStudentModal] = useState<StudentRecord | null>(null);
+
+  // Loading state with smooth Skeleton & Timeout safety
+  const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [currentSubject]);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -120,163 +133,195 @@ export default function AdminGuruMonitoringPage() {
         </div>
       </div>
 
-      {/* Students Performance Table */}
-      <div className="bg-white rounded-[10px] border border-[#ECECEC] overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-white border-b border-[#ECECEC] text-xs font-bold text-[#737373]">
-                <th className="py-4 px-6">Profil siswa</th>
-                <th className="py-4 px-6">Kelas</th>
-                <th className="py-4 px-6">Banyak materi dibaca</th>
-                <th className="py-4 px-6">Nilai kalkulasi</th>
-                <th className="py-4 px-6">Status evaluasi</th>
-                <th className="py-4 px-6 text-right">Rincian nilai</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#ECECEC] text-xs">
-              {paginatedStudents.map((std) => {
-                const progress = std.moduleProgress[currentSubject] || 0;
-                const readCount = Math.min(
-                  totalSubjectModules,
-                  Math.round((progress / 100) * totalSubjectModules)
-                );
+      {/* Students Performance Table with LoadingTimeoutBoundary */}
+      <LoadingTimeoutBoundary
+        isLoading={isLoading}
+        timeoutMs={10000}
+        onRetry={() => {
+          setIsLoading(true);
+          setTimeout(() => setIsLoading(false), 300);
+        }}
+        skeleton={
+          <div className="bg-white rounded-[10px] border border-[#ECECEC] p-6 space-y-4 animate-pulse">
+            <div className="flex justify-between items-center pb-2 border-b border-[#ECECEC]">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="flex items-center justify-between py-2 border-b border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="w-7 h-7 rounded-full" />
+                    <Skeleton className="h-4 w-28 rounded-[4px]" />
+                  </div>
+                  <Skeleton className="h-4 w-16 rounded-[4px]" />
+                  <Skeleton className="h-4 w-24 rounded-[4px]" />
+                  <Skeleton className="h-4 w-12 rounded-[4px]" />
+                  <Skeleton className="h-4 w-20 rounded-[4px]" />
+                  <Skeleton className="h-7 w-24 rounded-[6px]" />
+                </div>
+              ))}
+            </div>
+          </div>
+        }
+      >
+        <div className="bg-white rounded-[10px] border border-[#ECECEC] overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-white border-b border-[#ECECEC] text-xs font-bold text-[#737373]">
+                  <th className="py-4 px-6">Profil siswa</th>
+                  <th className="py-4 px-6">Kelas</th>
+                  <th className="py-4 px-6">Banyak materi dibaca</th>
+                  <th className="py-4 px-6">Nilai kalkulasi</th>
+                  <th className="py-4 px-6">Status evaluasi</th>
+                  <th className="py-4 px-6 text-right">Rincian nilai</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#ECECEC] text-xs">
+                {paginatedStudents.map((std) => {
+                  const progress = std.moduleProgress[currentSubject] || 0;
+                  const readCount = Math.min(
+                    totalSubjectModules,
+                    Math.round((progress / 100) * totalSubjectModules)
+                  );
 
-                const subjectQuizzes = std.quizHistory.filter((q) => q.subject === currentSubject);
-                const totalScore = subjectQuizzes.reduce((acc, q) => acc + q.score, 0);
-                const avgScore = subjectQuizzes.length > 0
-                  ? Math.round(totalScore / subjectQuizzes.length)
-                  : (progress > 0 ? Math.round(progress * 0.9) : 0);
+                  const subjectQuizzes = std.quizHistory.filter((q) => q.subject === currentSubject);
+                  const totalScore = subjectQuizzes.reduce((acc, q) => acc + q.score, 0);
+                  const avgScore = subjectQuizzes.length > 0
+                    ? Math.round(totalScore / subjectQuizzes.length)
+                    : (progress > 0 ? Math.round(progress * 0.9) : 0);
 
-                const latestQuiz = subjectQuizzes[0];
-                const isPassed = latestQuiz ? latestQuiz.status === 'Lulus' : avgScore >= 75;
+                  const latestQuiz = subjectQuizzes[0];
+                  const isPassed = latestQuiz ? latestQuiz.status === 'Lulus' : avgScore >= 75;
 
-                return (
-                  <tr key={std.id} className="hover:bg-slate-50 transition-colors">
-                    {/* Profil siswa (Foto + Nama) */}
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-2.5">
-                        {/* eslint-disable-next-next/no-img-element */}
-                        <img
-                          src={std.avatar}
-                          alt={std.name}
-                          className="w-7 h-7 rounded-full object-cover border border-[#ECECEC] shrink-0"
-                        />
-                        <span className="font-bold text-[#2E2D2D] text-xs">{std.name}</span>
-                      </div>
-                    </td>
+                  return (
+                    <tr key={std.id} className="hover:bg-slate-50 transition-colors">
+                      {/* Profil siswa (Foto + Nama) */}
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-2.5">
+                          {/* eslint-disable-next-next/no-img-element */}
+                          <img
+                            src={std.avatar}
+                            alt={std.name}
+                            className="w-7 h-7 rounded-full object-cover border border-[#ECECEC] shrink-0"
+                          />
+                          <span className="font-bold text-[#2E2D2D] text-xs">{std.name}</span>
+                        </div>
+                      </td>
 
-                    {/* Kelas */}
-                    <td className="py-4 px-6 font-semibold text-[#2E2D2D] text-xs">
-                      {std.classGroup}
-                    </td>
+                      {/* Kelas */}
+                      <td className="py-4 px-6 font-semibold text-[#2E2D2D] text-xs">
+                        {std.classGroup}
+                      </td>
 
-                    {/* Banyak materi dibaca */}
-                    <td className="py-4 px-6 font-semibold text-[#2E2D2D] text-xs">
-                      {readCount} Materi
-                    </td>
+                      {/* Banyak materi dibaca */}
+                      <td className="py-4 px-6 font-semibold text-[#2E2D2D] text-xs">
+                        {readCount} Materi
+                      </td>
 
-                    {/* Nilai kalkulasi */}
-                    <td className="py-4 px-6">
-                      <span className="font-bold text-[#2E2D2D] text-xs">
-                        {avgScore} <span className="text-[10px] text-[#737373] font-normal">/ 100</span>
-                      </span>
-                    </td>
-
-                    {/* Status evaluasi (Tanpa icon) */}
-                    <td className="py-4 px-6">
-                      {isPassed ? (
-                        <span className="inline-flex items-center text-[11px] bg-emerald-50 text-emerald-700 font-semibold px-2.5 py-0.5 rounded-[4px]">
-                          Tuntas / lulus
+                      {/* Nilai kalkulasi */}
+                      <td className="py-4 px-6">
+                        <span className="font-bold text-[#2E2D2D] text-xs">
+                          {avgScore} <span className="text-[10px] text-[#737373] font-normal">/ 100</span>
                         </span>
-                      ) : (
-                        <span className="inline-flex items-center text-[11px] bg-amber-50 text-amber-700 font-semibold px-2.5 py-0.5 rounded-[4px]">
-                          Perlu bimbingan
-                        </span>
-                      )}
-                    </td>
+                      </td>
 
-                    {/* Action */}
-                    <td className="py-4 px-6 text-right">
-                      <button
-                        onClick={() => setSelectedStudentModal(std)}
-                        className="px-3 py-1.5 rounded-[6px] bg-slate-50 hover:bg-blue-50 text-[#2E2D2D] hover:text-[#2563EB] font-semibold text-xs transition-colors inline-flex items-center gap-1 cursor-pointer"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>Lihat raport</span>
-                      </button>
+                      {/* Status evaluasi (Tanpa icon) */}
+                      <td className="py-4 px-6">
+                        {isPassed ? (
+                          <span className="inline-flex items-center text-[11px] bg-emerald-50 text-emerald-700 font-semibold px-2.5 py-0.5 rounded-[4px]">
+                            Tuntas / lulus
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center text-[11px] bg-amber-50 text-amber-700 font-semibold px-2.5 py-0.5 rounded-[4px]">
+                            Perlu bimbingan
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Action */}
+                      <td className="py-4 px-6 text-right">
+                        <button
+                          onClick={() => setSelectedStudentModal(std)}
+                          className="px-3 py-1.5 rounded-[6px] bg-slate-50 hover:bg-blue-50 text-[#2E2D2D] hover:text-[#2563EB] font-semibold text-xs transition-colors inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>Lihat raport</span>
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+
+                {filteredStudents.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center text-[#737373] text-xs">
+                      Tidak ada siswa terdaftar pada bidang {currentSubject}.
                     </td>
                   </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Pagination control when students > 10 (Main Website Style) */}
+        {filteredStudents.length > 10 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+            <p className="text-xs text-[#737373]">
+              Menampilkan <strong className="text-[#2E2D2D] font-bold">{(currentPage - 1) * itemsPerPage + 1}</strong> - <strong className="text-[#2E2D2D] font-bold">{Math.min(currentPage * itemsPerPage, filteredStudents.length)}</strong> dari <strong className="text-[#2E2D2D] font-bold">{filteredStudents.length}</strong> siswa
+            </p>
+
+            <div className="flex items-center gap-1">
+              {/* Frameless Previous Arrow */}
+              <button
+                type="button"
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                disabled={currentPage === 1}
+                className="w-8 h-8 rounded-full bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-slate-100 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+                aria-label="Halaman Sebelumnya"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              {/* Numbered Page Buttons - Active is 100% Circle Filled Blue */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                const isActive = currentPage === page;
+                return (
+                  <button
+                    key={page}
+                    type="button"
+                    onClick={() => setCurrentPage(page)}
+                    className={`w-8 h-8 rounded-full text-xs font-semibold transition-all flex items-center justify-center cursor-pointer ${
+                      isActive
+                        ? "bg-[#2563EB] text-white"
+                        : "bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-slate-100"
+                    }`}
+                  >
+                    {page}
+                  </button>
                 );
               })}
 
-              {filteredStudents.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center text-[#737373] text-xs">
-                    Tidak ada siswa terdaftar pada bidang {currentSubject}.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Pagination control when students > 10 (Main Website Style) */}
-      {filteredStudents.length > 10 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
-          <p className="text-xs text-[#737373]">
-            Menampilkan <strong className="text-[#2E2D2D] font-bold">{(currentPage - 1) * itemsPerPage + 1}</strong> - <strong className="text-[#2E2D2D] font-bold">{Math.min(currentPage * itemsPerPage, filteredStudents.length)}</strong> dari <strong className="text-[#2E2D2D] font-bold">{filteredStudents.length}</strong> siswa
-          </p>
-
-          <div className="flex items-center gap-1">
-            {/* Frameless Previous Arrow */}
-            <button
-              type="button"
-              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-              disabled={currentPage === 1}
-              className="w-8 h-8 rounded-full bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-slate-100 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
-              aria-label="Halaman Sebelumnya"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-
-            {/* Numbered Page Buttons - Active is 100% Circle Filled Blue */}
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-              const isActive = currentPage === page;
-              return (
-                <button
-                  key={page}
-                  type="button"
-                  onClick={() => setCurrentPage(page)}
-                  className={`w-8 h-8 rounded-full text-xs font-semibold transition-all flex items-center justify-center cursor-pointer ${
-                    isActive
-                      ? "bg-[#2563EB] text-white"
-                      : "bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-slate-100"
-                  }`}
-                >
-                  {page}
-                </button>
-              );
-            })}
-
-            {/* Frameless Next Arrow */}
-            <button
-              type="button"
-              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className="w-8 h-8 rounded-full bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-slate-100 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
-              aria-label="Halaman Selanjutnya"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
+              {/* Frameless Next Arrow */}
+              <button
+                type="button"
+                onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="w-8 h-8 rounded-full bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-slate-100 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+                aria-label="Halaman Selanjutnya"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </LoadingTimeoutBoundary>
 
       {/* Student Detailed Evaluation Modal */}
       {selectedStudentModal && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-xl rounded-[10px] border border-[#ECECEC] overflow-hidden font-sans">
             <div className="p-6 bg-white flex items-center justify-between">
               <div className="flex items-center gap-3">

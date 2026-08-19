@@ -453,7 +453,7 @@ export default function AdminGuruPelajaranPage() {
                               />
                             </div>
 
-                            <h4 className="font-bold text-sm text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors leading-snug">
+                            <h4 className="font-bold text-base text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors leading-snug">
                               {mod.title}
                             </h4>
 
@@ -499,7 +499,7 @@ export default function AdminGuruPelajaranPage() {
                                 />
                               </div>
 
-                              <h4 className="font-bold text-sm text-[#2E2D2D] group-hover:text-indigo-600 transition-colors leading-snug">
+                              <h4 className="font-bold text-base text-[#2E2D2D] group-hover:text-indigo-600 transition-colors leading-snug">
                                 {qz.title}
                               </h4>
 

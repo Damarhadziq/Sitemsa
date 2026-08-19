@@ -57,6 +57,13 @@ export interface ModuleItem {
   teacherName: string;
   createdAt: string;
   isAiRecommended?: boolean;
+  isPublished?: boolean;
+  quizSource?: {
+    type: 'kuis_sitemsa' | 'link_eksternal' | 'qr_code';
+    title: string;
+    externalUrl?: string;
+    qrImageUrl?: string;
+  };
 }
 
 export interface QuizQuestion {

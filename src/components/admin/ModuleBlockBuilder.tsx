@@ -17,22 +17,18 @@ import {
   ChevronRight,
   ChevronDown,
   CheckCircle2,
-  FileText,
   RefreshCw,
   Pencil,
-  Play,
   File,
   Upload,
   ExternalLink,
   QrCode,
   Download,
-  Laptop,
-  Link as LinkIcon,
-  Sparkles,
+  Highlighter,
 } from 'lucide-react';
 import { ModuleItem } from '@/lib/admin-store';
 
-export type BlockType = 'text' | 'image' | 'video' | 'attachment' | 'steps' | 'test' | 'callout';
+export type BlockType = 'text' | 'image' | 'video' | 'attachment' | 'steps' | 'callout';
 export type TestType = 'link_eksternal' | 'qr_code' | 'kuis_sitemsa';
 
 export interface AttachedFileItem {
@@ -45,9 +41,10 @@ export interface AttachedFileItem {
 export interface CanvasBlock {
   id: string;
   type: BlockType;
-  // Section Text block data (Title + Content)
+  // Section Text block data (Title + Content + Highlight)
   sectionTitle?: string;
   textValue?: string;
+  calloutText?: string;
   alignment?: 'left' | 'center' | 'right';
 
   // Media block data
@@ -58,17 +55,6 @@ export interface CanvasBlock {
 
   // Step by step block data
   steps?: { title: string; desc: string }[];
-
-  // Test block data (3 Types: link_eksternal, qr_code, kuis_sitemsa)
-  testType?: TestType;
-  testTitle?: string;
-  testDescription?: string;
-  testUrl?: string;
-  qrImageUrl?: string;
-  testQuestion?: string;
-  testOptions?: string[];
-  correctAnswer?: number | string;
-  explanation?: string;
 }
 
 interface ModuleBlockBuilderProps {
@@ -96,90 +82,67 @@ function AutoResizeTextarea({
 }) {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const resize = () => {
+  useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
-  };
-
-  useEffect(() => {
-    resize();
   }, [value]);
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      const textarea = textareaRef.current;
-      if (!textarea) return;
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const newValue = value.substring(0, start) + '\n\n' + value.substring(end);
-      onChange(newValue);
-      setTimeout(() => {
-        if (textareaRef.current) {
-          textareaRef.current.selectionStart = textareaRef.current.selectionEnd = start + 2;
-          resize();
-        }
-      }, 0);
-    }
-  };
-
-  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-    const pasteText = e.clipboardData.getData('text');
-    if (!pasteText) return;
-    e.preventDefault();
-    
-    // Normalize single newlines \n into double newlines \n\n for clean paragraph spacing
-    const normalizedPaste = pasteText
-      .replace(/\r\n/g, '\n')
-      .replace(/([^\n])\n([^\n])/g, '$1\n\n$2');
-
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const newValue = value.substring(0, start) + normalizedPaste + value.substring(end);
-    onChange(newValue);
-    
-    setTimeout(() => {
-      if (textareaRef.current) {
-        const newCursorPos = start + normalizedPaste.length;
-        textareaRef.current.selectionStart = textareaRef.current.selectionEnd = newCursorPos;
-        resize();
-      }
-    }, 0);
-  };
 
   return (
     <textarea
       ref={textareaRef}
       rows={rows}
       value={value}
-      onChange={(e) => {
-        onChange(e.target.value);
-        resize();
-      }}
-      onKeyDown={handleKeyDown}
-      onPaste={handlePaste}
+      onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className={`overflow-hidden resize-none ${className || ''}`}
-      style={{ ...style, height: 'auto' }}
+      className={`resize-none overflow-hidden ${className || ''}`}
+      style={style}
     />
   );
 }
 
-export default function ModuleBlockBuilder({
+export function ModuleBlockBuilder({
   initialModule,
   subjectName,
   onClose,
   onSave,
 }: ModuleBlockBuilderProps) {
-  const [moduleTitle, setModuleTitle] = useState(initialModule?.title || 'Give me a name');
-  const [moduleLevel, setModuleLevel] = useState<'Pemula' | 'Menengah' | 'Mahir'>(initialModule?.level || 'Pemula');
-  const [moduleDuration, setModuleDuration] = useState(initialModule?.duration || '30 Menit');
+  // Title & Level state
+  const [moduleTitle, setModuleTitle] = useState(
+    initialModule?.title || 'Give me a name'
+  );
+  const [moduleLevel, setModuleLevel] = useState<'Pemula' | 'Menengah' | 'Mahir'>(
+    initialModule?.level || 'Pemula'
+  );
+  const [moduleDuration, setModuleDuration] = useState(
+    initialModule?.duration || '25 Menit'
+  );
 
-  // Lock global body scroll when module builder modal is active
+  // Dynamic Topics / Tags state (Dribbble Style Tag Input)
+  const [moduleTopics, setModuleTopics] = useState<string[]>(
+    initialModule?.topics || []
+  );
+  const [tagInputText, setTagInputText] = useState('');
+  const tagInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Publish / Draft Confirmation Modal state & Success Modal state
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // Evaluation / Quiz attached during Publish modal
+  const [evaluationType, setEvaluationType] = useState<TestType | null>(
+    initialModule?.quizSource ? initialModule.quizSource.type : null
+  );
+  const [evalTitle, setEvalTitle] = useState(initialModule?.quizSource?.title || '');
+  const [evalUrl, setEvalUrl] = useState(initialModule?.quizSource?.externalUrl || '');
+  const [evalQrUrl, setEvalQrUrl] = useState(initialModule?.quizSource?.qrImageUrl || '');
+
+  // Custom Dropdowns popover open state
+  const [isLevelDropdownOpen, setIsLevelDropdownOpen] = useState(false);
+  const [isQuizDropdownOpen, setIsQuizDropdownOpen] = useState(false);
+
+  // Lock global body scroll when canvas or modal is open
   useEffect(() => {
     const originalStyle = window.getComputedStyle(document.body).overflow;
     document.body.style.overflow = 'hidden';
@@ -221,36 +184,48 @@ export default function ModuleBlockBuilder({
   // Attachment file upload state
   const [changingAttachmentFileId, setChangingAttachmentFileId] = useState<string | null>(null);
 
-  // Test block custom dropdown & QR image upload state
-  const [openTestTypeMenuId, setOpenTestTypeMenuId] = useState<string | null>(null);
-  const [editingQrBlockId, setEditingQrBlockId] = useState<string | null>(null);
-
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const attachmentFileInputRef = useRef<HTMLInputElement | null>(null);
-  const qrFileInputRef = useRef<HTMLInputElement | null>(null);
+  const evalQrInputRef = useRef<HTMLInputElement | null>(null);
+  const levelDropdownRef = useRef<HTMLDivElement | null>(null);
+  const quizDropdownRef = useRef<HTMLDivElement | null>(null);
 
-  const handleQrFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && editingQrBlockId) {
-      const objectUrl = URL.createObjectURL(file);
-      updateBlockById(editingQrBlockId, { qrImageUrl: objectUrl });
-      setEditingQrBlockId(null);
-    }
-  };
+  // Close dropdowns on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (levelDropdownRef.current && !levelDropdownRef.current.contains(event.target as Node)) {
+        setIsLevelDropdownOpen(false);
+      }
+      if (quizDropdownRef.current && !quizDropdownRef.current.contains(event.target as Node)) {
+        setIsQuizDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
-  const selectedBlock = blocks.find((b) => b.id === selectedBlockId);
-
-  // Helper to extract YouTube embed URL
-  const getYouTubeEmbedUrl = (url?: string) => {
+  // Helper to extract clean YouTube Embed URL
+  const getYouTubeEmbedUrl = (url: string) => {
     if (!url) return '';
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const match = url.match(url);
-    return match && match[2].length === 11
-      ? `https://www.youtube.com/embed/${match[2]}`
-      : url;
+    const trimmed = url.trim();
+
+    const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+    const match = trimmed.match(regExp);
+
+    if (match && match[1]) {
+      return `https://www.youtube.com/embed/${match[1]}`;
+    }
+
+    if (trimmed.includes('youtube.com/embed/')) {
+      return trimmed;
+    }
+
+    return trimmed;
   };
 
-  // Add block (Supports inserting at targetIndex or insertTargetIndex state)
+  // Add block
   const handleAddBlock = (type: BlockType, targetIndex?: number) => {
     const actualIndex = targetIndex !== undefined ? targetIndex : insertTargetIndex;
 
@@ -261,28 +236,18 @@ export default function ModuleBlockBuilder({
 
     if (type === 'text') {
       newBlock.sectionTitle = 'Heading';
-      newBlock.textValue = 'Enter your text here....';
+      newBlock.textValue = 'Tuliskan isi paragraf materi di sini....';
       newBlock.alignment = 'left';
     } else if (type === 'image') {
       newBlock.mediaUrl = '';
     } else if (type === 'video') {
       newBlock.mediaUrl = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
     } else if (type === 'attachment') {
-      // EMPTY INITIAL ATTACHMENTS STATE (LIKE IMAGE BLOCK)
       newBlock.attachments = [];
     } else if (type === 'steps') {
       newBlock.steps = [
         { title: 'Langkah 1', desc: 'Penjelasan instruksi langkah pertama praktikum...' },
       ];
-    } else if (type === 'test') {
-      newBlock.testType = 'kuis_sitemsa';
-      newBlock.testTitle = 'Kuis Evaluasi Praktikum';
-      newBlock.testDescription = 'Uji pemahaman Anda mengenai rangkaian seri dan paralel resistor.';
-      newBlock.testUrl = 'https://quizizz.com/join?gc=123456';
-      newBlock.qrImageUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://quizizz.com/join?gc=123456';
-      newBlock.testQuestion = 'Tuliskan pertanyaan kuis mini di sini...';
-      newBlock.testOptions = ['Pilihan A', 'Pilihan B', 'Pilihan C', 'Pilihan D'];
-      newBlock.correctAnswer = 0;
     } else if (type === 'callout') {
       newBlock.textValue = 'Prinsip Utama: Deklarasikan variabel dengan nama yang deskriptif dan mencerminkan isi datanya agar kode mudah dibaca oleh tim pengembangan.';
     }
@@ -367,130 +332,165 @@ export default function ModuleBlockBuilder({
     }
   };
 
-  // Update block fields directly
-  const updateBlockById = (id: string, fields: Partial<CanvasBlock>) => {
+  // Update block content by ID
+  const updateBlockById = (id: string, partial: Partial<CanvasBlock>) => {
     setBlocks((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, ...fields } : b))
+      prev.map((b) => (b.id === id ? { ...b, ...partial } : b))
     );
   };
 
-  // File Attachments Multi-file Handlers (Direct Computer Upload)
-  const triggerAddAttachmentFileFromComputer = (blockId: string, replaceFileId?: string) => {
-    setSelectedBlockId(blockId);
-    setChangingAttachmentFileId(replaceFileId || null);
-    attachmentFileInputRef.current?.click();
-  };
-
-  const handleAttachmentFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !selectedBlockId) return;
-
-    const formattedSize = file.size > 1024 * 1024
-      ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
-      : `${Math.max(1, Math.round(file.size / 1024))} KB`;
-
-    const targetBlock = blocks.find((b) => b.id === selectedBlockId);
-    if (!targetBlock) return;
-
-    const currentList = targetBlock.attachments || [];
-
-    if (changingAttachmentFileId) {
-      // REPLACE EXISTING FILE
-      const updatedList = currentList.map((f) =>
-        f.id === changingAttachmentFileId
-          ? { ...f, fileName: file.name, fileSize: formattedSize, fileUrl: '#' }
-          : f
-      );
-      updateBlockById(selectedBlockId, { attachments: updatedList });
-      setChangingAttachmentFileId(null);
-    } else {
-      // ADD NEW FILE ITEM FROM COMPUTER
-      const newFileItem: AttachedFileItem = {
-        id: `file-${Date.now()}`,
-        fileName: file.name,
-        fileSize: formattedSize,
-        fileUrl: '#',
-      };
-      updateBlockById(selectedBlockId, { attachments: [...currentList, newFileItem] });
-    }
-
-    // Reset input value so same file can be uploaded again if needed
-    e.target.value = '';
-  };
-
-  const handleDeleteAttachmentFile = (blockId: string, fileId: string) => {
-    const block = blocks.find((b) => b.id === blockId);
-    if (!block || !block.attachments) return;
-    const updatedList = block.attachments.filter((f) => f.id !== fileId);
-    updateBlockById(blockId, { attachments: updatedList });
-  };
-
-  // Step-by-Step inline handlers
+  // Step item helpers
   const handleAddStepItem = (blockId: string) => {
     const block = blocks.find((b) => b.id === blockId);
     if (!block) return;
     const currentSteps = block.steps || [];
-    const nextStepNum = currentSteps.length + 1;
+    const nextNum = currentSteps.length + 1;
     const newSteps = [
       ...currentSteps,
-      { title: `Langkah ${nextStepNum}`, desc: `Penjelasan instruksi langkah ${nextStepNum}...` },
+      { title: `Langkah ${nextNum}`, desc: '' },
     ];
     updateBlockById(blockId, { steps: newSteps });
   };
 
-  const handleUpdateStepItem = (blockId: string, sIdx: number, field: 'title' | 'desc', val: string) => {
+  const handleUpdateStepItem = (
+    blockId: string,
+    stepIndex: number,
+    field: 'title' | 'desc',
+    value: string
+  ) => {
     const block = blocks.find((b) => b.id === blockId);
     if (!block || !block.steps) return;
     const updatedSteps = [...block.steps];
-    updatedSteps[sIdx] = { ...updatedSteps[sIdx], [field]: val };
+    updatedSteps[stepIndex] = { ...updatedSteps[stepIndex], [field]: value };
     updateBlockById(blockId, { steps: updatedSteps });
   };
 
-  const handleDeleteStepItem = (blockId: string, sIdx: number) => {
+  const handleDeleteStepItem = (blockId: string, stepIndex: number) => {
     const block = blocks.find((b) => b.id === blockId);
-    if (!block || !block.steps || block.steps.length <= 1) return;
-    const updatedSteps = block.steps.filter((_, idx) => idx !== sIdx);
+    if (!block || !block.steps) return;
+    const updatedSteps = block.steps.filter((_, idx) => idx !== stepIndex);
     updateBlockById(blockId, { steps: updatedSteps });
   };
 
-  // Image replacement modal (Computer or URL option)
-  const handlePromptChangeImage = (blockId: string, currentUrl?: string) => {
-    setEditingImageId(blockId);
-    setImageUploadMode('computer');
-    setTempImageUrl(currentUrl || 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=1200&auto=format&fit=crop');
+  // Native Image File Picker Handler
+  const handleImageFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && editingImageId) {
+      const objectUrl = URL.createObjectURL(file);
+      updateBlockById(editingImageId, { mediaUrl: objectUrl });
+      setEditingImageId(null);
+    }
   };
 
-  const handleConfirmImageChange = () => {
-    if (editingImageId && tempImageUrl.trim()) {
+  // Native Attachment File Picker Handler
+  const handleAttachmentFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && selectedBlockId) {
+      const objectUrl = URL.createObjectURL(file);
+      const formattedSize =
+        file.size > 1024 * 1024
+          ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
+          : `${Math.round(file.size / 1024)} KB`;
+
+      const block = blocks.find((b) => b.id === selectedBlockId);
+      if (block) {
+        const currentAttachments = block.attachments || [];
+
+        if (changingAttachmentFileId) {
+          const updated = currentAttachments.map((item) =>
+            item.id === changingAttachmentFileId
+              ? {
+                  ...item,
+                  fileName: file.name,
+                  fileSize: formattedSize,
+                  fileUrl: objectUrl,
+                }
+              : item
+          );
+          updateBlockById(selectedBlockId, { attachments: updated });
+          setChangingAttachmentFileId(null);
+        } else {
+          const newFileItem: AttachedFileItem = {
+            id: `att-${Date.now()}`,
+            fileName: file.name,
+            fileSize: formattedSize,
+            fileUrl: objectUrl,
+          };
+          updateBlockById(selectedBlockId, {
+            attachments: [...currentAttachments, newFileItem],
+          });
+        }
+      }
+    }
+  };
+
+  // Trigger Add / Change Attachment
+  const triggerAddAttachmentFileFromComputer = (blockId: string, fileItemId?: string) => {
+    setSelectedBlockId(blockId);
+    setChangingAttachmentFileId(fileItemId || null);
+    attachmentFileInputRef.current?.click();
+  };
+
+  // Delete individual attached file from list
+  const handleDeleteAttachmentFile = (blockId: string, fileItemId: string) => {
+    const block = blocks.find((b) => b.id === blockId);
+    if (!block || !block.attachments) return;
+    const updated = block.attachments.filter((item) => item.id !== fileItemId);
+    updateBlockById(blockId, { attachments: updated });
+  };
+
+  // Image Upload Modal trigger
+  const handlePromptChangeImage = (id: string, currentUrl?: string) => {
+    setEditingImageId(id);
+    setImageUploadMode('computer');
+    setTempImageUrl(currentUrl || '');
+  };
+
+  const handleSaveImageModal = () => {
+    if (editingImageId) {
       updateBlockById(editingImageId, { mediaUrl: tempImageUrl });
     }
     setEditingImageId(null);
   };
 
-  const handleComputerFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && editingImageId) {
-      const localUrl = URL.createObjectURL(file);
-      updateBlockById(editingImageId, { mediaUrl: localUrl });
-      setEditingImageId(null);
-    }
+  // Video URL Modal trigger
+  const handlePromptChangeVideo = (id: string, currentUrl?: string) => {
+    setEditingVideoId(id);
+    setTempVideoUrl(currentUrl || '');
   };
 
-  // Video YT modal
-  const handlePromptChangeVideo = (blockId: string, currentUrl?: string) => {
-    setEditingVideoId(blockId);
-    setTempVideoUrl(currentUrl || 'https://www.youtube.com/watch?v=dQw4w9WgXcQ');
-  };
-
-  const handleConfirmVideoChange = () => {
-    if (editingVideoId && tempVideoUrl.trim()) {
-      updateBlockById(editingVideoId, { mediaUrl: tempVideoUrl });
+  const handleSaveVideoModal = () => {
+    if (editingVideoId) {
+      const embedUrl = getYouTubeEmbedUrl(tempVideoUrl);
+      updateBlockById(editingVideoId, { mediaUrl: embedUrl });
     }
     setEditingVideoId(null);
   };
 
-  // Save handler
-  const handleSaveModule = () => {
+  // Tag Add / Remove handlers (Dribbble Style)
+  const handleAddTopicTag = () => {
+    const trimmed = tagInputText.trim();
+    if (trimmed && !moduleTopics.includes(trimmed)) {
+      setModuleTopics([...moduleTopics, trimmed]);
+      setTagInputText('');
+    }
+  };
+
+  const handleRemoveTopicTag = (tagToRemove: string) => {
+    setModuleTopics(moduleTopics.filter((t) => t !== tagToRemove));
+  };
+
+  // Open Publish Modal trigger
+  const handleOpenPublishModal = () => {
+    if (!moduleTitle.trim()) {
+      alert('Judul modul tidak boleh kosong.');
+      return;
+    }
+    setShowPublishModal(true);
+  };
+
+  // Confirm Publish / Save Draft handler
+  const handleSaveModuleConfirm = (isPublish: boolean) => {
     if (!moduleTitle.trim()) {
       alert('Judul modul tidak boleh kosong.');
       return;
@@ -501,17 +501,62 @@ export default function ModuleBlockBuilder({
         subject: subjectName,
         level: moduleLevel,
         duration: moduleDuration,
+        topics: moduleTopics,
+        isPublished: isPublish,
+        quizSource: evaluationType
+          ? {
+              type: evaluationType,
+              title: evalTitle || 'Kuis Evaluasi Modul',
+              externalUrl: evalUrl,
+              qrImageUrl: evalQrUrl,
+            }
+          : undefined,
       },
       blocks
     );
-    onClose();
+    setShowPublishModal(false);
+
+    if (isPublish) {
+      setShowSuccessModal(true);
+    } else {
+      onClose();
+    }
   };
+
+  const selectedBlock = blocks.find((b) => b.id === selectedBlockId);
 
   return (
     <div
       onClick={() => setSelectedBlockId(null)}
       className="fixed inset-0 z-50 bg-white flex flex-col font-sans text-[#2E2D2D] overflow-hidden select-none animate-in fade-in zoom-in-95 duration-200"
     >
+      {/* Hidden File Inputs */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleImageFileSelect}
+        accept="image/*"
+        className="hidden"
+      />
+      <input
+        type="file"
+        ref={attachmentFileInputRef}
+        onChange={handleAttachmentFileSelect}
+        accept="*/*"
+        className="hidden"
+      />
+      <input
+        type="file"
+        ref={evalQrInputRef}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            setEvalQrUrl(URL.createObjectURL(file));
+          }
+        }}
+        accept="image/*"
+        className="hidden"
+      />
       
       {/* 1. FIXED TOP HEADER BAR */}
       <header className="h-16 bg-white border-b border-[#ECECEC] px-6 flex items-center justify-between shrink-0 z-30 shadow-2xs">
@@ -555,13 +600,13 @@ export default function ModuleBlockBuilder({
           className="flex items-center gap-3 shrink-0"
         >
           <button
-            onClick={handleSaveModule}
+            onClick={handleOpenPublishModal}
             className="px-4 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-[#2E2D2D] cursor-pointer"
           >
             Save as draft
           </button>
           <button
-            onClick={handleSaveModule}
+            onClick={handleOpenPublishModal}
             className="px-5 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-xs font-semibold text-white shadow-xs cursor-pointer"
           >
             Continue
@@ -587,651 +632,449 @@ export default function ModuleBlockBuilder({
                   <Plus className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="font-bold text-base text-[#2E2D2D]">Kanvas Modul Masih Kosong</p>
+                  <h3 className="font-bold text-base text-[#2E2D2D]">Kanvas Materi Masih Kosong</h3>
                   <p className="text-xs text-[#737373] mt-1 max-w-sm mx-auto">
-                    Klik tombol di bawah atau gunakan menu di sebelah kanan untuk memilih blok materi.
+                    Mulai susun modul praktikum dengan memilih jenis elemen dari menu sebelah kanan (Text, Gambar, Video, Lampiran File).
                   </p>
-                </div>
-                <div className="pt-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowRightSidebar(true);
-                      handleAddBlock('text');
-                    }}
-                    className="px-6 py-3 rounded-[10px] bg-[#2563EB] text-white text-xs font-bold hover:bg-blue-700 cursor-pointer shadow-xs inline-flex items-center justify-center gap-2"
-                  >
-                    <Plus className="w-4 h-4 shrink-0" strokeWidth={2.5} />
-                    <span className="inline-block leading-none transform translate-y-[0.5px]">Tambah Section Teks</span>
-                  </button>
                 </div>
               </div>
             )}
 
-            {/* BLOCKS RENDER LIST */}
-            <div className="space-y-4 pt-2">
+            {/* DYNAMIC CANVAS BLOCKS LIST WITH SMOOTH ANIMATION */}
+            <div className="space-y-4">
               {blocks.map((block, index) => {
                 const isSelected = selectedBlockId === block.id;
                 const isAnimatingThis = animatingBlockId === block.id;
-                const animatingIndex = blocks.findIndex((b) => b.id === animatingBlockId);
+
                 const isSwappingOther =
                   animatingBlockId !== null &&
                   !isAnimatingThis &&
-                  ((animatingDir === 'up' && index === animatingIndex - 1) ||
-                    (animatingDir === 'down' && index === animatingIndex + 1));
+                  ((animatingDir === 'up' && index === blocks.findIndex((b) => b.id === animatingBlockId) - 1) ||
+                    (animatingDir === 'down' && index === blocks.findIndex((b) => b.id === animatingBlockId) + 1));
 
                 return (
-                  <div
-                    key={block.id}
-                    className={`relative transition-all duration-300 ease-in-out transform ${
-                      isAnimatingThis && animatingDir === 'up'
-                        ? '-translate-y-8 scale-[0.98] opacity-80 z-20'
-                        : isAnimatingThis && animatingDir === 'down'
-                        ? 'translate-y-8 scale-[0.98] opacity-80 z-20'
-                        : isSwappingOther && animatingDir === 'up'
-                        ? 'translate-y-6 opacity-80'
-                        : isSwappingOther && animatingDir === 'down'
-                        ? '-translate-y-6 opacity-80'
-                        : 'translate-y-0 scale-100 opacity-100'
-                    }`}
-                  >
+                  <div key={block.id} className="relative">
                     
-                    {/* BLOCK CONTENT WRAPPER WITH FLOATING TOOLBAR SCOPED TO BLOCK HOVER/FOCUS */}
-                    <div className="relative group/blockContent">
+                    <div
+                      className={`transition-all duration-300 ease-out ${
+                        isAnimatingThis && animatingDir === 'up'
+                          ? '-translate-y-6 opacity-80'
+                          : isAnimatingThis && animatingDir === 'down'
+                          ? 'translate-y-6 opacity-80'
+                          : isSwappingOther && animatingDir === 'up'
+                          ? 'translate-y-6 opacity-80'
+                          : isSwappingOther && animatingDir === 'down'
+                          ? '-translate-y-6 opacity-80'
+                          : 'translate-y-0 scale-100 opacity-100'
+                      }`}
+                    >
                       
-                      {/* FLOATING ACTION TOOLBAR ON HOVER/FOCUS OF ACTIVE BLOCK ONLY */}
-                      <div className={`absolute -right-14 top-1/2 -translate-y-1/2 transition-opacity bg-white border border-[#ECECEC] rounded-[8px] p-1 shadow-md flex flex-col gap-1 z-30 ${
-                        isSelected ? 'opacity-100' : 'opacity-0 group-hover/blockContent:opacity-100'
-                      }`}>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleMoveUp(index);
-                          }}
-                          disabled={index === 0}
-                          title="Pindah ke Atas"
-                          className="p-1.5 hover:bg-slate-100 rounded-[4px] text-[#737373] hover:text-[#2E2D2D] disabled:opacity-30 cursor-pointer"
-                        >
-                          <ArrowUp className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleMoveDown(index);
-                          }}
-                          disabled={index === blocks.length - 1}
-                          title="Pindah ke Bawah"
-                          className="p-1.5 hover:bg-slate-100 rounded-[4px] text-[#737373] hover:text-[#2E2D2D] disabled:opacity-30 cursor-pointer"
-                        >
-                          <ArrowDown className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDuplicateBlock(block, index);
-                          }}
-                          title="Duplikat Blok"
-                          className="p-1.5 hover:bg-slate-100 rounded-[4px] text-[#737373] hover:text-[#2563EB] cursor-pointer"
-                        >
-                          <Copy className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteBlock(block.id);
-                          }}
-                          title="Hapus Blok"
-                          className="p-1.5 hover:bg-rose-50 rounded-[4px] text-rose-600 cursor-pointer"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-
-                      {/* BLOCK CONTAINER WITH OUTSIDE OUTLINE STROKE (NO INSET BORDER, NO SCALE) */}
-                      <div
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedBlockId(block.id);
-                          setInsertTargetIndex(undefined);
-                          if (block.type === 'attachment') {
-                            setShowRightSidebar(true);
-                          }
-                        }}
-                        className={`rounded-[12px] p-2 transition-all duration-200 cursor-text relative h-auto ${
-                          isSelected
-                            ? 'outline outline-2 outline-[#2563EB] outline-offset-2 bg-white shadow-2xs'
-                            : 'outline outline-2 outline-transparent outline-offset-2 bg-transparent hover:outline-slate-300'
-                        }`}
-                      >
-                      
-                      {/* 1. TEXT SECTION BLOCK */}
-                      {block.type === 'text' && (
-                        <div className="space-y-2">
-                          <input
-                            type="text"
-                            value={block.sectionTitle || ''}
-                            onChange={(e) => updateBlockById(block.id, { sectionTitle: e.target.value })}
-                            placeholder="Heading"
-                            className="w-full text-2xl font-bold text-[#2E2D2D] placeholder:text-[#AAAAAA] border-none focus:ring-0 outline-none bg-transparent"
-                            style={{ textAlign: block.alignment || 'left' }}
-                          />
-
-                          <AutoResizeTextarea
-                            value={block.textValue || ''}
-                            onChange={(val) => updateBlockById(block.id, { textValue: val })}
-                            placeholder="Enter your text here...."
-                            className="w-full text-sm text-[#2E2D2D] leading-relaxed placeholder:text-[#AAAAAA] border-none focus:ring-0 outline-none bg-transparent whitespace-pre-line"
-                            style={{ textAlign: block.alignment || 'left' }}
-                          />
-                        </div>
-                      )}
-
-                      {/* 2. IMAGE BLOCK (NO CAPTION) */}
-                      {block.type === 'image' && (
-                        <div>
-                          {!block.mediaUrl ? (
-                            <div
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handlePromptChangeImage(block.id, '');
-                              }}
-                              className="rounded-[12px] border-2 border-dashed border-slate-300 hover:border-[#2563EB] bg-slate-50/50 p-12 text-center transition-all cursor-pointer group/imgCard"
-                            >
-                              <div className="w-12 h-12 rounded-full bg-white border border-[#ECECEC] text-[#2563EB] flex items-center justify-center mx-auto shadow-xs">
-                                <ImageIcon className="w-6 h-6" />
-                              </div>
-                              <p className="font-bold text-sm text-[#2E2D2D] mt-3">Klik untuk Upload Gambar</p>
-                              <p className="text-xs text-[#737373] mt-1">Pilih File Komputer atau Tautan URL</p>
-                            </div>
-                          ) : (
-                            <div
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handlePromptChangeImage(block.id, block.mediaUrl);
-                              }}
-                              className="relative rounded-[12px] overflow-hidden border border-[#ECECEC] bg-slate-50 max-h-[450px] flex items-center justify-center group/img cursor-pointer"
-                            >
-                              {/* eslint-disable-next-next/no-img-element */}
-                              <img
-                                src={block.mediaUrl}
-                                alt="Gambar Materi"
-                                className="w-full h-full object-cover"
-                              />
-                              <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
-                                <button className="px-4 py-2 rounded-[8px] bg-white text-[#2E2D2D] text-xs font-bold shadow-md flex items-center gap-2 cursor-pointer">
-                                  <RefreshCw className="w-4 h-4 text-[#2563EB]" />
-                                  <span>Klik untuk Ganti Gambar</span>
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* 3. VIDEO YT BLOCK */}
-                      {block.type === 'video' && (
-                        <div className="space-y-2">
-                          <div
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handlePromptChangeVideo(block.id, block.mediaUrl);
-                            }}
-                            className="relative rounded-[12px] overflow-hidden border border-[#ECECEC] bg-slate-900 aspect-video flex flex-col items-center justify-center text-white group/vid cursor-pointer"
-                          >
-                            {block.mediaUrl && block.mediaUrl.includes('youtube') ? (
-                              <iframe
-                                src={getYouTubeEmbedUrl(block.mediaUrl)}
-                                title="YouTube Video Preview"
-                                className="w-full h-full border-0 pointer-events-none"
-                              />
-                            ) : (
-                              <div className="p-6 text-center">
-                                <VideoIcon className="w-12 h-12 text-[#2563EB] mx-auto mb-2" />
-                                <p className="font-bold text-sm">Media Video YouTube</p>
-                                <p className="text-xs text-slate-400 mt-1">{block.mediaUrl || 'Klik untuk mengatur URL Video YouTube'}</p>
-                              </div>
-                            )}
-
-                            <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover/vid:opacity-100 transition-opacity flex items-center justify-center">
-                              <button className="px-4 py-2 rounded-[8px] bg-white text-[#2E2D2D] text-xs font-bold shadow-md flex items-center gap-2 cursor-pointer">
-                                <Play className="w-4 h-4 text-[#2563EB]" />
-                                <span>Klik untuk Ganti URL Video YT</span>
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* 4. FILE ATTACHMENT BLOCK (EMPTY PLACEHOLDER WHEN NO FILES YET) */}
-                      {block.type === 'attachment' && (
-                        <div>
-                          {(!block.attachments || block.attachments.length === 0) ? (
-                            <div
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                triggerAddAttachmentFileFromComputer(block.id);
-                              }}
-                              className="rounded-[12px] border-2 border-dashed border-slate-300 hover:border-[#2563EB] bg-slate-50/50 p-12 text-center transition-all cursor-pointer group/fileCard"
-                            >
-                              <div className="w-12 h-12 rounded-full bg-white border border-[#ECECEC] text-[#2563EB] flex items-center justify-center mx-auto shadow-xs">
-                                <Paperclip className="w-6 h-6" />
-                              </div>
-                              <p className="font-bold text-sm text-[#2E2D2D] mt-3">Klik untuk Upload File Lampiran</p>
-                              <p className="text-xs text-[#737373] mt-1">Pilih Dokumen PDF, DOCX, PPTX, atau ZIP dari Komputer</p>
-                            </div>
-                          ) : (
-                            <div className="space-y-2">
-                              {block.attachments.map((fileItem, fIdx) => (
-                                <div
-                                  key={fileItem.id || fIdx}
-                                  className="p-3.5 rounded-[10px] bg-slate-50 border border-[#ECECEC] flex items-center justify-between shadow-2xs hover:bg-slate-100/60 transition-colors"
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-9 h-9 rounded-[8px] bg-blue-100 text-[#2563EB] flex items-center justify-center font-bold shrink-0">
-                                      <File className="w-5 h-5" />
-                                    </div>
-                                    <div>
-                                      <p className="font-bold text-xs text-[#2E2D2D]">{fileItem.fileName}</p>
-                                      <p className="text-[11px] text-[#737373] mt-0.5">{fileItem.fileSize}</p>
-                                    </div>
-                                  </div>
-
-                                  <span className="text-xs font-semibold text-[#2563EB] bg-white border border-[#ECECEC] px-3 py-1.5 rounded-[6px] flex items-center gap-1">
-                                    <Download className="w-3.5 h-3.5" /> Download
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* 5. STEP BY STEP BLOCK */}
-                      {block.type === 'steps' && (
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between">
-                            <h4 className="text-xs font-bold text-[#737373] flex items-center gap-1.5">
-                              <ListOrdered className="w-4 h-4 text-[#2563EB]" /> Langkah Praktikum Berurutan
-                            </h4>
-                          </div>
-
-                          <div className="space-y-3">
-                            {(block.steps || []).map((step, sIdx) => (
-                              <div key={sIdx} className="p-4 rounded-[10px] bg-slate-50/80 border border-[#ECECEC] space-y-2 relative group/step">
-                                <div className="flex items-center gap-3">
-                                  <span className="w-7 h-7 rounded-full bg-[#2563EB] text-white text-xs font-bold flex items-center justify-center shrink-0">
-                                    {sIdx + 1}
-                                  </span>
-                                  <input
-                                    type="text"
-                                    value={step.title}
-                                    onChange={(e) => handleUpdateStepItem(block.id, sIdx, 'title', e.target.value)}
-                                    placeholder={`Langkah ${sIdx + 1}`}
-                                    className="flex-1 font-bold text-xs text-[#2E2D2D] border-b border-dashed border-slate-300 focus:border-[#2563EB] outline-none bg-transparent pb-0.5"
-                                  />
-                                  {(block.steps || []).length > 1 && (
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDeleteStepItem(block.id, sIdx);
-                                      }}
-                                      title="Hapus Langkah Ini"
-                                      className="text-slate-400 hover:text-rose-600 p-1 rounded-[4px]"
-                                    >
-                                      <Trash2 className="w-3.5 h-3.5" />
-                                    </button>
-                                  )}
-                                </div>
-
-                                <AutoResizeTextarea
-                                  value={step.desc}
-                                  onChange={(val) => handleUpdateStepItem(block.id, sIdx, 'desc', val)}
-                                  placeholder="Tuliskan penjelasan detail untuk langkah ini..."
-                                  className="w-full text-xs text-[#737373] leading-relaxed border-none focus:ring-0 outline-none bg-transparent pl-10"
-                                />
-                              </div>
-                            ))}
-                          </div>
-
+                      {/* BLOCK CONTENT WRAPPER WITH FLOATING TOOLBAR SCOPED TO BLOCK HOVER/FOCUS */}
+                      <div className="relative group/blockContent">
+                        
+                        {/* FLOATING ACTION TOOLBAR ON HOVER/FOCUS OF ACTIVE BLOCK ONLY */}
+                        <div className={`absolute -right-14 top-1/2 -translate-y-1/2 transition-opacity bg-white border border-[#ECECEC] rounded-[8px] p-1 shadow-md flex flex-col gap-1 z-30 ${
+                          isSelected ? 'opacity-100' : 'opacity-0 group-hover/blockContent:opacity-100'
+                        }`}>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleAddStepItem(block.id);
+                              handleMoveUp(index);
                             }}
-                            className="w-full py-2.5 rounded-[8px] border border-dashed border-blue-300 hover:border-[#2563EB] bg-blue-50/50 hover:bg-blue-50 text-xs font-bold text-[#2563EB] inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                            disabled={index === 0}
+                            title="Pindah ke Atas"
+                            className="p-1.5 hover:bg-slate-100 rounded-[4px] text-[#737373] hover:text-[#2E2D2D] disabled:opacity-30 cursor-pointer"
                           >
-                            <Plus className="w-4 h-4 shrink-0 text-[#2563EB]" strokeWidth={2.5} />
-                            <span className="inline-block leading-none transform translate-y-[0.5px]">Tambah Langkah {(block.steps || []).length + 1}</span>
+                            <ArrowUp className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMoveDown(index);
+                            }}
+                            disabled={index === blocks.length - 1}
+                            title="Pindah ke Bawah"
+                            className="p-1.5 hover:bg-slate-100 rounded-[4px] text-[#737373] hover:text-[#2E2D2D] disabled:opacity-30 cursor-pointer"
+                          >
+                            <ArrowDown className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDuplicateBlock(block, index);
+                            }}
+                            title="Duplikat Blok"
+                            className="p-1.5 hover:bg-slate-100 rounded-[4px] text-[#737373] hover:text-[#2563EB] cursor-pointer"
+                          >
+                            <Copy className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteBlock(block.id);
+                            }}
+                            title="Hapus Blok"
+                            className="p-1.5 hover:bg-rose-50 rounded-[4px] text-rose-600 cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
-                      )}
 
-                      {/* 6. TEST BLOCK */}
-                      {block.type === 'test' && (
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-[6px] flex items-center gap-1">
-                                <HelpCircle className="w-3.5 h-3.5" /> Modul Evaluasi & Kuis
-                              </span>
-                            </div>
+                        {/* BLOCK CONTAINER WITH OUTSIDE OUTLINE STROKE */}
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedBlockId(block.id);
+                            setInsertTargetIndex(undefined);
+                            if (block.type === 'attachment') {
+                              setShowRightSidebar(true);
+                            }
+                          }}
+                          className={`rounded-[12px] p-2 transition-all duration-200 cursor-text relative h-auto ${
+                            isSelected
+                              ? 'outline outline-2 outline-[#2563EB] outline-offset-2 bg-white shadow-2xs'
+                              : 'outline outline-2 outline-transparent outline-offset-2 bg-transparent hover:outline-slate-300'
+                          }`}
+                        >
+                        
+                        {/* 1. TEXT SECTION BLOCK */}
+                        {block.type === 'text' && (
+                          <div className="space-y-3">
+                            {/* Heading Section Title (Clean Title) */}
+                            <input
+                              type="text"
+                              value={block.sectionTitle || ''}
+                              onChange={(e) => updateBlockById(block.id, { sectionTitle: e.target.value })}
+                              placeholder="Heading Judul Section..."
+                              className="w-full text-2xl font-bold text-[#2E2D2D] placeholder:text-[#AAAAAA] border-none focus:ring-0 outline-none bg-transparent"
+                              style={{ textAlign: block.alignment || 'left' }}
+                            />
 
-                            {/* CUSTOM DROPDOWN SELECTOR FOR JENIS TEST */}
-                            <div
-                              onClick={(e) => e.stopPropagation()}
-                              className="relative"
-                            >
-                              <div className="flex items-center gap-2">
-                                <label className="text-xs font-semibold text-[#737373]">Jenis Test:</label>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setOpenTestTypeMenuId(openTestTypeMenuId === block.id ? null : block.id);
-                                  }}
-                                  className="text-xs font-bold bg-white border border-[#ECECEC] hover:border-[#2563EB] rounded-[8px] px-3 py-1.5 text-[#2563EB] outline-none cursor-pointer flex items-center gap-2 shadow-2xs transition-all"
-                                >
-                                  <span>
-                                    {block.testType === 'link_eksternal'
-                                      ? 'Link Eksternal'
-                                      : block.testType === 'qr_code'
-                                      ? 'Barcode / QR Code Modal'
-                                      : 'Kuis Native Sitemsa'}
+                            {/* Paragraf Isi Section */}
+                            <AutoResizeTextarea
+                              value={block.textValue || ''}
+                              onChange={(val) => updateBlockById(block.id, { textValue: val })}
+                              placeholder="Tuliskan isi paragraf materi di sini...."
+                              className="w-full text-sm text-[#2E2D2D] leading-relaxed placeholder:text-[#AAAAAA] border-none focus:ring-0 outline-none bg-transparent whitespace-pre-line"
+                              style={{ textAlign: block.alignment || 'left' }}
+                            />
+
+                            {/* Paragraf Highlight (Callout Box) */}
+                            {block.calloutText !== undefined ? (
+                              <div className="bg-[#F4EFFF] border-l-4 border-[#0400F4] rounded-r-[8px] p-3.5 mt-2 space-y-1.5 relative group/calloutBox">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[11px] font-bold text-[#0400F4] tracking-wide flex items-center gap-1.5">
+                                    <Highlighter className="w-3.5 h-3.5 text-[#0400F4]" />
+                                    <span>Paragraf Highlight (Callout)</span>
                                   </span>
-                                  <ChevronDown className={`w-3.5 h-3.5 text-[#2563EB] transition-transform duration-200 ${openTestTypeMenuId === block.id ? 'rotate-180' : ''}`} />
-                                </button>
-                              </div>
-
-                              {/* FLOATING MENU POPOVER */}
-                              {openTestTypeMenuId === block.id && (
-                                <div
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="absolute right-0 top-full mt-1.5 w-60 bg-white border border-[#ECECEC] rounded-[10px] shadow-lg py-1.5 z-40 animate-in fade-in zoom-in-95 duration-150"
-                                >
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      updateBlockById(block.id, { testType: 'kuis_sitemsa', testTitle: '' });
-                                      setOpenTestTypeMenuId(null);
-                                    }}
-                                    className={`w-full px-3 py-2 text-left text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
-                                      block.testType === 'kuis_sitemsa' || !block.testType
-                                        ? 'bg-blue-50 text-[#2563EB] font-bold'
-                                        : 'text-[#2E2D2D] hover:bg-slate-50'
-                                    }`}
-                                  >
-                                    <span>Kuis Native Sitemsa</span>
-                                    {(block.testType === 'kuis_sitemsa' || !block.testType) && <CheckCircle2 className="w-3.5 h-3.5 text-[#2563EB]" />}
-                                  </button>
-
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      updateBlockById(block.id, { testType: 'link_eksternal', testTitle: '', testUrl: '' });
-                                      setOpenTestTypeMenuId(null);
-                                    }}
-                                    className={`w-full px-3 py-2 text-left text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
-                                      block.testType === 'link_eksternal'
-                                        ? 'bg-blue-50 text-[#2563EB] font-bold'
-                                        : 'text-[#2E2D2D] hover:bg-slate-50'
-                                    }`}
-                                  >
-                                    <span>Link Eksternal (Quizizz / GForms)</span>
-                                    {block.testType === 'link_eksternal' && <CheckCircle2 className="w-3.5 h-3.5 text-[#2563EB]" />}
-                                  </button>
-
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      updateBlockById(block.id, { testType: 'qr_code', testTitle: '', testUrl: '', qrImageUrl: '' });
-                                      setOpenTestTypeMenuId(null);
-                                    }}
-                                    className={`w-full px-3 py-2 text-left text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
-                                      block.testType === 'qr_code'
-                                        ? 'bg-blue-50 text-[#2563EB] font-bold'
-                                        : 'text-[#2E2D2D] hover:bg-slate-50'
-                                    }`}
-                                  >
-                                    <span>Barcode / QR Code Modal</span>
-                                    {block.testType === 'qr_code' && <CheckCircle2 className="w-3.5 h-3.5 text-[#2563EB]" />}
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* 1. LINK EKSTERNAL FRAME */}
-                          {block.testType === 'link_eksternal' && (
-                            <div className="p-5 rounded-[12px] bg-slate-50 border border-[#ECECEC] space-y-3.5">
-                              <div className="flex items-center justify-between">
-                                <span className="text-[11px] font-bold text-blue-600 tracking-wide flex items-center gap-1">
-                                  <ExternalLink className="w-3.5 h-3.5" /> Link Eksternal
-                                </span>
-                              </div>
-
-                              <input
-                                type="text"
-                                value={block.testTitle || ''}
-                                onChange={(e) => updateBlockById(block.id, { testTitle: e.target.value })}
-                                placeholder="Judul Kuis Eksternal (contoh: Kuis Quizizz Lab Elektronika)..."
-                                className="w-full font-bold text-sm text-[#2E2D2D] border-b border-dashed border-slate-300 focus:border-[#2563EB] outline-none bg-transparent pb-1 placeholder:text-[#AAAAAA]"
-                              />
-
-                              <div className="space-y-1">
-                                <label className="text-xs font-semibold text-[#2E2D2D]">Tautan / Link Eksternal:</label>
-                                <input
-                                  type="text"
-                                  value={block.testUrl || ''}
-                                  onChange={(e) => updateBlockById(block.id, { testUrl: e.target.value })}
-                                  placeholder="Tempelkan tautan / link kuis eksternal di sini (misal: https://quizizz.com/join?gc=123456)..."
-                                  className="w-full h-10 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] outline-none focus:border-[#2563EB] placeholder:text-[#AAAAAA]"
-                                />
-                              </div>
-                            </div>
-                          )}
-
-                          {/* 2. BARCODE / QR CODE MODAL FRAME */}
-                          {block.testType === 'qr_code' && (
-                            <div className="p-5 rounded-[12px] bg-slate-50 border border-[#ECECEC] space-y-4">
-                              <div className="flex items-center justify-between">
-                                <span className="text-[11px] font-bold text-purple-600 tracking-wide flex items-center gap-1">
-                                  <QrCode className="w-3.5 h-3.5" /> Barcode / QR Code Modal
-                                </span>
-                              </div>
-
-                              {/* BARCODE UPLOAD SECTION (IMAGE UPLOAD MODEL) */}
-                              {!block.qrImageUrl ? (
-                                <div
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setEditingQrBlockId(block.id);
-                                    qrFileInputRef.current?.click();
-                                  }}
-                                  className="border-2 border-dashed border-slate-300 hover:border-[#2563EB] bg-white rounded-[10px] p-6 text-center cursor-pointer transition-all space-y-2 group"
-                                >
-                                  <div className="w-10 h-10 rounded-full bg-purple-50 text-purple-600 group-hover:bg-blue-50 group-hover:text-[#2563EB] flex items-center justify-center mx-auto transition-colors">
-                                    <Upload className="w-5 h-5" />
-                                  </div>
-                                  <div>
-                                    <p className="text-xs font-bold text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors">Klik untuk Upload Gambar Barcode / QR Code</p>
-                                    <p className="text-[11px] text-[#737373] mt-0.5">Format file gambar (PNG, JPG, SVG)</p>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className="flex flex-col sm:flex-row items-center gap-4 bg-white p-3 rounded-[10px] border border-[#ECECEC]">
-                                  <div className="w-24 h-24 rounded-[8px] bg-white p-1.5 border border-[#ECECEC] shrink-0 flex items-center justify-center">
-                                    <img
-                                      src={block.qrImageUrl}
-                                      alt="QR Code Kuis"
-                                      className="w-full h-full object-contain"
-                                    />
-                                  </div>
-                                  <div className="flex-1 space-y-2 w-full">
-                                    <p className="text-xs font-bold text-[#2E2D2D]">Gambar Barcode Terpasang</p>
-                                    <div className="flex items-center gap-2">
-                                      <button
-                                        type="button"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setEditingQrBlockId(block.id);
-                                          qrFileInputRef.current?.click();
-                                        }}
-                                        className="px-3 py-1.5 rounded-[6px] bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-[#2E2D2D] cursor-pointer transition-colors"
-                                      >
-                                        Ganti Gambar Barcode
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          updateBlockById(block.id, { qrImageUrl: '' });
-                                        }}
-                                        className="px-3 py-1.5 rounded-[6px] bg-rose-50 hover:bg-rose-100 text-xs font-semibold text-rose-600 cursor-pointer transition-colors"
-                                      >
-                                        Hapus
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* LINK FRAME BELOW BARCODE */}
-                              <div className="space-y-2 pt-1">
-                                <label className="text-xs font-semibold text-[#2E2D2D]">Tautan / URL Tujuan Barcode:</label>
-                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                                  <input
-                                    type="text"
-                                    value={block.testUrl || ''}
-                                    onChange={(e) => updateBlockById(block.id, { testUrl: e.target.value })}
-                                    placeholder="Masukkan tautan / URL tujuan Barcode..."
-                                    className="flex-1 h-9 px-3 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] outline-none focus:border-[#2563EB] placeholder:text-[#AAAAAA]"
-                                  />
                                   <button
                                     type="button"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      setActiveQrModalUrl(block.qrImageUrl || 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://quizizz.com');
+                                      updateBlockById(block.id, { calloutText: undefined });
                                     }}
-                                    className="px-3.5 py-2 rounded-[8px] bg-[#2563EB] text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover:bg-blue-700 shadow-2xs whitespace-nowrap"
+                                    title="Hapus Paragraf Highlight"
+                                    className="text-slate-400 hover:text-rose-600 p-1 rounded-[4px] cursor-pointer transition-colors"
                                   >
-                                    <QrCode className="w-3.5 h-3.5" />
-                                    <span>Tampilkan Barcode Modal (Preview)</span>
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+
+                                <AutoResizeTextarea
+                                  value={block.calloutText}
+                                  onChange={(val) => updateBlockById(block.id, { calloutText: val })}
+                                  placeholder="Tuliskan kalimat/paragraf highlight di sini (contoh: Prinsip Utama: ...)..."
+                                  className="w-full bg-transparent border-none text-xs md:text-sm font-medium text-[#2E2D2D] outline-none placeholder:text-[#AAAAAA] focus:ring-0 p-0 m-0 leading-relaxed block whitespace-pre-line"
+                                  rows={1}
+                                />
+                              </div>
+                            ) : isSelected ? (
+                              <div className="pt-1">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    updateBlockById(block.id, { calloutText: 'Prinsip Utama: Tuliskan kalimat highlight di sini...' });
+                                  }}
+                                  className="px-3 py-1.5 rounded-[6px] bg-indigo-50/70 hover:bg-indigo-100 text-[#0400F4] border border-indigo-200/60 font-semibold text-xs inline-flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs active:scale-[0.98]"
+                                >
+                                  <Highlighter className="w-3.5 h-3.5 text-[#0400F4]" />
+                                  <span>Tambah Paragraf Highlight (Callout)</span>
+                                </button>
+                              </div>
+                            ) : null}
+                          </div>
+                        )}
+
+                        {/* 2. IMAGE BLOCK */}
+                        {block.type === 'image' && (
+                          <div>
+                            {!block.mediaUrl ? (
+                              <div
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handlePromptChangeImage(block.id, '');
+                                }}
+                                className="rounded-[12px] border-2 border-dashed border-slate-300 hover:border-[#2563EB] bg-slate-50/50 p-12 text-center transition-all cursor-pointer group/imgCard"
+                              >
+                                <div className="w-12 h-12 rounded-full bg-white border border-[#ECECEC] text-[#2563EB] flex items-center justify-center mx-auto shadow-xs">
+                                  <ImageIcon className="w-6 h-6" />
+                                </div>
+                                <div className="mt-3 space-y-1">
+                                  <p className="text-xs font-bold text-[#2E2D2D] group-hover/imgCard:text-[#2563EB] transition-colors">
+                                    Klik untuk Menambahkan Gambar
+                                  </p>
+                                  <p className="text-[11px] text-[#737373]">
+                                    Upload file dari komputer atau tempelkan URL gambar web
+                                  </p>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="space-y-2 group/mediaContainer relative">
+                                <div className="relative overflow-hidden rounded-[12px] border border-[#ECECEC]">
+                                  {/* eslint-disable-next-next/no-img-element */}
+                                  <img
+                                    src={block.mediaUrl}
+                                    alt="Uploaded content"
+                                    className="w-full max-h-[480px] object-cover rounded-[12px]"
+                                  />
+
+                                  {/* OVERLAY CHANGE BUTTON ON HOVER */}
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/mediaContainer:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handlePromptChangeImage(block.id, block.mediaUrl);
+                                      }}
+                                      className="px-4 py-2 rounded-[8px] bg-white text-[#2E2D2D] text-xs font-bold shadow-md hover:bg-slate-100 cursor-pointer flex items-center gap-1.5 transition-colors"
+                                    >
+                                      <Pencil className="w-3.5 h-3.5" />
+                                      <span>Ganti Gambar</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* 3. VIDEO BLOCK */}
+                        {block.type === 'video' && (
+                          <div>
+                            {!block.mediaUrl ? (
+                              <div
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handlePromptChangeVideo(block.id, '');
+                                }}
+                                className="rounded-[12px] border-2 border-dashed border-slate-300 hover:border-[#2563EB] bg-slate-50/50 p-12 text-center transition-all cursor-pointer group/vidCard"
+                              >
+                                <div className="w-12 h-12 rounded-full bg-white border border-[#ECECEC] text-[#2563EB] flex items-center justify-center mx-auto shadow-xs">
+                                  <VideoIcon className="w-6 h-6" />
+                                </div>
+                                <div className="mt-3 space-y-1">
+                                  <p className="text-xs font-bold text-[#2E2D2D] group-hover/vidCard:text-[#2563EB] transition-colors">
+                                    Klik untuk Menambahkan Video YouTube
+                                  </p>
+                                  <p className="text-[11px] text-[#737373]">
+                                    Tempelkan tautan video YouTube / Shorts
+                                  </p>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="space-y-2 group/videoContainer relative">
+                                <div className="aspect-video w-full rounded-[12px] overflow-hidden border border-[#ECECEC] relative bg-black">
+                                  <iframe
+                                    src={getYouTubeEmbedUrl(block.mediaUrl)}
+                                    title="YouTube Video Embed"
+                                    className="w-full h-full border-0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                  />
+                                </div>
+                                <div className="flex items-center justify-between text-xs text-[#737373]">
+                                  <span className="truncate max-w-md">{block.mediaUrl}</span>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handlePromptChangeVideo(block.id, block.mediaUrl);
+                                    }}
+                                    className="text-[#2563EB] hover:underline font-semibold cursor-pointer shrink-0 ml-2"
+                                  >
+                                    Ganti URL Video
                                   </button>
                                 </div>
                               </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* 4. ATTACHMENT BLOCK */}
+                        {block.type === 'attachment' && (
+                          <div className="p-4 rounded-[12px] bg-slate-50/80 border border-[#ECECEC] space-y-3">
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-xs font-bold text-[#737373] flex items-center gap-1.5">
+                                <Paperclip className="w-4 h-4 text-[#2563EB]" /> Lampiran File Pembelajaran
+                              </h4>
                             </div>
-                          )}
 
-                          {/* 3. KUIS NATIVE SITEMSA FRAME */}
-                          {(block.testType === 'kuis_sitemsa' || !block.testType) && (
-                            <div className="p-5 rounded-[12px] bg-slate-50 border border-[#ECECEC] space-y-3">
-                              <div className="flex items-center justify-between">
-                                <span className="text-[11px] font-bold text-indigo-600 tracking-wide flex items-center gap-1">
-                                  <HelpCircle className="w-3.5 h-3.5" /> Kuis Native Sitemsa
-                                </span>
-                              </div>
-
-                              {!block.testTitle ? (
-                                <div className="space-y-2 pt-1">
-                                  <label className="text-xs font-semibold text-[#2E2D2D]">Pilih Kuis yang Telah Dibuat:</label>
-                                  <select
-                                    value=""
-                                    onChange={(e) => updateBlockById(block.id, { testTitle: e.target.value })}
-                                    className="w-full h-10 px-3 rounded-[8px] bg-white border border-[#ECECEC] text-xs font-bold text-[#2563EB] outline-none focus:border-[#2563EB] cursor-pointer"
-                                  >
-                                    <option value="" disabled>-- + Tambah / Pilih Kuis Sitemsa --</option>
-                                    <option value="Kuis 1: Daspro & Variabel Python">Kuis 1: Daspro & Variabel Python (3 Soal)</option>
-                                    <option value="Kuis 2: Rangkaian Listrik Seri & Paralel">Kuis 2: Rangkaian Listrik Seri & Paralel (5 Soal)</option>
-                                    <option value="Kuis 3: Logika & Algoritma Lanjutan">Kuis 3: Logika & Algoritma Lanjutan (4 Soal)</option>
-                                  </select>
+                            {(!block.attachments || block.attachments.length === 0) ? (
+                              <div
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  triggerAddAttachmentFileFromComputer(block.id);
+                                }}
+                                className="border-2 border-dashed border-slate-300 hover:border-[#2563EB] bg-white rounded-[10px] p-6 text-center cursor-pointer transition-all space-y-1.5 group/attCard"
+                              >
+                                <div className="w-10 h-10 rounded-full bg-blue-50 text-[#2563EB] flex items-center justify-center mx-auto">
+                                  <Upload className="w-5 h-5" />
                                 </div>
-                              ) : (
-                                <div className="p-4 rounded-[10px] bg-white border border-[#ECECEC] hover:border-[#2563EB] shadow-2xs flex items-center justify-between transition-all">
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-[8px] bg-blue-50 text-[#2563EB] flex items-center justify-center shrink-0">
-                                      <HelpCircle className="w-5 h-5" />
+                                <div>
+                                  <p className="text-xs font-bold text-[#2E2D2D] group-hover/attCard:text-[#2563EB] transition-colors">
+                                    Klik untuk Tambahkan File dari Komputer
+                                  </p>
+                                  <p className="text-[11px] text-[#737373]">Mendukung file PDF, ZIP, DOCX, PPTX, dll.</p>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                {block.attachments.map((fileItem) => (
+                                  <div
+                                    key={fileItem.id}
+                                    className="p-3 rounded-[10px] bg-white border border-[#ECECEC] flex items-center justify-between hover:border-[#2563EB] transition-colors shadow-2xs"
+                                  >
+                                    <div className="flex items-center gap-3 truncate min-w-0 pr-2">
+                                      <div className="w-9 h-9 rounded-[8px] bg-blue-50 text-[#2563EB] flex items-center justify-center shrink-0">
+                                        <File className="w-4 h-4" />
+                                      </div>
+                                      <div className="truncate min-w-0">
+                                        <p className="text-xs font-bold text-[#2E2D2D] truncate">{fileItem.fileName}</p>
+                                        <p className="text-[11px] text-[#737373] mt-0.5">{fileItem.fileSize}</p>
+                                      </div>
                                     </div>
-                                    <div>
-                                      <h4 className="text-xs font-bold text-[#2E2D2D]">{block.testTitle}</h4>
-                                      <p className="text-[11px] text-[#737373] mt-0.5">Redirect langsung ke halaman kuis Sitemsa</p>
-                                    </div>
-                                  </div>
 
-                                  <div className="flex items-center gap-2">
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        updateBlockById(block.id, { testTitle: '' });
-                                      }}
-                                      className="px-3 py-1.5 rounded-[6px] bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-[#737373] transition-colors cursor-pointer"
-                                    >
-                                      Ubah Kuis
-                                    </button>
-                                    <span className="px-3 py-1.5 rounded-[6px] bg-[#2563EB] text-white text-xs font-bold inline-flex items-center gap-1">
-                                      <span>Buka Kuis</span>
-                                      <ChevronRight className="w-3.5 h-3.5" />
+                                    <span className="text-xs font-bold text-[#2563EB] px-3 py-1 rounded-[6px] bg-blue-50 border border-blue-100 flex items-center gap-1 shrink-0">
+                                      <Download className="w-3.5 h-3.5" /> Download
                                     </span>
                                   </div>
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                        </div>
-                      )}
-
-                      {/* 7. CATATAN HIGHLIGHT / CALLOUT BLOCK */}
-                      {block.type === 'callout' && (
-                        <div className="bg-[#F4EFFF] border-l-4 border-[#0400F4] rounded-r-[8px] p-3.5 text-xs md:text-sm text-[#2E2D2D] leading-relaxed font-medium transition-all h-fit">
-                          <AutoResizeTextarea
-                            value={block.textValue || ''}
-                            onChange={(val) => updateBlockById(block.id, { textValue: val })}
-                            placeholder="Tuliskan catatan highlight / prinsip utama di sini..."
-                            className="w-full bg-transparent border-none text-xs md:text-sm font-medium text-[#2E2D2D] outline-none placeholder:text-[#AAAAAA] focus:ring-0 p-0 m-0 leading-relaxed block whitespace-pre-line"
-                            rows={1}
-                          />
-                        </div>
-                      )}
-
-                    </div>
-                    </div>
-
-                    {/* BETWEEN-BLOCKS "INSERT BLOCK" DIVIDER LINE — REMAINS VISIBLE WHEN RIGHT SIDEBAR IS OPEN FOR THIS INSERT INDEX */}
-                    {(() => {
-                      const isInsertActive = insertTargetIndex === index && showRightSidebar;
-                      return (
-                        <div
-                          className={`relative flex items-center justify-center z-20 transition-all duration-200 group/insertArea ${
-                            isInsertActive
-                              ? 'opacity-100 py-3.5 my-1'
-                              : 'opacity-0 hover:opacity-100 py-1 my-0.5 hover:py-3.5 hover:my-1'
-                          }`}
-                        >
-                          <div className="absolute inset-0 flex items-center pointer-events-none">
-                            <div className={`w-full border-t border-dashed ${isInsertActive ? 'border-[#2563EB] border-t-2' : 'border-[#2563EB]'}`} />
+                                ))}
+                              </div>
+                            )}
                           </div>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedBlockId(null);
-                              setInsertTargetIndex(index);
-                              setShowRightSidebar(true);
-                            }}
-                            title="Insert block"
-                            className={`relative z-10 px-4 py-2 rounded-full shadow-2xs inline-flex items-center justify-center gap-2 text-xs font-bold cursor-pointer transition-all ${
+                        )}
+
+                        {/* 5. STEP BY STEP BLOCK */}
+                        {block.type === 'steps' && (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-xs font-bold text-[#737373] flex items-center gap-1.5">
+                                <ListOrdered className="w-4 h-4 text-[#2563EB]" /> Langkah Praktikum Berurutan
+                              </h4>
+                            </div>
+
+                            <div className="space-y-3">
+                              {(block.steps || []).map((step, sIdx) => (
+                                <div key={sIdx} className="p-4 rounded-[10px] bg-slate-50/80 border border-[#ECECEC] space-y-2 relative group/step">
+                                  <div className="flex items-center gap-3">
+                                    <span className="w-7 h-7 rounded-full bg-[#2563EB] text-white text-xs font-bold flex items-center justify-center shrink-0">
+                                      {sIdx + 1}
+                                    </span>
+                                    <input
+                                      type="text"
+                                      value={step.title}
+                                      onChange={(e) => handleUpdateStepItem(block.id, sIdx, 'title', e.target.value)}
+                                      placeholder={`Langkah ${sIdx + 1}`}
+                                      className="flex-1 font-bold text-xs text-[#2E2D2D] border-b border-dashed border-slate-300 focus:border-[#2563EB] outline-none bg-transparent pb-0.5"
+                                    />
+                                    {(block.steps || []).length > 1 && (
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDeleteStepItem(block.id, sIdx);
+                                        }}
+                                        title="Hapus Langkah Ini"
+                                        className="text-slate-400 hover:text-rose-600 p-1 rounded-[4px]"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    )}
+                                  </div>
+
+                                  <AutoResizeTextarea
+                                    value={step.desc}
+                                    onChange={(val) => handleUpdateStepItem(block.id, sIdx, 'desc', val)}
+                                    placeholder="Tuliskan penjelasan detail untuk langkah ini..."
+                                    className="w-full text-xs text-[#737373] leading-relaxed border-none focus:ring-0 outline-none bg-transparent pl-10"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAddStepItem(block.id);
+                              }}
+                              className="w-full py-2.5 rounded-[8px] border border-dashed border-blue-300 hover:border-[#2563EB] bg-blue-50/50 hover:bg-blue-50 text-xs font-bold text-[#2563EB] inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                            >
+                              <Plus className="w-4 h-4 shrink-0 text-[#2563EB]" strokeWidth={2.5} />
+                              <span className="leading-none flex items-center">Tambah Langkah {(block.steps || []).length + 1}</span>
+                            </button>
+                          </div>
+                        )}
+
+                        {/* 6. CATATAN HIGHLIGHT / CALLOUT BLOCK */}
+                        {block.type === 'callout' && (
+                          <div className="bg-[#F4EFFF] border-l-4 border-[#0400F4] rounded-r-[8px] p-3.5 text-xs md:text-sm text-[#2E2D2D] leading-relaxed font-medium transition-all h-fit">
+                            <AutoResizeTextarea
+                              value={block.textValue || ''}
+                              onChange={(val) => updateBlockById(block.id, { textValue: val })}
+                              placeholder="Tuliskan catatan highlight / prinsip utama di sini..."
+                              className="w-full bg-transparent border-none text-xs md:text-sm font-medium text-[#2E2D2D] outline-none placeholder:text-[#AAAAAA] focus:ring-0 p-0 m-0 leading-relaxed block whitespace-pre-line"
+                              rows={1}
+                            />
+                          </div>
+                        )}
+
+                      </div>
+                      </div>
+
+                      {/* BETWEEN-BLOCKS "INSERT BLOCK" DIVIDER LINE */}
+                      {(() => {
+                        const isInsertActive = insertTargetIndex === index && showRightSidebar;
+                        return (
+                          <div
+                            className={`relative flex items-center justify-center z-20 transition-all duration-200 group/insertArea ${
                               isInsertActive
-                                ? 'bg-[#2563EB] text-white border border-[#2563EB] shadow-md scale-105'
-                                : 'bg-white border border-[#2563EB] text-[#2563EB] hover:bg-blue-50'
+                                ? 'opacity-100 py-3.5 my-1'
+                                : 'opacity-0 hover:opacity-100 py-1 my-0.5 hover:py-3.5 hover:my-1'
                             }`}
                           >
-                            <Plus className={`w-4 h-4 shrink-0 ${isInsertActive ? 'text-white' : 'text-[#2563EB]'}`} strokeWidth={2.5} />
-                            <span className="inline-block leading-none transform translate-y-[0.5px]">Insert block</span>
-                          </button>
-                        </div>
-                      );
-                    })()}
+                            <div className="absolute inset-0 flex items-center pointer-events-none">
+                              <div className={`w-full border-t border-dashed ${isInsertActive ? 'border-[#2563EB] border-t-2' : 'border-[#2563EB]'}`} />
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedBlockId(null);
+                                setInsertTargetIndex(index);
+                                setShowRightSidebar(true);
+                              }}
+                              title="Insert block"
+                              className={`relative z-10 px-4 py-2 rounded-full shadow-2xs inline-flex items-center justify-center gap-2 text-xs font-bold cursor-pointer transition-all ${
+                                isInsertActive
+                                  ? 'bg-[#2563EB] text-white border border-[#2563EB] shadow-md scale-105'
+                                  : 'bg-white border border-[#2563EB] text-[#2563EB] hover:bg-blue-50'
+                              }`}
+                            >
+                              <Plus className={`w-4 h-4 shrink-0 ${isInsertActive ? 'text-white' : 'text-[#2563EB]'}`} strokeWidth={2.5} />
+                              <span className="leading-none flex items-center">Insert block</span>
+                            </button>
+                          </div>
+                        );
+                      })()}
 
+                    </div>
                   </div>
                 );
               })}
@@ -1240,344 +1083,283 @@ export default function ModuleBlockBuilder({
           </div>
         </main>
 
-        {/* RIGHT ACTION PANEL */}
-        <aside
-          onClick={(e) => e.stopPropagation()}
-          className={`bg-[#FFFFFF] border-l border-[#ECECEC] flex flex-col shrink-0 z-20 h-full overflow-y-auto overflow-x-hidden transition-all duration-300 ease-in-out ${
-            showRightSidebar
-              ? 'w-80 opacity-100'
-              : 'w-0 opacity-0 overflow-hidden border-l-0 pointer-events-none'
-          }`}
-        >
-          
-          {/* Panel Header */}
-          <div className="p-4 flex items-center justify-between bg-white w-80 shrink-0">
-            <span className="text-xs font-bold text-[#2E2D2D] tracking-tight">
-              {selectedBlock?.type === 'attachment' ? 'Pengaturan File Lampiran' : 'Insert block'}
-            </span>
-            <button
-              onClick={() => {
-                setShowRightSidebar(false);
-                setInsertTargetIndex(undefined);
-              }}
-              title="Tutup Menu Kanan"
-              className="text-[#737373] hover:text-[#2E2D2D] p-1.5 rounded-[6px] hover:bg-slate-100 cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* PANEL BODY CONTENT */}
-          <div className="flex-1 p-5 pt-1 space-y-6 w-80">
-            
-            {/* IF FOCUSED BLOCK IS ATTACHMENT */}
-            {selectedBlock?.type === 'attachment' ? (
-              <div className="space-y-4 text-xs">
-                
-                {/* HORIZONTAL FILE LIST CARDS WITH CHANGE & DELETE ICONS */}
-                <div className="space-y-2.5">
-                  {(selectedBlock.attachments || []).map((fileItem, fIdx) => (
-                    <div
-                      key={fileItem.id || fIdx}
-                      className="p-3 rounded-[10px] bg-slate-50 border border-[#ECECEC] flex items-center justify-between gap-2 shadow-2xs hover:bg-slate-100/60 transition-colors"
-                    >
-                      {/* Left: File Icon + File Name & Size */}
-                      <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <div className="w-8 h-8 rounded-[8px] bg-blue-100 text-[#2563EB] flex items-center justify-center font-bold shrink-0">
-                          <File className="w-4 h-4" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="font-bold text-xs text-[#2E2D2D] truncate">{fileItem.fileName}</p>
-                          <p className="text-[11px] text-[#737373] mt-0.5">{fileItem.fileSize}</p>
-                        </div>
-                      </div>
-
-                      {/* Right: Change & Delete Icon Buttons */}
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          onClick={() => triggerAddAttachmentFileFromComputer(selectedBlock.id, fileItem.id)}
-                          title="Ganti File dari Komputer"
-                          className="p-1.5 rounded-[6px] hover:bg-white text-slate-500 hover:text-[#2563EB] border border-transparent hover:border-[#ECECEC] cursor-pointer transition-colors"
-                        >
-                          <RefreshCw className="w-3.5 h-3.5" />
-                        </button>
-
-                        <button
-                          onClick={() => handleDeleteAttachmentFile(selectedBlock.id, fileItem.id)}
-                          title="Hapus File"
-                          className="p-1.5 rounded-[6px] hover:bg-white text-slate-400 hover:text-rose-600 border border-transparent hover:border-[#ECECEC] cursor-pointer transition-colors"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* + TAMBAH FILE BUTTON DIRECTLY OPENS COMPUTER FILE DIALOG */}
-                <button
-                  onClick={() => triggerAddAttachmentFileFromComputer(selectedBlock.id)}
-                  className="w-full py-2.5 rounded-[8px] border border-dashed border-blue-300 hover:border-[#2563EB] bg-blue-50/50 hover:bg-blue-50 text-xs font-bold text-[#2563EB] inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                >
-                  <Plus className="w-4 h-4 shrink-0 text-[#2563EB]" strokeWidth={2.5} />
-                  <span className="inline-block leading-none transform translate-y-[0.5px]">Tambah File Baru (Upload Komputer)</span>
-                </button>
-
-              </div>
-            ) : (
-              /* DEFAULT INSERT BLOCK MENU (ICON, TEXT, & CHEVRON TURN BLUE ON HOVER) */
-              <>
-                <div className="space-y-2">
-                  <h4 className="text-xs font-bold text-[#737373] tracking-tight">Basic</h4>
-                  <div className="space-y-1.5">
-                    <button
-                      onClick={() => handleAddBlock('text')}
-                      className="w-full p-3 rounded-[8px] bg-white border border-[#ECECEC] hover:border-[#2563EB] hover:bg-blue-50/50 text-left flex items-center justify-between text-xs font-semibold transition-all cursor-pointer group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Type className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
-                        <span className="text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors">Text Section</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
-                    </button>
-
-                    <button
-                      onClick={() => handleAddBlock('image')}
-                      className="w-full p-3 rounded-[8px] bg-white border border-[#ECECEC] hover:border-[#2563EB] hover:bg-blue-50/50 text-left flex items-center justify-between text-xs font-semibold transition-all cursor-pointer group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <ImageIcon className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
-                        <span className="text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors">Image</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
-                    </button>
-
-                    <button
-                      onClick={() => handleAddBlock('video')}
-                      className="w-full p-3 rounded-[8px] bg-white border border-[#ECECEC] hover:border-[#2563EB] hover:bg-blue-50/50 text-left flex items-center justify-between text-xs font-semibold transition-all cursor-pointer group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <VideoIcon className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
-                        <span className="text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors">Video</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <h4 className="text-xs font-bold text-[#737373] tracking-tight">Rich media</h4>
-                  <div className="space-y-1.5">
-                    <button
-                      onClick={() => handleAddBlock('attachment')}
-                      className="w-full p-3 rounded-[8px] bg-white border border-[#ECECEC] hover:border-[#2563EB] hover:bg-blue-50/50 text-left flex items-center justify-between text-xs font-semibold transition-all cursor-pointer group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Paperclip className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
-                        <span className="text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors">Lampiran File</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
-                    </button>
-
-                    <button
-                      onClick={() => handleAddBlock('steps')}
-                      className="w-full p-3 rounded-[8px] bg-white border border-[#ECECEC] hover:border-[#2563EB] hover:bg-blue-50/50 text-left flex items-center justify-between text-xs font-semibold transition-all cursor-pointer group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <ListOrdered className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
-                        <span className="text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors">Step by Step</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
-                    </button>
-
-                    <button
-                      onClick={() => handleAddBlock('test')}
-                      className="w-full p-3 rounded-[8px] bg-white border border-[#ECECEC] hover:border-[#2563EB] hover:bg-blue-50/50 text-left flex items-center justify-between text-xs font-semibold transition-all cursor-pointer group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <HelpCircle className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
-                        <span className="text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors">Test / Mini Kuis</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
-                    </button>
-
-                    <button
-                      onClick={() => handleAddBlock('callout')}
-                      className="w-full p-3 rounded-[8px] bg-white border border-[#ECECEC] hover:border-[#2563EB] hover:bg-blue-50/50 text-left flex items-center justify-between text-xs font-semibold transition-all cursor-pointer group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Sparkles className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
-                        <span className="text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors">Catatan Highlight (Callout)</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-
-          </div>
-        </aside>
-
-      </div>
-
-      {/* HIDDEN COMPUTER FILE INPUT FOR IMAGE SELECTION */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleComputerFileSelect}
-        className="hidden"
-      />
-
-      {/* HIDDEN COMPUTER FILE INPUT FOR ATTACHMENT SELECTION */}
-      <input
-        ref={attachmentFileInputRef}
-        type="file"
-        accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar,image/*"
-        onChange={handleAttachmentFileSelect}
-        className="hidden"
-      />
-
-      {/* HIDDEN FILE INPUT FOR QR CODE IMAGE UPLOAD */}
-      <input
-        ref={qrFileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleQrFileSelect}
-        className="hidden"
-      />
-
-      {/* IMAGE SELECTION MODAL (CLEAN TEXT HEADLINE - NO ICON) */}
-      {editingImageId && (
-        <div
-          onClick={(e) => e.stopPropagation()}
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200"
-        >
-          <div className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md space-y-5 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-[#2E2D2D]">
-                Upload & Pengaturan Gambar
+        {/* RIGHT SIDEBAR BUILDER TOOLBAR (PRESERVED ORIGINAL STYLE) */}
+        {showRightSidebar && (
+          <aside
+            onClick={(e) => e.stopPropagation()}
+            className="w-80 bg-white border-l border-[#ECECEC] flex flex-col shrink-0 z-20 shadow-xs"
+          >
+            <div className="p-4 pb-2 flex items-center justify-between">
+              <h3 className="text-xs font-bold text-[#2E2D2D]">
+                {selectedBlock?.type === 'attachment'
+                  ? 'Kelola Lampiran File'
+                  : 'Insert block'}
               </h3>
-              <button onClick={() => setEditingImageId(null)} className="w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer" aria-label="Tutup Modal">
+              <button
+                onClick={() => setShowRightSidebar(false)}
+                className="text-[#737373] hover:text-[#2E2D2D] p-1 rounded-[4px] cursor-pointer"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* TAB SELECTOR: COMPUTER OR URL */}
-            <div className="flex bg-slate-100 p-1 rounded-[10px]">
+            <div className="flex-1 overflow-y-auto p-4 space-y-6">
+
+              {/* IF SELECTED BLOCK IS ATTACHMENT */}
+              {selectedBlock?.type === 'attachment' ? (
+                <div className="space-y-4">
+                  <div className="p-3 rounded-[8px] bg-blue-50/60 border border-blue-100 space-y-1">
+                    <p className="text-xs font-bold text-[#2563EB]">Lampiran Pembelajaran Multi-File</p>
+                    <p className="text-[11px] text-[#737373] leading-relaxed">
+                      Tambahkan berkas pendukung (PDF, DOCX, ZIP) untuk dapat diunduh siswa.
+                    </p>
+                  </div>
+
+                  {/* FILE LIST IN SIDEBAR */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-[#737373]">Daftar Berkas Terlampir ({selectedBlock.attachments?.length || 0}):</label>
+                    {(!selectedBlock.attachments || selectedBlock.attachments.length === 0) ? (
+                      <p className="text-xs text-slate-400 italic py-2">Belum ada file terlampir.</p>
+                    ) : (
+                      selectedBlock.attachments.map((fileItem) => (
+                        <div
+                          key={fileItem.id}
+                          className="p-2.5 rounded-[8px] bg-white border border-[#ECECEC] flex items-center justify-between text-xs space-x-2"
+                        >
+                          <div className="flex items-center gap-2 truncate min-w-0">
+                            <File className="w-4 h-4 text-[#2563EB] shrink-0" />
+                            <div className="truncate min-w-0">
+                              <p className="font-semibold text-[#2E2D2D] truncate text-xs">{fileItem.fileName}</p>
+                              <p className="text-[11px] text-[#737373] mt-0.5">{fileItem.fileSize}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              onClick={() => triggerAddAttachmentFileFromComputer(selectedBlock.id, fileItem.id)}
+                              title="Ganti File dari Komputer"
+                              className="p-1.5 rounded-[6px] hover:bg-white text-slate-500 hover:text-[#2563EB] border border-transparent hover:border-[#ECECEC] cursor-pointer transition-colors"
+                            >
+                              <RefreshCw className="w-3.5 h-3.5" />
+                            </button>
+
+                            <button
+                              onClick={() => handleDeleteAttachmentFile(selectedBlock.id, fileItem.id)}
+                              title="Hapus File"
+                              className="p-1.5 rounded-[6px] hover:bg-white text-slate-400 hover:text-rose-600 border border-transparent hover:border-[#ECECEC] cursor-pointer transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => triggerAddAttachmentFileFromComputer(selectedBlock.id)}
+                    className="w-full py-2.5 rounded-[8px] border border-dashed border-blue-300 hover:border-[#2563EB] bg-blue-50/50 hover:bg-blue-50 text-xs font-bold text-[#2563EB] inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4 shrink-0 text-[#2563EB]" strokeWidth={2.5} />
+                    <span className="inline-block leading-none">Tambah File Baru</span>
+                  </button>
+
+                </div>
+              ) : (
+                /* DEFAULT INSERT BLOCK MENU (ORIGINAL UNTOUCHED STYLE) */
+                <>
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-bold text-[#737373] tracking-tight">Basic</h4>
+                    <div className="space-y-1.5">
+                      <button
+                        onClick={() => handleAddBlock('text')}
+                        className="w-full p-3 rounded-[8px] bg-white border border-[#ECECEC] hover:border-[#2563EB] hover:bg-blue-50/50 text-left flex items-center justify-between text-xs font-semibold transition-all cursor-pointer group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Type className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
+                          <span className="text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors">Text Section</span>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
+                      </button>
+
+                      <button
+                        onClick={() => handleAddBlock('image')}
+                        className="w-full p-3 rounded-[8px] bg-white border border-[#ECECEC] hover:border-[#2563EB] hover:bg-blue-50/50 text-left flex items-center justify-between text-xs font-semibold transition-all cursor-pointer group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <ImageIcon className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
+                          <span className="text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors">Image</span>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
+                      </button>
+
+                      <button
+                        onClick={() => handleAddBlock('video')}
+                        className="w-full p-3 rounded-[8px] bg-white border border-[#ECECEC] hover:border-[#2563EB] hover:bg-blue-50/50 text-left flex items-center justify-between text-xs font-semibold transition-all cursor-pointer group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <VideoIcon className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
+                          <span className="text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors">Video</span>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-bold text-[#737373] tracking-tight">Rich media</h4>
+                    <div className="space-y-1.5">
+                      <button
+                        onClick={() => handleAddBlock('attachment')}
+                        className="w-full p-3 rounded-[8px] bg-white border border-[#ECECEC] hover:border-[#2563EB] hover:bg-blue-50/50 text-left flex items-center justify-between text-xs font-semibold transition-all cursor-pointer group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Paperclip className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
+                          <span className="text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors">Lampiran File</span>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
+                      </button>
+
+                      <button
+                        onClick={() => handleAddBlock('steps')}
+                        className="w-full p-3 rounded-[8px] bg-white border border-[#ECECEC] hover:border-[#2563EB] hover:bg-blue-50/50 text-left flex items-center justify-between text-xs font-semibold transition-all cursor-pointer group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <ListOrdered className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
+                          <span className="text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors">Step by Step</span>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+
+            </div>
+          </aside>
+        )}
+
+      </div>
+
+      {/* IMAGE EDIT MODAL */}
+      {editingImageId && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white text-[#2E2D2D] rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md space-y-4 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-2 border-b border-[#ECECEC]">
+              <h3 className="font-bold text-sm text-[#2E2D2D]">Pengaturan Gambar</h3>
               <button
-                onClick={() => setImageUploadMode('computer')}
-                className={`flex-1 py-2 rounded-[8px] text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
-                  imageUploadMode === 'computer'
-                    ? 'bg-white text-[#2563EB] shadow-xs'
-                    : 'text-[#737373] hover:text-[#2E2D2D]'
-                }`}
+                onClick={() => setEditingImageId(null)}
+                className="text-[#737373] hover:text-[#2E2D2D] cursor-pointer"
               >
-                <Laptop className="w-3.5 h-3.5" />
-                <span>Upload Komputer</span>
-              </button>
-              <button
-                onClick={() => setImageUploadMode('url')}
-                className={`flex-1 py-2 rounded-[8px] text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
-                  imageUploadMode === 'url'
-                    ? 'bg-white text-[#2563EB] shadow-xs'
-                    : 'text-[#737373] hover:text-[#2E2D2D]'
-                }`}
-              >
-                <LinkIcon className="w-3.5 h-3.5" />
-                <span>Tautan URL</span>
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* TAB CONTENT: COMPUTER FILE UPLOAD */}
-            {imageUploadMode === 'computer' && (
-              <div className="space-y-4">
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  className="p-8 rounded-[12px] border-2 border-dashed border-blue-200 hover:border-[#2563EB] bg-blue-50/40 hover:bg-blue-50 text-center transition-all cursor-pointer space-y-2 group"
+            <div className="flex gap-2 p-1 bg-slate-100 rounded-[8px]">
+              <button
+                onClick={() => setImageUploadMode('computer')}
+                className={`flex-1 py-1.5 rounded-[6px] text-xs font-bold transition-all cursor-pointer ${
+                  imageUploadMode === 'computer'
+                    ? 'bg-white text-[#2563EB] shadow-2xs'
+                    : 'text-[#737373] hover:text-[#2E2D2D]'
+                }`}
+              >
+                Upload Komputer
+              </button>
+              <button
+                onClick={() => setImageUploadMode('url')}
+                className={`flex-1 py-1.5 rounded-[6px] text-xs font-bold transition-all cursor-pointer ${
+                  imageUploadMode === 'url'
+                    ? 'bg-white text-[#2563EB] shadow-2xs'
+                    : 'text-[#737373] hover:text-[#2E2D2D]'
+                }`}
+              >
+                URL Gambar Web
+              </button>
+            </div>
+
+            {imageUploadMode === 'computer' ? (
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="border-2 border-dashed border-slate-300 hover:border-[#2563EB] bg-slate-50 p-8 rounded-[10px] text-center cursor-pointer space-y-2 transition-all"
+              >
+                <Upload className="w-6 h-6 text-[#2563EB] mx-auto" />
+                <p className="text-xs font-bold text-[#2E2D2D]">Pilih File dari Komputer Anda</p>
+                <p className="text-[11px] text-[#737373]">PNG, JPG, WEBP, GIF (Maks. 10MB)</p>
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-[#2E2D2D] block">Tautan / URL Gambar</label>
+                <input
+                  type="text"
+                  value={tempImageUrl}
+                  onChange={(e) => setTempImageUrl(e.target.value)}
+                  placeholder="https://images.unsplash.com/photo-..."
+                  className="w-full h-10 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] outline-none focus:border-[#2563EB] transition-colors"
+                />
+              </div>
+            )}
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                onClick={() => setEditingImageId(null)}
+                className="px-4 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-xs font-bold text-[#2E2D2D] cursor-pointer"
+              >
+                Batal
+              </button>
+
+              {imageUploadMode === 'url' && (
+                <button
+                  onClick={handleSaveImageModal}
+                  className="px-4 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-xs font-bold text-white shadow-2xs cursor-pointer"
                 >
-                  <div className="w-12 h-12 rounded-full bg-white text-[#2563EB] flex items-center justify-center mx-auto shadow-xs">
-                    <Upload className="w-6 h-6" />
-                  </div>
-                  <p className="font-bold text-xs text-[#2563EB]">Pilih Gambar dari Komputer</p>
-                  <p className="text-[11px] text-[#737373]">Format PNG, JPG, JPEG, atau WEBP</p>
-                </div>
-              </div>
-            )}
-
-            {/* TAB CONTENT: URL INPUT */}
-            {imageUploadMode === 'url' && (
-              <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-[#2E2D2D]">URL Gambar</label>
-                  <input
-                    type="text"
-                    value={tempImageUrl}
-                    onChange={(e) => setTempImageUrl(e.target.value)}
-                    placeholder="https://images.unsplash.com/..."
-                    className="w-full h-10 px-3 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] outline-none focus:border-[#2563EB]"
-                  />
-                </div>
-                <div className="flex justify-end gap-2">
-                  <button
-                    onClick={() => setEditingImageId(null)}
-                    className="px-4 py-2 rounded-[8px] bg-slate-100 text-xs font-semibold text-[#2E2D2D] hover:bg-slate-200 cursor-pointer transition-all duration-200 ease-in-out active:scale-[0.98]"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    onClick={handleConfirmImageChange}
-                    className="px-4 py-2 rounded-[8px] bg-[#2563EB] text-xs font-semibold text-white hover:bg-blue-700 cursor-pointer shadow-2xs transition-all duration-200 ease-in-out active:scale-[0.98]"
-                  >
-                    Gunakan URL
-                  </button>
-                </div>
-              </div>
-            )}
-
+                  Simpan Gambar
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
 
-      {/* INLINE VIDEO YOUTUBE URL REPLACER MODAL (CLEAN TEXT HEADLINE - NO ICON) */}
+      {/* VIDEO URL EDIT MODAL */}
       {editingVideoId && (
-        <div
-          onClick={(e) => e.stopPropagation()}
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200"
-        >
-          <div className="bg-white rounded-[12px] border border-[#ECECEC] p-6 w-full max-w-md space-y-4 shadow-xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-[#2E2D2D]">
-                Pengaturan Media Video YouTube
-              </h3>
-              <button onClick={() => setEditingVideoId(null)} className="w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer" aria-label="Tutup Modal">
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white text-[#2E2D2D] rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md space-y-4 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-2 border-b border-[#ECECEC]">
+              <h3 className="font-bold text-sm text-[#2E2D2D]">Pengaturan Tautan Video YouTube</h3>
+              <button
+                onClick={() => setEditingVideoId(null)}
+                className="text-[#737373] hover:text-[#2E2D2D] cursor-pointer"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-[#2E2D2D]">URL Video YouTube</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-[#2E2D2D] block">URL Video YouTube / Shorts / Embed</label>
               <input
                 type="text"
                 value={tempVideoUrl}
                 onChange={(e) => setTempVideoUrl(e.target.value)}
                 placeholder="https://www.youtube.com/watch?v=..."
-                className="w-full h-10 px-3 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] outline-none focus:border-[#2563EB]"
+                className="w-full h-10 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] outline-none focus:border-[#2563EB] transition-colors"
               />
-              <p className="text-[11px] text-[#737373]">Video akan otomatis di-embed secara langsung di atas kanvas.</p>
+              <p className="text-[11px] text-[#737373]">
+                Format yang didukung: YouTube Watch link (`watch?v=`), Shorts, Embed, atau `youtu.be/`
+              </p>
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 onClick={() => setEditingVideoId(null)}
-                className="px-4 py-2 rounded-[8px] bg-slate-100 text-xs font-semibold text-[#2E2D2D] hover:bg-slate-200 cursor-pointer transition-all duration-200 ease-in-out active:scale-[0.98]"
+                className="px-4 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-xs font-bold text-[#2E2D2D] cursor-pointer"
               >
                 Batal
               </button>
+
               <button
-                onClick={handleConfirmVideoChange}
-                className="px-4 py-2 rounded-[8px] bg-[#2563EB] text-xs font-semibold text-white hover:bg-blue-700 cursor-pointer transition-all duration-200 ease-in-out active:scale-[0.98]"
+                onClick={handleSaveVideoModal}
+                className="px-4 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-xs font-bold text-white shadow-2xs cursor-pointer"
               >
                 Simpan Video
               </button>
@@ -1586,11 +1368,404 @@ export default function ModuleBlockBuilder({
         </div>
       )}
 
-      {/* QR CODE POPUP MODAL PREVIEW FOR TEST BLOCK (LIGHT MODE) */}
+      {/* PUBLISH / DRAFT CONFIRMATION MODAL WITH REFINED STYLE */}
+      {showPublishModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-in fade-in duration-200 font-sans">
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-xl rounded-[16px] border border-[#ECECEC] overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh]"
+          >
+            {/* Modal Header (Title Only, No Border Line, No Subtitle) */}
+            <div className="p-5 sm:p-6 pb-2 bg-white flex items-center justify-between shrink-0">
+              <h2 className="text-lg sm:text-xl font-bold text-[#2E2D2D]">Konfirmasi & Publikasi Modul</h2>
+              <button
+                type="button"
+                onClick={() => setShowPublishModal(false)}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#737373] flex items-center justify-center cursor-pointer transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 pt-2 overflow-y-auto space-y-5 flex-1 text-xs">
+
+              {/* 1. JUDUL MODUL MATERI (READ-ONLY) */}
+              <div className="space-y-1.5">
+                <label className="font-bold text-xs text-[#2E2D2D] block">Judul Modul Materi</label>
+                <input
+                  type="text"
+                  value={moduleTitle}
+                  readOnly
+                  className="w-full h-9 px-3.5 rounded-[8px] bg-slate-50 border border-[#ECECEC] text-xs font-semibold text-[#737373] outline-none cursor-not-allowed select-none"
+                />
+              </div>
+
+              {/* 2. ROW: LEVEL & DURASI (CUSTOM POPOVER DROPDOWNS MATCHING PROFILE STYLE) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div ref={levelDropdownRef} className="space-y-1.5 relative">
+                  <label className="font-bold text-xs text-[#2E2D2D] block">Tingkat Kesulitan / Level</label>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setIsLevelDropdownOpen(!isLevelDropdownOpen)}
+                      className="w-full h-9 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs font-semibold text-[#2E2D2D] outline-none hover:border-[#2563EB] focus:border-[#2563EB] flex items-center justify-between cursor-pointer transition-colors"
+                    >
+                      <span>{moduleLevel}</span>
+                      <ChevronDown className={`w-4 h-4 text-[#2E2D2D] transition-transform duration-200 ${isLevelDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {isLevelDropdownOpen && (
+                      <div
+                        className="absolute left-0 top-full mt-1 w-full bg-white border border-[#ECECEC] rounded-[10px] shadow-md shadow-black/5 py-1 z-50 animate-in fade-in zoom-in-95 duration-150"
+                      >
+                        {(['Pemula', 'Menengah', 'Mahir'] as const).map((lvl) => (
+                          <button
+                            key={lvl}
+                            type="button"
+                            onClick={() => {
+                              setModuleLevel(lvl);
+                              setIsLevelDropdownOpen(false);
+                            }}
+                            className={`w-full px-3.5 py-2 text-left text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                              moduleLevel === lvl
+                                ? 'bg-blue-50 text-[#2563EB] font-bold'
+                                : 'text-[#2E2D2D] hover:bg-slate-50'
+                            }`}
+                          >
+                            <span>{lvl}</span>
+                            {moduleLevel === lvl && <CheckCircle2 className="w-3.5 h-3.5 text-[#2563EB]" />}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="font-bold text-xs text-[#2E2D2D] block">Estimasi Durasi Pengerjaan</label>
+                  <input
+                    type="text"
+                    value={moduleDuration}
+                    onChange={(e) => setModuleDuration(e.target.value)}
+                    placeholder="Contoh: 25 Menit"
+                    className="w-full h-9 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs font-semibold text-[#2E2D2D] outline-none focus:border-[#2563EB] transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* 3. TOPIK BAHASAN (DRIBBBLE-STYLE INLINE TAG INPUT) */}
+              <div className="space-y-1.5">
+                <label className="font-bold text-xs text-[#2E2D2D] block">Topik Bahasan</label>
+                <div
+                  className="min-h-[44px] p-2 rounded-[8px] bg-white border border-[#ECECEC] focus-within:border-[#2563EB] flex flex-wrap items-center gap-2 transition-colors cursor-text"
+                  onClick={() => tagInputRef.current?.focus()}
+                >
+                  {moduleTopics.map((topic) => (
+                    <span
+                      key={topic}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-blue-50 text-[#2563EB] font-bold text-xs border border-blue-100/80 animate-in fade-in zoom-in-95 duration-150"
+                    >
+                      <span>{topic}</span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveTopicTag(topic);
+                        }}
+                        className="text-blue-400 hover:text-blue-700 cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </span>
+                  ))}
+
+                  <input
+                    ref={tagInputRef}
+                    type="text"
+                    value={tagInputText}
+                    onChange={(e) => setTagInputText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddTopicTag();
+                      } else if (e.key === 'Backspace' && !tagInputText && moduleTopics.length > 0) {
+                        handleRemoveTopicTag(moduleTopics[moduleTopics.length - 1]);
+                      }
+                    }}
+                    placeholder={moduleTopics.length === 0 ? "Ketik topik bahasan lalu tekan Enter..." : "Ketik topik..."}
+                    className="flex-1 min-w-[140px] text-xs text-[#2E2D2D] outline-none border-none bg-transparent p-1 placeholder:text-[#AAAAAA]"
+                  />
+                </div>
+              </div>
+
+              {/* 4. BAHAN EVALUASI & KUIS ATTACHMENT (FULL WHITE CARD FRAME & SINGLE PLUS ICON) */}
+              <div className="space-y-2 pt-1">
+                <label className="font-bold text-xs text-[#2E2D2D] block">Bahan Evaluasi / Kuis (Opsional)</label>
+
+                {!evaluationType ? (
+                  <button
+                    type="button"
+                    onClick={() => setEvaluationType('kuis_sitemsa')}
+                    className="w-full py-3 rounded-[8px] border-2 border-dashed border-blue-300 hover:border-[#2563EB] bg-white hover:bg-blue-50/40 text-xs font-bold text-[#2563EB] inline-flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Tambah Bahan Evaluasi / Kuis</span>
+                  </button>
+                ) : (
+                  <div className="p-4 rounded-[12px] bg-white border border-[#ECECEC] space-y-4 shadow-2xs">
+                    <div className="flex items-center justify-between pb-1">
+                      <span className="font-bold text-[#2E2D2D] text-xs flex items-center gap-1.5">
+                        <HelpCircle className="w-4 h-4 text-[#2563EB]" /> Pengaturan Bahan Evaluasi
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setEvaluationType(null)}
+                        className="text-xs text-rose-600 font-semibold hover:underline cursor-pointer flex items-center gap-1"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> Hapus Evaluasi
+                      </button>
+                    </div>
+
+                    {/* Evaluation Type Select Buttons */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setEvaluationType('kuis_sitemsa')}
+                        className={`p-2.5 rounded-[8px] border text-center text-xs font-bold transition-all cursor-pointer ${
+                          evaluationType === 'kuis_sitemsa'
+                            ? 'bg-blue-50 border-[#2563EB] text-[#2563EB]'
+                            : 'bg-white border-[#ECECEC] text-[#737373] hover:bg-slate-50'
+                        }`}
+                      >
+                        Kuis Native Sitemsa
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEvaluationType('link_eksternal')}
+                        className={`p-2.5 rounded-[8px] border text-center text-xs font-bold transition-all cursor-pointer ${
+                          evaluationType === 'link_eksternal'
+                            ? 'bg-blue-50 border-[#2563EB] text-[#2563EB]'
+                            : 'bg-white border-[#ECECEC] text-[#737373] hover:bg-slate-50'
+                        }`}
+                      >
+                        Link Eksternal
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEvaluationType('qr_code')}
+                        className={`p-2.5 rounded-[8px] border text-center text-xs font-bold transition-all cursor-pointer ${
+                          evaluationType === 'qr_code'
+                            ? 'bg-blue-50 border-[#2563EB] text-[#2563EB]'
+                            : 'bg-white border-[#ECECEC] text-[#737373] hover:bg-slate-50'
+                        }`}
+                      >
+                        Barcode / QR Code
+                      </button>
+                    </div>
+
+                    {/* 1. KUIS NATIVE SITEMSA INPUT WITH CUSTOM POPOVER DROPDOWN MATCHING PROFILE STYLE */}
+                    {evaluationType === 'kuis_sitemsa' && (
+                      <div ref={quizDropdownRef} className="space-y-1.5 pt-1 relative">
+                        <label className="font-bold text-xs text-[#2E2D2D] block">Pilih Kuis Native Sitemsa</label>
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() => setIsQuizDropdownOpen(!isQuizDropdownOpen)}
+                            className="w-full h-9 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs font-semibold text-[#2E2D2D] outline-none hover:border-[#2563EB] focus:border-[#2563EB] flex items-center justify-between cursor-pointer transition-colors"
+                          >
+                            <span className={evalTitle ? 'text-[#2E2D2D] font-bold' : 'text-[#737373]'}>
+                              {evalTitle || 'Pilih Kuis Native Sitemsa'}
+                            </span>
+                            <ChevronDown className={`w-4 h-4 text-[#2E2D2D] transition-transform duration-200 ${isQuizDropdownOpen ? 'rotate-180' : ''}`} />
+                          </button>
+
+                          {isQuizDropdownOpen && (
+                            <div
+                              className="absolute left-0 bottom-full mb-1 w-full bg-white border border-[#ECECEC] rounded-[10px] shadow-md shadow-black/5 py-1 z-50 animate-in fade-in zoom-in-95 duration-150"
+                            >
+                              {[
+                                'Kuis 1: Daspro & Variabel Python (3 Soal)',
+                                'Kuis 2: Rangkaian Listrik Seri & Paralel (5 Soal)',
+                                'Kuis 3: Logika & Algoritma Lanjutan (4 Soal)',
+                              ].map((quizName) => (
+                                <button
+                                  key={quizName}
+                                  type="button"
+                                  onClick={() => {
+                                    setEvalTitle(quizName);
+                                    setIsQuizDropdownOpen(false);
+                                  }}
+                                  className={`w-full px-3.5 py-2 text-left text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                                    evalTitle === quizName
+                                      ? 'bg-blue-50 text-[#2563EB] font-bold'
+                                      : 'text-[#2E2D2D] hover:bg-slate-50'
+                                  }`}
+                                >
+                                  <span>{quizName}</span>
+                                  {evalTitle === quizName && <CheckCircle2 className="w-3.5 h-3.5 text-[#2563EB]" />}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 2. LINK EKSTERNAL INPUT */}
+                    {evaluationType === 'link_eksternal' && (
+                      <div className="space-y-3 pt-1">
+                        <div className="space-y-1.5">
+                          <label className="font-bold text-xs text-[#2E2D2D] block">Judul Kuis Eksternal</label>
+                          <input
+                            type="text"
+                            value={evalTitle}
+                            onChange={(e) => setEvalTitle(e.target.value)}
+                            placeholder="Contoh: Kuis Quizizz Lab Elektronika..."
+                            className="w-full h-10 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] outline-none focus:border-[#2563EB] transition-colors"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="font-bold text-xs text-[#2E2D2D] block">Link / URL Kuis</label>
+                          <input
+                            type="text"
+                            value={evalUrl}
+                            onChange={(e) => setEvalUrl(e.target.value)}
+                            placeholder="Contoh: https://quizizz.com/join?gc=123456"
+                            className="w-full h-10 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] outline-none focus:border-[#2563EB] transition-colors"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 3. BARCODE / QR CODE MODAL INPUT WITH CUSTOM BUTTON & UPLOAD PREVIEW */}
+                    {evaluationType === 'qr_code' && (
+                      <div className="space-y-3 pt-1">
+                        <div className="space-y-1.5">
+                          <label className="font-bold text-xs text-[#2E2D2D] block">Judul Kuis Barcode</label>
+                          <input
+                            type="text"
+                            value={evalTitle}
+                            onChange={(e) => setEvalTitle(e.target.value)}
+                            placeholder="Contoh: Kuis Pindai Barcode (Quizizz Lab)"
+                            className="w-full h-10 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] outline-none focus:border-[#2563EB] transition-colors"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="font-bold text-xs text-[#2E2D2D] block">Gambar Barcode / QR Code</label>
+                          {!evalQrUrl ? (
+                            <button
+                              type="button"
+                              onClick={() => evalQrInputRef.current?.click()}
+                              className="w-full py-2.5 px-4 rounded-[8px] border border-dashed border-[#2563EB] bg-blue-50/50 hover:bg-blue-50 text-xs font-bold text-[#2563EB] flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
+                            >
+                              <Upload className="w-4 h-4 text-[#2563EB]" />
+                              <span>Upload Gambar Barcode / QR Code</span>
+                            </button>
+                          ) : (
+                            <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-[8px] border border-[#ECECEC]">
+                              <div className="flex items-center gap-3 truncate min-w-0 pr-2">
+                                <div className="w-10 h-10 rounded-[6px] bg-white p-1 border border-[#ECECEC] shrink-0 flex items-center justify-center">
+                                  {/* eslint-disable-next-next/no-img-element */}
+                                  <img src={evalQrUrl} alt="QR Code" className="w-full h-full object-contain" />
+                                </div>
+                                <span className="text-xs font-semibold text-[#2E2D2D] truncate">Gambar Barcode Terpasang</span>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => evalQrInputRef.current?.click()}
+                                  className="px-3 py-1.5 rounded-[6px] bg-white border border-[#ECECEC] hover:bg-slate-100 text-xs font-semibold text-[#2E2D2D] cursor-pointer transition-colors"
+                                >
+                                  Ganti Gambar
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setEvalQrUrl('')}
+                                  className="px-3 py-1.5 rounded-[6px] bg-rose-50 hover:bg-rose-100 text-xs font-semibold text-rose-600 cursor-pointer transition-colors"
+                                >
+                                  Hapus
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+            </div>
+
+            {/* Modal Footer (2 Action Buttons, No Top Border Line) */}
+            <div className="p-4 sm:p-5 pt-2 bg-white flex items-center justify-end gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  handleSaveModuleConfirm(false);
+                }}
+                className="px-5 py-2.5 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-xs font-bold text-[#2E2D2D] transition-colors cursor-pointer"
+              >
+                Simpan Draft
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  handleSaveModuleConfirm(true);
+                }}
+                className="px-6 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-xs font-bold text-white shadow-xs transition-colors cursor-pointer"
+              >
+                Publish Modul
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PUBLISH SUCCESS MODAL WITH LOTTIE ANIMATION */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans">
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-md rounded-[16px] border border-[#ECECEC] p-6 text-center space-y-5 shadow-2xl animate-in zoom-in-95 duration-200"
+          >
+            <div className="w-48 h-48 mx-auto relative flex items-center justify-center">
+              <iframe
+                src="https://lottie.host/embed/67d35880-5f9d-4309-bee5-04db1bb3f075/b7nNeNfkhM.lottie"
+                className="w-full h-full border-0 pointer-events-none"
+                title="Publish Success Animation"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="font-bold text-lg text-[#2E2D2D]">Modul Berhasil Dipublikasikan!</h3>
+              <p className="text-xs text-[#737373] leading-relaxed max-w-xs mx-auto">
+                Modul materi ini sekarang telah aktif dan dapat diakses oleh seluruh siswa di platform Sitemsa.
+              </p>
+            </div>
+
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  onClose();
+                }}
+                className="w-full py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold shadow-xs cursor-pointer transition-colors"
+              >
+                Selesai & Kembali ke Pelajaran
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* QR MODAL PREVIEW OVERLAY */}
       {activeQrModalUrl && (
         <div
           onClick={() => setActiveQrModalUrl(null)}
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans"
         >
           <div
             onClick={(e) => e.stopPropagation()}
@@ -1621,7 +1796,7 @@ export default function ModuleBlockBuilder({
 
             <button
               onClick={() => setActiveQrModalUrl(null)}
-              className="w-full py-2.5 rounded-[8px] bg-[#2563EB] text-white text-xs font-bold hover:bg-blue-700 shadow-xs cursor-pointer"
+              className="w-full py-2.5 rounded-[8px] bg-[#2563EB] text-[#FFFFFF] text-xs font-bold hover:bg-blue-700 shadow-xs cursor-pointer"
             >
               Atau Buka Tautan Langsung &rarr;
             </button>
@@ -1632,3 +1807,5 @@ export default function ModuleBlockBuilder({
     </div>
   );
 }
+
+export default ModuleBlockBuilder;

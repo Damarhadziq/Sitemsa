@@ -13,10 +13,21 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { useAdminStore, TeacherAccount } from '@/lib/admin-store';
+import { Skeleton } from '@/components/ui/skeleton';
+import { LoadingTimeoutBoundary } from '@/components/ui/LoadingTimeoutBoundary';
 
 export default function SuperadminGuruPage() {
   const { teachers, subjects, addTeacher, updateTeacher, deleteTeacher } =
     useAdminStore();
+
+  const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 200);
+    return () => clearTimeout(timer);
+  }, []);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -177,110 +188,144 @@ export default function SuperadminGuruPage() {
         </div>
       </div>
 
-      {/* Teachers Table */}
-      <div className="bg-white rounded-[10px] border border-[#ECECEC] overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-white border-b border-[#ECECEC] text-xs font-semibold text-[#737373]">
-                <th className="py-4 px-6">Profil guru</th>
-                <th className="py-4 px-6">Nip & kontak</th>
-                <th className="py-4 px-6">Hak akses mapel (Penugasan)</th>
-                <th className="py-4 px-6">Status</th>
-                <th className="py-4 px-6 text-right">Aksi Superadmin</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#ECECEC]">
-              {filteredTeachers.map((teacher) => (
-                <tr key={teacher.id} className="hover:bg-slate-50 transition-colors">
-                  {/* Name & Avatar */}
-                  <td className="py-4 px-6">
-                    <div className="flex items-center gap-3">
-                      {/* eslint-disable-next-next/no-img-element */}
-                      <img
-                        src={teacher.avatar}
-                        alt={teacher.name}
-                        className="w-10 h-10 rounded-full object-cover border border-[#ECECEC]"
-                      />
-                      <div>
-                        <p className="font-semibold text-[#2E2D2D] text-sm">{teacher.name}</p>
-                        <p className="text-xs text-[#737373] leading-normal">{teacher.email}</p>
-                      </div>
+      {/* Teachers Table with LoadingTimeoutBoundary */}
+      <LoadingTimeoutBoundary
+        isLoading={isLoading}
+        timeoutMs={10000}
+        onRetry={() => {
+          setIsLoading(true);
+          setTimeout(() => setIsLoading(false), 200);
+        }}
+        skeleton={
+          <div className="bg-white rounded-[10px] border border-[#ECECEC] p-6 space-y-4 animate-pulse">
+            <div className="flex justify-between items-center pb-2 border-b border-[#ECECEC]">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex items-center justify-between py-2 border-b border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="w-10 h-10 rounded-full" />
+                    <div className="space-y-1">
+                      <Skeleton className="h-4 w-36 rounded-[4px]" />
+                      <Skeleton className="h-3 w-28 rounded-[4px]" />
                     </div>
-                  </td>
+                  </div>
+                  <Skeleton className="h-4 w-28 rounded-[4px]" />
+                  <Skeleton className="h-6 w-32 rounded-[4px]" />
+                  <Skeleton className="h-4 w-16 rounded-[4px]" />
+                  <Skeleton className="h-6 w-20 rounded-[6px]" />
+                </div>
+              ))}
+            </div>
+          </div>
+        }
+      >
+        <div className="bg-white rounded-[10px] border border-[#ECECEC] overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-white border-b border-[#ECECEC] text-xs font-semibold text-[#737373]">
+                  <th className="py-4 px-6">Profil guru</th>
+                  <th className="py-4 px-6">Nip & kontak</th>
+                  <th className="py-4 px-6">Hak akses mapel (Penugasan)</th>
+                  <th className="py-4 px-6">Status</th>
+                  <th className="py-4 px-6 text-right">Aksi Superadmin</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#ECECEC]">
+                {filteredTeachers.map((teacher) => (
+                  <tr key={teacher.id} className="hover:bg-slate-50 transition-colors">
+                    {/* Name & Avatar */}
+                    <td className="py-4 px-6">
+                      <div className="flex items-center gap-3">
+                        {/* eslint-disable-next-next/no-img-element */}
+                        <img
+                          src={teacher.avatar}
+                          alt={teacher.name}
+                          className="w-10 h-10 rounded-full object-cover border border-[#ECECEC]"
+                        />
+                        <div>
+                          <p className="font-semibold text-[#2E2D2D] text-sm">{teacher.name}</p>
+                          <p className="text-xs text-[#737373] leading-normal">{teacher.email}</p>
+                        </div>
+                      </div>
+                    </td>
 
-                  {/* NIP & Phone */}
-                  <td className="py-4 px-6">
-                    <p className="font-mono text-xs font-semibold text-[#2E2D2D]">{teacher.nip}</p>
-                    <p className="text-xs text-[#737373] leading-normal">{teacher.phone}</p>
-                  </td>
+                    {/* NIP & Phone */}
+                    <td className="py-4 px-6">
+                      <p className="font-mono text-xs font-semibold text-[#2E2D2D]">{teacher.nip}</p>
+                      <p className="text-xs text-[#737373] leading-normal">{teacher.phone}</p>
+                    </td>
 
-                  {/* Assigned Subjects */}
-                  <td className="py-4 px-6">
-                    <div className="flex flex-wrap gap-1.5 max-w-xs">
-                      {teacher.assignedSubjects.length > 0 ? (
-                        teacher.assignedSubjects.map((subj) => (
-                          <span
-                            key={subj}
-                            className="inline-flex items-center gap-1 text-[11px] bg-blue-50 text-[#2563EB] font-semibold px-2.5 py-0.5 rounded-[4px]"
-                          >
-                            <BookOpen className="w-3 h-3 text-[#2563EB]" />
-                            <span>{subj}</span>
+                    {/* Assigned Subjects */}
+                    <td className="py-4 px-6">
+                      <div className="flex flex-wrap gap-1.5 max-w-xs">
+                        {teacher.assignedSubjects.length > 0 ? (
+                          teacher.assignedSubjects.map((subj) => (
+                            <span
+                              key={subj}
+                              className="inline-flex items-center gap-1 text-[11px] bg-blue-50 text-[#2563EB] font-semibold px-2.5 py-0.5 rounded-[4px]"
+                            >
+                              <BookOpen className="w-3 h-3 text-[#2563EB]" />
+                              <span>{subj}</span>
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-[11px] text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-[4px] font-semibold">
+                            Belum ditugaskan mapel
                           </span>
-                        ))
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Status Bullet */}
+                    <td className="py-4 px-6">
+                      {teacher.status === 'Aktif' ? (
+                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500" /> Aktif
+                        </span>
                       ) : (
-                        <span className="text-[11px] text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-[4px] font-semibold">
-                          Belum ditugaskan mapel
+                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400">
+                          <span className="w-2 h-2 rounded-full bg-slate-300" /> Nonaktif
                         </span>
                       )}
-                    </div>
-                  </td>
+                    </td>
 
-                  {/* Status Bullet */}
-                  <td className="py-4 px-6">
-                    {teacher.status === 'Aktif' ? (
-                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500" /> Aktif
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400">
-                        <span className="w-2 h-2 rounded-full bg-slate-300" /> Nonaktif
-                      </span>
-                    )}
-                  </td>
+                    {/* Action Buttons */}
+                    <td className="py-4 px-6 text-right">
+                      <div className="flex items-center justify-end gap-3">
+                        <button
+                          onClick={() => handleOpenEditModal(teacher)}
+                          className="font-semibold text-[#2563EB] hover:underline text-xs cursor-pointer flex items-center gap-1"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                          <span>Edit akses</span>
+                        </button>
+                        <button
+                          onClick={() => handleDelete(teacher.id, teacher.name)}
+                          className="text-[#737373] hover:text-rose-600 transition-colors cursor-pointer p-1"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
 
-                  {/* Action Buttons */}
-                  <td className="py-4 px-6 text-right">
-                    <div className="flex items-center justify-end gap-3">
-                      <button
-                        onClick={() => handleOpenEditModal(teacher)}
-                        className="font-semibold text-[#2563EB] hover:underline text-xs cursor-pointer flex items-center gap-1"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                        <span>Edit akses</span>
-                      </button>
-                      <button
-                        onClick={() => handleDelete(teacher.id, teacher.name)}
-                        className="text-[#737373] hover:text-rose-600 transition-colors cursor-pointer p-1"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-
-              {filteredTeachers.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="py-12 text-center text-[#737373] text-xs">
-                    Tidak ada guru yang ditemukan.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                {filteredTeachers.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="py-12 text-center text-[#737373] text-xs">
+                      Tidak ada guru yang ditemukan.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      </LoadingTimeoutBoundary>
 
       {/* Modal Add / Edit Teacher */}
       {showAddModal && (

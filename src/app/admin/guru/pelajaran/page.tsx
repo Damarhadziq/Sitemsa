@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   BookOpen,
   HelpCircle,
@@ -25,10 +25,107 @@ import {
   X,
   Copy,
   Check,
+  MoreVertical,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useAdminStore, ModuleItem } from '@/lib/admin-store';
 import ModuleBlockBuilder, { CanvasBlock } from '@/components/admin/ModuleBlockBuilder';
+import { Tooltip } from '@/components/ui/tooltip';
+
+// Card More Dropdown Component (Profile Dropdown Style)
+function CardMoreDropdown({
+  onPreview,
+  onEdit,
+  onDelete,
+  itemType = 'materi',
+}: {
+  onPreview: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  itemType?: 'materi' | 'kuis';
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  return (
+    <div className="relative inline-block" ref={menuRef}>
+      <Tooltip content="Opsi Pilihan" side="top">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsOpen((prev) => !prev);
+          }}
+          className="p-1 rounded-[6px] text-[#737373] hover:text-[#2E2D2D] hover:bg-slate-100 transition-colors cursor-pointer"
+        >
+          <MoreVertical className="w-4 h-4" />
+        </button>
+      </Tooltip>
+
+      {isOpen && (
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="absolute right-0 top-full mt-1.5 z-50 w-48 bg-white border border-[#ECECEC] rounded-[10px] p-1.5 shadow-xs space-y-0.5 font-sans animate-in fade-in zoom-in-95 duration-150"
+        >
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsOpen(false);
+              onPreview();
+            }}
+            className="w-full text-left px-3 py-2 rounded-[6px] text-xs font-medium text-[#2E2D2D] hover:bg-slate-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+          >
+            <Eye className="w-3.5 h-3.5 text-[#2E2D2D] shrink-0" />
+            <span>Preview Website</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsOpen(false);
+              onEdit();
+            }}
+            className="w-full text-left px-3 py-2 rounded-[6px] text-xs font-medium text-[#2E2D2D] hover:bg-slate-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+          >
+            <Edit2 className="w-3.5 h-3.5 text-[#2E2D2D] shrink-0" />
+            <span>Edit {itemType === 'materi' ? 'Materi' : 'Kuis'}</span>
+          </button>
+
+          <div className="my-1 border-t border-[#ECECEC]" />
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsOpen(false);
+              onDelete();
+            }}
+            className="w-full text-left px-3 py-2 rounded-[6px] text-xs font-medium text-rose-600 hover:bg-rose-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+          >
+            <Trash2 className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+            <span>Hapus {itemType === 'materi' ? 'Materi' : 'Kuis'}</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // Skeleton Component for smooth loading states
 function Skeleton({ className }: { className?: string }) {
@@ -36,6 +133,7 @@ function Skeleton({ className }: { className?: string }) {
 }
 
 export default function AdminGuruPelajaranPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const itemIdParam = searchParams.get('item');
 
@@ -191,40 +289,96 @@ export default function AdminGuruPelajaranPage() {
               {/* SHOW "+ Tambah Materi Baru" AND "+ Tambah Kuis Baru" ONLY IN LANDING OVERVIEW MODE */}
               {!selectedItemId && (
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleOpenBlockBuilder()}
-                    className="px-4 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Tambah Materi Baru</span>
-                  </button>
-                  <button
-                    onClick={() => handleOpenBlockBuilder()}
-                    className="px-4 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Tambah Kuis Baru</span>
-                  </button>
+                  <Tooltip content="Buat Modul Materi Pembelajaran Baru" side="bottom">
+                    <button
+                      onClick={() => handleOpenBlockBuilder()}
+                      className="px-4 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Tambah Materi Baru</span>
+                    </button>
+                  </Tooltip>
+                  <Tooltip content="Buat Kuis & Evaluasi Pembelajaran Baru" side="bottom">
+                    <button
+                      onClick={() => handleOpenBlockBuilder()}
+                      className="px-4 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Tambah Kuis Baru</span>
+                    </button>
+                  </Tooltip>
                 </div>
               )}
 
-              {/* MATERIAL DETAIL MODE ACTIONS (REMOVED 'SEMUA MODUL', COPY UPDATED TO 'EDIT MATERI') */}
+              {/* MATERIAL DETAIL MODE ACTIONS */}
               {selectedModule && (
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleOpenBlockBuilder(selectedModule)}
-                    className="px-4 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all duration-200 ease-in-out active:scale-[0.98]"
-                  >
-                    <Edit2 className="w-3.5 h-3.5" />
-                    <span>Edit Materi</span>
-                  </button>
-                  <button
-                    onClick={() => handleDeleteModuleItem(selectedModule.id, selectedModule.title)}
-                    title="Hapus Modul"
-                    className="p-2 rounded-[8px] bg-slate-50 hover:bg-rose-50 text-slate-500 hover:text-rose-600 border border-[#ECECEC] transition-all duration-200 ease-in-out cursor-pointer active:scale-[0.96]"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <Tooltip content="Pratinjau Tampilan Materi di Website Utama" side="bottom">
+                    <a
+                      href={`/materi/${selectedModule.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3.5 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center gap-2 border border-slate-200 transition-all duration-200 ease-in-out cursor-pointer active:scale-[0.98]"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-slate-600" />
+                      <span>Preview Website</span>
+                    </a>
+                  </Tooltip>
+
+                  <Tooltip content="Edit Isi & Blok Modul Materi" side="bottom">
+                    <button
+                      onClick={() => handleOpenBlockBuilder(selectedModule)}
+                      className="px-4 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all duration-200 ease-in-out active:scale-[0.98]"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                      <span>Edit Materi</span>
+                    </button>
+                  </Tooltip>
+
+                  <Tooltip content="Hapus Modul Ini" side="bottom">
+                    <button
+                      onClick={() => handleDeleteModuleItem(selectedModule.id, selectedModule.title)}
+                      className="p-2 rounded-[8px] bg-slate-50 hover:bg-rose-50 text-slate-500 hover:text-rose-600 border border-[#ECECEC] transition-all duration-200 ease-in-out cursor-pointer active:scale-[0.96]"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </Tooltip>
+                </div>
+              )}
+
+              {/* QUIZ DETAIL MODE ACTIONS */}
+              {selectedQuiz && (
+                <div className="flex items-center gap-2">
+                  <Tooltip content="Pratinjau Tampilan Kuis di Website Utama" side="bottom">
+                    <a
+                      href={`/kuis/${selectedQuiz.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3.5 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center gap-2 border border-slate-200 transition-all duration-200 ease-in-out cursor-pointer active:scale-[0.98]"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-slate-600" />
+                      <span>Preview Website</span>
+                    </a>
+                  </Tooltip>
+
+                  <Tooltip content="Edit Soal & Evaluasi Kuis" side="bottom">
+                    <button
+                      onClick={() => handleOpenBlockBuilder()}
+                      className="px-4 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all duration-200 ease-in-out active:scale-[0.98]"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                      <span>Edit Kuis</span>
+                    </button>
+                  </Tooltip>
+
+                  <Tooltip content="Hapus Kuis Ini" side="bottom">
+                    <button
+                      onClick={() => handleDeleteModuleItem(selectedQuiz.id, selectedQuiz.title)}
+                      className="p-2 rounded-[8px] bg-slate-50 hover:bg-rose-50 text-slate-500 hover:text-rose-600 border border-[#ECECEC] transition-all duration-200 ease-in-out cursor-pointer active:scale-[0.96]"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </Tooltip>
                 </div>
               )}
             </>
@@ -282,13 +436,21 @@ export default function AdminGuruPelajaranPage() {
                       {subjectModules.map((mod) => (
                         <div
                           key={mod.id}
-                          className="bg-white p-5 rounded-[12px] border border-[#ECECEC] hover:border-blue-300 hover:shadow-xs transition-all flex flex-col justify-between space-y-4 group"
+                          onClick={() => router.push(`/admin/guru/pelajaran?item=${mod.id}`)}
+                          className="bg-white p-3 pb-4 rounded-[12px] border border-[#ECECEC] hover:border-blue-300 transition-all flex flex-col justify-between space-y-4 group cursor-pointer"
                         >
                           <div className="space-y-2.5">
                             <div className="flex items-center justify-between">
                               <span className="text-[10px] font-bold text-[#2563EB] bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
                                 {mod.level}
                               </span>
+
+                              <CardMoreDropdown
+                                itemType="materi"
+                                onPreview={() => window.open(`/materi/${mod.id}`, '_blank')}
+                                onEdit={() => handleOpenBlockBuilder(mod)}
+                                onDelete={() => handleDeleteModuleItem(mod.id, mod.title)}
+                              />
                             </div>
 
                             <h4 className="font-bold text-sm text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors leading-snug">
@@ -298,24 +460,6 @@ export default function AdminGuruPelajaranPage() {
                             <p className="text-xs text-[#737373] line-clamp-2 leading-relaxed">
                               {mod.description}
                             </p>
-                          </div>
-
-                          <div className="pt-2 flex items-center justify-end gap-2.5">
-                            <a
-                              href={`/admin/guru/pelajaran?item=${mod.id}`}
-                              title="Pratinjau Materi"
-                              className="p-1.5 rounded-[6px] bg-slate-50 hover:bg-blue-50 text-[#737373] hover:text-[#2563EB] transition-colors cursor-pointer"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </a>
-
-                            <button
-                              onClick={() => handleOpenBlockBuilder(mod)}
-                              title="Edit Materi"
-                              className="p-1.5 rounded-[6px] bg-slate-50 hover:bg-blue-50 text-[#737373] hover:text-[#2563EB] transition-colors cursor-pointer"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </button>
                           </div>
                         </div>
                       ))}
@@ -338,13 +482,21 @@ export default function AdminGuruPelajaranPage() {
                         {subjectQuizzes.map((qz) => (
                           <div
                             key={qz.id}
-                            className="bg-white p-5 rounded-[12px] border border-[#ECECEC] hover:border-indigo-300 hover:shadow-xs transition-all flex flex-col justify-between space-y-4 group"
+                            onClick={() => router.push(`/admin/guru/pelajaran?item=${qz.id}`)}
+                            className="bg-white p-3 pb-4 rounded-[12px] border border-[#ECECEC] hover:border-indigo-300 transition-all flex flex-col justify-between space-y-4 group cursor-pointer"
                           >
                             <div className="space-y-2.5">
                               <div className="flex items-center justify-between">
                                 <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
                                   Kuis Interaktif
                                 </span>
+
+                                <CardMoreDropdown
+                                  itemType="kuis"
+                                  onPreview={() => window.open(`/kuis/${qz.id}`, '_blank')}
+                                  onEdit={() => handleOpenBlockBuilder()}
+                                  onDelete={() => handleDeleteModuleItem(qz.id, qz.title)}
+                                />
                               </div>
 
                               <h4 className="font-bold text-sm text-[#2E2D2D] group-hover:text-indigo-600 transition-colors leading-snug">
@@ -361,24 +513,6 @@ export default function AdminGuruPelajaranPage() {
                                   <span>Pass Score {qz.passScore}</span>
                                 </span>
                               </div>
-                            </div>
-
-                            <div className="pt-2 flex items-center justify-end gap-2.5">
-                              <a
-                                href={`/admin/guru/pelajaran?item=${qz.id}`}
-                                title="Pratinjau Kuis"
-                                className="p-1.5 rounded-[6px] bg-slate-50 hover:bg-indigo-50 text-[#737373] hover:text-indigo-600 transition-colors cursor-pointer"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </a>
-
-                              <button
-                                onClick={() => handleOpenBlockBuilder()}
-                                title="Edit Kuis"
-                                className="p-1.5 rounded-[6px] bg-slate-50 hover:bg-indigo-50 text-[#737373] hover:text-indigo-600 transition-colors cursor-pointer"
-                              >
-                                <Edit2 className="w-4 h-4" />
-                              </button>
                             </div>
                           </div>
                         ))}

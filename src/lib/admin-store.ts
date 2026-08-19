@@ -522,6 +522,118 @@ const INITIAL_STUDENTS: StudentRecord[] = [
       },
     ],
   },
+  {
+    id: 'std-5',
+    nisn: '0064433221',
+    name: 'Bagus Setiawan',
+    email: 'bagus@siswa.sintesa.id',
+    classGroup: 'XI RPL 1',
+    avatar: 'https://i.pravatar.cc/150?img=53',
+    lastActive: '2026-08-16 10:15',
+    enrolledSubjects: ['Informatika'],
+    moduleProgress: { Informatika: 100 },
+    quizHistory: [
+      { id: 'qh-6', subject: 'Informatika', quizTitle: 'Evaluasi Logika & Pemrograman Dasar', score: 92, maxScore: 100, date: '2026-08-15', status: 'Lulus' }
+    ],
+  },
+  {
+    id: 'std-6',
+    nisn: '0065566778',
+    name: 'Fadhil Rahman',
+    email: 'fadhil@siswa.sintesa.id',
+    classGroup: 'XI RPL 1',
+    avatar: 'https://i.pravatar.cc/150?img=68',
+    lastActive: '2026-08-16 11:30',
+    enrolledSubjects: ['Informatika'],
+    moduleProgress: { Informatika: 66 },
+    quizHistory: [
+      { id: 'qh-7', subject: 'Informatika', quizTitle: 'Evaluasi Logika & Pemrograman Dasar', score: 78, maxScore: 100, date: '2026-08-14', status: 'Lulus' }
+    ],
+  },
+  {
+    id: 'std-7',
+    nisn: '0067788990',
+    name: 'Gita Gutawa',
+    email: 'gita@siswa.sintesa.id',
+    classGroup: 'XI RPL 2',
+    avatar: 'https://i.pravatar.cc/150?img=47',
+    lastActive: '2026-08-16 08:20',
+    enrolledSubjects: ['Informatika'],
+    moduleProgress: { Informatika: 100 },
+    quizHistory: [
+      { id: 'qh-8', subject: 'Informatika', quizTitle: 'Evaluasi Logika & Pemrograman Dasar', score: 98, maxScore: 100, date: '2026-08-15', status: 'Lulus' }
+    ],
+  },
+  {
+    id: 'std-8',
+    nisn: '0068899001',
+    name: 'Hafiz Ahmad',
+    email: 'hafiz@siswa.sintesa.id',
+    classGroup: 'XI DKV 1',
+    avatar: 'https://i.pravatar.cc/150?img=11',
+    lastActive: '2026-08-15 17:00',
+    enrolledSubjects: ['Informatika'],
+    moduleProgress: { Informatika: 33 },
+    quizHistory: [
+      { id: 'qh-9', subject: 'Informatika', quizTitle: 'Evaluasi Logika & Pemrograman Dasar', score: 65, maxScore: 100, date: '2026-08-10', status: 'Perlu Bimbingan' }
+    ],
+  },
+  {
+    id: 'std-9',
+    nisn: '0069900112',
+    name: 'Indah Permata',
+    email: 'indah@siswa.sintesa.id',
+    classGroup: 'XI RPL 2',
+    avatar: 'https://i.pravatar.cc/150?img=44',
+    lastActive: '2026-08-16 13:40',
+    enrolledSubjects: ['Informatika'],
+    moduleProgress: { Informatika: 100 },
+    quizHistory: [
+      { id: 'qh-10', subject: 'Informatika', quizTitle: 'Evaluasi Logika & Pemrograman Dasar', score: 88, maxScore: 100, date: '2026-08-14', status: 'Lulus' }
+    ],
+  },
+  {
+    id: 'std-10',
+    nisn: '0060011223',
+    name: 'Joko Widodo',
+    email: 'joko@siswa.sintesa.id',
+    classGroup: 'XI RPL 1',
+    avatar: 'https://i.pravatar.cc/150?img=59',
+    lastActive: '2026-08-16 14:10',
+    enrolledSubjects: ['Informatika'],
+    moduleProgress: { Informatika: 100 },
+    quizHistory: [
+      { id: 'qh-11', subject: 'Informatika', quizTitle: 'Evaluasi Logika & Pemrograman Dasar', score: 90, maxScore: 100, date: '2026-08-15', status: 'Lulus' }
+    ],
+  },
+  {
+    id: 'std-11',
+    nisn: '0061122335',
+    name: 'Kirana Larasati',
+    email: 'kirana@siswa.sintesa.id',
+    classGroup: 'XI DKV 2',
+    avatar: 'https://i.pravatar.cc/150?img=49',
+    lastActive: '2026-08-16 15:00',
+    enrolledSubjects: ['Informatika'],
+    moduleProgress: { Informatika: 66 },
+    quizHistory: [
+      { id: 'qh-12', subject: 'Informatika', quizTitle: 'Evaluasi Logika & Pemrograman Dasar', score: 80, maxScore: 100, date: '2026-08-14', status: 'Lulus' }
+    ],
+  },
+  {
+    id: 'std-12',
+    nisn: '0062233446',
+    name: 'Lukman Hakim',
+    email: 'lukman@siswa.sintesa.id',
+    classGroup: 'XI RPL 2',
+    avatar: 'https://i.pravatar.cc/150?img=33',
+    lastActive: '2026-08-16 16:20',
+    enrolledSubjects: ['Informatika'],
+    moduleProgress: { Informatika: 100 },
+    quizHistory: [
+      { id: 'qh-13', subject: 'Informatika', quizTitle: 'Evaluasi Logika & Pemrograman Dasar', score: 96, maxScore: 100, date: '2026-08-15', status: 'Lulus' }
+    ],
+  },
 ];
 
 export const useAdminStore = create<AdminStoreState>((set) => ({

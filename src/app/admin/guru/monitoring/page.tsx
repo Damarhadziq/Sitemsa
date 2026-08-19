@@ -8,19 +8,32 @@ import {
   Download,
   Eye,
   X,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useAdminStore, StudentRecord } from '@/lib/admin-store';
 
 export default function AdminGuruMonitoringPage() {
   const { user, activeSubjectFilter } = useAuth();
-  const { students } = useAdminStore();
+  const { students, modules } = useAdminStore();
 
   const assignedSubjects = user?.assignedSubjects || ['Informatika'];
   const currentSubject = activeSubjectFilter || assignedSubjects[0] || 'Informatika';
 
+  const subjectModules = modules.filter((m) => m.subject === currentSubject);
+  const totalSubjectModules = subjectModules.length || 3;
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStudentModal, setSelectedStudentModal] = useState<StudentRecord | null>(null);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, currentSubject]);
 
   React.useEffect(() => {
     if (selectedStudentModal) {
@@ -43,6 +56,12 @@ export default function AdminGuruMonitoringPage() {
       s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       s.nisn.includes(searchTerm) ||
       s.classGroup.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
+  const paginatedStudents = filteredStudents.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
   const [exportToast, setExportToast] = useState(false);
@@ -108,79 +127,72 @@ export default function AdminGuruMonitoringPage() {
             <thead>
               <tr className="bg-white border-b border-[#ECECEC] text-xs font-bold text-[#737373]">
                 <th className="py-4 px-6">Profil siswa</th>
-                <th className="py-4 px-6">Progres modul mapel</th>
-                <th className="py-4 px-6">Nilai kuis terbaru</th>
+                <th className="py-4 px-6">Kelas</th>
+                <th className="py-4 px-6">Banyak materi dibaca</th>
+                <th className="py-4 px-6">Nilai kalkulasi</th>
                 <th className="py-4 px-6">Status evaluasi</th>
                 <th className="py-4 px-6 text-right">Rincian nilai</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#ECECEC] text-xs">
-              {filteredStudents.map((std) => {
+              {paginatedStudents.map((std) => {
                 const progress = std.moduleProgress[currentSubject] || 0;
+                const readCount = Math.min(
+                  totalSubjectModules,
+                  Math.round((progress / 100) * totalSubjectModules)
+                );
+
                 const subjectQuizzes = std.quizHistory.filter((q) => q.subject === currentSubject);
+                const totalScore = subjectQuizzes.reduce((acc, q) => acc + q.score, 0);
+                const avgScore = subjectQuizzes.length > 0
+                  ? Math.round(totalScore / subjectQuizzes.length)
+                  : (progress > 0 ? Math.round(progress * 0.9) : 0);
+
                 const latestQuiz = subjectQuizzes[0];
+                const isPassed = latestQuiz ? latestQuiz.status === 'Lulus' : avgScore >= 75;
 
                 return (
                   <tr key={std.id} className="hover:bg-slate-50 transition-colors">
-                    {/* Profile */}
+                    {/* Profil siswa (Foto + Nama) */}
                     <td className="py-4 px-6">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2.5">
                         {/* eslint-disable-next-next/no-img-element */}
                         <img
                           src={std.avatar}
                           alt={std.name}
-                          className="w-10 h-10 rounded-full object-cover border border-[#ECECEC]"
+                          className="w-7 h-7 rounded-full object-cover border border-[#ECECEC] shrink-0"
                         />
-                        <div>
-                          <p className="font-bold text-[#2E2D2D] text-xs">{std.name}</p>
-                          <p className="text-[11px] text-[#737373]">
-                            {std.nisn} &bull; {std.classGroup}
-                          </p>
-                        </div>
+                        <span className="font-bold text-[#2E2D2D] text-xs">{std.name}</span>
                       </div>
                     </td>
 
-                    {/* Module Progress */}
-                    <td className="py-4 px-6">
-                      <div className="w-48 space-y-1">
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span className="font-semibold text-[#2E2D2D]">{progress}% selesai</span>
-                        </div>
-                        <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                          <div
-                            className="h-full bg-[#2563EB] rounded-full transition-all"
-                            style={{ width: `${progress}%` }}
-                          />
-                        </div>
-                      </div>
+                    {/* Kelas */}
+                    <td className="py-4 px-6 font-semibold text-[#2E2D2D] text-xs">
+                      {std.classGroup}
                     </td>
 
-                    {/* Quiz Score */}
-                    <td className="py-4 px-6">
-                      {latestQuiz ? (
-                        <div className="flex items-center gap-2">
-                          <span className="text-base font-bold text-[#2E2D2D]">{latestQuiz.score}</span>
-                          <span className="text-[10px] text-[#737373]">/ {latestQuiz.maxScore}</span>
-                        </div>
-                      ) : (
-                        <span className="text-[11px] text-[#737373]">Belum mengerjakan</span>
-                      )}
+                    {/* Banyak materi dibaca */}
+                    <td className="py-4 px-6 font-semibold text-[#2E2D2D] text-xs">
+                      {readCount} Materi
                     </td>
 
-                    {/* Status */}
+                    {/* Nilai kalkulasi */}
                     <td className="py-4 px-6">
-                      {latestQuiz ? (
-                        latestQuiz.status === 'Lulus' ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] bg-emerald-50 text-emerald-700 font-semibold px-2.5 py-0.5 rounded-[4px]">
-                            <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Tuntas / lulus
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-[11px] bg-amber-50 text-amber-700 font-semibold px-2.5 py-0.5 rounded-[4px]">
-                            <AlertCircle className="w-3 h-3 text-amber-600" /> Perlu bimbingan
-                          </span>
-                        )
+                      <span className="font-bold text-[#2E2D2D] text-xs">
+                        {avgScore} <span className="text-[10px] text-[#737373] font-normal">/ 100</span>
+                      </span>
+                    </td>
+
+                    {/* Status evaluasi (Tanpa icon) */}
+                    <td className="py-4 px-6">
+                      {isPassed ? (
+                        <span className="inline-flex items-center text-[11px] bg-emerald-50 text-emerald-700 font-semibold px-2.5 py-0.5 rounded-[4px]">
+                          Tuntas / lulus
+                        </span>
                       ) : (
-                        <span className="text-[11px] text-[#737373]">-</span>
+                        <span className="inline-flex items-center text-[11px] bg-amber-50 text-amber-700 font-semibold px-2.5 py-0.5 rounded-[4px]">
+                          Perlu bimbingan
+                        </span>
                       )}
                     </td>
 
@@ -200,7 +212,7 @@ export default function AdminGuruMonitoringPage() {
 
               {filteredStudents.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-[#737373] text-xs">
+                  <td colSpan={6} className="py-12 text-center text-[#737373] text-xs">
                     Tidak ada siswa terdaftar pada bidang {currentSubject}.
                   </td>
                 </tr>
@@ -209,6 +221,58 @@ export default function AdminGuruMonitoringPage() {
           </table>
         </div>
       </div>
+
+      {/* Pagination control when students > 10 (Main Website Style) */}
+      {filteredStudents.length > 10 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+          <p className="text-xs text-[#737373]">
+            Menampilkan <strong className="text-[#2E2D2D] font-bold">{(currentPage - 1) * itemsPerPage + 1}</strong> - <strong className="text-[#2E2D2D] font-bold">{Math.min(currentPage * itemsPerPage, filteredStudents.length)}</strong> dari <strong className="text-[#2E2D2D] font-bold">{filteredStudents.length}</strong> siswa
+          </p>
+
+          <div className="flex items-center gap-1">
+            {/* Frameless Previous Arrow */}
+            <button
+              type="button"
+              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              disabled={currentPage === 1}
+              className="w-8 h-8 rounded-full bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-slate-100 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+              aria-label="Halaman Sebelumnya"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            {/* Numbered Page Buttons - Active is 100% Circle Filled Blue */}
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+              const isActive = currentPage === page;
+              return (
+                <button
+                  key={page}
+                  type="button"
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-8 h-8 rounded-full text-xs font-semibold transition-all flex items-center justify-center cursor-pointer ${
+                    isActive
+                      ? "bg-[#2563EB] text-white"
+                      : "bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-slate-100"
+                  }`}
+                >
+                  {page}
+                </button>
+              );
+            })}
+
+            {/* Frameless Next Arrow */}
+            <button
+              type="button"
+              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="w-8 h-8 rounded-full bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-slate-100 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+              aria-label="Halaman Selanjutnya"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Student Detailed Evaluation Modal */}
       {selectedStudentModal && (

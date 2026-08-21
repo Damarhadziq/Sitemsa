@@ -24,6 +24,7 @@ import {
 
 import { UserProfileModal, ProfileTab } from "@/components/profile/UserProfileModal";
 import { NotificationModal, NotificationItem } from "@/components/layout/NotificationModal";
+import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { useAuth } from "@/lib/auth-context";
 
 interface QuickSearchResult {
@@ -370,102 +371,9 @@ export function Navbar() {
               )}
             </div>
 
-            {/* 4. Mobile Hamburger Toggle Button */}
-            <button
-              type="button"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="w-9 h-9 md:hidden flex items-center justify-center text-[#2E2D2D] hover:bg-gray-100/80 active:scale-95 transition-all duration-200 rounded-[8px] cursor-pointer"
-              aria-label="Toggle Mobile Menu"
-            >
-              <HugeiconsIcon icon={isMobileMenuOpen ? Cancel01Icon : Menu01Icon} size={20} />
-            </button>
           </div>
         </div>
       </header>
-
-      {/* Fullscreen Mobile Side Drawer */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-50 bg-white flex flex-col p-6 animate-in slide-in-from-right duration-200 overflow-y-auto">
-          {/* Drawer Header */}
-          <div className="flex items-center justify-between pb-6 border-b border-[#ECECEC]">
-            <Link
-              href="/"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="text-2xl font-bold text-[#292929] tracking-tight"
-            >
-              Sitemsa
-            </Link>
-
-            <button
-              type="button"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="w-10 h-10 rounded-full bg-white border border-[#ECECEC] text-[#737373] hover:text-[#2563EB] hover:bg-[#F6F5FF] flex items-center justify-center transition-all cursor-pointer"
-              aria-label="Tutup Menu"
-            >
-              <HugeiconsIcon icon={Cancel01Icon} size={20} />
-            </button>
-          </div>
-
-          {/* Navigation Links - Text only, active item in blue font */}
-          <nav className="flex flex-col py-6 space-y-2 flex-1">
-            <Link
-              href="/"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className={`py-3.5 border-b border-gray-100 text-lg transition-colors ${
-                pathname === "/"
-                  ? "text-[#2563EB] font-bold"
-                  : "text-[#2E2D2D] font-medium hover:text-[#2563EB]"
-              }`}
-            >
-              Beranda
-            </Link>
-            <Link
-              href="/materi"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className={`py-3.5 border-b border-gray-100 text-lg transition-colors ${
-                pathname.startsWith("/materi")
-                  ? "text-[#2563EB] font-bold"
-                  : "text-[#2E2D2D] font-medium hover:text-[#2563EB]"
-              }`}
-            >
-              Materi
-            </Link>
-            <Link
-              href="/tips-belajar"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className={`py-3.5 border-b border-gray-100 text-lg transition-colors ${
-                pathname.startsWith("/tips-belajar")
-                  ? "text-[#2563EB] font-bold"
-                  : "text-[#2E2D2D] font-medium hover:text-[#2563EB]"
-              }`}
-            >
-              Tips Belajar
-            </Link>
-            <Link
-              href="/dokumentasi"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className={`py-3.5 border-b border-gray-100 text-lg transition-colors ${
-                pathname.startsWith("/dokumentasi")
-                  ? "text-[#2563EB] font-bold"
-                  : "text-[#2E2D2D] font-medium hover:text-[#2563EB]"
-              }`}
-            >
-              Dokumentasi
-            </Link>
-            <Link
-              href="/team"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className={`py-3.5 border-b border-gray-100 text-lg transition-colors ${
-                pathname.startsWith("/team")
-                  ? "text-[#2563EB] font-bold"
-                  : "text-[#2E2D2D] font-medium hover:text-[#2563EB]"
-              }`}
-            >
-              Tim
-            </Link>
-          </nav>
-        </div>
-      )}
 
       {/* Spotlight Command Palette Modal (Centered Spotlight Card with Dark Overlay) */}
       {isModalOpen && (
@@ -571,6 +479,9 @@ export function Navbar() {
         notifications={notifications}
         onMarkAllRead={handleMarkAllRead}
       />
+
+      {/* Mobile Bottom Navigation Bar */}
+      <MobileBottomNav />
     </>
   );
 }

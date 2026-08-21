@@ -44,9 +44,11 @@ export function UserProfileModal({
   useEffect(() => {
     if (isOpen) {
       document.documentElement.classList.add("modal-open");
+      document.body.classList.add("modal-open");
       document.body.style.overflow = "hidden";
     } else {
       document.documentElement.classList.remove("modal-open");
+      document.body.classList.remove("modal-open");
       document.body.style.overflow = "";
     }
 
@@ -59,6 +61,7 @@ export function UserProfileModal({
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       document.documentElement.classList.remove("modal-open");
+      document.body.classList.remove("modal-open");
       document.body.style.overflow = "";
       window.removeEventListener("keydown", handleKeyDown);
     };
@@ -112,7 +115,7 @@ export function UserProfileModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors shrink-0 cursor-pointer"
+            className="hidden md:flex w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] items-center justify-center transition-colors shrink-0 cursor-pointer"
             aria-label="Tutup Modal"
           >
             <HugeiconsIcon icon={Cancel01Icon} size={16} />

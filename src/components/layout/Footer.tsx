@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export function Footer() {
   return (
-    <footer className="w-full bg-white border-t border-[#ECECEC] py-6">
+    <footer className="w-full bg-white border-t-0 md:border-t border-[#ECECEC] py-6 pb-20 md:pb-6">
       <div className="max-w-7xl mx-auto px-6 lg:px-12 flex flex-col sm:flex-row items-center justify-between gap-4">
         {/* Social icons - left */}
         <div className="flex items-center gap-5">

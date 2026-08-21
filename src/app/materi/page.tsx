@@ -372,17 +372,34 @@ function MateriLandingContent() {
           <div className="flex items-center justify-start md:justify-center gap-2 min-w-max">
             {CATEGORIES.map((category) => {
               const isActive = selectedCategory === category;
+              const q = searchQuery.toLowerCase();
+              const count =
+                category === "Semua"
+                  ? MODUL_DATA.filter(
+                      (m) =>
+                        m.title.toLowerCase().includes(q) ||
+                        m.subject.toLowerCase().includes(q) ||
+                        m.description.toLowerCase().includes(q)
+                    ).length
+                  : MODUL_DATA.filter(
+                      (m) =>
+                        m.subject === category &&
+                        (m.title.toLowerCase().includes(q) ||
+                          m.subject.toLowerCase().includes(q) ||
+                          m.description.toLowerCase().includes(q))
+                    ).length;
+
               return (
                 <button
                   key={category}
                   onClick={() => handleCategoryChange(category)}
-                  className={`px-3.5 py-1.5 rounded-[6px] text-xs font-medium transition-all duration-200 ${
+                  className={`px-3.5 py-1.5 rounded-[6px] text-xs font-medium transition-all duration-200 cursor-pointer ${
                     isActive
                       ? "bg-[#2563EB] text-white"
                       : "bg-[#FAFAFA] border border-[#ECECEC] text-[#737373] hover:text-[#2E2D2D] hover:bg-gray-100"
                   }`}
                 >
-                  {category}
+                  {category} ({count})
                 </button>
               );
             })}
@@ -446,7 +463,7 @@ function MateriLandingContent() {
             <h2 className="text-base md:text-lg font-semibold text-[#2E2D2D]">
               Daftar Materi Pembelajaran {selectedCategory !== "Semua" ? `: ${selectedCategory}` : ""}
             </h2>
-            <span className="text-xs text-[#737373]">
+            <span className="hidden lg:inline text-xs text-[#737373]">
               Menampilkan {paginatedModul.length} dari {filteredModul.length} Materi
             </span>
           </div>

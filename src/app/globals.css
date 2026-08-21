@@ -135,11 +135,23 @@
   scrollbar-color: #D4D3FF transparent;
 }
 
-/* Modal open: kill global scrollbar when explicitly modal-open */
+/* Modal open: kill global scrollbar & touch drag when explicitly modal-open */
 html.modal-open,
 body.modal-open {
   overflow: hidden !important;
+  touch-action: none !important;
+  overscroll-behavior: none !important;
   scrollbar-gutter: auto !important;
+}
+
+@media (max-width: 768px) {
+  html.modal-open,
+  body.modal-open {
+    position: fixed !important;
+    width: 100% !important;
+    height: 100% !important;
+    inset: 0 !important;
+  }
 }
 
 html.modal-open::-webkit-scrollbar,

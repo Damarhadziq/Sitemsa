@@ -20,6 +20,7 @@ import {
   RefreshCw,
   Pencil,
   File,
+  FileText,
   Upload,
   ExternalLink,
   QrCode,
@@ -245,6 +246,14 @@ export function ModuleBlockBuilder({
   const [evalTitle, setEvalTitle] = useState(initialModule?.quizSource?.title || '');
   const [evalUrl, setEvalUrl] = useState(initialModule?.quizSource?.externalUrl || '');
   const [evalQrUrl, setEvalQrUrl] = useState(initialModule?.quizSource?.qrImageUrl || '');
+  const [expandedImagePreviewUrl, setExpandedImagePreviewUrl] = useState<string | null>(null);
+
+  const handleSwitchEvaluationType = (newType: TestType | null) => {
+    setEvaluationType(newType);
+    setEvalTitle('');
+    setEvalUrl('');
+    setEvalQrUrl('');
+  };
 
   // Custom Dropdowns popover open state
   const [isLevelDropdownOpen, setIsLevelDropdownOpen] = useState(false);
@@ -955,51 +964,6 @@ export function ModuleBlockBuilder({
                               className="w-full text-sm text-[#2E2D2D] leading-relaxed placeholder:text-[#AAAAAA] border-none focus:ring-0 outline-none bg-transparent whitespace-pre-line"
                               style={{ textAlign: block.alignment || 'left' }}
                             />
-
-                            {/* Paragraf Highlight (Callout Box) */}
-                            {block.calloutText !== undefined ? (
-                              <div className="bg-[#F4EFFF] border-l-4 border-[#0400F4] rounded-r-[8px] p-3.5 mt-2 space-y-1.5 relative group/calloutBox">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-[11px] font-bold text-[#0400F4] tracking-wide flex items-center gap-1.5">
-                                    <Highlighter className="w-3.5 h-3.5 text-[#0400F4]" />
-                                    <span>Paragraf Highlight (Callout)</span>
-                                  </span>
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      updateBlockById(block.id, { calloutText: undefined });
-                                    }}
-                                    title="Hapus Paragraf Highlight"
-                                    className="text-slate-400 hover:text-rose-600 p-1 rounded-[4px] cursor-pointer transition-colors"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-
-                                <AutoResizeTextarea
-                                  value={block.calloutText}
-                                  onChange={(val) => updateBlockById(block.id, { calloutText: val })}
-                                  placeholder="Tuliskan kalimat/paragraf highlight di sini (contoh: Prinsip Utama: ...)..."
-                                  className="w-full bg-transparent border-none text-xs md:text-sm font-medium text-[#2E2D2D] outline-none placeholder:text-[#AAAAAA] focus:ring-0 p-0 m-0 leading-relaxed block whitespace-pre-line"
-                                  rows={1}
-                                />
-                              </div>
-                            ) : isSelected ? (
-                              <div className="pt-1">
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    updateBlockById(block.id, { calloutText: 'Prinsip Utama: Tuliskan kalimat highlight di sini...' });
-                                  }}
-                                  className="px-3 py-1.5 rounded-[6px] bg-indigo-50/70 hover:bg-indigo-100 text-[#0400F4] border border-indigo-200/60 font-semibold text-xs inline-flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs active:scale-[0.98]"
-                                >
-                                  <Highlighter className="w-3.5 h-3.5 text-[#0400F4]" />
-                                  <span>Tambah Paragraf Highlight (Callout)</span>
-                                </button>
-                              </div>
-                            ) : null}
                           </div>
                         )}
 
@@ -1217,19 +1181,6 @@ export function ModuleBlockBuilder({
                               <Plus className="w-4 h-4 shrink-0 text-[#2563EB]" strokeWidth={2.5} />
                               <span className="leading-none flex items-center">Tambah Langkah {(block.steps || []).length + 1}</span>
                             </button>
-                          </div>
-                        )}
-
-                        {/* 6. CATATAN HIGHLIGHT / CALLOUT BLOCK */}
-                        {block.type === 'callout' && (
-                          <div className="bg-[#F4EFFF] border-l-4 border-[#0400F4] rounded-r-[8px] p-3.5 text-xs md:text-sm text-[#2E2D2D] leading-relaxed font-medium transition-all h-fit">
-                            <AutoResizeTextarea
-                              value={block.textValue || ''}
-                              onChange={(val) => updateBlockById(block.id, { textValue: val })}
-                              placeholder="Tuliskan catatan highlight / prinsip utama di sini..."
-                              className="w-full bg-transparent border-none text-xs md:text-sm font-medium text-[#2E2D2D] outline-none placeholder:text-[#AAAAAA] focus:ring-0 p-0 m-0 leading-relaxed block whitespace-pre-line"
-                              rows={1}
-                            />
                           </div>
                         )}
 
@@ -1655,26 +1606,29 @@ export function ModuleBlockBuilder({
 
                     {isLevelDropdownOpen && (
                       <div
-                        className="absolute left-0 top-full mt-1 w-full bg-white border border-[#ECECEC] rounded-[10px] shadow-md shadow-black/5 py-1 z-50 animate-in fade-in zoom-in-95 duration-150"
+                        className="absolute left-0 top-full mt-1.5 w-full bg-white/95 backdrop-blur-md border border-[#ECECEC] rounded-[12px] shadow-xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-0.5"
                       >
-                        {(['Pemula', 'Menengah', 'Mahir'] as const).map((lvl) => (
-                          <button
-                            key={lvl}
-                            type="button"
-                            onClick={() => {
-                              setModuleLevel(lvl);
-                              setIsLevelDropdownOpen(false);
-                            }}
-                            className={`w-full px-3.5 py-2 text-left text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
-                              moduleLevel === lvl
-                                ? 'bg-blue-50 text-[#2563EB] font-bold'
-                                : 'text-[#2E2D2D] hover:bg-slate-50'
-                            }`}
-                          >
-                            <span>{lvl}</span>
-                            {moduleLevel === lvl && <CheckCircle2 className="w-3.5 h-3.5 text-[#2563EB]" />}
-                          </button>
-                        ))}
+                        {(['Pemula', 'Menengah', 'Mahir'] as const).map((lvl) => {
+                          const isSelected = moduleLevel === lvl;
+                          return (
+                            <button
+                              key={lvl}
+                              type="button"
+                              onClick={() => {
+                                setModuleLevel(lvl);
+                                setIsLevelDropdownOpen(false);
+                              }}
+                              className={`w-full px-3 py-2.5 rounded-[8px] text-left text-xs font-semibold flex items-center justify-between transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'bg-blue-50/80 text-[#2563EB] font-bold'
+                                  : 'text-[#2E2D2D] hover:bg-slate-50'
+                              }`}
+                            >
+                              <span>{lvl}</span>
+                              {isSelected && <CheckCircle2 className="w-4 h-4 text-[#2563EB]" />}
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -1744,7 +1698,7 @@ export function ModuleBlockBuilder({
                 {!evaluationType ? (
                   <button
                     type="button"
-                    onClick={() => setEvaluationType('kuis_sitemsa')}
+                    onClick={() => handleSwitchEvaluationType('kuis_sitemsa')}
                     className="w-full py-3 rounded-[8px] border-2 border-dashed border-blue-300 hover:border-[#2563EB] bg-white hover:bg-blue-50/40 text-xs font-bold text-[#2563EB] inline-flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
                   >
                     <Plus className="w-4 h-4" />
@@ -1754,11 +1708,11 @@ export function ModuleBlockBuilder({
                   <div className="p-4 rounded-[12px] bg-white border border-[#ECECEC] space-y-4 shadow-2xs">
                     <div className="flex items-center justify-between pb-1">
                       <span className="font-bold text-[#2E2D2D] text-xs flex items-center gap-1.5">
-                        <HelpCircle className="w-4 h-4 text-[#2563EB]" /> Pengaturan Bahan Evaluasi
+                        <FileText className="w-4 h-4 text-[#2563EB]" /> Pengaturan Bahan Evaluasi
                       </span>
                       <button
                         type="button"
-                        onClick={() => setEvaluationType(null)}
+                        onClick={() => handleSwitchEvaluationType(null)}
                         className="text-xs text-rose-600 font-semibold hover:underline cursor-pointer flex items-center gap-1"
                       >
                         <Trash2 className="w-3.5 h-3.5" /> Hapus Evaluasi
@@ -1769,18 +1723,18 @@ export function ModuleBlockBuilder({
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       <button
                         type="button"
-                        onClick={() => setEvaluationType('kuis_sitemsa')}
+                        onClick={() => handleSwitchEvaluationType('kuis_sitemsa')}
                         className={`p-2.5 rounded-[8px] border text-center text-xs font-bold transition-all cursor-pointer ${
                           evaluationType === 'kuis_sitemsa'
                             ? 'bg-blue-50 border-[#2563EB] text-[#2563EB]'
                             : 'bg-white border-[#ECECEC] text-[#737373] hover:bg-slate-50'
                         }`}
                       >
-                        Kuis Native Sitemsa
+                        Kuis Sitemsa
                       </button>
                       <button
                         type="button"
-                        onClick={() => setEvaluationType('link_eksternal')}
+                        onClick={() => handleSwitchEvaluationType('link_eksternal')}
                         className={`p-2.5 rounded-[8px] border text-center text-xs font-bold transition-all cursor-pointer ${
                           evaluationType === 'link_eksternal'
                             ? 'bg-blue-50 border-[#2563EB] text-[#2563EB]'
@@ -1791,7 +1745,7 @@ export function ModuleBlockBuilder({
                       </button>
                       <button
                         type="button"
-                        onClick={() => setEvaluationType('qr_code')}
+                        onClick={() => handleSwitchEvaluationType('qr_code')}
                         className={`p-2.5 rounded-[8px] border text-center text-xs font-bold transition-all cursor-pointer ${
                           evaluationType === 'qr_code'
                             ? 'bg-blue-50 border-[#2563EB] text-[#2563EB]'
@@ -1802,10 +1756,10 @@ export function ModuleBlockBuilder({
                       </button>
                     </div>
 
-                    {/* 1. KUIS NATIVE SITEMSA INPUT WITH CUSTOM POPOVER DROPDOWN MATCHING PROFILE STYLE */}
+                    {/* 1. KUIS SITEMSA INPUT WITH CUSTOM POPOVER DROPDOWN */}
                     {evaluationType === 'kuis_sitemsa' && (
                       <div ref={quizDropdownRef} className="space-y-1.5 pt-1 relative">
-                        <label className="font-bold text-xs text-[#2E2D2D] block">Pilih Kuis Native Sitemsa</label>
+                        <label className="font-bold text-xs text-[#2E2D2D] block">Pilih Kuis Sitemsa</label>
                         <div className="relative">
                           <button
                             type="button"
@@ -1813,37 +1767,40 @@ export function ModuleBlockBuilder({
                             className="w-full h-9 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs font-semibold text-[#2E2D2D] outline-none hover:border-[#2563EB] focus:border-[#2563EB] flex items-center justify-between cursor-pointer transition-colors"
                           >
                             <span className={evalTitle ? 'text-[#2E2D2D] font-bold' : 'text-[#737373]'}>
-                              {evalTitle || 'Pilih Kuis Native Sitemsa'}
+                              {evalTitle || 'Pilih Kuis Sitemsa'}
                             </span>
                             <ChevronDown className={`w-4 h-4 text-[#2E2D2D] transition-transform duration-200 ${isQuizDropdownOpen ? 'rotate-180' : ''}`} />
                           </button>
 
                           {isQuizDropdownOpen && (
                             <div
-                              className="absolute left-0 bottom-full mb-1 w-full bg-white border border-[#ECECEC] rounded-[10px] shadow-md shadow-black/5 py-1 z-50 animate-in fade-in zoom-in-95 duration-150"
+                              className="absolute left-0 bottom-full mb-1.5 w-full bg-white/95 backdrop-blur-md border border-[#ECECEC] rounded-[12px] shadow-xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-0.5"
                             >
                               {[
                                 'Kuis 1: Daspro & Variabel Python (3 Soal)',
                                 'Kuis 2: Rangkaian Listrik Seri & Paralel (5 Soal)',
                                 'Kuis 3: Logika & Algoritma Lanjutan (4 Soal)',
-                              ].map((quizName) => (
-                                <button
-                                  key={quizName}
-                                  type="button"
-                                  onClick={() => {
-                                    setEvalTitle(quizName);
-                                    setIsQuizDropdownOpen(false);
-                                  }}
-                                  className={`w-full px-3.5 py-2 text-left text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
-                                    evalTitle === quizName
-                                      ? 'bg-blue-50 text-[#2563EB] font-bold'
-                                      : 'text-[#2E2D2D] hover:bg-slate-50'
-                                  }`}
-                                >
-                                  <span>{quizName}</span>
-                                  {evalTitle === quizName && <CheckCircle2 className="w-3.5 h-3.5 text-[#2563EB]" />}
-                                </button>
-                              ))}
+                              ].map((quizName) => {
+                                const isSelected = evalTitle === quizName;
+                                return (
+                                  <button
+                                    key={quizName}
+                                    type="button"
+                                    onClick={() => {
+                                      setEvalTitle(quizName);
+                                      setIsQuizDropdownOpen(false);
+                                    }}
+                                    className={`w-full px-3 py-2.5 rounded-[8px] text-left text-xs font-semibold flex items-center justify-between transition-all cursor-pointer ${
+                                      isSelected
+                                        ? 'bg-blue-50/80 text-[#2563EB] font-bold'
+                                        : 'text-[#2E2D2D] hover:bg-slate-50'
+                                    }`}
+                                  >
+                                    <span>{quizName}</span>
+                                    {isSelected && <CheckCircle2 className="w-4 h-4 text-[#2563EB]" />}
+                                  </button>
+                                );
+                              })}
                             </div>
                           )}
                         </div>
@@ -1903,11 +1860,21 @@ export function ModuleBlockBuilder({
                           ) : (
                             <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-[8px] border border-[#ECECEC]">
                               <div className="flex items-center gap-3 truncate min-w-0 pr-2">
-                                <div className="w-10 h-10 rounded-[6px] bg-white p-1 border border-[#ECECEC] shrink-0 flex items-center justify-center">
+                                <div
+                                  onClick={() => setExpandedImagePreviewUrl(evalQrUrl)}
+                                  className="w-10 h-10 rounded-[6px] bg-white p-1 border border-[#ECECEC] shrink-0 flex items-center justify-center cursor-pointer hover:border-[#2563EB] hover:scale-105 transition-all group/qrThumb"
+                                  title="Klik untuk memperbesar gambar barcode"
+                                >
                                   {/* eslint-disable-next-next/no-img-element */}
                                   <img src={evalQrUrl} alt="QR Code" className="w-full h-full object-contain" />
                                 </div>
-                                <span className="text-xs font-semibold text-[#2E2D2D] truncate">Gambar Barcode Terpasang</span>
+                                <span
+                                  onClick={() => setExpandedImagePreviewUrl(evalQrUrl)}
+                                  className="text-xs font-semibold text-[#2E2D2D] hover:text-[#2563EB] truncate cursor-pointer transition-colors"
+                                  title="Klik untuk memperbesar gambar barcode"
+                                >
+                                  Gambar Barcode Terpasang (Klik perbesar)
+                                </span>
                               </div>
                               <div className="flex items-center gap-2 shrink-0">
                                 <button
@@ -1940,10 +1907,12 @@ export function ModuleBlockBuilder({
             <div className="p-4 sm:p-5 pt-2 bg-white flex items-center justify-end gap-3 shrink-0">
               <button
                 type="button"
-                onClick={() => setShowPublishModal(false)}
-                className="px-5 py-2.5 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-xs font-bold text-[#2E2D2D] transition-colors cursor-pointer"
+                onClick={() => {
+                  handleSaveModuleConfirm(false);
+                }}
+                className="px-4 py-2.5 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-[#2E2D2D] transition-colors cursor-pointer"
               >
-                Batal
+                Save as draft
               </button>
               {(() => {
                 const isPublishEnabled = hasValidTextContent && moduleTopics.length > 0 && !isPublishing;
@@ -2169,6 +2138,37 @@ export function ModuleBlockBuilder({
         </div>
       )}
 
+      {/* EXPANDED BARCODE / QR IMAGE PREVIEW LIGHTBOX MODAL */}
+      {expandedImagePreviewUrl && (
+        <div
+          onClick={() => setExpandedImagePreviewUrl(null)}
+          className="fixed inset-0 z-50 bg-black/75 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative max-w-2xl w-full bg-white rounded-[16px] p-4 border border-[#ECECEC] shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col items-center gap-3"
+          >
+            <button
+              type="button"
+              onClick={() => setExpandedImagePreviewUrl(null)}
+              className="absolute right-3 top-3 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors cursor-pointer z-10"
+              title="Tutup Pratinjau"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <h4 className="text-sm font-bold text-[#2E2D2D] pt-1">Pratinjau Gambar Barcode / QR Code</h4>
+
+            <div className="w-full max-h-[70vh] flex items-center justify-center overflow-hidden rounded-[10px] bg-slate-50 p-2 border border-slate-100">
+              <img
+                src={expandedImagePreviewUrl}
+                alt="Barcode / QR Code Preview"
+                className="max-h-[65vh] w-auto object-contain rounded-[6px]"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

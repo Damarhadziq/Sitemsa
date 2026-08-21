@@ -11,7 +11,7 @@ export default async function QuizPage({
 
   return (
     <div className="flex flex-col min-h-screen">
-      <QuizHeader exitUrl="/admin/guru/pelajaran" />
+      <QuizHeader exitUrl="/materi" />
       <QuestionArea />
     </div>
   );

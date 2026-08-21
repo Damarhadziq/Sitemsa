@@ -18,7 +18,7 @@ export function QuizHeader({
   timeLeft = 45,
   score = 150,
   streak = 3,
-  exitUrl = "/admin/guru/pelajaran",
+  exitUrl = "/materi",
 }: QuizHeaderProps) {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);

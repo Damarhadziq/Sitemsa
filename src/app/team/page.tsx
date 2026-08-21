@@ -101,13 +101,16 @@ export default function TeamPage() {
   React.useEffect(() => {
     if (selectedMember) {
       document.documentElement.classList.add("modal-open");
+      document.body.classList.add("modal-open");
       document.body.style.overflow = "hidden";
     } else {
       document.documentElement.classList.remove("modal-open");
+      document.body.classList.remove("modal-open");
       document.body.style.overflow = "";
     }
     return () => {
       document.documentElement.classList.remove("modal-open");
+      document.body.classList.remove("modal-open");
       document.body.style.overflow = "";
     };
   }, [selectedMember]);
@@ -191,20 +194,23 @@ export default function TeamPage() {
         </div>
       </main>
 
-      {/* MEMBER DETAIL EXPAND MODAL */}
+      {/* MEMBER DETAIL EXPAND BOTTOM SHEET / MODAL */}
       {selectedMember && memberDetails && (
         <div
-          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden animate-in fade-in duration-200"
           onClick={() => setSelectedMember(null)}
         >
           <div
-            className="bg-white rounded-[24px] border border-[#ECECEC] max-w-md w-full p-6 sm:p-7 shadow-2xl relative overflow-hidden space-y-6 animate-in zoom-in-95 duration-200"
+            className="bg-white rounded-t-[28px] sm:rounded-[24px] border-t sm:border border-[#ECECEC] max-w-lg w-full p-6 sm:p-7 shadow-2xl relative overflow-y-auto max-h-[85vh] sm:max-h-[90vh] space-y-5 animate-in slide-in-from-bottom sm:zoom-in-95 duration-250"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close Button */}
+            {/* Mobile Drag Handle */}
+            <div className="w-12 h-1.5 rounded-full bg-slate-200 mx-auto sm:hidden -mt-1 mb-1" />
+
+            {/* Close Button (Hidden on Mobile Bottom Sheet) */}
             <button
               onClick={() => setSelectedMember(null)}
-              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer"
+              className="hidden sm:flex absolute top-5 right-5 w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] items-center justify-center transition-colors cursor-pointer z-10"
               aria-label="Tutup Detail"
             >
               <X className="w-4 h-4" />

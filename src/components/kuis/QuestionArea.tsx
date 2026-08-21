@@ -339,7 +339,7 @@ export function QuestionArea() {
               <span>Ulangi Kuis</span>
             </button>
 
-            <Link href="/admin/guru/pelajaran" className="w-full sm:flex-1">
+            <Link href="/materi" className="w-full sm:flex-1">
               <button className="w-full py-3 px-4 rounded-2xl bg-[#2563EB] hover:bg-blue-700 text-white font-extrabold text-xs shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98">
                 <span>Kembali ke Pembelajaran</span>
                 <ArrowRight className="w-4 h-4" />

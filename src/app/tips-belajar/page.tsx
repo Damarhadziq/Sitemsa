@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useMemo, Suspense } from "react";
+import { useState, useMemo, Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Search01Icon } from "@hugeicons/core-free-icons";
+import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface ArticleItem {
   id: number;
@@ -19,6 +20,8 @@ interface ArticleItem {
     callout?: string;
   }[];
 }
+
+const ITEMS_PER_PAGE = 5;
 
 const TIPS_ARTICLES: ArticleItem[] = [
   {
@@ -34,7 +37,6 @@ const TIPS_ARTICLES: ArticleItem[] = [
       {
         title: "Pecah Masalah Kompleks Menjadi Bagian Kecil (Decomposisi)",
         description: "Jangan mencoba menyelesaikan seluruh masalah sekaligus. Pecah program menjadi fungsi-fungsi kecil yang berfokus pada satu tugas spesifik. Metode ini memudahkan proses pengujian dan pelacakan bug saat kode berjalan.",
-        callout: "Tips: Mulailah dengan mengeksekusi variabel dan ekspresi logika dasar terlebih dahulu sebelum masuk ke struktur perulangan bertingkat.",
       },
       {
         title: "Manfaatkan Metode Rubber Duck Debugging",
@@ -59,7 +61,6 @@ const TIPS_ARTICLES: ArticleItem[] = [
       {
         title: "Pentingnya Sesi Istirahat Panjang",
         description: "Setelah menyelesaikan 4 siklus Pomodoro (total 100 menit waktu belajar), luangkan waktu istirahat panjang selama 15-30 menit untuk menyegarkan pikiran dan mengonsolidasi daya ingat.",
-        callout: "Gunakan waktu istirahat 5 menit untuk berdiri, melakukan peregangan tubuh, atau minum air hangat agar aliran darah tetap lancar.",
       },
       {
         title: "Hindari Multitasking Saat Sesi Belajar",
@@ -80,7 +81,6 @@ const TIPS_ARTICLES: ArticleItem[] = [
       {
         title: "Penyimpanan Energi Sementara pada Kapasitor",
         description: "Kapasitor bertindak sebagai penyimpan muatan energi listrik sementara dan penyaring gelombang frekuensi. Pahami perbedaan antara kapasitor polar dan non-polar untuk keamanan perakitan.",
-        callout: "Perhatian: Selalu pastikan kapasitor polar dipasang sesuai dengan polaritas positif dan negatifnya untuk mencegah kerusakan komponen.",
       },
       {
         title: "Penerapan Hukum Ohm pada Praktik Bengkel",
@@ -101,7 +101,6 @@ const TIPS_ARTICLES: ArticleItem[] = [
       {
         title: "Jadwalkan Pengulangan Berkala (Spaced Repetition)",
         description: "Ulangi materi yang dipelajari dengan interval waktu yang bertahap: H+1 setelah materi disampaikan, H+3, H+7, dan H+14. Pola ini mencegah meluruhnya kurva ingatan.",
-        callout: "Manfaatkan fitur Uji Pemahaman di Sitemsa sebagai media pengulangan berkala yang cepat dan terukur.",
       },
     ],
   },
@@ -155,56 +154,84 @@ const TIPS_ARTICLES: ArticleItem[] = [
   },
 ];
 
-// Beautiful Skeleton Fallback for Tips Belajar Page
+function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) {
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className="flex items-center justify-center gap-2 pt-6 pb-2">
+      {/* Frameless Previous Arrow */}
+      <button
+        type="button"
+        disabled={currentPage === 1}
+        onClick={() => onPageChange(currentPage - 1)}
+        className="w-8 h-8 rounded-full bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-gray-100 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+        aria-label="Halaman Sebelumnya"
+      >
+        <ChevronLeft className="w-4 h-4" />
+      </button>
+
+      {/* Numbered Page Buttons - Active is 100% Circle Filled */}
+      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+        const isActive = currentPage === page;
+        return (
+          <button
+            key={page}
+            type="button"
+            onClick={() => onPageChange(page)}
+            className={`w-8 h-8 rounded-full text-xs font-semibold transition-all flex items-center justify-center cursor-pointer ${
+              isActive
+                ? "bg-[#2563EB] text-white shadow-2xs"
+                : "bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-gray-100"
+            }`}
+          >
+            {page}
+          </button>
+        );
+      })}
+
+      {/* Frameless Next Arrow */}
+      <button
+        type="button"
+        disabled={currentPage === totalPages}
+        onClick={() => onPageChange(currentPage + 1)}
+        className="w-8 h-8 rounded-full bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-gray-100 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+        aria-label="Halaman Selanjutnya"
+      >
+        <ChevronRight className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
+
 function TipsBelajarSkeleton() {
   return (
     <main className="max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-16 w-full flex-1 space-y-6">
-      {/* Header Skeleton */}
       <div className="space-y-4 max-w-3xl">
         <Skeleton className="h-8 w-48 md:w-64" />
         <Skeleton className="h-10 w-full max-w-lg" />
       </div>
-
-      {/* Grid Layout Skeleton */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-2">
-        {/* Sidebar Skeleton */}
         <aside className="lg:col-span-4 space-y-5">
           <div className="bg-white border border-[#ECECEC] rounded-[10px] p-5 space-y-4">
             <Skeleton className="h-4 w-32" />
             <div className="space-y-2">
-              <Skeleton className="h-9 w-full rounded-[6px]" />
-              <Skeleton className="h-9 w-full rounded-[6px]" />
-              <Skeleton className="h-9 w-full rounded-[6px]" />
-              <Skeleton className="h-9 w-full rounded-[6px]" />
-              <Skeleton className="h-9 w-full rounded-[6px]" />
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Skeleton key={i} className="h-9 w-full rounded-[6px]" />
+              ))}
             </div>
           </div>
         </aside>
-
-        {/* Main Article Canvas Skeleton */}
         <div className="lg:col-span-8 space-y-8">
-          <div className="space-y-3">
-            <Skeleton className="h-9 w-3/4" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-2/3" />
-          </div>
-
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <Skeleton className="h-6 w-48" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-5/6" />
-            </div>
-            <div className="space-y-2">
-              <Skeleton className="h-6 w-56" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-16 w-full rounded-[8px]" />
-            </div>
-          </div>
-
-          <div className="pt-6 border-t border-[#ECECEC] flex items-center justify-between">
-            <Skeleton className="h-4 w-32" />
-          </div>
+          <Skeleton className="h-9 w-3/4" />
+          <Skeleton className="h-4 w-full" />
         </div>
       </div>
     </main>
@@ -225,116 +252,233 @@ function TipsBelajarContent() {
     return 1;
   }, [queryIdStr]);
 
-  const [selectedArticleId, setSelectedArticleId] = useState<number | null>(null);
+  const [desktopSelectedId, setDesktopSelectedId] = useState<number>(initialId);
+  const [mobileSelectedId, setMobileSelectedId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [mobilePage, setMobilePage] = useState<number>(1);
+  const [desktopPage, setDesktopPage] = useState<number>(1);
 
-  const activeArticleId = selectedArticleId ?? initialId;
+  useEffect(() => {
+    setMobilePage(1);
+    setDesktopPage(1);
+  }, [searchQuery]);
 
-  const filteredArticles = TIPS_ARTICLES.filter(
-    (art) =>
-      art.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      art.summary.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredArticles = useMemo(() => {
+    return TIPS_ARTICLES.filter(
+      (art) =>
+        art.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        art.summary.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery]);
 
-  const activeArticle =
-    TIPS_ARTICLES.find((art) => art.id === activeArticleId) || TIPS_ARTICLES[0];
+  const desktopTotalPages = Math.ceil(filteredArticles.length / ITEMS_PER_PAGE);
+  const mobileTotalPages = Math.ceil(filteredArticles.length / ITEMS_PER_PAGE);
+
+  const desktopPaginatedArticles = useMemo(() => {
+    const start = (desktopPage - 1) * ITEMS_PER_PAGE;
+    return filteredArticles.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredArticles, desktopPage]);
+
+  const mobilePaginatedArticles = useMemo(() => {
+    const start = (mobilePage - 1) * ITEMS_PER_PAGE;
+    return filteredArticles.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredArticles, mobilePage]);
+
+  const desktopActiveArticle = useMemo(() => {
+    return TIPS_ARTICLES.find((art) => art.id === desktopSelectedId) || TIPS_ARTICLES[0];
+  }, [desktopSelectedId]);
+
+  const mobileActiveArticle = useMemo(() => {
+    if (mobileSelectedId === null) return null;
+    return TIPS_ARTICLES.find((art) => art.id === mobileSelectedId) || null;
+  }, [mobileSelectedId]);
 
   return (
     <main className="max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-16 w-full flex-1 space-y-6">
-      {/* Header (Title Only: "Tips Belajar") */}
-      <section className="space-y-4 max-w-3xl">
-        <h1 className="text-2xl md:text-3xl font-semibold text-[#2E2D2D] tracking-tight">
-          Tips Belajar
-        </h1>
-      </section>
+      {/* DESKTOP VIEW (100% ORIGINAL 2-COLUMN UNTOUCHED WITH PAGINATION) */}
+      <div className="hidden lg:block space-y-6">
+        <section className="space-y-4 max-w-3xl">
+          <h1 className="text-2xl md:text-3xl font-semibold text-[#2E2D2D] tracking-tight">
+            Tips Belajar
+          </h1>
+        </section>
 
-      {/* 2-Column Clean Canvas Layout */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-2">
-        {/* Left Sidebar List (4 Columns) */}
-        <aside className="lg:col-span-4 space-y-5 lg:sticky lg:top-28">
-          <div className="bg-white border border-[#ECECEC] rounded-[10px] p-5 space-y-4">
-            {/* Search Bar Inside Frame */}
-            <div className="relative w-full">
-              <HugeiconsIcon
-                icon={Search01Icon}
-                size={16}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#737373]"
-              />
-              <input
-                type="text"
-                placeholder="Cari tips belajar (misal: logika, pomodoro)..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#FAFAFA] border border-[#ECECEC] rounded-[8px] pl-9 pr-3 py-2 text-xs text-[#2E2D2D] placeholder-[#737373] focus:outline-none focus:border-[#2563EB] focus:bg-white transition-all duration-200"
-              />
+        <section className="grid grid-cols-12 gap-8 items-start pt-2">
+          {/* Left Sidebar List */}
+          <aside className="col-span-4 space-y-5 sticky top-28">
+            <div className="bg-white border border-[#ECECEC] rounded-[10px] p-5 space-y-4 shadow-none">
+              <div className="relative w-full">
+                <HugeiconsIcon
+                  icon={Search01Icon}
+                  size={16}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#737373]"
+                />
+                <input
+                  type="text"
+                  placeholder="Cari tips belajar (misal: logika, pomodoro)..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-[#FAFAFA] border border-[#ECECEC] rounded-[8px] pl-9 pr-3 py-2 text-xs text-[#2E2D2D] placeholder-[#737373] focus:outline-none focus:border-[#2563EB] focus:bg-white transition-all duration-200 shadow-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-sm font-semibold text-[#2E2D2D]">Daftar Tips Belajar</h3>
+              </div>
+
+              <nav className="space-y-1">
+                {filteredArticles.length === 0 ? (
+                  <div className="py-4 text-xs text-[#737373]">
+                    Tidak ada tips yang cocok
+                  </div>
+                ) : (
+                  filteredArticles.map((art) => {
+                    const isActive = desktopActiveArticle.id === art.id;
+                    return (
+                      <button
+                        key={art.id}
+                        type="button"
+                        onClick={() => setDesktopSelectedId(art.id)}
+                        className={`block w-full text-left py-2.5 px-3 text-xs transition-colors duration-200 cursor-pointer ${
+                          isActive
+                            ? "text-[#2563EB] font-semibold border-l-2 border-[#2563EB] bg-[#F6F5FF]"
+                            : "text-[#737373] font-medium hover:text-[#2E2D2D] border-l-2 border-transparent"
+                        }`}
+                      >
+                        {art.title}
+                      </button>
+                    );
+                  })
+                )}
+              </nav>
+            </div>
+          </aside>
+
+          {/* Right Main Article View */}
+          <article className="col-span-8 space-y-8">
+            <header className="space-y-2">
+              <h2 className="text-2xl md:text-4xl font-bold text-[#2E2D2D] leading-tight tracking-tight">
+                {desktopActiveArticle.title}
+              </h2>
+            </header>
+
+            <div className="space-y-6">
+              {desktopActiveArticle.contentSections.map((sec, idx) => (
+                <section key={idx} className="space-y-2">
+                  <h3 className="text-base md:text-lg font-semibold text-[#2E2D2D]">
+                    {sec.title}
+                  </h3>
+                  <p className="text-xs md:text-sm text-[#4A4A4A] leading-relaxed">
+                    {sec.description}
+                  </p>
+                </section>
+              ))}
+            </div>
+          </article>
+        </section>
+      </div>
+
+      {/* MOBILE VIEW (CARDS LANDING LIST WITH PAGINATION -> DETAIL VIEW) */}
+      <div className="lg:hidden">
+        {mobileActiveArticle ? (
+          /* MOBILE DETAIL VIEW WITH ICON-ONLY BACK BUTTON */
+          <div className="space-y-6 animate-in fade-in duration-200">
+            <div className="sticky top-20 z-30 pt-1 pb-1">
+              <button
+                type="button"
+                onClick={() => setMobileSelectedId(null)}
+                className="w-9 h-9 rounded-full bg-white/90 border border-[#ECECEC] text-[#2E2D2D] hover:text-[#2563EB] hover:bg-white shadow-2xs transition-all cursor-pointer flex items-center justify-center"
+                aria-label="Kembali"
+                title="Kembali"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </button>
             </div>
 
-            {/* Sidebar Title (No Count Badge) */}
-            <div className="flex items-center justify-between mb-1">
-              <h3 className="text-sm font-semibold text-[#2E2D2D]">Daftar Tips Belajar</h3>
-            </div>
+            <article className="space-y-6 pt-1">
+              <header className="space-y-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-[#2E2D2D] leading-tight tracking-tight">
+                  {mobileActiveArticle.title}
+                </h1>
+              </header>
 
-            <nav className="space-y-1">
-              {filteredArticles.length === 0 ? (
-                <div className="py-4 text-xs text-[#737373]">
+              <div className="space-y-6 pt-2">
+                {mobileActiveArticle.contentSections.map((sec, idx) => (
+                  <section key={idx} className="space-y-2">
+                    <h3 className="text-base font-bold text-[#2E2D2D]">
+                      {sec.title}
+                    </h3>
+                    <p className="text-xs text-[#4A4A4A] leading-relaxed">
+                      {sec.description}
+                    </p>
+                  </section>
+                ))}
+              </div>
+            </article>
+          </div>
+        ) : (
+          /* MOBILE LANDING VIEW: CARDS GRID (5 PER PAGE WITH PAGINATION) */
+          <div className="space-y-6 animate-in fade-in duration-200">
+            <header className="space-y-4">
+              <h1 className="text-2xl font-bold text-[#2E2D2D] tracking-tight">
+                Tips Belajar
+              </h1>
+
+              {/* Flat Search Bar (No shadow!) */}
+              <div className="relative w-full">
+                <HugeiconsIcon
+                  icon={Search01Icon}
+                  size={16}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#737373]"
+                />
+                <input
+                  type="text"
+                  placeholder="Cari tips belajar (misal: logika, pomodoro)..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-[#FAFAFA] border border-[#ECECEC] rounded-[10px] pl-9 pr-3 py-2.5 text-xs text-[#2E2D2D] placeholder-[#737373] focus:outline-none focus:border-[#2563EB] focus:bg-white transition-all duration-200 shadow-none"
+                />
+              </div>
+            </header>
+
+            {/* Mobile Cards List */}
+            <div className="space-y-4 pt-1">
+              {mobilePaginatedArticles.length === 0 ? (
+                <div className="py-12 text-center text-xs text-[#737373]">
                   Tidak ada tips yang cocok
                 </div>
               ) : (
-                filteredArticles.map((art) => {
-                  const isActive = activeArticleId === art.id;
-                  return (
-                    <button
-                      key={art.id}
-                      type="button"
-                      onClick={() => setSelectedArticleId(art.id)}
-                      className={`block w-full text-left py-2 px-3 text-xs transition-colors duration-200 cursor-pointer ${
-                        isActive
-                          ? "text-[#2563EB] font-semibold border-l-2 border-[#2563EB] bg-[#F6F5FF]"
-                          : "text-[#737373] font-medium hover:text-[#2E2D2D] border-l-2 border-transparent"
-                      }`}
-                    >
+                mobilePaginatedArticles.map((art) => (
+                  <div
+                    key={art.id}
+                    onClick={() => setMobileSelectedId(art.id)}
+                    className="p-5 rounded-[16px] bg-white border border-[#ECECEC] active:border-[#2563EB] active:bg-slate-50 transition-all duration-200 cursor-pointer space-y-2.5"
+                  >
+                    <span className="inline-block text-[11px] font-semibold text-[#2563EB] bg-[#E8E7FF] px-2.5 py-0.5 rounded-[4px]">
+                      {art.author}
+                    </span>
+
+                    <h3 className="text-base font-bold text-[#2E2D2D] leading-snug">
                       {art.title}
-                    </button>
-                  );
-                })
-              )}
-            </nav>
-          </div>
-        </aside>
+                    </h3>
 
-        {/* Right Main Article View — Pure Canvas (8 Columns) */}
-        <article className="lg:col-span-8 space-y-8">
-          <header className="space-y-2">
-            <h2 className="text-xl md:text-3xl font-semibold text-[#2E2D2D] leading-tight">
-              {activeArticle.title}
-            </h2>
-            <p className="text-xs md:text-sm text-[#737373] leading-relaxed">
-              {activeArticle.summary}
-            </p>
-          </header>
-
-          {/* Standardized Sections Canvas */}
-          <div className="space-y-6">
-            {activeArticle.contentSections.map((sec, idx) => (
-              <section key={idx} className="space-y-2">
-                <h3 className="text-base md:text-lg font-semibold text-[#2E2D2D]">
-                  {sec.title}
-                </h3>
-                <p className="text-xs md:text-sm text-[#4A4A4A] leading-relaxed">
-                  {sec.description}
-                </p>
-
-                {sec.callout && (
-                  <div className="bg-[#F4EFFF] border-l-4 border-[#2563EB] rounded-r-[8px] p-4 text-xs md:text-sm text-[#2E2D2D] font-medium leading-relaxed my-3">
-                    {sec.callout}
+                    <p className="text-xs text-[#737373] line-clamp-3 leading-relaxed">
+                      {art.summary}
+                    </p>
                   </div>
-                )}
-              </section>
-            ))}
-          </div>
+                ))
+              )}
+            </div>
 
-        </article>
-      </section>
+            {/* Mobile Cards Pagination (5 cards per page) */}
+            <Pagination
+              currentPage={mobilePage}
+              totalPages={mobileTotalPages}
+              onPageChange={(p) => setMobilePage(p)}
+            />
+          </div>
+        )}
+      </div>
     </main>
   );
 }

@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { ArrowLeft } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react";
@@ -596,14 +597,14 @@ export default function MaterialDetailPage({
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-16 w-full flex-1">
-        {/* Top Header Navigation: Full Rounded Icon-Only Back Button */}
-        <div className="mb-8">
+        {/* Sticky Icon-Only Back Button (Opacity 90%, matching Tips & Dokumentasi) */}
+        <div className="sticky top-20 z-30 mb-6 pt-1">
           <Link
             href="/materi"
             aria-label="Kembali ke Materi"
-            className="w-9 h-9 rounded-full bg-white border border-[#ECECEC] text-[#2E2D2D] hover:text-[#0400F4] hover:bg-[#F6F5FF] hover:border-[#0400F4]/40 flex items-center justify-center transition-all duration-200 cursor-pointer"
+            className="w-9 h-9 rounded-full bg-white/90 border border-[#ECECEC] text-[#2E2D2D] hover:text-[#2563EB] hover:bg-white shadow-2xs inline-flex items-center justify-center transition-all duration-200 cursor-pointer"
           >
-            <HugeiconsIcon icon={ArrowLeft01Icon} size={16} />
+            <ArrowLeft className="w-4 h-4" />
           </Link>
         </div>
 
@@ -699,13 +700,6 @@ export default function MaterialDetailPage({
                         {p}
                       </p>
                     ))}
-
-                    {/* Highlighted Note Callout Box */}
-                    {section.callout && (
-                      <div className="bg-[#F4EFFF] border-l-4 border-[#0400F4] rounded-r-[8px] p-4 text-xs md:text-sm text-[#2E2D2D] leading-relaxed font-medium whitespace-pre-line">
-                        {section.callout}
-                      </div>
-                    )}
 
                     {/* Code Snippet Box with Copy Button */}
                     {section.codeSnippet && (

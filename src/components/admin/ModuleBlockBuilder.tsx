@@ -25,6 +25,7 @@ import {
   QrCode,
   Download,
   Highlighter,
+  AlertCircle,
 } from 'lucide-react';
 import { ModuleItem } from '@/lib/admin-store';
 
@@ -142,13 +143,14 @@ export function ModuleBlockBuilder({
   const [isLevelDropdownOpen, setIsLevelDropdownOpen] = useState(false);
   const [isQuizDropdownOpen, setIsQuizDropdownOpen] = useState(false);
 
-  // Lock global body scroll when canvas or modal is open
+  // Lock global body scroll when canvas builder is active
   useEffect(() => {
-    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.documentElement.classList.add("modal-open");
     document.body.style.overflow = 'hidden';
 
     return () => {
-      document.body.style.overflow = originalStyle;
+      document.documentElement.classList.remove("modal-open");
+      document.body.style.overflow = '';
     };
   }, []);
 
@@ -480,10 +482,31 @@ export function ModuleBlockBuilder({
     setModuleTopics(moduleTopics.filter((t) => t !== tagToRemove));
   };
 
+  // Check if canvas has valid non-empty text content
+  const hasValidTextContent = blocks.some(
+    (b) => b.type === 'text' && b.textValue && b.textValue.trim().length > 0
+  );
+
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [isLottieLoaded, setIsLottieLoaded] = useState(false);
+
+  useEffect(() => {
+    // Load dotlottie-player script for Lottie animation
+    if (typeof window !== 'undefined' && !document.querySelector('script[src*="dotlottie"]')) {
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs';
+      script.type = 'module';
+      script.onload = () => setIsLottieLoaded(true);
+      document.head.appendChild(script);
+    } else {
+      setIsLottieLoaded(true);
+    }
+  }, []);
+
   // Open Publish Modal trigger
   const handleOpenPublishModal = () => {
     if (!moduleTitle.trim()) {
-      alert('Judul modul tidak boleh kosong.');
+      alert('Judul materi tidak boleh kosong.');
       return;
     }
     setShowPublishModal(true);
@@ -492,33 +515,89 @@ export function ModuleBlockBuilder({
   // Confirm Publish / Save Draft handler
   const handleSaveModuleConfirm = (isPublish: boolean) => {
     if (!moduleTitle.trim()) {
-      alert('Judul modul tidak boleh kosong.');
+      alert('Judul materi tidak boleh kosong.');
       return;
     }
-    onSave(
-      {
-        title: moduleTitle,
-        subject: subjectName,
-        level: moduleLevel,
-        duration: moduleDuration,
-        topics: moduleTopics,
-        isPublished: isPublish,
-        quizSource: evaluationType
-          ? {
-              type: evaluationType,
-              title: evalTitle || 'Kuis Evaluasi Modul',
-              externalUrl: evalUrl,
-              qrImageUrl: evalQrUrl,
-            }
-          : undefined,
-      },
-      blocks
-    );
-    setShowPublishModal(false);
 
     if (isPublish) {
-      setShowSuccessModal(true);
+      setIsPublishing(true);
+
+      // Preload lottie asset while button displays loading spinner
+      const preloadAsset = async () => {
+        try {
+          await fetch('https://lottie.host/embed/878825de-212a-443e-89a9-c5573cfe890b/3v8OMNEl30.lottie', { mode: 'cors' });
+        } catch (err) {
+          console.warn('Lottie preload fallback', err);
+        }
+      };
+
+      Promise.all([
+        preloadAsset(),
+        new Promise((resolve) => setTimeout(resolve, 1400)),
+      ]).then(() => {
+        const firstTextBlock = blocks.find(
+          (b) => b.type === 'text' && b.textValue && b.textValue.trim().length > 0
+        );
+        const textVal = firstTextBlock?.textValue?.trim() || '';
+        const autoDescription = textVal
+          ? textVal.slice(0, 140) + (textVal.length > 140 ? '...' : '')
+          : 'Materi pembelajaran interaktif Sitemsa.';
+
+        onSave(
+          {
+            title: moduleTitle,
+            subject: subjectName,
+            level: moduleLevel,
+            duration: moduleDuration,
+            topics: moduleTopics,
+            description: autoDescription,
+            isPublished: true,
+            quizSource: evaluationType
+              ? {
+                  type: evaluationType,
+                  title: evalTitle || 'Kuis Evaluasi Materi',
+                  externalUrl: evalUrl,
+                  qrImageUrl: evalQrUrl,
+                }
+              : undefined,
+          },
+          blocks
+        );
+
+        setIsPublishing(false);
+        setShowPublishModal(false);
+        setShowSuccessModal(true);
+      });
     } else {
+      const firstTextBlock = blocks.find(
+        (b) => b.type === 'text' && b.textValue && b.textValue.trim().length > 0
+      );
+      const textVal = firstTextBlock?.textValue?.trim() || '';
+      const autoDescription = textVal
+        ? textVal.slice(0, 140) + (textVal.length > 140 ? '...' : '')
+        : 'Materi pembelajaran interaktif Sitemsa.';
+
+      onSave(
+        {
+          title: moduleTitle,
+          subject: subjectName,
+          level: moduleLevel,
+          duration: moduleDuration,
+          topics: moduleTopics,
+          description: autoDescription,
+          isPublished: false,
+          quizSource: evaluationType
+            ? {
+                type: evaluationType,
+                title: evalTitle || 'Kuis Evaluasi Materi',
+                externalUrl: evalUrl,
+                qrImageUrl: evalQrUrl,
+              }
+            : undefined,
+        },
+        blocks
+      );
+      setShowPublishModal(false);
       onClose();
     }
   };
@@ -634,7 +713,7 @@ export function ModuleBlockBuilder({
                 <div>
                   <h3 className="font-bold text-base text-[#2E2D2D]">Kanvas Materi Masih Kosong</h3>
                   <p className="text-xs text-[#737373] mt-1 max-w-sm mx-auto">
-                    Mulai susun modul praktikum dengan memilih jenis elemen dari menu sebelah kanan (Text, Gambar, Video, Lampiran File).
+                    Mulai susun materi praktikum dengan memilih jenis elemen dari menu sebelah kanan (Text, Gambar, Video, Lampiran File).
                   </p>
                 </div>
               </div>
@@ -1377,7 +1456,7 @@ export function ModuleBlockBuilder({
           >
             {/* Modal Header (Title Only, No Border Line, No Subtitle) */}
             <div className="p-5 sm:p-6 pb-2 bg-white flex items-center justify-between shrink-0">
-              <h2 className="text-lg sm:text-xl font-bold text-[#2E2D2D]">Konfirmasi & Publikasi Modul</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-[#2E2D2D]">Konfirmasi & Publikasi Materi</h2>
               <button
                 type="button"
                 onClick={() => setShowPublishModal(false)}
@@ -1390,9 +1469,22 @@ export function ModuleBlockBuilder({
             {/* Modal Body */}
             <div className="p-6 pt-2 overflow-y-auto space-y-5 flex-1 text-xs">
 
-              {/* 1. JUDUL MODUL MATERI (READ-ONLY) */}
+              {/* WARNING BANNER IF NO TEXT SECTION WITH CONTENT IS PRESENT */}
+              {!hasValidTextContent && (
+                <div className="p-3.5 rounded-[10px] bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium flex items-start gap-2.5 shadow-2xs">
+                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <div className="space-y-0.5">
+                    <p className="font-bold text-amber-900">Materi belum memenuhi syarat publikasi</p>
+                    <p className="text-[11px] text-amber-700 leading-relaxed">
+                      Minimal harus terdapat 1 Section Teks yang terisi materi pembelajaran untuk dapat mempublikasikannya. Anda hanya dapat menyimpan sebagai draft.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* 1. JUDUL MATERI (READ-ONLY) */}
               <div className="space-y-1.5">
-                <label className="font-bold text-xs text-[#2E2D2D] block">Judul Modul Materi</label>
+                <label className="font-bold text-xs text-[#2E2D2D] block">Judul Materi</label>
                 <input
                   type="text"
                   value={moduleTitle}
@@ -1707,16 +1799,30 @@ export function ModuleBlockBuilder({
                 }}
                 className="px-5 py-2.5 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-xs font-bold text-[#2E2D2D] transition-colors cursor-pointer"
               >
-                Simpan Draft
+                Simpan Draft Materi
               </button>
               <button
                 type="button"
+                disabled={!hasValidTextContent || isPublishing}
                 onClick={() => {
+                  if (!hasValidTextContent || isPublishing) return;
                   handleSaveModuleConfirm(true);
                 }}
-                className="px-6 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-xs font-bold text-white shadow-xs transition-colors cursor-pointer"
+                className={`px-6 py-2.5 rounded-[8px] text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                  hasValidTextContent && !isPublishing
+                    ? 'bg-[#2563EB] hover:bg-blue-700 text-white shadow-xs cursor-pointer'
+                    : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+                }`}
+                title={!hasValidTextContent ? 'Lengkapi minimal 1 section teks materi untuk mempublikasikannya' : undefined}
               >
-                Publish Modul
+                {isPublishing ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-white shrink-0" />
+                    <span>Menerbitkan Materi...</span>
+                  </>
+                ) : (
+                  <span>Publish Materi</span>
+                )}
               </button>
             </div>
           </div>
@@ -1730,18 +1836,18 @@ export function ModuleBlockBuilder({
             onClick={(e) => e.stopPropagation()}
             className="bg-white w-full max-w-md rounded-[16px] border border-[#ECECEC] p-6 text-center space-y-5 shadow-2xl animate-in zoom-in-95 duration-200"
           >
-            <div className="w-48 h-48 mx-auto relative flex items-center justify-center">
+            <div className="w-48 h-48 mx-auto relative flex items-center justify-center overflow-hidden">
               <iframe
-                src="https://lottie.host/embed/67d35880-5f9d-4309-bee5-04db1bb3f075/b7nNeNfkhM.lottie"
+                src="https://lottie.host/embed/878825de-212a-443e-89a9-c5573cfe890b/3v8OMNEl30.lottie"
                 className="w-full h-full border-0 pointer-events-none"
-                title="Publish Success Animation"
+                title="Publish Success Lottie Animation"
               />
             </div>
 
             <div className="space-y-2">
-              <h3 className="font-bold text-lg text-[#2E2D2D]">Modul Berhasil Dipublikasikan!</h3>
+              <h3 className="font-bold text-lg text-[#2E2D2D]">Materi Berhasil Dipublikasikan!</h3>
               <p className="text-xs text-[#737373] leading-relaxed max-w-xs mx-auto">
-                Modul materi ini sekarang telah aktif dan dapat diakses oleh seluruh siswa di platform Sitemsa.
+                Materi pembelajaran ini sekarang telah aktif dan dapat diakses oleh seluruh siswa di platform Sitemsa.
               </p>
             </div>
 

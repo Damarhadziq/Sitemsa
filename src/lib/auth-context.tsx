@@ -74,6 +74,8 @@ const STUDENT_USER: AuthUser = {
   avatar: 'https://i.pravatar.cc/150?img=12',
 };
 
+const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -83,49 +85,104 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [activeSubjectFilter, setActiveSubjectFilter] = useState<string>('');
   const router = useRouter();
 
-  useEffect(() => {
-    // Sync session on client mount after hydration
-    const savedUser = localStorage.getItem('sintesa_user');
-    if (savedUser) {
-      try {
-        const parsed = JSON.parse(savedUser) as AuthUser;
-        setUser(parsed);
-        if (parsed.role === 'guru' && parsed.assignedSubjects && parsed.assignedSubjects.length > 0) {
-          setActiveSubjectFilter(parsed.assignedSubjects[0]);
-        }
-      } catch {
-        setUser(null);
-      }
-    } else if (typeof window !== 'undefined') {
-      if (window.location.pathname.startsWith('/admin/superadmin')) {
-        setUser(SUPERADMIN_USER);
-        localStorage.setItem('sintesa_user', JSON.stringify(SUPERADMIN_USER));
-      } else if (window.location.pathname.startsWith('/admin/guru')) {
-        const teacher = TEACHER_USERS['budi.guru@sintesa.id'];
-        setUser(teacher);
-        localStorage.setItem('sintesa_user', JSON.stringify(teacher));
-        if (teacher.assignedSubjects && teacher.assignedSubjects.length > 0) {
-          setActiveSubjectFilter(teacher.assignedSubjects[0]);
-        }
-      }
-    }
-    setIsLoading(false);
-  }, []);
-
+  // Save / Clear session helper
   const saveSession = (u: AuthUser | null) => {
     setUser(u);
+    if (typeof window === 'undefined') return;
+
     if (u) {
+      const now = Date.now();
       localStorage.setItem('sintesa_user', JSON.stringify(u));
-      document.cookie = `auth_admin=${u.role}; path=/`;
+      localStorage.setItem('sintesa_last_active', now.toString());
+
+      if (u.role === 'superadmin' || u.role === 'guru') {
+        document.cookie = `auth_admin=${u.role}; path=/; max-age=604800; SameSite=Lax`;
+        document.cookie = 'auth_student=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0;';
+        document.cookie = 'auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0;';
+      } else {
+        document.cookie = 'auth_student=siswa; path=/; max-age=604800; SameSite=Lax';
+        document.cookie = 'auth=true; path=/; max-age=604800; SameSite=Lax';
+        document.cookie = 'auth_admin=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0;';
+      }
+
       if (u.role === 'guru' && u.assignedSubjects && u.assignedSubjects.length > 0) {
         setActiveSubjectFilter(u.assignedSubjects[0]);
       }
     } else {
       localStorage.removeItem('sintesa_user');
-      document.cookie = 'auth_admin=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      localStorage.removeItem('sintesa_last_active');
+      document.cookie = 'auth_admin=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0;';
+      document.cookie = 'auth_student=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0;';
+      document.cookie = 'auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0;';
       setActiveSubjectFilter('');
     }
   };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // Check saved session & 1-week inactivity timeout
+    const savedUserStr = localStorage.getItem('sintesa_user');
+    const lastActiveStr = localStorage.getItem('sintesa_last_active');
+    const now = Date.now();
+
+    if (savedUserStr) {
+      try {
+        const parsed = JSON.parse(savedUserStr) as AuthUser;
+
+        // Check if device has not accessed web for > 1 week (7 days)
+        if (lastActiveStr) {
+          const lastActiveTime = parseInt(lastActiveStr, 10);
+          if (!isNaN(lastActiveTime) && now - lastActiveTime > ONE_WEEK_MS) {
+            console.warn('Sesi berakhir: Perangkat tidak mengakses web selama 1 minggu.');
+            saveSession(null);
+            setIsLoading(false);
+            return;
+          }
+        }
+
+        // Active session within 1 week -> Restore user and refresh last active timestamp
+        setUser(parsed);
+        localStorage.setItem('sintesa_last_active', now.toString());
+
+        if (parsed.role === 'guru' && parsed.assignedSubjects && parsed.assignedSubjects.length > 0) {
+          setActiveSubjectFilter(parsed.assignedSubjects[0]);
+        }
+      } catch {
+        saveSession(null);
+      }
+    } else {
+      // Require explicit login via login form (NO AUTO-LOGIN BACKDOOR!)
+      setUser(null);
+    }
+
+    setIsLoading(false);
+  }, []);
+
+  // Activity listener to refresh 1-week inactivity timer when user interacts with web
+  useEffect(() => {
+    if (!user || typeof window === 'undefined') return;
+
+    let lastUpdate = Date.now();
+    const handleUserActivity = () => {
+      const now = Date.now();
+      // Throttle updates to once every 1 minute
+      if (now - lastUpdate > 60000) {
+        lastUpdate = now;
+        localStorage.setItem('sintesa_last_active', now.toString());
+      }
+    };
+
+    window.addEventListener('mousedown', handleUserActivity);
+    window.addEventListener('keydown', handleUserActivity);
+    window.addEventListener('touchstart', handleUserActivity);
+
+    return () => {
+      window.removeEventListener('mousedown', handleUserActivity);
+      window.removeEventListener('keydown', handleUserActivity);
+      window.removeEventListener('touchstart', handleUserActivity);
+    };
+  }, [user]);
 
   const loginAsSuperadmin = () => {
     saveSession(SUPERADMIN_USER);
@@ -170,9 +227,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
-    const prevRole = user?.role;
+    const currentRole = user?.role;
     saveSession(null);
-    if (prevRole === 'superadmin' || prevRole === 'guru') {
+
+    if (currentRole === 'superadmin' || currentRole === 'guru') {
       router.push('/admin/login');
     } else {
       router.push('/login');

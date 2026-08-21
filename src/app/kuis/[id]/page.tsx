@@ -8,10 +8,10 @@ export default async function QuizPage({
 }) {
   const { id } = await params;
   void id;
-  
+
   return (
     <div className="flex flex-col min-h-screen">
-      <QuizHeader />
+      <QuizHeader exitUrl="/admin/guru/pelajaran" />
       <QuestionArea />
     </div>
   );

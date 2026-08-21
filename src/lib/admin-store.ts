@@ -136,12 +136,12 @@ interface AdminStoreState {
   updateSubject: (id: string, subject: Partial<SubjectItem>) => void;
 
   // Actions - Modules (Admin Guru & Superadmin)
-  addModule: (module: Omit<ModuleItem, 'id' | 'createdAt'>) => void;
+  addModule: (module: Omit<ModuleItem, 'id' | 'createdAt'>) => string;
   updateModule: (id: string, module: Partial<ModuleItem>) => void;
   deleteModule: (id: string) => void;
 
   // Actions - Quizzes (Admin Guru & Superadmin)
-  addQuiz: (quiz: Omit<QuizItem, 'id' | 'createdAt'>) => void;
+  addQuiz: (quiz: Omit<QuizItem, 'id' | 'createdAt'>) => string;
   updateQuiz: (id: string, quiz: Partial<QuizItem>) => void;
   deleteQuiz: (id: string) => void;
 
@@ -728,17 +728,20 @@ export const useAdminStore = create<AdminStoreState>((set) => ({
     })),
 
   // Module Actions
-  addModule: (moduleData) =>
+  addModule: (moduleData) => {
+    const newId = `mod-${Date.now()}`;
     set((state) => ({
       modules: [
         {
           ...moduleData,
-          id: `mod-${Date.now()}`,
+          id: newId,
           createdAt: new Date().toISOString().split('T')[0],
         },
         ...state.modules,
       ],
-    })),
+    }));
+    return newId;
+  },
 
   updateModule: (id, updatedFields) =>
     set((state) => ({
@@ -751,17 +754,20 @@ export const useAdminStore = create<AdminStoreState>((set) => ({
     })),
 
   // Quiz Actions
-  addQuiz: (quizData) =>
+  addQuiz: (quizData) => {
+    const newId = `qz-${Date.now()}`;
     set((state) => ({
       quizzes: [
         {
           ...quizData,
-          id: `qz-${Date.now()}`,
+          id: newId,
           createdAt: new Date().toISOString().split('T')[0],
         },
         ...state.quizzes,
       ],
-    })),
+    }));
+    return newId;
+  },
 
   updateQuiz: (id, updatedFields) =>
     set((state) => ({

@@ -121,8 +121,7 @@ export default function TeamPage() {
       <main className="flex-1 max-w-7xl mx-auto px-6 lg:px-12 pt-28 pb-20 w-full">
         {/* HEADER SECTION */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-[#2563EB] text-xs font-semibold mb-5 shadow-2xs">
-            <Sparkles className="w-3.5 h-3.5 text-[#2563EB]" />
+          <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-50 via-indigo-50/70 to-blue-50/90 border border-blue-100/90 text-[#2563EB] text-xs font-bold mb-5 shadow-2xs">
             <span>Meet The Minds</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-semibold text-[#2E2D2D] mb-4 tracking-tight">

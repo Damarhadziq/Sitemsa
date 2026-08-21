@@ -13,6 +13,7 @@ import {
   ChevronRight,
   FileCode,
   Play,
+  Plus,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useAdminStore } from '@/lib/admin-store';
@@ -29,8 +30,10 @@ export function AdminSidebar() {
   const assignedSubjects = user?.assignedSubjects || ['Informatika'];
   const currentSubject = activeSubjectFilter || assignedSubjects[0] || 'Informatika';
 
-  // State for collapsible tree in sidebar
+  // State for collapsible tree & sub-tree nodes in sidebar
   const [isTreeExpanded, setIsTreeExpanded] = useState(true);
+  const [isMateriExpanded, setIsMateriExpanded] = useState(true);
+  const [isKuisExpanded, setIsKuisExpanded] = useState(true);
 
   // Filter modules & quizzes for active subject
   const currentModules = modules.filter((m) => m.subject === currentSubject);
@@ -115,7 +118,7 @@ export function AdminSidebar() {
                     className="flex-1 flex items-center gap-3 font-bold text-xs cursor-pointer truncate"
                   >
                     <BookOpen className={`w-4 h-4 shrink-0 transition-colors ${isLandingActive ? 'text-[#2563EB]' : 'text-[#737373] group-hover:text-[#2563EB]'}`} />
-                    <span className="truncate">Modul & Kuis</span>
+                    <span className="truncate">Materi & Kuis</span>
                   </Link>
 
                   <button
@@ -137,48 +140,86 @@ export function AdminSidebar() {
                     
                     {/* TREE NODE 1: MATERI */}
                     <div className="space-y-1">
-                      <div className="flex items-center gap-1.5 px-2 text-xs font-semibold text-[#737373]">
-                        <ChevronDown className="w-3.5 h-3.5 text-[#2563EB]" />
-                        <span>Materi</span>
-                        <span className="w-3.5 h-3.5 rounded-[2px] bg-blue-50 text-[#2563EB] text-[9px] font-bold flex items-center justify-center shrink-0 ml-0.5">
-                          {currentModules.length}
-                        </span>
+                      <div className="flex items-center justify-between px-2 py-1 text-xs font-semibold text-[#737373] hover:text-[#2E2D2D] rounded-[6px] transition-colors group select-none">
+                        <button
+                          type="button"
+                          onClick={() => setIsMateriExpanded(!isMateriExpanded)}
+                          className="flex items-center gap-1.5 cursor-pointer flex-1 min-w-0 text-left"
+                        >
+                          {isMateriExpanded ? (
+                            <ChevronDown className="w-3.5 h-3.5 text-[#2563EB] shrink-0" />
+                          ) : (
+                            <ChevronRight className="w-3.5 h-3.5 text-[#737373] group-hover:text-[#2563EB] shrink-0" />
+                          )}
+                          <span className="truncate">Materi</span>
+                          <span className="w-3.5 h-3.5 rounded-[2px] bg-blue-50 text-[#2563EB] text-[9px] font-bold flex items-center justify-center shrink-0 ml-0.5">
+                            {currentModules.length}
+                          </span>
+                        </button>
+
+                        <Link
+                          href="/admin/guru/pelajaran?action=add-materi"
+                          className="p-1 rounded-[4px] text-[#737373] hover:text-[#2563EB] hover:bg-blue-50 transition-colors shrink-0 cursor-pointer"
+                          title="Tambah Materi Baru"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                        </Link>
                       </div>
 
-                      <div className="pl-3 space-y-1 border-l border-slate-200/80 ml-2">
-                        {currentModules.map((mod) => {
-                          const isItemActive = currentItemParam === mod.id;
+                      {isMateriExpanded && (
+                        <div className="pl-3 space-y-1 border-l border-slate-200/80 ml-2 animate-in fade-in slide-in-from-top-1 duration-150">
+                          {currentModules.map((mod) => {
+                            const isItemActive = currentItemParam === mod.id;
 
-                          return (
-                            <Link
-                              key={mod.id}
-                              href={`/admin/guru/pelajaran?item=${mod.id}`}
-                              className={`flex items-center gap-2 px-2.5 py-1.5 rounded-[6px] text-xs transition-all truncate group ${
-                                isItemActive
-                                  ? 'bg-blue-50/80 text-[#2563EB] font-bold'
-                                  : 'text-[#737373] hover:text-[#2563EB] hover:bg-slate-50 font-medium'
-                              }`}
-                            >
-                              <FileCode className={`w-3.5 h-3.5 shrink-0 transition-colors ${isItemActive ? 'text-[#2563EB]' : 'text-[#737373] group-hover:text-[#2563EB]'}`} />
-                              <span className="truncate">{mod.title}</span>
-                            </Link>
-                          );
-                        })}
-                      </div>
+                            return (
+                              <Link
+                                key={mod.id}
+                                href={`/admin/guru/pelajaran?item=${mod.id}`}
+                                className={`flex items-center gap-2 px-2.5 py-1.5 rounded-[6px] text-xs transition-all truncate group ${
+                                  isItemActive
+                                    ? 'bg-blue-50/80 text-[#2563EB] font-bold'
+                                    : 'text-[#737373] hover:text-[#2563EB] hover:bg-slate-50 font-medium'
+                                }`}
+                              >
+                                <FileCode className={`w-3.5 h-3.5 shrink-0 transition-colors ${isItemActive ? 'text-[#2563EB]' : 'text-[#737373] group-hover:text-[#2563EB]'}`} />
+                                <span className="truncate">{mod.title}</span>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
 
                     {/* TREE NODE 2: KUIS */}
-                    {currentQuizzes.length > 0 && (
-                      <div className="space-y-1 pt-1">
-                        <div className="flex items-center gap-1.5 px-2 text-xs font-semibold text-[#737373]">
-                          <ChevronDown className="w-3.5 h-3.5 text-indigo-600" />
-                          <span>Kuis</span>
+                    <div className="space-y-1 pt-1">
+                      <div className="flex items-center justify-between px-2 py-1 text-xs font-semibold text-[#737373] hover:text-[#2E2D2D] rounded-[6px] transition-colors group select-none">
+                        <button
+                          type="button"
+                          onClick={() => setIsKuisExpanded(!isKuisExpanded)}
+                          className="flex items-center gap-1.5 cursor-pointer flex-1 min-w-0 text-left"
+                        >
+                          {isKuisExpanded ? (
+                            <ChevronDown className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                          ) : (
+                            <ChevronRight className="w-3.5 h-3.5 text-[#737373] group-hover:text-indigo-600 shrink-0" />
+                          )}
+                          <span className="truncate">Kuis</span>
                           <span className="w-3.5 h-3.5 rounded-[2px] bg-indigo-50 text-indigo-600 text-[9px] font-bold flex items-center justify-center shrink-0 ml-0.5">
                             {currentQuizzes.length}
                           </span>
-                        </div>
+                        </button>
 
-                        <div className="pl-3 space-y-1 border-l border-indigo-200 ml-2">
+                        <Link
+                          href="/admin/guru/pelajaran?action=add-kuis"
+                          className="p-1 rounded-[4px] text-[#737373] hover:text-indigo-600 hover:bg-indigo-50 transition-colors shrink-0 cursor-pointer"
+                          title="Tambah Kuis Baru"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                        </Link>
+                      </div>
+
+                      {isKuisExpanded && currentQuizzes.length > 0 && (
+                        <div className="pl-3 space-y-1 border-l border-indigo-200 ml-2 animate-in fade-in slide-in-from-top-1 duration-150">
                           {currentQuizzes.map((qz) => {
                             const isQuizActive = currentItemParam === qz.id;
 
@@ -198,8 +239,8 @@ export function AdminSidebar() {
                             );
                           })}
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
 
                   </div>
                 )}

@@ -135,31 +135,21 @@
   scrollbar-color: #D4D3FF transparent;
 }
 
-/* Modal open: kill global scrollbar & scrollbar-gutter entirely */
+/* Modal open: kill global scrollbar when explicitly modal-open */
 html.modal-open,
-body.modal-open,
-html:has(.fixed.inset-0),
-body:has(.fixed.inset-0),
-html:has([role="dialog"]),
-body:has([role="dialog"]) {
+body.modal-open {
   overflow: hidden !important;
   scrollbar-gutter: auto !important;
 }
 
 html.modal-open::-webkit-scrollbar,
-body.modal-open::-webkit-scrollbar,
-html:has(.fixed.inset-0)::-webkit-scrollbar,
-body:has(.fixed.inset-0)::-webkit-scrollbar,
-html:has([role="dialog"])::-webkit-scrollbar,
-body:has([role="dialog"])::-webkit-scrollbar {
+body.modal-open::-webkit-scrollbar {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
 }
 
 html.modal-open,
-body.modal-open,
-html:has(.fixed.inset-0),
-body:has(.fixed.inset-0) {
+body.modal-open {
   scrollbar-width: none !important;
 }

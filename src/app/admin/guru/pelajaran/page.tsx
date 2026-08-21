@@ -26,9 +26,14 @@ import {
   Copy,
   Check,
   MoreVertical,
+  FileSpreadsheet,
+  UploadCloud,
+  Edit3,
+  Upload,
+  Info,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
-import { useAdminStore, ModuleItem } from '@/lib/admin-store';
+import { useAdminStore, ModuleItem, QuizQuestion } from '@/lib/admin-store';
 import ModuleBlockBuilder, { CanvasBlock } from '@/components/admin/ModuleBlockBuilder';
 import { Tooltip } from '@/components/ui/tooltip';
 
@@ -138,7 +143,7 @@ export default function AdminGuruPelajaranPage() {
   const itemIdParam = searchParams.get('item');
 
   const { user, activeSubjectFilter } = useAuth();
-  const { modules, quizzes, addModule, deleteModule } = useAdminStore();
+  const { modules, quizzes, addModule, updateModule, deleteModule, addQuiz, deleteQuiz } = useAdminStore();
 
   const assignedSubjects = user?.assignedSubjects || ['Informatika'];
   const currentSubject = activeSubjectFilter || assignedSubjects[0] || 'Informatika';
@@ -148,6 +153,7 @@ export default function AdminGuruPelajaranPage() {
 
   // Selected item ID from query param (null = Landing Overview mode)
   const selectedItemId = itemIdParam || null;
+  const actionParam = searchParams.get('action');
 
   const selectedModule = selectedItemId ? subjectModules.find((m) => m.id === selectedItemId) : null;
   const selectedQuiz = selectedItemId ? subjectQuizzes.find((q) => q.id === selectedItemId) : null;
@@ -162,6 +168,63 @@ export default function AdminGuruPelajaranPage() {
     }, 300);
     return () => clearTimeout(timer);
   }, [selectedItemId, currentSubject]);
+
+  // TOAST NOTIFICATION & NEW ITEM HIGHLIGHT STATES
+  const [toast, setToast] = useState<{ message: React.ReactNode; type: 'success' | 'info' | 'warning' } | null>(null);
+  const [toastExiting, setToastExiting] = useState(false);
+  const [newlyAddedMateriId, setNewlyAddedMateriId] = useState<string | null>(null);
+  const [newlyAddedQuizId, setNewlyAddedQuizId] = useState<string | null>(null);
+  const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const dismissToast = () => {
+    setToastExiting(true);
+    setTimeout(() => {
+      setToast(null);
+      setToastExiting(false);
+    }, 300);
+  };
+
+  const showToast = (message: React.ReactNode, type: 'success' | 'info' | 'warning' = 'success') => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setToastExiting(false);
+    setToast({ message, type });
+    toastTimerRef.current = setTimeout(() => dismissToast(), 4000);
+  };
+
+  // ADD QUIZ CHOICE MODAL STATES
+  const [showAddQuizModal, setShowAddQuizModal] = useState(false);
+  const [quizModalStep, setQuizModalStep] = useState<'choice' | 'template' | 'manual'>('choice');
+  const [uploadedFile, setUploadedFile] = useState<{ name: string; size: string; questionCount: number } | null>(null);
+
+  // Manual Quiz Form States
+  const [manualQuizTitle, setManualQuizTitle] = useState('');
+  const [manualQuizDuration, setManualQuizDuration] = useState('15 Menit');
+  const [manualQuizPassScore, setManualQuizPassScore] = useState('75');
+  const [manualQuestions, setManualQuestions] = useState<
+    { text: string; options: string[]; correctAnswer: number }[]
+  >([
+    {
+      text: 'Tipe data mana yang digunakan untuk menyimpan nilai kebenaran (True/False)?',
+      options: ['Integer', 'String', 'Boolean', 'Float'],
+      correctAnswer: 2,
+    },
+    {
+      text: 'Manakah operator yang digunakan untuk mengecek kesamaan nilai dan tipe data dalam JavaScript?',
+      options: ['==', '=', '===', '!='],
+      correctAnswer: 2,
+    },
+  ]);
+
+  // Handle action parameter from query string (e.g. sidebar + button click)
+  useEffect(() => {
+    if (actionParam === 'add-materi') {
+      handleOpenBlockBuilder();
+    } else if (actionParam === 'add-kuis') {
+      setShowAddQuizModal(true);
+      setQuizModalStep('choice');
+      setUploadedFile(null);
+    }
+  }, [actionParam]);
 
   // DRIBBBLE BLOCK BUILDER MODAL STATE
   const [showBlockBuilder, setShowBlockBuilder] = useState(false);
@@ -179,26 +242,37 @@ export default function AdminGuruPelajaranPage() {
     blocks: CanvasBlock[]
   ) => {
     if (editingModule) {
-      // Edit existing module
+      updateModule(editingModule.id, {
+        title: moduleData.title || editingModule.title,
+        description: moduleData.description || editingModule.description,
+      });
+      showToast(<>Perubahan materi <span className="font-bold">{moduleData.title || editingModule.title}</span> berhasil disimpan!</>, 'info');
     } else {
-      addModule({
+      const newId = addModule({
         subject: currentSubject,
-        title: moduleData.title || 'Modul Materi Baru',
+        title: moduleData.title || 'Materi Baru',
         level: moduleData.level || 'Pemula',
         duration: moduleData.duration || '30 Menit',
         topics: ['Materi Sintesa', 'Praktikum'],
-        description: blocks.find((b) => b.type === 'text')?.textValue || 'Deskripsi modul materi.',
+        description: moduleData.description || 'Deskripsi materi pembelajaran.',
         teacherId: user?.id || 't-1',
         teacherName: user?.name || 'Pak Budi Prasetyo, M.Kom.',
+        isPublished: moduleData.isPublished ?? true,
       });
+
+      setNewlyAddedMateriId(newId);
+      setTimeout(() => setNewlyAddedMateriId(null), 5000);
+
+      const statusText = moduleData.isPublished ? 'dipublikasikan' : 'disimpan sebagai draft';
+      showToast(<>Materi <span className="font-bold">{moduleData.title || 'Materi Baru'}</span> berhasil {statusText}!</>, 'success');
     }
   };
 
-  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string; type?: 'materi' | 'kuis' } | null>(null);
   const [showQrModal, setShowQrModal] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
-  const isAnyModalOpen = showBlockBuilder || showQrModal || !!deleteTarget;
+  const isAnyModalOpen = showBlockBuilder || showQrModal || !!deleteTarget || showAddQuizModal;
 
   useEffect(() => {
     if (isAnyModalOpen) {
@@ -214,15 +288,212 @@ export default function AdminGuruPelajaranPage() {
     };
   }, [isAnyModalOpen]);
 
-  const handleDeleteModuleItem = (id: string, title: string) => {
-    setDeleteTarget({ id, title });
+  const handleDeleteModuleItem = (id: string, title: string, type: 'materi' | 'kuis' = 'materi') => {
+    setDeleteTarget({ id, title, type });
   };
 
   const confirmDeleteModule = () => {
     if (deleteTarget) {
-      deleteModule(deleteTarget.id);
+      const wasViewingDeletedItem = selectedItemId === deleteTarget.id;
+
+      if (deleteTarget.type === 'kuis') {
+        deleteQuiz(deleteTarget.id);
+        showToast(<>Kuis <span className="font-bold">{deleteTarget.title}</span> berhasil dihapus.</>, 'warning');
+      } else {
+        deleteModule(deleteTarget.id);
+        showToast(<>Materi <span className="font-bold">{deleteTarget.title}</span> berhasil dihapus.</>, 'warning');
+      }
       setDeleteTarget(null);
+
+      // If we were viewing the deleted item's detail, go back to overview
+      if (wasViewingDeletedItem) {
+        router.push('/admin/guru/pelajaran');
+      }
     }
+  };
+
+  // Download Sample Quiz Template File (Real Excel XML Table format with 8 separate columns A-H)
+  const handleDownloadQuizTemplate = () => {
+    const excelTable = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+      <head>
+      <!--[if gte mso 9]>
+      <xml>
+       <x:ExcelWorkbook>
+        <x:ExcelWorksheets>
+         <x:ExcelWorksheet>
+          <x:Name>Template Kuis Sitemsa</x:Name>
+          <x:WorksheetOptions>
+           <x:DisplayGridlines/>
+          </x:WorksheetOptions>
+         </x:ExcelWorksheet>
+        </x:ExcelWorksheets>
+       </x:ExcelWorkbook>
+      </xml>
+      <![endif]-->
+      <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+      <style>
+        table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; }
+        th { background-color: #2563EB; color: #ffffff; font-weight: bold; padding: 10px 14px; border: 1px solid #cbd5e1; text-align: left; font-size: 13px; }
+        td { padding: 8px 12px; border: 1px solid #cbd5e1; color: #1e293b; vertical-align: top; font-size: 12px; }
+        .center { text-align: center; }
+      </style>
+      </head>
+      <body>
+      <table>
+        <thead>
+          <tr>
+            <th class="center">No</th>
+            <th>Soal Pertanyaan</th>
+            <th>Pilihan A</th>
+            <th>Pilihan B</th>
+            <th>Pilihan C</th>
+            <th>Pilihan D</th>
+            <th class="center">Kunci Jawaban (A/B/C/D)</th>
+            <th>Pembahasan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="center">1</td>
+            <td>Manakah tipe data yang digunakan untuk menyimpan nilai kebenaran (True/False)?</td>
+            <td>Integer</td>
+            <td>String</td>
+            <td>Boolean</td>
+            <td>Float</td>
+            <td class="center">C</td>
+            <td>Boolean hanya menyimpan nilai True atau False.</td>
+          </tr>
+          <tr>
+            <td class="center">2</td>
+            <td>Manakah operator yang digunakan untuk mengecek kesamaan nilai dan tipe data dalam JavaScript?</td>
+            <td>==</td>
+            <td>=</td>
+            <td>===</td>
+            <td>!=</td>
+            <td class="center">C</td>
+            <td>Operator === mengecek strict equality (nilai & tipe data).</td>
+          </tr>
+          <tr>
+            <td class="center">3</td>
+            <td>Instruksi perulangan yang pasti mengeksekusi blok minimal satu kali adalah...</td>
+            <td>For Loop</td>
+            <td>Do-While Loop</td>
+            <td>While Loop</td>
+            <td>ForEach</td>
+            <td class="center">B</td>
+            <td>Do-While mengevaluasi kondisi di akhir blok perulangan.</td>
+          </tr>
+        </tbody>
+      </table>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob([excelTable], { type: 'application/vnd.ms-excel;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Template_Format_Kuis_Sitemsa_${currentSubject}.xls`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast(`Template format kuis (.xls) berhasil diunduh!`, 'info');
+  };
+
+  // Confirm Template Import Quiz
+  const handleConfirmTemplateImport = () => {
+    const quizTitle = uploadedFile
+      ? `Kuis ${uploadedFile.name.replace(/\.[^/.]+$/, '')}`
+      : `Kuis Evaluasi ${currentSubject}`;
+
+    const newQuizId = addQuiz({
+      subject: currentSubject,
+      title: quizTitle,
+      duration: '20 Menit',
+      passScore: 80,
+      questionCount: 3,
+      teacherId: user?.id || 't-1',
+      teacherName: user?.name || 'Pak Budi Prasetyo, M.Kom.',
+      published: true,
+      questions: [
+        {
+          id: `q-imp-1-${Date.now()}`,
+          text: 'Manakah tipe data yang digunakan untuk menyimpan nilai kebenaran (True/False)?',
+          options: ['Integer', 'String', 'Boolean', 'Float'],
+          correctAnswer: 2,
+          explanation: 'Boolean hanya memiliki 2 nilai yaitu true (benar) atau false (salah).',
+        },
+        {
+          id: `q-imp-2-${Date.now()}`,
+          text: 'Manakah operator yang digunakan untuk mengecek kesamaan nilai dan tipe data dalam JavaScript?',
+          options: ['==', '=', '===', '!='],
+          correctAnswer: 2,
+          explanation: 'Operator === mengecek kesamaan nilai sekaligus tipe datanya (strict equality).',
+        },
+        {
+          id: `q-imp-3-${Date.now()}`,
+          text: 'Instruksi perulangan yang pasti mengeksekusi blok minimal satu kali adalah...',
+          options: ['For Loop', 'Do-While Loop', 'While Loop', 'ForEach'],
+          correctAnswer: 1,
+          explanation: 'Do-while mengevaluasi kondisi di akhir blok.',
+        },
+      ],
+    });
+
+    setNewlyAddedQuizId(newQuizId);
+    setTimeout(() => setNewlyAddedQuizId(null), 5000);
+    showToast(<>Template kuis <span className="font-bold">{quizTitle}</span> berhasil diimpor & ditambahkan!</>, 'success');
+
+    setShowAddQuizModal(false);
+    setQuizModalStep('choice');
+    setUploadedFile(null);
+  };
+
+  // Confirm Manual Quiz Creation
+  const handleConfirmManualQuiz = () => {
+    if (!manualQuizTitle.trim()) {
+      alert('Judul kuis tidak boleh kosong.');
+      return;
+    }
+
+    const newQuizId = addQuiz({
+      subject: currentSubject,
+      title: manualQuizTitle.trim(),
+      duration: manualQuizDuration || '15 Menit',
+      passScore: parseInt(manualQuizPassScore, 10) || 75,
+      questionCount: manualQuestions.length,
+      teacherId: user?.id || 't-1',
+      teacherName: user?.name || 'Pak Budi Prasetyo, M.Kom.',
+      published: true,
+      questions: manualQuestions.map((q, idx) => ({
+        id: `q-man-${idx}-${Date.now()}`,
+        text: q.text || `Soal ${idx + 1}`,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        explanation: 'Soal kuis evaluasi manual pengajar.',
+      })),
+    });
+
+    setNewlyAddedQuizId(newQuizId);
+    setTimeout(() => setNewlyAddedQuizId(null), 5000);
+    showToast(<>Kuis manual <span className="font-bold">{manualQuizTitle.trim()}</span> berhasil dibuat!</>, 'success');
+
+    setShowAddQuizModal(false);
+    setQuizModalStep('choice');
+    setManualQuizTitle('');
+  };
+
+  // Simulate Template File Upload
+  const handleSimulateTemplateUpload = (file?: File) => {
+    const fileName = file ? file.name : `Template_Kuis_${currentSubject}_Sitemsa.xlsx`;
+    setUploadedFile({
+      name: fileName,
+      size: file ? `${(file.size / 1024).toFixed(1)} KB` : '24.5 KB',
+      questionCount: 3,
+    });
+    showToast(`Berkas template (${fileName}) berhasil terverifikasi!`, 'info');
   };
 
   // Access frequency data for Line Chart 1
@@ -275,7 +546,7 @@ export default function AdminGuruPelajaranPage() {
                 ? selectedModule.title
                 : selectedQuiz
                 ? selectedQuiz.title
-                : `Modul & Kuis ${currentSubject}`}
+                : `Materi & Kuis ${currentSubject}`}
             </h1>
           )}
         </div>
@@ -289,7 +560,7 @@ export default function AdminGuruPelajaranPage() {
               {/* SHOW "+ Tambah Materi Baru" AND "+ Tambah Kuis Baru" ONLY IN LANDING OVERVIEW MODE */}
               {!selectedItemId && (
                 <div className="flex items-center gap-2">
-                  <Tooltip content="Buat Modul Materi Pembelajaran Baru" side="bottom">
+                  <Tooltip content="Buat Materi Pembelajaran Baru" side="bottom">
                     <button
                       onClick={() => handleOpenBlockBuilder()}
                       className="px-4 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all"
@@ -300,7 +571,11 @@ export default function AdminGuruPelajaranPage() {
                   </Tooltip>
                   <Tooltip content="Buat Kuis & Evaluasi Pembelajaran Baru" side="bottom">
                     <button
-                      onClick={() => handleOpenBlockBuilder()}
+                      onClick={() => {
+                        setShowAddQuizModal(true);
+                        setQuizModalStep('choice');
+                        setUploadedFile(null);
+                      }}
                       className="px-4 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all"
                     >
                       <Plus className="w-4 h-4" />
@@ -325,7 +600,7 @@ export default function AdminGuruPelajaranPage() {
                     </a>
                   </Tooltip>
 
-                  <Tooltip content="Edit Isi & Blok Modul Materi" side="bottom">
+                  <Tooltip content="Edit Isi Materi" side="bottom">
                     <button
                       onClick={() => handleOpenBlockBuilder(selectedModule)}
                       className="px-4 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all duration-200 ease-in-out active:scale-[0.98]"
@@ -335,9 +610,9 @@ export default function AdminGuruPelajaranPage() {
                     </button>
                   </Tooltip>
 
-                  <Tooltip content="Hapus Modul Ini" side="bottom">
+                  <Tooltip content="Hapus Materi Ini" side="bottom">
                     <button
-                      onClick={() => handleDeleteModuleItem(selectedModule.id, selectedModule.title)}
+                      onClick={() => handleDeleteModuleItem(selectedModule.id, selectedModule.title, 'materi')}
                       className="p-2 rounded-[8px] bg-slate-50 hover:bg-rose-50 text-slate-500 hover:text-rose-600 border border-[#ECECEC] transition-all duration-200 ease-in-out cursor-pointer active:scale-[0.96]"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -363,7 +638,11 @@ export default function AdminGuruPelajaranPage() {
 
                   <Tooltip content="Edit Soal & Evaluasi Kuis" side="bottom">
                     <button
-                      onClick={() => handleOpenBlockBuilder()}
+                      onClick={() => {
+                        setShowAddQuizModal(true);
+                        setQuizModalStep('manual');
+                        setManualQuizTitle(selectedQuiz.title);
+                      }}
                       className="px-4 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all duration-200 ease-in-out active:scale-[0.98]"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
@@ -373,7 +652,7 @@ export default function AdminGuruPelajaranPage() {
 
                   <Tooltip content="Hapus Kuis Ini" side="bottom">
                     <button
-                      onClick={() => handleDeleteModuleItem(selectedQuiz.id, selectedQuiz.title)}
+                      onClick={() => handleDeleteModuleItem(selectedQuiz.id, selectedQuiz.title, 'kuis')}
                       className="p-2 rounded-[8px] bg-slate-50 hover:bg-rose-50 text-slate-500 hover:text-rose-600 border border-[#ECECEC] transition-all duration-200 ease-in-out cursor-pointer active:scale-[0.96]"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -421,104 +700,136 @@ export default function AdminGuruPelajaranPage() {
                 {/* MODULES & QUIZZES GRID */}
                 <div className="space-y-6">
                   
-                  {/* SECTION 1: DAFTAR MODUL MATERI */}
+                  {/* SECTION 1: DAFTAR MATERI */}
                   <div className="space-y-4">
                     <div className="flex items-center gap-2.5">
                       <h3 className="text-base font-bold text-[#2E2D2D]">
-                        Daftar Modul Materi
+                        Daftar Materi
                       </h3>
                       <span className="px-2.5 py-0.5 rounded-[6px] bg-[#2563EB] text-white text-xs font-bold">
                         {subjectModules.length} Materi
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {subjectModules.map((mod) => (
-                        <div
-                          key={mod.id}
-                          onClick={() => router.push(`/admin/guru/pelajaran?item=${mod.id}`)}
-                          className="bg-white p-3 pb-4 rounded-[12px] border border-[#ECECEC] hover:border-blue-300 transition-all flex flex-col justify-between space-y-4 group cursor-pointer"
-                        >
-                          <div className="space-y-2.5">
-                            <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-bold text-[#2563EB] bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
-                                {mod.level}
-                              </span>
-
-                              <CardMoreDropdown
-                                itemType="materi"
-                                onPreview={() => window.open(`/materi/${mod.id}`, '_blank')}
-                                onEdit={() => handleOpenBlockBuilder(mod)}
-                                onDelete={() => handleDeleteModuleItem(mod.id, mod.title)}
-                              />
-                            </div>
-
-                            <h4 className="font-bold text-base text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors leading-snug">
-                              {mod.title}
-                            </h4>
-
-                            <p className="text-xs text-[#737373] line-clamp-2 leading-relaxed">
-                              {mod.description}
-                            </p>
-                          </div>
+                    {subjectModules.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-10 text-center">
+                        <div className="w-10 h-10 rounded-full bg-white shadow-2xs border border-slate-100 flex items-center justify-center mb-3">
+                          <BookOpen className="w-5 h-5 text-slate-400" />
                         </div>
-                      ))}
-                    </div>
+                        <h4 className="text-sm font-bold text-slate-700">Belum Ada Materi</h4>
+                        <p className="text-xs text-slate-500 mt-1 max-w-xs">Materi yang ditambahkan pada bidang studi ini akan muncul di sini.</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {subjectModules.map((mod) => {
+                          const isNewlyAdded = mod.id === newlyAddedMateriId;
+                          return (
+                            <div
+                              key={mod.id}
+                              onClick={() => router.push(`/admin/guru/pelajaran?item=${mod.id}`)}
+                              className={`p-3 pb-4 rounded-[12px] border transition-all flex flex-col justify-between space-y-4 group cursor-pointer ${
+                                isNewlyAdded
+                                  ? 'bg-blue-50/50 border-blue-200 animate-pulse'
+                                  : 'bg-white border-[#ECECEC] hover:border-blue-300'
+                              }`}
+                            >
+                              <div className="space-y-2.5">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[10px] font-bold text-[#2563EB] bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
+                                    {mod.level}
+                                  </span>
+
+                                  <CardMoreDropdown
+                                    itemType="materi"
+                                    onPreview={() => window.open(`/materi/${mod.id}`, '_blank')}
+                                    onEdit={() => handleOpenBlockBuilder(mod)}
+                                    onDelete={() => handleDeleteModuleItem(mod.id, mod.title)}
+                                  />
+                                </div>
+
+                                <h4 className="font-bold text-base text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors leading-snug">
+                                  {mod.title}
+                                </h4>
+
+                                <p className="text-xs text-[#737373] line-clamp-2 leading-relaxed">
+                                  {mod.description}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
 
                   {/* SECTION 2: KUIS & EVALUASI */}
-                  {subjectQuizzes.length > 0 && (
-                    <div className="space-y-4 pt-2">
-                      <div className="flex items-center gap-2.5">
-                        <h3 className="text-base font-bold text-[#2E2D2D]">
-                          Kuis & Evaluasi
-                        </h3>
-                        <span className="px-2.5 py-0.5 rounded-[6px] bg-[#2563EB] text-white text-xs font-bold">
-                          {subjectQuizzes.length} Kuis
-                        </span>
+                  <div className="space-y-4 pt-2">
+                    <div className="flex items-center gap-2.5">
+                      <h3 className="text-base font-bold text-[#2E2D2D]">
+                        Kuis & Evaluasi
+                      </h3>
+                      <span className="px-2.5 py-0.5 rounded-[6px] bg-[#2563EB] text-white text-xs font-bold">
+                        {subjectQuizzes.length} Kuis
+                      </span>
+                    </div>
+
+                    {subjectQuizzes.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-10 text-center">
+                        <div className="w-10 h-10 rounded-full bg-white shadow-2xs border border-slate-100 flex items-center justify-center mb-3">
+                          <FileText className="w-5 h-5 text-slate-400" />
+                        </div>
+                        <h4 className="text-sm font-bold text-slate-700">Belum Ada Kuis</h4>
+                        <p className="text-xs text-slate-500 mt-1 max-w-xs">Tambahkan kuis interaktif untuk mengukur tingkat pemahaman siswa.</p>
                       </div>
-
+                    ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {subjectQuizzes.map((qz) => (
-                          <div
-                            key={qz.id}
-                            onClick={() => router.push(`/admin/guru/pelajaran?item=${qz.id}`)}
-                            className="bg-white p-3 pb-4 rounded-[12px] border border-[#ECECEC] hover:border-indigo-300 transition-all flex flex-col justify-between space-y-4 group cursor-pointer"
-                          >
-                            <div className="space-y-2.5">
-                              <div className="flex items-center justify-between">
-                                <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
-                                  Kuis Interaktif
-                                </span>
+                        {subjectQuizzes.map((qz) => {
+                          const isNewlyAdded = qz.id === newlyAddedQuizId;
+                          return (
+                            <div
+                              key={qz.id}
+                              onClick={() => router.push(`/admin/guru/pelajaran?item=${qz.id}`)}
+                              className={`p-3 pb-4 rounded-[12px] border transition-all flex flex-col justify-between space-y-4 group cursor-pointer ${
+                                isNewlyAdded
+                                  ? 'bg-indigo-50/50 border-indigo-200 animate-pulse'
+                                  : 'bg-white border-[#ECECEC] hover:border-indigo-300'
+                              }`}
+                            >
+                              <div className="space-y-2.5">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                                    Kuis Interaktif
+                                  </span>
 
-                                <CardMoreDropdown
-                                  itemType="kuis"
-                                  onPreview={() => window.open(`/kuis/${qz.id}`, '_blank')}
-                                  onEdit={() => handleOpenBlockBuilder()}
-                                  onDelete={() => handleDeleteModuleItem(qz.id, qz.title)}
-                                />
-                              </div>
+                                  <CardMoreDropdown
+                                    itemType="kuis"
+                                    onPreview={() => window.open(`/kuis/${qz.id}`, '_blank')}
+                                    onEdit={() => handleOpenBlockBuilder()}
+                                    onDelete={() => handleDeleteModuleItem(qz.id, qz.title)}
+                                  />
+                                </div>
 
-                              <h4 className="font-bold text-base text-[#2E2D2D] group-hover:text-indigo-600 transition-colors leading-snug">
-                                {qz.title}
-                              </h4>
+                                <h4 className="font-bold text-base text-[#2E2D2D] group-hover:text-indigo-600 transition-colors leading-snug">
+                                  {qz.title}
+                                </h4>
 
-                              <div className="flex items-center gap-3 text-xs text-[#737373] pt-0.5">
-                                <span className="flex items-center gap-1.5 font-medium">
-                                  <FileText className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-                                  <span>{qz.questions.length} Soal</span>
-                                </span>
-                                <span className="flex items-center gap-1.5 font-medium">
-                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                                  <span>Pass Score {qz.passScore}</span>
-                                </span>
+                                <div className="flex items-center gap-3 text-xs text-[#737373] pt-0.5">
+                                  <span className="flex items-center gap-1.5 font-medium">
+                                    <FileText className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                                    <span>{qz.questions.length} Soal</span>
+                                  </span>
+                                  <span className="flex items-center gap-1.5 font-medium">
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                    <span>Pass Score {qz.passScore}</span>
+                                  </span>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
 
                 </div>
 
@@ -949,49 +1260,45 @@ export default function AdminGuruPelajaranPage() {
               </div>
             )}
 
-            {/* DETAIL VIEW: IF A QUIZ IS SELECTED */}
+            {/* DETAIL VIEW: IF A QUIZ IS SELECTED (CLEAN REDESIGNED VIEW WITHOUT DUPLICATE HEADERS) */}
             {selectedQuiz && (
               <div className="bg-white rounded-[12px] border border-[#ECECEC] p-6 space-y-6 shadow-2xs">
-                <div className="flex items-start justify-between pb-4">
-                  <div>
-                    <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-[4px] inline-block mb-2">
-                      Kuis Interaktif Sintesa
-                    </span>
-                    <h2 className="text-xl font-bold text-[#2E2D2D] tracking-tight">{selectedQuiz.title}</h2>
-                    <div className="flex items-center gap-3 text-xs text-[#737373] mt-2">
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5 text-[#737373]" />
-                        Durasi: {selectedQuiz.duration}
-                      </span>
-                      <span>&bull;</span>
-                      <span>{selectedQuiz.questions.length} Soal Pilihan Ganda</span>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => handleDeleteModuleItem(selectedQuiz.id, selectedQuiz.title)}
-                    className="p-2 rounded-[8px] bg-slate-50 hover:bg-rose-50 text-slate-500 hover:text-rose-600 border border-[#ECECEC] transition-all cursor-pointer"
-                    title="Hapus Kuis"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                {/* SLEEK METADATA BAR (NO DUPLICATE HEADERS OR DUPLICATE TRASH ICONS) */}
+                <div className="flex flex-wrap items-center gap-2.5 pb-4 border-b border-[#ECECEC]">
+                  <span className="text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-[6px] flex items-center gap-1.5">
+                    <Play className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                    Kuis Interaktif Sintesa
+                  </span>
+                  <span className="text-xs font-semibold text-[#2E2D2D] bg-slate-50 border border-[#ECECEC] px-3 py-1 rounded-[6px] flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-[#737373] shrink-0" />
+                    Durasi: {selectedQuiz.duration}
+                  </span>
+                  <span className="text-xs font-semibold text-[#2E2D2D] bg-slate-50 border border-[#ECECEC] px-3 py-1 rounded-[6px] flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-[#737373] shrink-0" />
+                    {selectedQuiz.questions.length} Soal Pilihan Ganda
+                  </span>
+                  <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-[6px] flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    Pass Score: {selectedQuiz.passScore}%
+                  </span>
                 </div>
 
+                {/* QUESTION LIST */}
                 <div className="space-y-4">
-                  <h3 className="text-sm font-bold text-[#2E2D2D]">Daftar Soal Kuis</h3>
+                  <h3 className="text-sm font-bold text-[#2E2D2D]">Daftar Soal Evaluasi Kuis</h3>
                   <div className="space-y-3">
                     {selectedQuiz.questions.map((q, idx) => (
-                      <div key={q.id} className="p-4 rounded-[10px] bg-slate-50 border border-[#ECECEC] space-y-2">
+                      <div key={q.id} className="p-4 rounded-[10px] bg-slate-50 border border-[#ECECEC] space-y-3">
                         <p className="text-xs font-bold text-[#2E2D2D]">
                           Soal {idx + 1}: {q.text}
                         </p>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-0.5">
                           {q.options.map((opt, oIdx) => (
                             <div
                               key={oIdx}
                               className={`p-2.5 rounded-[6px] text-xs font-medium border ${
                                 oIdx === q.correctAnswer
-                                  ? 'bg-emerald-50 border-emerald-300 text-emerald-700 font-bold'
+                                  ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-bold'
                                   : 'bg-white border-[#ECECEC] text-[#737373]'
                               }`}
                             >
@@ -999,6 +1306,11 @@ export default function AdminGuruPelajaranPage() {
                             </div>
                           ))}
                         </div>
+                        {q.explanation && (
+                          <p className="text-[11px] text-[#737373] bg-white p-2 rounded-[6px] border border-[#ECECEC] mt-1">
+                            <strong className="text-[#2E2D2D]">Pembahasan:</strong> {q.explanation}
+                          </p>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -1021,7 +1333,7 @@ export default function AdminGuruPelajaranPage() {
         />
       )}
 
-      {/* CUSTOM DELETE CONFIRMATION MODAL (DARK BG OVERLAY, LEFT ALIGNED, NO BLUR) */}
+      {/* CUSTOM DELETE CONFIRMATION MODAL */}
       {deleteTarget && (
         <div
           onClick={() => setDeleteTarget(null)}
@@ -1037,10 +1349,12 @@ export default function AdminGuruPelajaranPage() {
             </div>
 
             {/* Header Title */}
-            <h3 className="font-bold text-base text-[#2E2D2D]">Konfirmasi Hapus Modul</h3>
+            <h3 className="font-bold text-base text-[#2E2D2D]">
+              {deleteTarget.type === 'kuis' ? 'Konfirmasi Hapus Kuis' : 'Konfirmasi Hapus Materi'}
+            </h3>
 
             <p className="text-xs text-[#737373] leading-relaxed bg-slate-50 p-3 rounded-[8px] border border-[#ECECEC]">
-              Apakah Anda yakin ingin menghapus modul &ldquo;<strong className="text-[#2E2D2D]">{deleteTarget.title}</strong>&rdquo;? Data modul akan terhapus dari sistem.
+              Apakah Anda yakin ingin menghapus {deleteTarget.type === 'kuis' ? 'kuis' : 'materi'} &ldquo;<strong className="text-[#2E2D2D]">{deleteTarget.title}</strong>&rdquo;? Data akan terhapus dari sistem.
             </p>
 
             <div className="flex items-center justify-end gap-2 pt-1">
@@ -1123,6 +1437,294 @@ export default function AdminGuruPelajaranPage() {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ADD KUIS CHOICE & METHOD MODAL */}
+      {showAddQuizModal && (
+        <div
+          onClick={() => setShowAddQuizModal(false)}
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-lg text-left space-y-5 shadow-2xl animate-in zoom-in-95 duration-200 relative max-h-[90vh] overflow-y-auto"
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setShowAddQuizModal(false)}
+              className="absolute right-4 top-4 w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer"
+              aria-label="Tutup Modal"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* STEP 1: CHOICE MENU */}
+            {quizModalStep === 'choice' && (
+              <div className="space-y-5">
+                <div>
+                  <h3 className="text-lg font-bold text-[#2E2D2D]">Tambah Kuis Evaluasi Baru</h3>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3.5 pt-1">
+                  {/* OPTION 1: IMPOR TEMPLATE */}
+                  <div
+                    onClick={() => {
+                      setQuizModalStep('template');
+                      setUploadedFile(null);
+                    }}
+                    className="p-3.5 rounded-[12px] bg-white border-2 border-[#ECECEC] hover:border-indigo-500 hover:bg-indigo-50/30 transition-all flex items-start gap-3.5 cursor-pointer group shadow-2xs"
+                  >
+                    <div className="w-[36px] h-[36px] rounded-[8px] bg-indigo-50 text-indigo-600 border border-indigo-100 group-hover:scale-105 transition-transform shrink-0 flex items-center justify-center">
+                      <FileSpreadsheet className="w-4 h-4 text-indigo-600" />
+                    </div>
+                    <div className="space-y-1 min-w-0">
+                      <h4 className="text-sm font-bold text-[#2E2D2D] group-hover:text-indigo-600 transition-colors">
+                        Impor dari Berkas Template (.xlsx / .docx)
+                      </h4>
+                      <p className="text-xs text-[#737373] leading-relaxed">
+                        Unggah berkas template kuis yang berisi daftar soal dan pilihan jawaban untuk diimpor sekaligus secara otomatis.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* OPTION 2: BUAT MANUAL */}
+                  <div
+                    onClick={() => {
+                      setQuizModalStep('manual');
+                      setManualQuizTitle(`Kuis Evaluasi ${currentSubject}`);
+                    }}
+                    className="p-3.5 rounded-[12px] bg-white border-2 border-[#ECECEC] hover:border-[#2563EB] hover:bg-blue-50/30 transition-all flex items-start gap-3.5 cursor-pointer group shadow-2xs"
+                  >
+                    <div className="w-[36px] h-[36px] rounded-[8px] bg-blue-50 text-[#2563EB] border border-blue-100 group-hover:scale-105 transition-transform shrink-0 flex items-center justify-center">
+                      <Edit3 className="w-4 h-4 text-[#2563EB]" />
+                    </div>
+                    <div className="space-y-1 min-w-0">
+                      <h4 className="text-sm font-bold text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors">
+                        Buat Manual (Satu per Satu)
+                      </h4>
+                      <p className="text-xs text-[#737373] leading-relaxed">
+                        Susun judul kuis, durasi, nilai kelulusan, serta input soal dan pilihan jawaban satu per satu secara manual.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 2: TEMPLATE IMPORT VIEW */}
+            {quizModalStep === 'template' && (
+              <div className="space-y-5">
+                <div>
+                  <h3 className="text-lg font-bold text-[#2E2D2D]">Impor Template Kuis (.xlsx / .docx)</h3>
+                </div>
+
+                {/* Download Template Action */}
+                <div className="p-3.5 rounded-[10px] bg-indigo-50/70 border border-indigo-100 flex items-center justify-between gap-3">
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-bold text-indigo-900">Belum punya format template?</p>
+                    <p className="text-[11px] text-indigo-700">Unduh format acuan file (.csv / .xlsx) di sini.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleDownloadQuizTemplate}
+                    className="px-3 py-1.5 rounded-[6px] bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shrink-0 transition-colors shadow-2xs cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Unduh Template</span>
+                  </button>
+                </div>
+
+                {/* Drag & Drop Upload Zone */}
+                <div
+                  onClick={() => handleSimulateTemplateUpload()}
+                  className={`p-6 rounded-[12px] border-2 border-dashed transition-all text-center flex flex-col items-center justify-center space-y-2 cursor-pointer ${
+                    uploadedFile
+                      ? 'border-emerald-300 bg-emerald-50/50'
+                      : 'border-slate-300 hover:border-indigo-400 bg-slate-50/80 hover:bg-indigo-50/20'
+                  }`}
+                >
+                  {uploadedFile ? (
+                    <>
+                      <div className="w-[36px] h-[36px] rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center border border-emerald-200 shrink-0">
+                        <Check className="w-4 h-4 text-emerald-700" />
+                      </div>
+                      <div className="space-y-0.5">
+                        <p className="text-xs font-bold text-[#2E2D2D]">{uploadedFile.name}</p>
+                        <p className="text-[11px] text-emerald-700 font-semibold">
+                          Berkas Terverifikasi ({uploadedFile.questionCount} Soal & Kunci Jawaban Terdeteksi)
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-[36px] h-[36px] rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shrink-0">
+                        <UploadCloud className="w-4 h-4 text-indigo-600" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-[#2E2D2D]">Tarik & Lepas file template di sini</p>
+                        <p className="text-[11px] text-[#737373]">atau klik untuk memilih berkas dari komputer (.xlsx, .docx, .csv)</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Modal Footer Buttons */}
+                <div className="flex items-center justify-between pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setQuizModalStep('choice')}
+                    className="px-4 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-xs font-bold text-[#2E2D2D] transition-colors cursor-pointer"
+                  >
+                    Kembali
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmTemplateImport}
+                    className="px-5 py-2 rounded-[8px] bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                  >
+                    Impor & Buat Kuis
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 3: MANUAL QUIZ CREATION VIEW */}
+            {quizModalStep === 'manual' && (
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-bold text-[#2E2D2D]">Buat Kuis Evaluasi Manual</h3>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  <div className="space-y-1.5">
+                    <label className="font-bold text-[#2E2D2D] block">Judul Kuis</label>
+                    <input
+                      type="text"
+                      value={manualQuizTitle}
+                      onChange={(e) => setManualQuizTitle(e.target.value)}
+                      placeholder="Contoh: Kuis Logika Algoritma Dasar"
+                      className="w-full h-9 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs font-medium text-[#2E2D2D] outline-none focus:border-[#2563EB]"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="font-bold text-[#2E2D2D] block">Durasi Kuis</label>
+                      <input
+                        type="text"
+                        value={manualQuizDuration}
+                        onChange={(e) => setManualQuizDuration(e.target.value)}
+                        className="w-full h-9 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs font-medium text-[#2E2D2D] outline-none focus:border-[#2563EB]"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="font-bold text-[#2E2D2D] block">Pass Score (%)</label>
+                      <input
+                        type="number"
+                        value={manualQuizPassScore}
+                        onChange={(e) => setManualQuizPassScore(e.target.value)}
+                        className="w-full h-9 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs font-medium text-[#2E2D2D] outline-none focus:border-[#2563EB]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Question items */}
+                  <div className="space-y-3 pt-1">
+                    <label className="font-bold text-[#2E2D2D] block">Daftar Soal ({manualQuestions.length} Soal)</label>
+                    {manualQuestions.map((q, idx) => (
+                      <div key={idx} className="p-3 rounded-[8px] bg-slate-50 border border-[#ECECEC] space-y-2">
+                        <input
+                          type="text"
+                          value={q.text}
+                          onChange={(e) => {
+                            const updated = [...manualQuestions];
+                            updated[idx].text = e.target.value;
+                            setManualQuestions(updated);
+                          }}
+                          placeholder={`Pertanyaan Soal ${idx + 1}`}
+                          className="w-full h-8 px-2.5 rounded-[6px] bg-white border border-[#ECECEC] text-xs font-bold text-[#2E2D2D] outline-none"
+                        />
+                        <div className="grid grid-cols-2 gap-1.5">
+                          {q.options.map((opt, oIdx) => (
+                            <div key={oIdx} className="flex items-center gap-1">
+                              <input
+                                type="radio"
+                                name={`correct-${idx}`}
+                                checked={q.correctAnswer === oIdx}
+                                onChange={() => {
+                                  const updated = [...manualQuestions];
+                                  updated[idx].correctAnswer = oIdx;
+                                  setManualQuestions(updated);
+                                }}
+                              />
+                              <input
+                                type="text"
+                                value={opt}
+                                onChange={(e) => {
+                                  const updated = [...manualQuestions];
+                                  updated[idx].options[oIdx] = e.target.value;
+                                  setManualQuestions(updated);
+                                }}
+                                className="w-full h-7 px-2 rounded-[4px] bg-white border border-[#ECECEC] text-[11px]"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Footer buttons */}
+                <div className="flex items-center justify-between pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setQuizModalStep('choice')}
+                    className="px-4 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-xs font-bold text-[#2E2D2D] transition-colors cursor-pointer"
+                  >
+                    Kembali
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmManualQuiz}
+                    className="px-5 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                  >
+                    Simpan & Terbitkan Kuis
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* FLOATING ADMIN TOAST NOTIFICATION — slides from below navbar */}
+      {toast && (
+        <div
+          className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-[10px] bg-white border border-[#ECECEC] shadow-sm font-sans transition-all duration-300 ease-out ${
+            toastExiting
+              ? 'opacity-0 -translate-y-3'
+              : 'opacity-100 translate-y-0 animate-in slide-in-from-top-4 fade-in duration-300'
+          }`}
+        >
+          <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
+            toast.type === 'success' ? 'bg-emerald-100' :
+            toast.type === 'info' ? 'bg-blue-100' :
+            'bg-amber-100'
+          }`}>
+            {toast.type === 'success' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />}
+            {toast.type === 'info' && <Info className="w-3.5 h-3.5 text-[#2563EB]" />}
+            {toast.type === 'warning' && <AlertCircle className="w-3.5 h-3.5 text-amber-700" />}
+          </div>
+          <p className="text-xs font-medium text-[#2E2D2D] max-w-sm truncate">{toast.message}</p>
+          <button
+            type="button"
+            onClick={() => dismissToast()}
+            className="text-slate-400 hover:text-slate-600 p-0.5 rounded-full hover:bg-slate-100 transition-colors cursor-pointer shrink-0 ml-1"
+          >
+            <X className="w-3 h-3" />
+          </button>
         </div>
       )}
 

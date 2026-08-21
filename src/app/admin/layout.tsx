@@ -17,28 +17,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <>
       {/* Mobile / Tablet Screen Guard (< 1024px): Desktop Only Overlay */}
       <div className="lg:hidden fixed inset-0 z-50 bg-white flex flex-col items-center justify-center p-6 text-center font-sans">
-        <div className="max-w-md space-y-6 animate-in fade-in zoom-in-95 duration-200">
-          <div className="w-64 h-64 mx-auto relative flex items-center justify-center">
+        <div className="max-w-xs space-y-5 animate-in fade-in zoom-in-95 duration-200">
+          {/* Lottie Animation */}
+          <div className="w-56 h-56 mx-auto relative flex items-center justify-center overflow-hidden">
             <iframe
-              src="https://lottie.host/embed/fce576c6-975f-4133-b265-aac53ff316c1/HbOBKAMBQP.lottie"
+              src="https://lottie.host/embed/0d0a0157-8644-49c4-8cea-c7ca68c0bc54/fapm5CmjTx.lottie"
               className="w-full h-full border-0 pointer-events-none"
-              title="Desktop Only Animation"
+              title="Desktop Only Lottie Animation"
             />
           </div>
 
-          <div className="space-y-2.5">
-            <h2 className="text-xl font-bold text-[#2E2D2D] leading-tight">
+          <div className="space-y-2">
+            <h2 className="text-lg font-bold text-[#2E2D2D] leading-tight">
               Portal Admin Hanya Dapat Diakses di Perangkat Desktop
             </h2>
             <p className="text-xs text-[#737373] leading-relaxed">
-              Untuk pengalaman terbaik, kenyamanan navigasi, serta kemudahan mengelola modul & kuis, silakan buka portal admin ini menggunakan laptop atau komputer Anda.
+              Silakan buka portal admin ini menggunakan laptop atau komputer Anda.
             </p>
-          </div>
-
-          <div className="pt-1">
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-50 text-[#2563EB] text-xs font-bold border border-blue-100 shadow-2xs">
-              <span>Rekomendasi Lebar Layar Minimal: 1024px</span>
-            </span>
           </div>
         </div>
       </div>

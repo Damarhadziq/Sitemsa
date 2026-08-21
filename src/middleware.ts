@@ -17,17 +17,19 @@ export function middleware(request: NextRequest) {
     const clientIp = rawIp.split(',')[0].trim();
     const userAgent = request.headers.get('user-agent') || '';
     const isMobile = /mobile|android|iphone|ipad/i.test(userAgent);
-    const deviceType = isMobile ? '📱 Smartphone/Mobile' : '💻 PC/Laptop';
+    const deviceType = isMobile ? 'Smartphone/Mobile' : 'PC/Laptop';
     const timestamp = new Date().toLocaleTimeString('id-ID', { hour12: false });
 
-    console.log(`🌐 [AKSES MASUK WEB] ${timestamp} | Halaman: ${pathname} | Device: ${deviceType} | IP: ${clientIp}`);
+    console.log(`[AKSES MASUK WEB] ${timestamp} | Halaman: ${pathname} | Device: ${deviceType} | IP: ${clientIp}`);
   }
 
   // Handle Admin Routes (/admin/...)
   if (pathname.startsWith('/admin')) {
-    // If accessing admin login page while already authenticated as admin
+    const isValidAdmin = adminCookie && (adminCookie.value === 'superadmin' || adminCookie.value === 'guru');
+
+    // If accessing admin login page (/admin/login)
     if (pathname === '/admin/login') {
-      if (adminCookie) {
+      if (isValidAdmin) {
         if (adminCookie.value === 'guru') {
           return NextResponse.redirect(new URL('/admin/guru', request.url));
         }
@@ -36,13 +38,18 @@ export function middleware(request: NextRequest) {
       return NextResponse.next();
     }
 
-    // Unauthenticated access to protected admin pages -> redirect to /admin/login
-    if (!adminCookie) {
+    // Unauthenticated or student access to protected admin pages -> redirect to /admin/login
+    if (!isValidAdmin) {
       return NextResponse.redirect(new URL('/admin/login', request.url));
+    }
+
+    // Teacher attempting to access superadmin routes -> redirect to /admin/guru
+    if (pathname.startsWith('/admin/superadmin') && adminCookie.value === 'guru') {
+      return NextResponse.redirect(new URL('/admin/guru', request.url));
     }
   }
 
-  // Handle Student Routes
+  // Handle Student Login Redirect when already logged in
   if (pathname === '/login' && studentCookie) {
     return NextResponse.redirect(new URL('/', request.url));
   }

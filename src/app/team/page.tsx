@@ -50,7 +50,7 @@ const teamMembers: TeamMember[] = [
   // 6. Pend. Seni Tari (4 orang - Instructional Designer)
   { image: "https://i.pravatar.cc/300?img=12", title: "Vivi Riska Wardani", subtitle: "Instructional Designer", handle: "@viviriska", borderColor: "#10B981", division: "Pend. Seni Tari" },
   { image: "https://i.pravatar.cc/300?img=20", title: "Anita Dwi Ningtyas", subtitle: "Instructional Designer", handle: "@anitadwi", borderColor: "#EF4444", division: "Pend. Seni Tari" },
-  { image: "https://i.pravatar.cc/300?img=24", title: "Meliana Dwi Yanti", subtitle: "Instructional Designer", handle: "@melianadwi", borderColor: "#10B981", division: "Pend. Seni Tari" },
+  { image: "/images/meliana.jpg", title: "Meliana Dwi Yanti", subtitle: "Instructional Designer", handle: "@melianadwi", borderColor: "#10B981", division: "Pend. Seni Tari" },
   { image: "https://i.pravatar.cc/300?img=28", title: "Hasnita Ivangka", subtitle: "Instructional Designer", handle: "@hasnitaivangka", borderColor: "#06B6D4", division: "Pend. Seni Tari" }
 ];
 

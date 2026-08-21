@@ -175,14 +175,21 @@ export function AdminSidebar() {
                               <Link
                                 key={mod.id}
                                 href={`/admin/guru/pelajaran?item=${mod.id}`}
-                                className={`flex items-center gap-2 px-2.5 py-1.5 rounded-[6px] text-xs transition-all truncate group ${
+                                className={`flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-[6px] text-xs transition-all truncate group ${
                                   isItemActive
                                     ? 'bg-blue-50/80 text-[#2563EB] font-bold'
                                     : 'text-[#737373] hover:text-[#2563EB] hover:bg-slate-50 font-medium'
                                 }`}
                               >
-                                <FileCode className={`w-3.5 h-3.5 shrink-0 transition-colors ${isItemActive ? 'text-[#2563EB]' : 'text-[#737373] group-hover:text-[#2563EB]'}`} />
-                                <span className="truncate">{mod.title}</span>
+                                <div className="flex items-center gap-2 truncate min-w-0">
+                                  <FileCode className={`w-3.5 h-3.5 shrink-0 transition-colors ${isItemActive ? 'text-[#2563EB]' : 'text-[#737373] group-hover:text-[#2563EB]'}`} />
+                                  <span className="truncate">{mod.title}</span>
+                                </div>
+                                {mod.isPublished === false && (
+                                  <span className="text-[9px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200 shrink-0">
+                                    Draft
+                                  </span>
+                                )}
                               </Link>
                             );
                           })}

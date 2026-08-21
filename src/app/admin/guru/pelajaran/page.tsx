@@ -31,6 +31,8 @@ import {
   Edit3,
   Upload,
   Info,
+  Share2,
+  Search,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useAdminStore, ModuleItem, QuizQuestion } from '@/lib/admin-store';
@@ -174,6 +176,7 @@ export default function AdminGuruPelajaranPage() {
   const [toastExiting, setToastExiting] = useState(false);
   const [newlyAddedMateriId, setNewlyAddedMateriId] = useState<string | null>(null);
   const [newlyAddedQuizId, setNewlyAddedQuizId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const dismissToast = () => {
@@ -246,14 +249,15 @@ export default function AdminGuruPelajaranPage() {
         title: moduleData.title || editingModule.title,
         description: moduleData.description || editingModule.description,
       });
-      showToast(<>Perubahan materi <span className="font-bold">{moduleData.title || editingModule.title}</span> berhasil disimpan!</>, 'info');
+      setNewlyAddedMateriId(editingModule.id);
+      setTimeout(() => setNewlyAddedMateriId(null), 3000);
     } else {
       const newId = addModule({
         subject: currentSubject,
         title: moduleData.title || 'Materi Baru',
         level: moduleData.level || 'Pemula',
         duration: moduleData.duration || '30 Menit',
-        topics: ['Materi Sintesa', 'Praktikum'],
+        topics: moduleData.topics || ['Materi Sintesa', 'Praktikum'],
         description: moduleData.description || 'Deskripsi materi pembelajaran.',
         teacherId: user?.id || 't-1',
         teacherName: user?.name || 'Pak Budi Prasetyo, M.Kom.',
@@ -261,10 +265,7 @@ export default function AdminGuruPelajaranPage() {
       });
 
       setNewlyAddedMateriId(newId);
-      setTimeout(() => setNewlyAddedMateriId(null), 5000);
-
-      const statusText = moduleData.isPublished ? 'dipublikasikan' : 'disimpan sebagai draft';
-      showToast(<>Materi <span className="font-bold">{moduleData.title || 'Materi Baru'}</span> berhasil {statusText}!</>, 'success');
+      setTimeout(() => setNewlyAddedMateriId(null), 3000);
     }
   };
 
@@ -443,7 +444,7 @@ export default function AdminGuruPelajaranPage() {
     });
 
     setNewlyAddedQuizId(newQuizId);
-    setTimeout(() => setNewlyAddedQuizId(null), 5000);
+    setTimeout(() => setNewlyAddedQuizId(null), 3000);
     showToast(<>Template kuis <span className="font-bold">{quizTitle}</span> berhasil diimpor & ditambahkan!</>, 'success');
 
     setShowAddQuizModal(false);
@@ -477,7 +478,7 @@ export default function AdminGuruPelajaranPage() {
     });
 
     setNewlyAddedQuizId(newQuizId);
-    setTimeout(() => setNewlyAddedQuizId(null), 5000);
+    setTimeout(() => setNewlyAddedQuizId(null), 3000);
     showToast(<>Kuis manual <span className="font-bold">{manualQuizTitle.trim()}</span> berhasil dibuat!</>, 'success');
 
     setShowAddQuizModal(false);
@@ -536,18 +537,38 @@ export default function AdminGuruPelajaranPage() {
       
       {/* Dynamic Headline Header (NO SUBTITLE & NO DIVIDER LINE) */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
+        <div className="space-y-2">
           {isLoading ? (
             <Skeleton className="h-9 w-64 sm:w-80" />
           ) : (
-            /* CLEAN HEADLINE (NO SUBTITLE BELOW) */
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#2E2D2D] tracking-tight">
-              {selectedModule
-                ? selectedModule.title
-                : selectedQuiz
-                ? selectedQuiz.title
-                : `Materi & Kuis ${currentSubject}`}
-            </h1>
+            <>
+              {/* CLEAN HEADLINE (NO SUBTITLE BELOW) */}
+              <h1 className="text-2xl sm:text-3xl font-bold text-[#2E2D2D] tracking-tight">
+                {selectedModule
+                  ? selectedModule.title
+                  : selectedQuiz
+                  ? selectedQuiz.title
+                  : `Materi & Kuis ${currentSubject}`}
+              </h1>
+
+              {/* METADATA INLINE BELOW TITLE (NO DOT SEPARATORS, LARGER GAP) */}
+              {selectedQuiz && (
+                <div className="flex flex-wrap items-center gap-6 text-xs text-[#737373] font-medium pt-2">
+                  <span className="flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-[#737373] shrink-0" />
+                    Durasi: {selectedQuiz.duration}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-[#737373] shrink-0" />
+                    {selectedQuiz.questions.length} Soal Pilihan Ganda
+                  </span>
+                  <span className="flex items-center gap-1.5 text-emerald-600 font-medium">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    Pass Score: {selectedQuiz.passScore}%
+                  </span>
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -624,16 +645,29 @@ export default function AdminGuruPelajaranPage() {
               {/* QUIZ DETAIL MODE ACTIONS */}
               {selectedQuiz && (
                 <div className="flex items-center gap-2">
-                  <Tooltip content="Pratinjau Tampilan Kuis di Website Utama" side="bottom">
-                    <a
-                      href={`/kuis/${selectedQuiz.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                  <Tooltip content="Salin Tautan Kuis" side="bottom">
+                    <button
+                      onClick={() => {
+                        const link = `${window.location.origin}/kuis/${selectedQuiz.id}`;
+                        navigator.clipboard.writeText(link);
+                        setIsCopied(true);
+                        showToast(<>Tautan kuis <span className="font-bold">{selectedQuiz.title}</span> berhasil disalin!</>, 'success');
+                        setTimeout(() => setIsCopied(false), 2000);
+                      }}
                       className="px-3.5 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center gap-2 border border-slate-200 transition-all duration-200 ease-in-out cursor-pointer active:scale-[0.98]"
                     >
-                      <Eye className="w-3.5 h-3.5 text-slate-600" />
-                      <span>Preview Website</span>
-                    </a>
+                      {isCopied ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                          <span className="text-emerald-700">Tersalin</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5 text-slate-600" />
+                          <span>Salin Link</span>
+                        </>
+                      )}
+                    </button>
                   </Tooltip>
 
                   <Tooltip content="Edit Soal & Evaluasi Kuis" side="bottom">
@@ -664,6 +698,20 @@ export default function AdminGuruPelajaranPage() {
           )}
         </div>
       </div>
+
+      {/* Search Bar in Landing Overview Mode */}
+      {!selectedItemId && !isLoading && (
+        <div className="relative max-w-md w-full">
+          <Search className="w-4 h-4 text-[#737373] absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Cari materi atau kuis..."
+            className="w-full h-10 pl-9 pr-4 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] placeholder:text-[#AAAAAA] focus:border-[#2563EB] transition-all outline-none"
+          />
+        </div>
+      )}
 
       {/* MAIN CONTENT AREA */}
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -697,141 +745,349 @@ export default function AdminGuruPelajaranPage() {
             {!selectedItemId && (
               <div className="space-y-6">
                 
-                {/* MODULES & QUIZZES GRID */}
-                <div className="space-y-6">
-                  
-                  {/* SECTION 1: DAFTAR MATERI */}
+                {/* SEARCH RESULTS MODE (DIRECT CARDS GRID, NO SECTION HEADERS) */}
+                {searchQuery.trim() !== '' ? (
                   <div className="space-y-4">
                     <div className="flex items-center gap-2.5">
                       <h3 className="text-base font-bold text-[#2E2D2D]">
-                        Daftar Materi
+                        Hasil Pencarian: &ldquo;{searchQuery}&rdquo;
                       </h3>
                       <span className="px-2.5 py-0.5 rounded-[6px] bg-[#2563EB] text-white text-xs font-bold">
-                        {subjectModules.length} Materi
+                        {
+                          subjectModules.filter((mod) =>
+                            mod.title.toLowerCase().includes(searchQuery.trim().toLowerCase())
+                          ).length +
+                          subjectQuizzes.filter((qz) =>
+                            qz.title.toLowerCase().includes(searchQuery.trim().toLowerCase())
+                          ).length
+                        } Hasil
                       </span>
                     </div>
 
-                    {subjectModules.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-10 text-center">
-                        <div className="w-10 h-10 rounded-full bg-white shadow-2xs border border-slate-100 flex items-center justify-center mb-3">
-                          <BookOpen className="w-5 h-5 text-slate-400" />
-                        </div>
-                        <h4 className="text-sm font-bold text-slate-700">Belum Ada Materi</h4>
-                        <p className="text-xs text-slate-500 mt-1 max-w-xs">Materi yang ditambahkan pada bidang studi ini akan muncul di sini.</p>
+                    {subjectModules.filter((mod) =>
+                      mod.title.toLowerCase().includes(searchQuery.trim().toLowerCase())
+                    ).length === 0 &&
+                    subjectQuizzes.filter((qz) =>
+                      qz.title.toLowerCase().includes(searchQuery.trim().toLowerCase())
+                    ).length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <p className="text-sm font-bold text-[#2E2D2D]">Tidak Ada Hasil Ditemukan</p>
+                        <p className="text-xs text-[#737373] mt-1">
+                          Tidak ada materi atau kuis yang cocok dengan kata kunci &ldquo;{searchQuery}&rdquo;.
+                        </p>
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {subjectModules.map((mod) => {
-                          const isNewlyAdded = mod.id === newlyAddedMateriId;
-                          return (
-                            <div
-                              key={mod.id}
-                              onClick={() => router.push(`/admin/guru/pelajaran?item=${mod.id}`)}
-                              className={`p-3 pb-4 rounded-[12px] border transition-all flex flex-col justify-between space-y-4 group cursor-pointer ${
-                                isNewlyAdded
-                                  ? 'bg-blue-50/50 border-blue-200 animate-pulse'
-                                  : 'bg-white border-[#ECECEC] hover:border-blue-300'
-                              }`}
-                            >
-                              <div className="space-y-2.5">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-[10px] font-bold text-[#2563EB] bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
-                                    {mod.level}
-                                  </span>
+                        {/* MATERI MATCHING CARDS (FILTERED BY TITLE ONLY) */}
+                        {subjectModules
+                          .filter((mod) =>
+                            mod.title.toLowerCase().includes(searchQuery.trim().toLowerCase())
+                          )
+                          .map((mod) => {
+                            const isNewlyAdded = mod.id === newlyAddedMateriId;
+                            return (
+                              <div
+                                key={mod.id}
+                                onClick={() => {
+                                  if (mod.isPublished === false) {
+                                    handleOpenBlockBuilder(mod);
+                                  } else {
+                                    router.push(`/admin/guru/pelajaran?item=${mod.id}`);
+                                  }
+                                }}
+                                className={`p-3 pb-4 rounded-[12px] border transition-all flex flex-col justify-between space-y-4 group cursor-pointer ${
+                                  isNewlyAdded
+                                    ? 'bg-blue-50/50 border-blue-200 animate-pulse'
+                                    : 'bg-white border-[#ECECEC] hover:border-blue-300'
+                                }`}
+                              >
+                                <div className="space-y-2.5">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[10px] font-bold text-[#2563EB] bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
+                                        {mod.level}
+                                      </span>
+                                      {mod.isPublished === false && (
+                                        <span className="text-[10px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                                          Draft
+                                        </span>
+                                      )}
+                                    </div>
 
-                                  <CardMoreDropdown
-                                    itemType="materi"
-                                    onPreview={() => window.open(`/materi/${mod.id}`, '_blank')}
-                                    onEdit={() => handleOpenBlockBuilder(mod)}
-                                    onDelete={() => handleDeleteModuleItem(mod.id, mod.title)}
-                                  />
+                                    {mod.isPublished === false ? (
+                                      <div className="flex items-center gap-1">
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleOpenBlockBuilder(mod);
+                                          }}
+                                          title="Edit Draft Materi"
+                                          className="p-1 rounded-[4px] text-[#737373] hover:text-[#2563EB] hover:bg-blue-50 transition-colors cursor-pointer"
+                                        >
+                                          <Edit2 className="w-3.5 h-3.5" />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeleteModuleItem(mod.id, mod.title);
+                                          }}
+                                          title="Hapus Draft Materi"
+                                          className="p-1 rounded-[4px] text-[#737373] hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <CardMoreDropdown
+                                        itemType="materi"
+                                        onPreview={() => window.open(`/materi/${mod.id}`, '_blank')}
+                                        onEdit={() => handleOpenBlockBuilder(mod)}
+                                        onDelete={() => handleDeleteModuleItem(mod.id, mod.title)}
+                                      />
+                                    )}
+                                  </div>
+
+                                  <h4 className="font-bold text-base text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors leading-snug">
+                                    {mod.title}
+                                  </h4>
+
+                                  <p className="text-xs text-[#737373] line-clamp-2 leading-relaxed">
+                                    {mod.description}
+                                  </p>
                                 </div>
-
-                                <h4 className="font-bold text-base text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors leading-snug">
-                                  {mod.title}
-                                </h4>
-
-                                <p className="text-xs text-[#737373] line-clamp-2 leading-relaxed">
-                                  {mod.description}
-                                </p>
                               </div>
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
+
+                        {/* KUIS MATCHING CARDS (FILTERED BY TITLE ONLY) */}
+                        {subjectQuizzes
+                          .filter((qz) =>
+                            qz.title.toLowerCase().includes(searchQuery.trim().toLowerCase())
+                          )
+                          .map((qz) => {
+                            const isNewlyAdded = qz.id === newlyAddedQuizId;
+                            return (
+                              <div
+                                key={qz.id}
+                                onClick={() => router.push(`/admin/guru/pelajaran?item=${qz.id}`)}
+                                className={`p-3 pb-4 rounded-[12px] border transition-all flex flex-col justify-between space-y-4 group cursor-pointer ${
+                                  isNewlyAdded
+                                    ? 'bg-indigo-50/50 border-indigo-200 animate-pulse'
+                                    : 'bg-white border-[#ECECEC] hover:border-indigo-300'
+                                }`}
+                              >
+                                <div className="space-y-2.5">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                                      Kuis Interaktif
+                                    </span>
+
+                                    <CardMoreDropdown
+                                      itemType="kuis"
+                                      onPreview={() => window.open(`/kuis/${qz.id}`, '_blank')}
+                                      onEdit={() => handleOpenBlockBuilder()}
+                                      onDelete={() => handleDeleteModuleItem(qz.id, qz.title)}
+                                    />
+                                  </div>
+
+                                  <h4 className="font-bold text-base text-[#2E2D2D] group-hover:text-indigo-600 transition-colors leading-snug">
+                                    {qz.title}
+                                  </h4>
+
+                                  <div className="flex items-center gap-3 text-xs text-[#737373] pt-0.5">
+                                    <span className="flex items-center gap-1.5 font-medium">
+                                      <FileText className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                                      <span>{qz.questions.length} Soal</span>
+                                    </span>
+                                    <span className="flex items-center gap-1.5 font-medium">
+                                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                      <span>Pass Score {qz.passScore}</span>
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
                       </div>
                     )}
                   </div>
+                ) : (
+                  /* NORMAL SECTIONED VIEW (DAFTAR MATERI & KUIS EVALUASI) */
+                  <div className="space-y-6">
+                    {/* SECTION 1: DAFTAR MATERI */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2.5">
+                        <h3 className="text-base font-bold text-[#2E2D2D]">
+                          Daftar Materi
+                        </h3>
+                        <span className="px-2.5 py-0.5 rounded-[6px] bg-[#2563EB] text-white text-xs font-bold">
+                          {subjectModules.length} Materi
+                        </span>
+                      </div>
 
-                  {/* SECTION 2: KUIS & EVALUASI */}
-                  <div className="space-y-4 pt-2">
-                    <div className="flex items-center gap-2.5">
-                      <h3 className="text-base font-bold text-[#2E2D2D]">
-                        Kuis & Evaluasi
-                      </h3>
-                      <span className="px-2.5 py-0.5 rounded-[6px] bg-[#2563EB] text-white text-xs font-bold">
-                        {subjectQuizzes.length} Kuis
-                      </span>
+                      {subjectModules.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-10 text-center">
+                          <div className="w-10 h-10 rounded-full flex items-center justify-center mb-2">
+                            <BookOpen className="w-5 h-5 text-slate-400" />
+                          </div>
+                          <h4 className="text-sm font-bold text-slate-700">Belum Ada Materi</h4>
+                          <p className="text-xs text-slate-500 mt-1 max-w-xs">Materi yang ditambahkan pada bidang studi ini akan muncul di sini.</p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {subjectModules.map((mod) => {
+                            const isNewlyAdded = mod.id === newlyAddedMateriId;
+                            return (
+                              <div
+                                key={mod.id}
+                                onClick={() => {
+                                  if (mod.isPublished === false) {
+                                    handleOpenBlockBuilder(mod);
+                                  } else {
+                                    router.push(`/admin/guru/pelajaran?item=${mod.id}`);
+                                  }
+                                }}
+                                className={`p-3 pb-4 rounded-[12px] border transition-all flex flex-col justify-between space-y-4 group cursor-pointer ${
+                                  isNewlyAdded
+                                    ? 'bg-blue-50/50 border-blue-200 animate-pulse'
+                                    : 'bg-white border-[#ECECEC] hover:border-blue-300'
+                                }`}
+                              >
+                                <div className="space-y-2.5">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[10px] font-bold text-[#2563EB] bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
+                                        {mod.level}
+                                      </span>
+                                      {mod.isPublished === false && (
+                                        <span className="text-[10px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                                          Draft
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    {mod.isPublished === false ? (
+                                      <div className="flex items-center gap-1">
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleOpenBlockBuilder(mod);
+                                          }}
+                                          title="Edit Draft Materi"
+                                          className="p-1 rounded-[4px] text-[#737373] hover:text-[#2563EB] hover:bg-blue-50 transition-colors cursor-pointer"
+                                        >
+                                          <Edit2 className="w-3.5 h-3.5" />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeleteModuleItem(mod.id, mod.title);
+                                          }}
+                                          title="Hapus Draft Materi"
+                                          className="p-1 rounded-[4px] text-[#737373] hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <CardMoreDropdown
+                                        itemType="materi"
+                                        onPreview={() => window.open(`/materi/${mod.id}`, '_blank')}
+                                        onEdit={() => handleOpenBlockBuilder(mod)}
+                                        onDelete={() => handleDeleteModuleItem(mod.id, mod.title)}
+                                      />
+                                    )}
+                                  </div>
+
+                                  <h4 className="font-bold text-base text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors leading-snug">
+                                    {mod.title}
+                                  </h4>
+
+                                  <p className="text-xs text-[#737373] line-clamp-2 leading-relaxed">
+                                    {mod.description}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
 
-                    {subjectQuizzes.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-10 text-center">
-                        <div className="w-10 h-10 rounded-full bg-white shadow-2xs border border-slate-100 flex items-center justify-center mb-3">
-                          <FileText className="w-5 h-5 text-slate-400" />
-                        </div>
-                        <h4 className="text-sm font-bold text-slate-700">Belum Ada Kuis</h4>
-                        <p className="text-xs text-slate-500 mt-1 max-w-xs">Tambahkan kuis interaktif untuk mengukur tingkat pemahaman siswa.</p>
+                    {/* SECTION 2: KUIS & EVALUASI */}
+                    <div className="space-y-4 pt-2">
+                      <div className="flex items-center gap-2.5">
+                        <h3 className="text-base font-bold text-[#2E2D2D]">
+                          Kuis & Evaluasi
+                        </h3>
+                        <span className="px-2.5 py-0.5 rounded-[6px] bg-[#2563EB] text-white text-xs font-bold">
+                          {subjectQuizzes.length} Kuis
+                        </span>
                       </div>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {subjectQuizzes.map((qz) => {
-                          const isNewlyAdded = qz.id === newlyAddedQuizId;
-                          return (
-                            <div
-                              key={qz.id}
-                              onClick={() => router.push(`/admin/guru/pelajaran?item=${qz.id}`)}
-                              className={`p-3 pb-4 rounded-[12px] border transition-all flex flex-col justify-between space-y-4 group cursor-pointer ${
-                                isNewlyAdded
-                                  ? 'bg-indigo-50/50 border-indigo-200 animate-pulse'
-                                  : 'bg-white border-[#ECECEC] hover:border-indigo-300'
-                              }`}
-                            >
-                              <div className="space-y-2.5">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
-                                    Kuis Interaktif
-                                  </span>
 
-                                  <CardMoreDropdown
-                                    itemType="kuis"
-                                    onPreview={() => window.open(`/kuis/${qz.id}`, '_blank')}
-                                    onEdit={() => handleOpenBlockBuilder()}
-                                    onDelete={() => handleDeleteModuleItem(qz.id, qz.title)}
-                                  />
-                                </div>
+                      {subjectQuizzes.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-10 text-center">
+                          <div className="w-10 h-10 rounded-full flex items-center justify-center mb-2">
+                            <FileText className="w-5 h-5 text-slate-400" />
+                          </div>
+                          <h4 className="text-sm font-bold text-slate-700">Belum Ada Kuis</h4>
+                          <p className="text-xs text-slate-500 mt-1 max-w-xs">Tambahkan kuis interaktif untuk mengukur tingkat pemahaman siswa.</p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {subjectQuizzes.map((qz) => {
+                            const isNewlyAdded = qz.id === newlyAddedQuizId;
+                            return (
+                              <div
+                                key={qz.id}
+                                onClick={() => router.push(`/admin/guru/pelajaran?item=${qz.id}`)}
+                                className={`p-3 pb-4 rounded-[12px] border transition-all flex flex-col justify-between space-y-4 group cursor-pointer ${
+                                  isNewlyAdded
+                                    ? 'bg-indigo-50/50 border-indigo-200 animate-pulse'
+                                    : 'bg-white border-[#ECECEC] hover:border-indigo-300'
+                                }`}
+                              >
+                                <div className="space-y-2.5">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                                      Kuis Interaktif
+                                    </span>
 
-                                <h4 className="font-bold text-base text-[#2E2D2D] group-hover:text-indigo-600 transition-colors leading-snug">
-                                  {qz.title}
-                                </h4>
+                                    <CardMoreDropdown
+                                      itemType="kuis"
+                                      onPreview={() => window.open(`/kuis/${qz.id}`, '_blank')}
+                                      onEdit={() => handleOpenBlockBuilder()}
+                                      onDelete={() => handleDeleteModuleItem(qz.id, qz.title)}
+                                    />
+                                  </div>
 
-                                <div className="flex items-center gap-3 text-xs text-[#737373] pt-0.5">
-                                  <span className="flex items-center gap-1.5 font-medium">
-                                    <FileText className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-                                    <span>{qz.questions.length} Soal</span>
-                                  </span>
-                                  <span className="flex items-center gap-1.5 font-medium">
-                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                                    <span>Pass Score {qz.passScore}</span>
-                                  </span>
+                                  <h4 className="font-bold text-base text-[#2E2D2D] group-hover:text-indigo-600 transition-colors leading-snug">
+                                    {qz.title}
+                                  </h4>
+
+                                  <div className="flex items-center gap-3 text-xs text-[#737373] pt-0.5">
+                                    <span className="flex items-center gap-1.5 font-medium">
+                                      <FileText className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                                      <span>{qz.questions.length} Soal</span>
+                                    </span>
+                                    <span className="flex items-center gap-1.5 font-medium">
+                                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                      <span>Pass Score {qz.passScore}</span>
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                   </div>
-
-                </div>
+                )}
 
               </div>
             )}
@@ -1260,43 +1516,69 @@ export default function AdminGuruPelajaranPage() {
               </div>
             )}
 
-            {/* DETAIL VIEW: IF A QUIZ IS SELECTED (CLEAN REDESIGNED VIEW WITHOUT DUPLICATE HEADERS) */}
+            {/* DETAIL VIEW: IF A QUIZ IS SELECTED (35% RULES / 65% QUESTIONS WITH BIG FRAME) */}
             {selectedQuiz && (
-              <div className="bg-white rounded-[12px] border border-[#ECECEC] p-6 space-y-6 shadow-2xs">
-                {/* SLEEK METADATA BAR (NO DUPLICATE HEADERS OR DUPLICATE TRASH ICONS) */}
-                <div className="flex flex-wrap items-center gap-2.5 pb-4 border-b border-[#ECECEC]">
-                  <span className="text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-[6px] flex items-center gap-1.5">
-                    <Play className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-                    Kuis Interaktif Sintesa
-                  </span>
-                  <span className="text-xs font-semibold text-[#2E2D2D] bg-slate-50 border border-[#ECECEC] px-3 py-1 rounded-[6px] flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-[#737373] shrink-0" />
-                    Durasi: {selectedQuiz.duration}
-                  </span>
-                  <span className="text-xs font-semibold text-[#2E2D2D] bg-slate-50 border border-[#ECECEC] px-3 py-1 rounded-[6px] flex items-center gap-1.5">
-                    <FileText className="w-3.5 h-3.5 text-[#737373] shrink-0" />
-                    {selectedQuiz.questions.length} Soal Pilihan Ganda
-                  </span>
-                  <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-[6px] flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                    Pass Score: {selectedQuiz.passScore}%
-                  </span>
+              <div className="flex flex-col lg:flex-row gap-6 pt-4 items-start">
+                
+                {/* LEFT COLUMN (35%): ATURAN & PETUNJUK KUIS */}
+                <div className="w-full lg:w-[35%] bg-white rounded-[16px] border border-[#ECECEC] p-5 space-y-5 shadow-2xs shrink-0">
+                  <div>
+                    <h3 className="text-sm font-bold text-[#2E2D2D] flex items-center gap-2">
+                      <HelpCircle className="w-4 h-4 text-[#2563EB]" />
+                      Aturan & Petunjuk Kuis
+                    </h3>
+                  </div>
+
+                  <div className="space-y-3.5 pt-1">
+                    <div className="p-3.5 rounded-[10px] bg-slate-50 border border-slate-100 space-y-2.5">
+                      <div className="flex items-center justify-between text-xs font-medium">
+                        <span className="text-[#737373]">Durasi Pengerjaan</span>
+                        <span className="text-[#2E2D2D]">{selectedQuiz.duration}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs font-medium">
+                        <span className="text-[#737373]">Jumlah Pertanyaan</span>
+                        <span className="text-[#2E2D2D]">{selectedQuiz.questions.length} Soal</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs font-medium">
+                        <span className="text-[#737373]">Batas Kelulusan</span>
+                        <span className="text-emerald-600">{selectedQuiz.passScore}%</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 text-xs text-[#737373] pt-1">
+                      <p className="font-semibold text-[#2E2D2D]">Ketentuan Evaluasi:</p>
+                      <ul className="space-y-2 list-disc list-outside pl-4 leading-relaxed text-[11px]">
+                        <li>Setiap soal memiliki 1 pilihan jawaban yang tepat.</li>
+                        <li>Siswa harus mencapai batas nilai minimal <strong className="text-emerald-600 font-semibold">{selectedQuiz.passScore}%</strong> untuk lulus.</li>
+                        <li>Pembahasan disediakan di setiap akhir soal untuk bahan evaluasi mandiri.</li>
+                        <li>Hasil pengerjaan tercatat secara otomatis pada sistem monitoring guru.</li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
 
-                {/* QUESTION LIST */}
-                <div className="space-y-4">
-                  <h3 className="text-sm font-bold text-[#2E2D2D]">Daftar Soal Evaluasi Kuis</h3>
-                  <div className="space-y-3">
+                {/* RIGHT COLUMN (65%): DAFTAR SOAL DALAM BORDER FRAME BESAR */}
+                <div className="w-full lg:w-[65%] bg-white rounded-[16px] border border-[#ECECEC] p-6 space-y-6 shadow-2xs">
+                  <div className="flex items-center justify-between pb-3 border-b border-[#ECECEC]">
+                    <h3 className="text-sm font-bold text-[#2E2D2D]">
+                      Daftar Soal Evaluasi Kuis
+                    </h3>
+                    <span className="text-xs font-semibold text-[#2563EB] bg-blue-50 px-2.5 py-0.5 rounded-[6px] border border-blue-100">
+                      {selectedQuiz.questions.length} Soal
+                    </span>
+                  </div>
+
+                  <div className="space-y-6">
                     {selectedQuiz.questions.map((q, idx) => (
-                      <div key={q.id} className="p-4 rounded-[10px] bg-slate-50 border border-[#ECECEC] space-y-3">
-                        <p className="text-xs font-bold text-[#2E2D2D]">
-                          Soal {idx + 1}: {q.text}
+                      <div key={q.id} className="space-y-3.5 pb-6 border-b border-[#ECECEC] last:border-b-0 last:pb-0">
+                        <p className="text-base font-bold text-[#2E2D2D] leading-snug">
+                          {q.text}
                         </p>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-0.5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-0.5">
                           {q.options.map((opt, oIdx) => (
                             <div
                               key={oIdx}
-                              className={`p-2.5 rounded-[6px] text-xs font-medium border ${
+                              className={`p-3 rounded-[8px] text-xs font-medium border ${
                                 oIdx === q.correctAnswer
                                   ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-bold'
                                   : 'bg-white border-[#ECECEC] text-[#737373]'
@@ -1307,14 +1589,15 @@ export default function AdminGuruPelajaranPage() {
                           ))}
                         </div>
                         {q.explanation && (
-                          <p className="text-[11px] text-[#737373] bg-white p-2 rounded-[6px] border border-[#ECECEC] mt-1">
-                            <strong className="text-[#2E2D2D]">Pembahasan:</strong> {q.explanation}
-                          </p>
+                          <div className="text-xs text-slate-700 bg-slate-100/80 p-3.5 rounded-[8px] border border-slate-200/80 mt-2 leading-relaxed">
+                            <strong className="text-[#2E2D2D] font-bold">Pembahasan:</strong> {q.explanation}
+                          </div>
                         )}
                       </div>
                     ))}
                   </div>
                 </div>
+
               </div>
             )}
 
@@ -1341,8 +1624,17 @@ export default function AdminGuruPelajaranPage() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md text-left space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+            className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md text-left space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-200 relative"
           >
+            {/* Top-Right X Button */}
+            <button
+              type="button"
+              onClick={() => setDeleteTarget(null)}
+              className="absolute right-4 top-4 w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer"
+              aria-label="Tutup Modal"
+            >
+              <X className="w-4 h-4" />
+            </button>
             {/* Icon above header */}
             <div className="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100 shrink-0">
               <AlertCircle className="w-5 h-5 text-rose-600" />
@@ -1354,7 +1646,7 @@ export default function AdminGuruPelajaranPage() {
             </h3>
 
             <p className="text-xs text-[#737373] leading-relaxed bg-slate-50 p-3 rounded-[8px] border border-[#ECECEC]">
-              Apakah Anda yakin ingin menghapus {deleteTarget.type === 'kuis' ? 'kuis' : 'materi'} &ldquo;<strong className="text-[#2E2D2D]">{deleteTarget.title}</strong>&rdquo;? Data akan terhapus dari sistem.
+              Apakah Anda yakin ingin menghapus {deleteTarget.type === 'kuis' ? 'kuis' : 'materi'} <strong className="text-[#2E2D2D]">{deleteTarget.title}</strong>? Data akan terhapus dari sistem.
             </p>
 
             <div className="flex items-center justify-end gap-2 pt-1">
@@ -1473,13 +1765,13 @@ export default function AdminGuruPelajaranPage() {
                       setQuizModalStep('template');
                       setUploadedFile(null);
                     }}
-                    className="p-3.5 rounded-[12px] bg-white border-2 border-[#ECECEC] hover:border-indigo-500 hover:bg-indigo-50/30 transition-all flex items-start gap-3.5 cursor-pointer group shadow-2xs"
+                    className="p-3.5 rounded-[12px] bg-white border-[1.5px] border-[#ECECEC] hover:border-indigo-500 hover:bg-indigo-50/30 transition-all flex items-start gap-3.5 cursor-pointer group"
                   >
-                    <div className="w-[36px] h-[36px] rounded-[8px] bg-indigo-50 text-indigo-600 border border-indigo-100 group-hover:scale-105 transition-transform shrink-0 flex items-center justify-center">
+                    <div className="w-[36px] h-[36px] rounded-[8px] bg-indigo-50 text-indigo-600 border border-indigo-100 shrink-0 flex items-center justify-center">
                       <FileSpreadsheet className="w-4 h-4 text-indigo-600" />
                     </div>
                     <div className="space-y-1 min-w-0">
-                      <h4 className="text-sm font-bold text-[#2E2D2D] group-hover:text-indigo-600 transition-colors">
+                      <h4 className="text-sm font-bold text-[#2E2D2D] transition-colors">
                         Impor dari Berkas Template (.xlsx / .docx)
                       </h4>
                       <p className="text-xs text-[#737373] leading-relaxed">
@@ -1494,13 +1786,13 @@ export default function AdminGuruPelajaranPage() {
                       setQuizModalStep('manual');
                       setManualQuizTitle(`Kuis Evaluasi ${currentSubject}`);
                     }}
-                    className="p-3.5 rounded-[12px] bg-white border-2 border-[#ECECEC] hover:border-[#2563EB] hover:bg-blue-50/30 transition-all flex items-start gap-3.5 cursor-pointer group shadow-2xs"
+                    className="p-3.5 rounded-[12px] bg-white border-[1.5px] border-[#ECECEC] hover:border-[#2563EB] hover:bg-blue-50/30 transition-all flex items-start gap-3.5 cursor-pointer group"
                   >
-                    <div className="w-[36px] h-[36px] rounded-[8px] bg-blue-50 text-[#2563EB] border border-blue-100 group-hover:scale-105 transition-transform shrink-0 flex items-center justify-center">
+                    <div className="w-[36px] h-[36px] rounded-[8px] bg-blue-50 text-[#2563EB] border border-blue-100 shrink-0 flex items-center justify-center">
                       <Edit3 className="w-4 h-4 text-[#2563EB]" />
                     </div>
                     <div className="space-y-1 min-w-0">
-                      <h4 className="text-sm font-bold text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors">
+                      <h4 className="text-sm font-bold text-[#2E2D2D] transition-colors">
                         Buat Manual (Satu per Satu)
                       </h4>
                       <p className="text-xs text-[#737373] leading-relaxed">
@@ -1699,10 +1991,12 @@ export default function AdminGuruPelajaranPage() {
         </div>
       )}
 
+
+
       {/* FLOATING ADMIN TOAST NOTIFICATION — slides from below navbar */}
       {toast && (
         <div
-          className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-[10px] bg-white border border-[#ECECEC] shadow-sm font-sans transition-all duration-300 ease-out ${
+          className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-[10px] bg-white/90 backdrop-blur-md border border-[#ECECEC]/80 shadow-[0_14px_32px_-8px_rgba(0,0,0,0.14)] font-sans transition-all duration-300 ease-out ${
             toastExiting
               ? 'opacity-0 -translate-y-3'
               : 'opacity-100 translate-y-0 animate-in slide-in-from-top-4 fade-in duration-300'

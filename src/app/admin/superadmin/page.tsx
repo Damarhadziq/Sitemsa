@@ -51,7 +51,7 @@ export default function SuperadminDashboard() {
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-[#737373]">Total guru</span>
               <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-[4px] flex items-center gap-0.5">
-                <TrendingUp className="w-3 h-3" /> 08.5%
+                <TrendingUp className="w-3 h-3" /> 8.5%
               </span>
             </div>
             <div className="flex items-baseline justify-between mt-4">
@@ -67,7 +67,7 @@ export default function SuperadminDashboard() {
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-[#737373]">Bidang keahlian</span>
               <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-[4px] flex items-center gap-0.5">
-                <TrendingUp className="w-3 h-3" /> 01.1%
+                <TrendingUp className="w-3 h-3" /> 1.1%
               </span>
             </div>
             <div className="flex items-baseline justify-between mt-4">
@@ -83,7 +83,7 @@ export default function SuperadminDashboard() {
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-[#737373]">Modul & kuis</span>
               <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-[4px] flex items-center gap-0.5">
-                <TrendingUp className="w-3 h-3" /> 02.4%
+                <TrendingUp className="w-3 h-3" /> 2.4%
               </span>
             </div>
             <div className="flex items-baseline justify-between mt-4">
@@ -99,7 +99,7 @@ export default function SuperadminDashboard() {
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-[#737373]">Siswa terdaftar</span>
               <span className="text-[11px] font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-[4px] flex items-center gap-0.5">
-                <TrendingDown className="w-3 h-3" /> 03.7%
+                <TrendingDown className="w-3 h-3" /> 3.7%
               </span>
             </div>
             <div className="flex items-baseline justify-between mt-4">

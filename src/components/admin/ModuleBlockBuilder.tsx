@@ -65,7 +65,7 @@ interface ModuleBlockBuilderProps {
   onSave: (moduleData: Partial<ModuleItem>, blocks: CanvasBlock[]) => void;
 }
 
-// Auto-resizing Textarea Component with zero scrollbars
+// Auto-resizing Textarea Component with zero scrollbars & Smart List Formatting (Bullets & Numbering)
 function AutoResizeTextarea({
   value,
   onChange,
@@ -90,12 +90,116 @@ function AutoResizeTextarea({
     }
   }, [value]);
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+
+      const cursorIndex = textarea.selectionStart;
+      const textBeforeCursor = value.substring(0, cursorIndex);
+      const textAfterCursor = value.substring(cursorIndex);
+
+      const lastNewlineIndex = textBeforeCursor.lastIndexOf('\n');
+      const currentLine = textBeforeCursor.substring(lastNewlineIndex + 1);
+
+      const bulletMatch = currentLine.match(/^([•\-\*])\s*(.*)/);
+      const numberMatch = currentLine.match(/^(\d+)\.\s*(.*)/);
+
+      if (bulletMatch) {
+        e.preventDefault();
+        const bulletSymbol = bulletMatch[1] === '*' || bulletMatch[1] === '-' ? '•' : bulletMatch[1];
+        const lineContent = bulletMatch[2].trim();
+
+        if (lineContent.length === 0) {
+          const lineStartIndex = lastNewlineIndex + 1;
+          const newValue = value.substring(0, lineStartIndex) + textAfterCursor;
+          onChange(newValue);
+          setTimeout(() => {
+            if (textareaRef.current) {
+              textareaRef.current.selectionStart = textareaRef.current.selectionEnd = lineStartIndex;
+            }
+          }, 0);
+        } else {
+          const insertion = `\n${bulletSymbol} `;
+          const newValue = textBeforeCursor + insertion + textAfterCursor;
+          onChange(newValue);
+          const newCursorPos = cursorIndex + insertion.length;
+          setTimeout(() => {
+            if (textareaRef.current) {
+              textareaRef.current.selectionStart = textareaRef.current.selectionEnd = newCursorPos;
+            }
+          }, 0);
+        }
+        return;
+      }
+
+      if (numberMatch) {
+        e.preventDefault();
+        const currentNum = parseInt(numberMatch[1], 10);
+        const lineContent = numberMatch[2].trim();
+
+        if (lineContent.length === 0) {
+          const lineStartIndex = lastNewlineIndex + 1;
+          const newValue = value.substring(0, lineStartIndex) + textAfterCursor;
+          onChange(newValue);
+          setTimeout(() => {
+            if (textareaRef.current) {
+              textareaRef.current.selectionStart = textareaRef.current.selectionEnd = lineStartIndex;
+            }
+          }, 0);
+        } else {
+          const nextNum = currentNum + 1;
+          const insertion = `\n${nextNum}. `;
+          const newValue = textBeforeCursor + insertion + textAfterCursor;
+          onChange(newValue);
+          const newCursorPos = cursorIndex + insertion.length;
+          setTimeout(() => {
+            if (textareaRef.current) {
+              textareaRef.current.selectionStart = textareaRef.current.selectionEnd = newCursorPos;
+            }
+          }, 0);
+        }
+        return;
+      }
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    const textarea = textareaRef.current;
+    if (!textarea) {
+      onChange(val);
+      return;
+    }
+
+    const cursorIndex = textarea.selectionStart;
+    const textBeforeCursor = val.substring(0, cursorIndex);
+
+    const lastNewlineIndex = textBeforeCursor.lastIndexOf('\n');
+    const currentLine = textBeforeCursor.substring(lastNewlineIndex + 1);
+
+    if (currentLine === '- ' || currentLine === '* ') {
+      const lineStartIndex = lastNewlineIndex + 1;
+      const newVal = val.substring(0, lineStartIndex) + '• ' + val.substring(cursorIndex);
+      onChange(newVal);
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.selectionStart = textareaRef.current.selectionEnd = lineStartIndex + 2;
+        }
+      }, 0);
+      return;
+    }
+
+    onChange(val);
+  };
+
   return (
     <textarea
       ref={textareaRef}
       rows={rows}
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={handleChange}
+      onKeyDown={handleKeyDown}
       placeholder={placeholder}
       className={`resize-none overflow-hidden ${className || ''}`}
       style={style}
@@ -130,6 +234,9 @@ export function ModuleBlockBuilder({
   // Publish / Draft Confirmation Modal state & Success Modal state
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showExitConfirmModal, setShowExitConfirmModal] = useState(false);
+  const [showFinalPublishConfirmModal, setShowFinalPublishConfirmModal] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
 
   // Evaluation / Quiz attached during Publish modal
   const [evaluationType, setEvaluationType] = useState<TestType | null>(
@@ -645,7 +752,11 @@ export function ModuleBlockBuilder({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onClose();
+              if (isDirty || blocks.length > 0) {
+                setShowExitConfirmModal(true);
+              } else {
+                onClose();
+              }
             }}
             title="Cancel / Batal"
             className="w-9 h-9 rounded-full bg-white border border-[#ECECEC] text-[#737373] hover:text-[#2E2D2D] hover:bg-slate-50 flex items-center justify-center cursor-pointer transition-colors shrink-0 shadow-2xs"
@@ -664,7 +775,10 @@ export function ModuleBlockBuilder({
               <input
                 type="text"
                 value={moduleTitle}
-                onChange={(e) => setModuleTitle(e.target.value)}
+                onChange={(e) => {
+                  setModuleTitle(e.target.value);
+                  setIsDirty(true);
+                }}
                 placeholder="Give me a name"
                 className="col-start-1 row-start-1 w-full font-bold text-lg sm:text-xl text-[#2E2D2D] placeholder:text-[#AAAAAA] border-none focus:ring-0 outline-none bg-transparent p-0 m-0"
               />
@@ -679,14 +793,14 @@ export function ModuleBlockBuilder({
           className="flex items-center gap-3 shrink-0"
         >
           <button
-            onClick={handleOpenPublishModal}
-            className="px-4 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-[#2E2D2D] cursor-pointer"
+            onClick={() => handleSaveModuleConfirm(false)}
+            className="px-4 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-[#2E2D2D] cursor-pointer transition-colors"
           >
             Save as draft
           </button>
           <button
             onClick={handleOpenPublishModal}
-            className="px-5 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-xs font-semibold text-white shadow-xs cursor-pointer"
+            className="px-5 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-xs font-semibold text-white shadow-xs cursor-pointer transition-colors"
           >
             Continue
           </button>
@@ -699,8 +813,12 @@ export function ModuleBlockBuilder({
         
         {/* CENTER CANVAS AREA */}
         <main
-          onClick={() => setSelectedBlockId(null)}
-          className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-12 flex justify-center bg-white cursor-default"
+          onClick={() => {
+            setSelectedBlockId(null);
+            setInsertTargetIndex(undefined);
+            setShowRightSidebar(false);
+          }}
+          className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-12 flex justify-center bg-[#FFFFFF] cursor-default"
         >
           <div className="w-full max-w-3xl space-y-2 pb-32">
 
@@ -713,7 +831,7 @@ export function ModuleBlockBuilder({
                 <div>
                   <h3 className="font-bold text-base text-[#2E2D2D]">Kanvas Materi Masih Kosong</h3>
                   <p className="text-xs text-[#737373] mt-1 max-w-sm mx-auto">
-                    Mulai susun materi praktikum dengan memilih jenis elemen dari menu sebelah kanan (Text, Gambar, Video, Lampiran File).
+                    Mulai susun materi dengan memilih jenis elemen dari menu sebelah kanan (Text, Gambar, Video, Lampiran File).
                   </p>
                 </div>
               </div>
@@ -1162,25 +1280,31 @@ export function ModuleBlockBuilder({
           </div>
         </main>
 
-        {/* RIGHT SIDEBAR BUILDER TOOLBAR (PRESERVED ORIGINAL STYLE) */}
-        {showRightSidebar && (
-          <aside
-            onClick={(e) => e.stopPropagation()}
-            className="w-80 bg-white border-l border-[#ECECEC] flex flex-col shrink-0 z-20 shadow-xs"
-          >
-            <div className="p-4 pb-2 flex items-center justify-between">
-              <h3 className="text-xs font-bold text-[#2E2D2D]">
-                {selectedBlock?.type === 'attachment'
-                  ? 'Kelola Lampiran File'
-                  : 'Insert block'}
-              </h3>
-              <button
-                onClick={() => setShowRightSidebar(false)}
-                className="text-[#737373] hover:text-[#2E2D2D] p-1 rounded-[4px] cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+        {/* RIGHT SIDEBAR BUILDER TOOLBAR (SMOOTH IN-OUT SLIDE ANIMATION) */}
+        <aside
+          onClick={(e) => e.stopPropagation()}
+          className={`w-80 bg-white border-l border-[#ECECEC] flex flex-col shrink-0 z-20 shadow-xs transition-all duration-300 ease-in-out ${
+            showRightSidebar
+              ? 'translate-x-0 opacity-100 mr-0'
+              : 'translate-x-full opacity-0 pointer-events-none -mr-80'
+          }`}
+        >
+          <div className="p-4 pb-2 flex items-center justify-between">
+            <h3 className="text-xs font-bold text-[#2E2D2D]">
+              {selectedBlock?.type === 'attachment'
+                ? 'Kelola Lampiran File'
+                : 'Insert block'}
+            </h3>
+            <button
+              onClick={() => {
+                setShowRightSidebar(false);
+                setInsertTargetIndex(undefined);
+              }}
+              className="text-[#737373] hover:text-[#2E2D2D] p-1 rounded-[4px] cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-6">
 
@@ -1316,22 +1440,30 @@ export function ModuleBlockBuilder({
 
             </div>
           </aside>
-        )}
 
       </div>
 
       {/* IMAGE EDIT MODAL */}
       {editingImageId && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white text-[#2E2D2D] rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md space-y-4 shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between pb-2 border-b border-[#ECECEC]">
-              <h3 className="font-bold text-sm text-[#2E2D2D]">Pengaturan Gambar</h3>
-              <button
-                onClick={() => setEditingImageId(null)}
-                className="text-[#737373] hover:text-[#2E2D2D] cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
+        <div
+          onClick={() => setEditingImageId(null)}
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white text-[#2E2D2D] rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md space-y-5 shadow-2xl animate-in zoom-in-95 duration-200 relative"
+          >
+            <button
+              type="button"
+              onClick={() => setEditingImageId(null)}
+              className="absolute right-4 top-4 w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer"
+              aria-label="Tutup Modal"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div>
+              <h3 className="font-bold text-base text-[#2E2D2D]">Pengaturan Gambar</h3>
             </div>
 
             <div className="flex gap-2 p-1 bg-slate-100 rounded-[8px]">
@@ -1402,16 +1534,25 @@ export function ModuleBlockBuilder({
 
       {/* VIDEO URL EDIT MODAL */}
       {editingVideoId && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white text-[#2E2D2D] rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md space-y-4 shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between pb-2 border-b border-[#ECECEC]">
-              <h3 className="font-bold text-sm text-[#2E2D2D]">Pengaturan Tautan Video YouTube</h3>
-              <button
-                onClick={() => setEditingVideoId(null)}
-                className="text-[#737373] hover:text-[#2E2D2D] cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
+        <div
+          onClick={() => setEditingVideoId(null)}
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white text-[#2E2D2D] rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md space-y-4 shadow-2xl animate-in zoom-in-95 duration-200 relative"
+          >
+            <button
+              type="button"
+              onClick={() => setEditingVideoId(null)}
+              className="absolute right-4 top-4 w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer"
+              aria-label="Tutup Modal"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div>
+              <h3 className="font-bold text-base text-[#2E2D2D]">Pengaturan Tautan Video YouTube</h3>
             </div>
 
             <div className="space-y-1.5">
@@ -1449,25 +1590,30 @@ export function ModuleBlockBuilder({
 
       {/* PUBLISH / DRAFT CONFIRMATION MODAL WITH REFINED STYLE */}
       {showPublishModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-in fade-in duration-200 font-sans">
+        <div
+          onClick={() => setShowPublishModal(false)}
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-in fade-in duration-200 font-sans"
+        >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white w-full max-w-xl rounded-[16px] border border-[#ECECEC] overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh]"
+            className="bg-white w-full max-w-xl rounded-[16px] border border-[#ECECEC] overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] relative"
           >
+            <button
+              type="button"
+              onClick={() => setShowPublishModal(false)}
+              className="absolute right-4 top-4 z-10 w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer"
+              aria-label="Tutup Modal"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
             {/* Modal Header (Title Only, No Border Line, No Subtitle) */}
-            <div className="p-5 sm:p-6 pb-2 bg-white flex items-center justify-between shrink-0">
+            <div className="p-6 pb-0 bg-white shrink-0">
               <h2 className="text-lg sm:text-xl font-bold text-[#2E2D2D]">Konfirmasi & Publikasi Materi</h2>
-              <button
-                type="button"
-                onClick={() => setShowPublishModal(false)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#737373] flex items-center justify-center cursor-pointer transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 pt-2 overflow-y-auto space-y-5 flex-1 text-xs">
+            <div className="p-6 pt-5 overflow-y-auto space-y-5 flex-1 text-xs">
 
               {/* WARNING BANNER IF NO TEXT SECTION WITH CONTENT IS PRESENT */}
               {!hasValidTextContent && (
@@ -1794,36 +1940,45 @@ export function ModuleBlockBuilder({
             <div className="p-4 sm:p-5 pt-2 bg-white flex items-center justify-end gap-3 shrink-0">
               <button
                 type="button"
-                onClick={() => {
-                  handleSaveModuleConfirm(false);
-                }}
+                onClick={() => setShowPublishModal(false)}
                 className="px-5 py-2.5 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-xs font-bold text-[#2E2D2D] transition-colors cursor-pointer"
               >
-                Simpan Draft Materi
+                Batal
               </button>
-              <button
-                type="button"
-                disabled={!hasValidTextContent || isPublishing}
-                onClick={() => {
-                  if (!hasValidTextContent || isPublishing) return;
-                  handleSaveModuleConfirm(true);
-                }}
-                className={`px-6 py-2.5 rounded-[8px] text-xs font-bold transition-all flex items-center justify-center gap-2 ${
-                  hasValidTextContent && !isPublishing
-                    ? 'bg-[#2563EB] hover:bg-blue-700 text-white shadow-xs cursor-pointer'
-                    : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
-                }`}
-                title={!hasValidTextContent ? 'Lengkapi minimal 1 section teks materi untuk mempublikasikannya' : undefined}
-              >
-                {isPublishing ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-white shrink-0" />
-                    <span>Menerbitkan Materi...</span>
-                  </>
-                ) : (
-                  <span>Publish Materi</span>
-                )}
-              </button>
+              {(() => {
+                const isPublishEnabled = hasValidTextContent && moduleTopics.length > 0 && !isPublishing;
+                return (
+                  <button
+                    type="button"
+                    disabled={!isPublishEnabled}
+                    onClick={() => {
+                      if (!isPublishEnabled) return;
+                      setShowFinalPublishConfirmModal(true);
+                    }}
+                    className={`px-6 py-2.5 rounded-[8px] text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                      isPublishEnabled
+                        ? 'bg-[#2563EB] hover:bg-blue-700 text-white shadow-xs cursor-pointer'
+                        : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+                    }`}
+                    title={
+                      !hasValidTextContent
+                        ? 'Lengkapi minimal 1 section teks materi untuk mempublikasikannya'
+                        : moduleTopics.length === 0
+                        ? 'Wajib mengisi minimal 1 topik bahasan untuk mempublikasikan'
+                        : undefined
+                    }
+                  >
+                    {isPublishing ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-white shrink-0" />
+                        <span>Menerbitkan Materi...</span>
+                      </>
+                    ) : (
+                      <span>Publish Materi</span>
+                    )}
+                  </button>
+                );
+              })()}
             </div>
           </div>
         </div>
@@ -1906,6 +2061,110 @@ export function ModuleBlockBuilder({
             >
               Atau Buka Tautan Langsung &rarr;
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* FINAL PUBLISH CONFIRMATION MODAL */}
+      {showFinalPublishConfirmModal && (
+        <div
+          onClick={() => setShowFinalPublishConfirmModal(false)}
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans text-left"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md space-y-5 shadow-2xl animate-in zoom-in-95 duration-200"
+          >
+            {/* Header Title & Aligned Close Button */}
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="font-bold text-base text-[#2E2D2D]">Konfirmasi Publikasi Materi</h3>
+              <button
+                type="button"
+                onClick={() => setShowFinalPublishConfirmModal(false)}
+                className="w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                aria-label="Tutup Modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-[#737373] leading-relaxed bg-slate-50 p-3 rounded-[8px] border border-[#ECECEC]">
+              Apakah Anda yakin ingin mempublikasikan materi <strong className="text-[#2E2D2D]">{moduleTitle}</strong>? Materi ini akan langsung aktif dan dapat dipelajari oleh siswa.
+            </p>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowFinalPublishConfirmModal(false)}
+                className="px-4 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-[#2E2D2D] text-xs font-semibold cursor-pointer transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowFinalPublishConfirmModal(false);
+                  handleSaveModuleConfirm(true);
+                }}
+                className="px-4 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold shadow-xs cursor-pointer transition-colors"
+              >
+                Terbitkan Sekarang
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showExitConfirmModal && (
+        <div
+          onClick={() => setShowExitConfirmModal(false)}
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans text-left"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md space-y-5 shadow-2xl animate-in zoom-in-95 duration-200"
+          >
+            {/* Header Title & Aligned Close Button (NO ICON, ALIGNED INLINE) */}
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="font-bold text-base text-[#2E2D2D]">Simpan Perubahan Sebelum Keluar?</h3>
+              <button
+                type="button"
+                onClick={() => setShowExitConfirmModal(false)}
+                className="w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                aria-label="Tutup Modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-[#737373] leading-relaxed bg-slate-50 p-3 rounded-[8px] border border-[#ECECEC]">
+              Anda telah membuat perubahan pada materi ini. Apakah Anda ingin menyimpannya sebagai draft terlebih dahulu atau keluar tanpa menyimpan?
+            </p>
+
+            {/* Action Buttons: Keluar (slate button style) + Simpan Sebagai Draft */}
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowExitConfirmModal(false);
+                  onClose();
+                }}
+                className="px-4 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-[#2E2D2D] text-xs font-semibold cursor-pointer transition-colors"
+              >
+                Keluar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowExitConfirmModal(false);
+                  handleSaveModuleConfirm(false);
+                  onClose();
+                }}
+                className="px-4 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold shadow-xs cursor-pointer transition-colors"
+              >
+                Simpan Sebagai Draft
+              </button>
+            </div>
           </div>
         </div>
       )}

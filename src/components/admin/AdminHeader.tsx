@@ -3,7 +3,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   ChevronDown,
-  Bell,
   LogOut,
   User,
   Settings,
@@ -26,14 +25,11 @@ export function AdminHeader() {
   const { subjects } = useAdminStore();
 
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [showNotifMenu, setShowNotifMenu] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(2);
 
   const profileRef = useRef<HTMLDivElement>(null);
-  const notifRef = useRef<HTMLDivElement>(null);
 
   // Settings form states
   const [settingsEmail, setSettingsEmail] = useState(user?.email || 'budi.guru@sintesa.id');
@@ -45,9 +41,6 @@ export function AdminHeader() {
     function handleClickOutside(event: MouseEvent) {
       if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
         setShowProfileMenu(false);
-      }
-      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
-        setShowNotifMenu(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -82,30 +75,6 @@ export function AdminHeader() {
   const currentSubject =
     activeSubjectFilter || availableSubjects[0] || 'Informatika';
 
-  const mockNotifications = [
-    {
-      id: 1,
-      title: 'Siswa Menyelesaikan Kuis',
-      desc: 'Ahmad Fauzi menyelesaikan Kuis Dioda dengan nilai 100.',
-      time: '5 menit lalu',
-      unread: true,
-    },
-    {
-      id: 2,
-      title: 'Pengingat Membaca Modul',
-      desc: '2 siswa belum menyelesaikan modul Resistor Minggu ini.',
-      time: '1 jam lalu',
-      unread: true,
-    },
-    {
-      id: 3,
-      title: 'Pembaruan Sistem Sintesa',
-      desc: 'Fitur Dribbble Editor Block Kanvas telah diperbarui.',
-      time: '1 hari lalu',
-      unread: false,
-    },
-  ];
-
   const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
     setSettingsSavedToast(true);
@@ -125,56 +94,6 @@ export function AdminHeader() {
 
       {/* RIGHT: Action Icons & Profile */}
       <div className="flex items-center gap-2.5">
-        {/* Notifications Button & Dropdown Modal (FULL 100% ROUNDED-FULL) */}
-        <div className="relative" ref={notifRef}>
-          <button
-            onClick={() => setShowNotifMenu(!showNotifMenu)}
-            className="w-9 h-9 rounded-full bg-white border border-[#ECECEC] hover:border-blue-200 flex items-center justify-center text-[#737373] hover:text-[#2E2D2D] transition-all duration-200 ease-in-out active:scale-[0.95] cursor-pointer relative"
-            title="Notifikasi"
-          >
-            <Bell className="w-4 h-4" />
-            {unreadCount > 0 && (
-              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500" />
-            )}
-          </button>
-
-          {/* Notifications Dropdown Modal */}
-          {showNotifMenu && (
-            <div className="absolute right-0 mt-1.5 w-80 bg-white rounded-[12px] border border-[#ECECEC] p-4 z-50 shadow-xl space-y-3 font-sans animate-in fade-in zoom-in-95 duration-150">
-              <div className="flex items-center justify-between pb-2 border-b border-[#ECECEC]">
-                <h3 className="text-xs font-bold text-[#2E2D2D]">Notifikasi Portal</h3>
-                {unreadCount > 0 && (
-                  <button
-                    onClick={() => setUnreadCount(0)}
-                    className="text-[11px] font-semibold text-[#2563EB] hover:underline cursor-pointer"
-                  >
-                    Tandai Semua Dibaca
-                  </button>
-                )}
-              </div>
-
-              <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                {mockNotifications.map((notif) => (
-                  <div
-                    key={notif.id}
-                    className={`p-2.5 rounded-[8px] border transition-all ${
-                      notif.unread && unreadCount > 0
-                        ? 'bg-blue-50/50 border-blue-100'
-                        : 'bg-white border-[#ECECEC]'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-xs font-bold text-[#2E2D2D]">{notif.title}</p>
-                      <span className="text-[10px] text-[#AAAAAA] shrink-0">{notif.time}</span>
-                    </div>
-                    <p className="text-[11px] text-[#737373] mt-1 leading-relaxed">{notif.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
         {/* Profile Avatar + Dropdown (FULL 100% ROUNDED-FULL) */}
         <div className="relative" ref={profileRef}>
           <button

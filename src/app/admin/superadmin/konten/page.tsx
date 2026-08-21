@@ -397,7 +397,7 @@ export default function SuperadminKontenPage() {
 
       {/* Article Modal */}
       {showArticleModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-lg rounded-[10px] border border-[#ECECEC] overflow-hidden font-sans">
             <div className="p-6 bg-white flex items-center justify-between">
               <h3 className="text-base font-bold text-[#2E2D2D]">
@@ -513,7 +513,7 @@ export default function SuperadminKontenPage() {
 
       {/* Subject Modal */}
       {showSubjectModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-lg rounded-[10px] border border-[#ECECEC] overflow-hidden font-sans">
             <div className="p-6 bg-white flex items-center justify-between">
               <h3 className="text-base font-bold text-[#2E2D2D]">
@@ -593,11 +593,11 @@ export default function SuperadminKontenPage() {
         </div>
       )}
 
-      {/* CUSTOM DELETE CONFIRMATION MODAL (DARK BG OVERLAY, LEFT ALIGNED, NO BLUR) */}
+      {/* DELETE CONFIRMATION MODAL */}
       {deleteTargetArticle && (
         <div
           onClick={() => setDeleteTargetArticle(null)}
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200"
         >
           <div
             onClick={(e) => e.stopPropagation()}

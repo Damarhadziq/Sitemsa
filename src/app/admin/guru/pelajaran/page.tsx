@@ -672,11 +672,7 @@ export default function AdminGuruPelajaranPage() {
 
                   <Tooltip content="Edit Soal & Evaluasi Kuis" side="bottom">
                     <button
-                      onClick={() => {
-                        setShowAddQuizModal(true);
-                        setQuizModalStep('manual');
-                        setManualQuizTitle(selectedQuiz.title);
-                      }}
+                      onClick={() => router.push(`/admin/guru/pelajaran/buat-kuis?id=${selectedQuiz.id}`)}
                       className="px-4 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all duration-200 ease-in-out active:scale-[0.98]"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
@@ -1620,17 +1616,17 @@ export default function AdminGuruPelajaranPage() {
       {deleteTarget && (
         <div
           onClick={() => setDeleteTarget(null)}
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md text-left space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-200 relative"
+            className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md text-left space-y-4 animate-in fade-in zoom-in-95 duration-200 relative"
           >
             {/* Top-Right X Button */}
             <button
               type="button"
               onClick={() => setDeleteTarget(null)}
-              className="absolute right-4 top-4 w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer"
+              className="absolute right-4 top-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#737373] hover:text-[#2E2D2D] flex items-center justify-center transition-colors cursor-pointer"
               aria-label="Tutup Modal"
             >
               <X className="w-4 h-4" />
@@ -1658,7 +1654,7 @@ export default function AdminGuruPelajaranPage() {
               </button>
               <button
                 onClick={confirmDeleteModule}
-                className="px-4 py-2 rounded-[8px] bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 cursor-pointer shadow-xs transition-all duration-200 ease-in-out active:scale-[0.98]"
+                className="px-4 py-2 rounded-[8px] bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 cursor-pointer transition-all duration-200 ease-in-out active:scale-[0.98]"
               >
                 Hapus Permanen
               </button>
@@ -1671,15 +1667,15 @@ export default function AdminGuruPelajaranPage() {
       {showQrModal && (
         <div
           onClick={() => setShowQrModal(false)}
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-sm text-left space-y-4 shadow-2xl animate-in zoom-in-95 duration-200 relative"
+            className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-sm text-left space-y-4 animate-in zoom-in-95 duration-200 relative"
           >
             <button
               onClick={() => setShowQrModal(false)}
-              className="absolute right-4 top-4 w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer"
+              className="absolute right-4 top-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#737373] hover:text-[#2E2D2D] flex items-center justify-center transition-colors cursor-pointer"
               aria-label="Tutup Modal"
             >
               <X className="w-4 h-4" />
@@ -1696,7 +1692,7 @@ export default function AdminGuruPelajaranPage() {
               </div>
 
               {/* QR Code SVG Illustration Box */}
-              <div className="p-4 bg-slate-50 border border-[#ECECEC] rounded-[12px] flex items-center justify-center my-2 shadow-xs">
+              <div className="p-4 bg-slate-50 border border-[#ECECEC] rounded-[12px] flex items-center justify-center my-2">
                 <svg className="w-44 h-44 text-[#2E2D2D]" viewBox="0 0 100 100" fill="currentColor">
                   <rect x="5" y="5" width="30" height="30" rx="3" fill="#2E2D2D" />
                   <rect x="10" y="10" width="20" height="20" rx="2" fill="#FFFFFF" />
@@ -1736,11 +1732,11 @@ export default function AdminGuruPelajaranPage() {
       {showAddQuizModal && (
         <div
           onClick={() => setShowAddQuizModal(false)}
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans"
+          className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-lg text-left space-y-5 shadow-2xl animate-in zoom-in-95 duration-200 relative max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-lg text-left space-y-5 animate-in zoom-in-95 duration-200 relative max-h-[90vh] overflow-y-auto"
           >
             {/* Close Button */}
             <button
@@ -1780,11 +1776,11 @@ export default function AdminGuruPelajaranPage() {
                     </div>
                   </div>
 
-                  {/* OPTION 2: BUAT MANUAL */}
+                  {/* OPTION 2: BUAT MANUAL (PAGES SEPARATE) */}
                   <div
                     onClick={() => {
-                      setQuizModalStep('manual');
-                      setManualQuizTitle(`Kuis Evaluasi ${currentSubject}`);
+                      setShowAddQuizModal(false);
+                      router.push('/admin/guru/pelajaran/buat-kuis');
                     }}
                     className="p-3.5 rounded-[12px] bg-white border-[1.5px] border-[#ECECEC] hover:border-[#2563EB] hover:bg-blue-50/30 transition-all flex items-start gap-3.5 cursor-pointer group"
                   >

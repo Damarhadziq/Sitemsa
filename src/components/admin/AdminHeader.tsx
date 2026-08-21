@@ -16,6 +16,7 @@ import {
   Phone,
   BookMarked,
   Sparkles,
+  Pencil,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useAdminStore } from '@/lib/admin-store';
@@ -111,12 +112,12 @@ export function AdminHeader() {
             <ChevronDown className="w-3.5 h-3.5 text-[#737373]" />
           </button>
 
-          {/* Profile Dropdown Menu */}
+          {/* Profile Dropdown Menu (Clean, No Shadow) */}
           {showProfileMenu && (
-            <div className="absolute right-0 mt-1.5 w-48 bg-white rounded-[10px] border border-[#ECECEC] p-1.5 z-50 shadow-xs space-y-0.5 font-sans animate-in fade-in zoom-in-95 duration-150">
+            <div className="absolute right-0 mt-1.5 w-48 bg-white rounded-[10px] border border-[#ECECEC] p-1.5 z-50 space-y-0.5 font-sans animate-in fade-in zoom-in-95 duration-150">
               <div className="px-3 py-2 border-b border-[#ECECEC]">
                 <p className="text-xs font-bold text-[#2E2D2D] truncate">{user?.name || 'Pak Budi Prasetyo, M.Kom.'}</p>
-                <p className="text-[11px] text-[#737373] truncate">{user?.email || 'budi.guru@sintesa.id'}</p>
+                <p className="text-[11px] text-[#737373] truncate">{user?.email || 'budi.guru@sitemsa.sch.id'}</p>
               </div>
 
               <button
@@ -157,70 +158,98 @@ export function AdminHeader() {
       {showProfileModal && (
         <div
           onClick={() => setShowProfileModal(false)}
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md space-y-5 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200"
+            className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md space-y-5 relative animate-in fade-in zoom-in-95 duration-200"
           >
+            {/* Top-Right Close Button */}
             <button
               onClick={() => setShowProfileModal(false)}
-              className="absolute right-4 top-4 w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer"
+              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#737373] hover:text-[#2E2D2D] flex items-center justify-center cursor-pointer transition-colors shrink-0 absolute right-4 top-4"
               aria-label="Tutup Modal"
             >
               <X className="w-4 h-4" />
             </button>
 
-            <div className="flex items-center gap-4 border-b border-[#ECECEC] pb-4">
-              {/* eslint-disable-next-next/no-img-element */}
-              <img
-                src={user?.avatar || 'https://i.pravatar.cc/150?img=60'}
-                alt={user?.name || 'Profil'}
-                className="w-16 h-16 rounded-full object-cover border-2 border-[#2563EB]"
-              />
-              <div>
-                <h3 className="text-base font-bold text-[#2E2D2D]">{user?.name || 'Pak Budi Prasetyo, M.Kom.'}</h3>
-                <span className="text-[11px] font-bold text-[#2563EB] bg-blue-50 px-2.5 py-0.5 rounded border border-blue-100 inline-block mt-1">
+            {/* Profile Avatar Centered + Pencil Edit Icon + Name & Role */}
+            <div className="flex flex-col items-center text-center pt-2 pb-1 space-y-3">
+              <div className="relative">
+                {/* eslint-disable-next-next/no-img-element */}
+                <img
+                  src={user?.avatar || 'https://i.pravatar.cc/150?img=60'}
+                  alt={user?.name || 'Profil'}
+                  className="w-20 h-20 rounded-full object-cover border-2 border-[#2563EB]"
+                />
+                <label
+                  title="Update Foto Profil"
+                  className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-[#2563EB] hover:bg-blue-700 text-white flex items-center justify-center cursor-pointer border-2 border-white transition-transform active:scale-95 shadow-xs"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        alert(`Foto profil berhasil dipilih: ${file.name}`);
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+
+              <div className="space-y-1">
+                <h3 className="text-base font-bold text-[#2E2D2D]">
+                  {user?.name || 'Pak Budi Prasetyo, M.Kom.'}
+                </h3>
+                <span className="text-[11px] font-bold text-[#2563EB] bg-blue-50 px-2.5 py-0.5 rounded border border-blue-100 inline-block">
                   {role === 'superadmin' ? 'Super Administrator' : 'Pengajar / Guru'}
                 </span>
               </div>
             </div>
 
-            <div className="space-y-3 text-xs">
-              <div className="flex items-center justify-between p-3 rounded-[8px] bg-slate-50 border border-[#ECECEC]">
-                <span className="text-[#737373] flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-[#2563EB]" /> Email Resmi:
+            {/* Data Diri Info List (Directly on Modal Canvas, Matching Detail Tim Style) */}
+            <div className="space-y-4 px-1 pt-2 text-left">
+              {/* Email Resmi */}
+              <div className="space-y-1">
+                <span className="text-xs font-semibold text-[#737373] block">
+                  Email Resmi
                 </span>
-                <span className="font-bold text-[#2E2D2D]">{user?.email || 'budi.guru@sintesa.id'}</span>
+                <p className="text-sm font-bold text-[#2E2D2D]">
+                  {(user?.email || 'budi.guru@sitemsa.sch.id').replace('@sintesa.id', '@sitemsa.sch.id')}
+                </p>
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-[8px] bg-slate-50 border border-[#ECECEC]">
-                <span className="text-[#737373] flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-[#2563EB]" /> NIP / ID Pengajar:
+              {/* NIP / ID Pengajar */}
+              <div className="pt-3 border-t border-[#F1F5F9] space-y-1">
+                <span className="text-xs font-semibold text-[#737373] block">
+                  NIP / ID Pengajar
                 </span>
-                <span className="font-bold text-[#2E2D2D]">19840215 201001 1 004</span>
+                <p className="text-sm font-bold text-[#2E2D2D]">
+                  {user?.nip || '19840215 201001 1 004'}
+                </p>
               </div>
 
-              <div className="p-3 rounded-[8px] bg-slate-50 border border-[#ECECEC] space-y-2">
-                <span className="text-[#737373] flex items-center gap-2">
-                  <BookMarked className="w-4 h-4 text-[#2563EB]" /> Bidang Diampu:
+              {/* Bidang Diampu */}
+              <div className="pt-3 border-t border-[#F1F5F9] space-y-1">
+                <span className="text-xs font-semibold text-[#737373] block">
+                  Bidang Diampu
                 </span>
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-1.5 pt-1">
                   {availableSubjects.map((subj) => (
-                    <span key={subj} className="px-2.5 py-1 rounded-[6px] bg-white border border-[#ECECEC] font-bold text-[#2563EB]">
+                    <span
+                      key={subj}
+                      className="px-2.5 py-1 rounded-[6px] bg-blue-50 border border-blue-100 font-bold text-[#2563EB] text-xs"
+                    >
                       {subj}
                     </span>
                   ))}
                 </div>
               </div>
             </div>
-
-            <button
-              onClick={() => setShowProfileModal(false)}
-              className="w-full py-2.5 rounded-[8px] bg-[#2563EB] text-white text-xs font-semibold hover:bg-blue-700 cursor-pointer shadow-xs transition-all duration-200 ease-in-out active:scale-[0.98]"
-            >
-              Tutup Profil
-            </button>
           </div>
         </div>
       )}
@@ -229,15 +258,15 @@ export function AdminHeader() {
       {showSettingsModal && (
         <div
           onClick={() => setShowSettingsModal(false)}
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md space-y-5 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200"
+            className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md space-y-5 relative animate-in fade-in zoom-in-95 duration-200"
           >
             <button
               onClick={() => setShowSettingsModal(false)}
-              className="absolute right-4 top-4 w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer"
+              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#737373] hover:text-[#2E2D2D] flex items-center justify-center cursor-pointer transition-colors shrink-0 absolute right-4 top-4"
               aria-label="Tutup Modal"
             >
               <X className="w-4 h-4" />
@@ -288,7 +317,7 @@ export function AdminHeader() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-[8px] bg-[#2563EB] text-white font-semibold hover:bg-blue-700 cursor-pointer shadow-xs transition-all duration-200 ease-in-out active:scale-[0.98]"
+                  className="px-5 py-2 rounded-[8px] bg-[#2563EB] text-white font-semibold hover:bg-blue-700 cursor-pointer transition-all duration-200 ease-in-out active:scale-[0.98]"
                 >
                   Simpan Perubahan
                 </button>

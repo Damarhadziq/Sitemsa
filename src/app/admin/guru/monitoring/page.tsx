@@ -321,7 +321,7 @@ export default function AdminGuruMonitoringPage() {
 
       {/* Student Detailed Evaluation Modal */}
       {selectedStudentModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-xl rounded-[10px] border border-[#ECECEC] overflow-hidden font-sans">
             <div className="p-6 bg-white flex items-center justify-between">
               <div className="flex items-center gap-3">

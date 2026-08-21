@@ -8,9 +8,9 @@ import { AdminHeader } from '@/components/admin/AdminHeader';
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  // For /admin/login page, render standard full-screen white layout
-  if (pathname === '/admin/login') {
-    return <div className="min-h-screen bg-white font-sans">{children}</div>;
+  // For /admin/login or dedicated builder pages (e.g. /buat-kuis), render clean full-screen layout without sidebar/admin header
+  if (pathname === '/admin/login' || pathname.startsWith('/admin/guru/pelajaran/buat-kuis')) {
+    return <div className="min-h-screen bg-[#F9FAFB] font-sans">{children}</div>;
   }
 
   return (

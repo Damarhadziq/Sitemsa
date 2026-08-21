@@ -31,45 +31,54 @@ interface AuthContextType {
 const SUPERADMIN_USER: AuthUser = {
   id: 'sa-1',
   name: 'Super Administrator Sitemsa',
-  email: 'admin@sintesa.id',
+  email: 'admin@sitemsa.sch.id',
   role: 'superadmin',
   avatar: 'https://i.pravatar.cc/150?img=68',
 };
 
 const TEACHER_USERS: Record<string, AuthUser> = {
-  'budi.guru@sintesa.id': {
+  'budi.guru@sitemsa.sch.id': {
     id: 't-1',
     name: 'Pak Budi Prasetyo, M.Kom.',
-    email: 'budi.guru@sintesa.id',
+    email: 'budi.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19850412 201001 1 003',
     avatar: 'https://i.pravatar.cc/150?img=60',
     assignedSubjects: ['Informatika'],
   },
-  'siti.guru@sintesa.id': {
+  'siti.guru@sitemsa.sch.id': {
     id: 't-2',
     name: 'Ibu Siti Rahmawati, S.T.',
-    email: 'siti.guru@sintesa.id',
+    email: 'siti.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19900823 201502 2 005',
     avatar: 'https://i.pravatar.cc/150?img=47',
     assignedSubjects: ['Elektronika', 'Otomotif'],
   },
-  'ahmad.guru@sintesa.id': {
+  'ahmad.guru@sitemsa.sch.id': {
     id: 't-3',
     name: 'Pak Ahmad Fauzi, S.Pd.',
-    email: 'ahmad.guru@sintesa.id',
+    email: 'ahmad.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19881115 201201 1 002',
     avatar: 'https://i.pravatar.cc/150?img=11',
     assignedSubjects: ['Seni & Desain'],
+  },
+  'budi.guru@sintesa.id': {
+    id: 't-1',
+    name: 'Pak Budi Prasetyo, M.Kom.',
+    email: 'budi.guru@sitemsa.sch.id',
+    role: 'guru',
+    nip: '19850412 201001 1 003',
+    avatar: 'https://i.pravatar.cc/150?img=60',
+    assignedSubjects: ['Informatika'],
   },
 };
 
 const STUDENT_USER: AuthUser = {
   id: 'std-1',
   name: 'Andi Pratama',
-  email: 'siswa@sintesa.id',
+  email: 'siswa@sitemsa.sch.id',
   role: 'siswa',
   avatar: 'https://i.pravatar.cc/150?img=12',
 };
@@ -202,7 +211,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loginWithCredentials = (email: string): boolean => {
     const cleanEmail = email.trim().toLowerCase();
-    if (cleanEmail === 'admin@sintesa.id' || cleanEmail === 'admin') {
+    if (cleanEmail === 'admin@sitemsa.sch.id' || cleanEmail === 'admin@sintesa.id' || cleanEmail === 'admin') {
       loginAsSuperadmin();
       return true;
     }
@@ -213,7 +222,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (cleanEmail.includes('guru')) {
-      loginAsTeacher('budi.guru@sintesa.id');
+      loginAsTeacher('budi.guru@sitemsa.sch.id');
       return true;
     }
 

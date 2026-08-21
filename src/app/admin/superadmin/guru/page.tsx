@@ -329,7 +329,7 @@ export default function SuperadminGuruPage() {
 
       {/* Modal Add / Edit Teacher */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-lg rounded-[10px] border border-[#ECECEC] overflow-hidden font-sans">
             <div className="p-6 bg-white flex items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -474,21 +474,21 @@ export default function SuperadminGuruPage() {
         </div>
       )}
 
-      {/* CUSTOM DELETE CONFIRMATION MODAL (DARK BG OVERLAY, LEFT ALIGNED, NO BLUR) */}
+      {/* CUSTOM DELETE CONFIRMATION MODAL */}
       {deleteTargetTeacher && (
         <div
           onClick={() => setDeleteTargetTeacher(null)}
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md text-left space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-200 relative"
+            className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md text-left space-y-4 animate-in fade-in zoom-in-95 duration-200 relative"
           >
             {/* Top-Right X Button */}
             <button
               type="button"
               onClick={() => setDeleteTargetTeacher(null)}
-              className="absolute right-4 top-4 w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer"
+              className="absolute right-4 top-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#737373] hover:text-[#2E2D2D] flex items-center justify-center transition-colors cursor-pointer"
               aria-label="Tutup Modal"
             >
               <X className="w-4 h-4" />

@@ -50,7 +50,7 @@ export function AdminSidebar() {
   const isLandingActive = isPelajaranActive && !currentItemParam;
 
   return (
-    <aside className="w-64 bg-white border-r border-[#ECECEC] flex flex-col justify-between h-screen sticky top-0 font-sans z-40 shrink-0">
+    <aside className="w-64 bg-white border-r border-[#ECECEC] flex flex-col justify-between h-screen sticky top-0 font-sans z-10 shrink-0">
       <div className="flex flex-col h-full overflow-hidden">
         {/* Role-Based Brand SVG Logo (Sized compactly for header alignment) */}
         <div className="h-16 px-6 flex items-center shrink-0">

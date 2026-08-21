@@ -27,6 +27,16 @@ export function UserProfileModal({
 }: UserProfileModalProps) {
   const [activeTab, setActiveTab] = useState<ProfileTab>(initialTab);
   const [prevInitialTab, setPrevInitialTab] = useState(initialTab);
+
+  // Baseline initial profile state
+  const [savedProfile, setSavedProfile] = useState({
+    name: "Budi Santoso",
+    email: "budi@siswa.belajar.id",
+    school: "SMKN 1 Semarang",
+    nisn: "0084920194",
+    grade: "XI PPLG 1",
+  });
+
   const [name, setName] = useState("Budi Santoso");
   const [email, setEmail] = useState("budi@siswa.belajar.id");
   const [school, setSchool] = useState("SMKN 1 Semarang");
@@ -34,6 +44,14 @@ export function UserProfileModal({
   const [grade, setGrade] = useState("XI PPLG 1");
   const [historySubView, setHistorySubView] = useState<"overview" | "all-materials" | "all-quizzes">("overview");
   const [isSavedToast, setIsSavedToast] = useState(false);
+
+  // Track if any field has changed compared to saved profile
+  const hasChanges =
+    name !== savedProfile.name ||
+    email !== savedProfile.email ||
+    school !== savedProfile.school ||
+    nisn !== savedProfile.nisn ||
+    grade !== savedProfile.grade;
 
   if (prevInitialTab !== initialTab) {
     setPrevInitialTab(initialTab);
@@ -71,12 +89,14 @@ export function UserProfileModal({
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasChanges) return;
+    setSavedProfile({ name, email, school, nisn, grade });
     setIsSavedToast(true);
     setTimeout(() => setIsSavedToast(false), 3000);
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 flex items-end justify-center md:items-center p-0 md:p-4 animate-in fade-in duration-200 overscroll-contain">
+    <div className="fixed inset-0 z-50 bg-black/80 flex items-end justify-center md:items-center p-0 md:p-4 animate-in fade-in duration-200 overscroll-contain font-sans">
       {/* Backdrop listener */}
       <div className="absolute inset-0" onClick={onClose} />
 
@@ -115,7 +135,7 @@ export function UserProfileModal({
           <button
             type="button"
             onClick={onClose}
-            className="hidden md:flex w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] items-center justify-center transition-colors shrink-0 cursor-pointer"
+            className="hidden md:flex w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#737373] hover:text-[#2E2D2D] items-center justify-center transition-colors shrink-0 cursor-pointer"
             aria-label="Tutup Modal"
           >
             <HugeiconsIcon icon={Cancel01Icon} size={16} />
@@ -129,14 +149,14 @@ export function UserProfileModal({
             <form onSubmit={handleSaveProfile} className="space-y-5">
               {/* Toast Notification */}
               {isSavedToast && (
-                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-[6px] flex items-center gap-2 text-xs font-semibold text-emerald-700 animate-in fade-in duration-200">
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-[10px] flex items-center gap-2 text-xs font-semibold text-emerald-700 animate-in fade-in duration-200">
                   <HugeiconsIcon icon={CheckmarkCircle02Icon} size={16} />
                   Data profil berhasil diperbarui!
                 </div>
               )}
 
               {/* Avatar Header Row */}
-              <div className="flex items-center gap-4 p-4 bg-[#FAFAFA] border border-[#ECECEC] rounded-[10px]">
+              <div className="flex items-center gap-4 p-4 bg-[#FAFAFA] border border-[#ECECEC] rounded-[12px]">
                 <div className="relative w-16 h-16 rounded-full overflow-hidden border border-[#ECECEC] shrink-0 bg-white">
                   <Image
                     src="https://i.pravatar.cc/100?img=12"
@@ -150,7 +170,7 @@ export function UserProfileModal({
                   <p className="text-xs text-[#737373]">{email}</p>
                   <button
                     type="button"
-                    className="mt-1 px-3 py-1 bg-white border border-[#ECECEC] hover:bg-gray-100 text-[11px] font-semibold text-[#2E2D2D] rounded-[6px] transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                    className="mt-1 px-3 py-1.5 bg-white border border-[#ECECEC] hover:bg-gray-50 text-[11px] font-semibold text-[#2E2D2D] rounded-[8px] transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                   >
                     <HugeiconsIcon icon={Camera01Icon} size={13} />
                     Ubah Foto Profil
@@ -158,85 +178,99 @@ export function UserProfileModal({
                 </div>
               </div>
 
-              {/* Form Fields Grid */}
+              {/* Form Fields Grid with White Background & Border #ECECEC */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-[#2E2D2D] mb-1.5">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-[#2E2D2D]">
                     Nama Lengkap
                   </label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#F3F3F3] border border-transparent rounded-[6px] text-xs text-[#2E2D2D] focus:bg-white focus:border-[#2563EB] outline-none transition-all"
+                    className="w-full bg-white border border-[#ECECEC] rounded-[10px] px-3.5 py-2.5 text-xs text-[#2E2D2D] focus:outline-none focus:border-[#2563EB] transition-colors font-medium"
                     required
                   />
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-[#2E2D2D] mb-1.5">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-[#2E2D2D]">
                     Email Siswa
                   </label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#F3F3F3] border border-transparent rounded-[6px] text-xs text-[#2E2D2D] focus:bg-white focus:border-[#2563EB] outline-none transition-all"
+                    className="w-full bg-white border border-[#ECECEC] rounded-[10px] px-3.5 py-2.5 text-xs text-[#2E2D2D] focus:outline-none focus:border-[#2563EB] transition-colors font-medium"
                     required
                   />
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-[#2E2D2D] mb-1.5">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-[#2E2D2D]">
                     Sekolah / Instansi
                   </label>
                   <input
                     type="text"
                     value={school}
                     onChange={(e) => setSchool(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#F3F3F3] border border-transparent rounded-[6px] text-xs text-[#2E2D2D] focus:bg-white focus:border-[#2563EB] outline-none transition-all"
+                    className="w-full bg-white border border-[#ECECEC] rounded-[10px] px-3.5 py-2.5 text-xs text-[#2E2D2D] focus:outline-none focus:border-[#2563EB] transition-colors font-medium"
                     required
                   />
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-[#2E2D2D] mb-1.5">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-[#2E2D2D]">
                     NISN / Nomor Induk
                   </label>
                   <input
                     type="text"
                     value={nisn}
                     onChange={(e) => setNisn(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#F3F3F3] border border-transparent rounded-[6px] text-xs text-[#2E2D2D] focus:bg-white focus:border-[#2563EB] outline-none transition-all font-mono"
+                    className="w-full bg-white border border-[#ECECEC] rounded-[10px] px-3.5 py-2.5 text-xs text-[#2E2D2D] focus:outline-none focus:border-[#2563EB] transition-colors font-mono font-medium"
                     required
                   />
                 </div>
 
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-[#2E2D2D] mb-1.5">
+                <div className="sm:col-span-2 space-y-1.5">
+                  <label className="block text-xs font-bold text-[#2E2D2D]">
                     Kelas &amp; Jurusan
                   </label>
                   <input
                     type="text"
                     value={grade}
                     onChange={(e) => setGrade(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#F3F3F3] border border-transparent rounded-[6px] text-xs text-[#2E2D2D] focus:bg-white focus:border-[#2563EB] outline-none transition-all"
+                    className="w-full bg-white border border-[#ECECEC] rounded-[10px] px-3.5 py-2.5 text-xs text-[#2E2D2D] focus:outline-none focus:border-[#2563EB] transition-colors font-medium"
                     required
                   />
                 </div>
               </div>
 
-              <div className="pt-2 flex items-center justify-end gap-2">
+              {/* Action Buttons: Simpan Perubahan active ONLY if modified */}
+              <div className="pt-2 flex items-center justify-end gap-2.5">
                 <button
                   type="button"
-                  onClick={onClose}
-                  className="px-4 py-2 bg-[#FAFAFA] border border-[#ECECEC] hover:bg-[#F6F5FF] hover:border-[#2563EB]/40 text-[#737373] hover:text-[#2563EB] text-xs font-semibold rounded-[6px] transition-all duration-200 cursor-pointer"
+                  onClick={() => {
+                    setName(savedProfile.name);
+                    setEmail(savedProfile.email);
+                    setSchool(savedProfile.school);
+                    setNisn(savedProfile.nisn);
+                    setGrade(savedProfile.grade);
+                    onClose();
+                  }}
+                  className="px-4 py-2.5 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-[#2E2D2D] text-xs font-semibold cursor-pointer transition-colors"
                 >
                   Batal
                 </button>
+
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-95 text-white text-xs font-semibold rounded-[6px] transition-all duration-200 cursor-pointer"
+                  disabled={!hasChanges}
+                  className={`px-5 py-2.5 rounded-[8px] text-xs font-bold transition-all ${
+                    hasChanges
+                      ? 'bg-[#2563EB] hover:bg-blue-700 text-white cursor-pointer active:scale-98'
+                      : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+                  }`}
                 >
                   Simpan Perubahan
                 </button>

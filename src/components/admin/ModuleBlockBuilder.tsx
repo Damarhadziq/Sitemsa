@@ -233,6 +233,7 @@ export function ModuleBlockBuilder({
   const tagInputRef = useRef<HTMLInputElement | null>(null);
 
   // Publish / Draft Confirmation Modal state & Success Modal state
+  const isAlreadyPublished = initialModule?.isPublished === true;
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showExitConfirmModal, setShowExitConfirmModal] = useState(false);
@@ -801,17 +802,19 @@ export function ModuleBlockBuilder({
           onClick={(e) => e.stopPropagation()}
           className="flex items-center gap-3 shrink-0"
         >
-          <button
-            onClick={() => handleSaveModuleConfirm(false)}
-            className="px-4 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-[#2E2D2D] cursor-pointer transition-colors"
-          >
-            Save as draft
-          </button>
+          {!isAlreadyPublished && (
+            <button
+              onClick={() => handleSaveModuleConfirm(false)}
+              className="px-4 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-[#2E2D2D] cursor-pointer transition-colors"
+            >
+              Save as draft
+            </button>
+          )}
           <button
             onClick={handleOpenPublishModal}
             className="px-5 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-xs font-semibold text-white shadow-xs cursor-pointer transition-colors"
           >
-            Continue
+            {isAlreadyPublished ? 'Publish Ulang' : 'Continue'}
           </button>
         </div>
 
@@ -1903,17 +1906,19 @@ export function ModuleBlockBuilder({
 
             </div>
 
-            {/* Modal Footer (2 Action Buttons, No Top Border Line) */}
+            {/* Modal Footer (Action Buttons, No Top Border Line) */}
             <div className="p-4 sm:p-5 pt-2 bg-white flex items-center justify-end gap-3 shrink-0">
-              <button
-                type="button"
-                onClick={() => {
-                  handleSaveModuleConfirm(false);
-                }}
-                className="px-4 py-2.5 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-[#2E2D2D] transition-colors cursor-pointer"
-              >
-                Save as draft
-              </button>
+              {!isAlreadyPublished && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleSaveModuleConfirm(false);
+                  }}
+                  className="px-4 py-2.5 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-[#2E2D2D] transition-colors cursor-pointer"
+                >
+                  Save as draft
+                </button>
+              )}
               {(() => {
                 const isPublishEnabled = hasValidTextContent && moduleTopics.length > 0 && !isPublishing;
                 return (
@@ -1922,7 +1927,7 @@ export function ModuleBlockBuilder({
                     disabled={!isPublishEnabled}
                     onClick={() => {
                       if (!isPublishEnabled) return;
-                      setShowFinalPublishConfirmModal(true);
+                      handleSaveModuleConfirm(true);
                     }}
                     className={`px-6 py-2.5 rounded-[8px] text-xs font-bold transition-all flex items-center justify-center gap-2 ${
                       isPublishEnabled
@@ -1940,10 +1945,10 @@ export function ModuleBlockBuilder({
                     {isPublishing ? (
                       <>
                         <RefreshCw className="w-3.5 h-3.5 animate-spin text-white shrink-0" />
-                        <span>Menerbitkan Materi...</span>
+                        <span>{isAlreadyPublished ? 'Menerbitkan Ulang...' : 'Menerbitkan Materi...'}</span>
                       </>
                     ) : (
-                      <span>Publish Materi</span>
+                      <span>{isAlreadyPublished ? 'Publish Ulang' : 'Publish Materi'}</span>
                     )}
                   </button>
                 );
@@ -2034,56 +2039,6 @@ export function ModuleBlockBuilder({
         </div>
       )}
 
-      {/* FINAL PUBLISH CONFIRMATION MODAL */}
-      {showFinalPublishConfirmModal && (
-        <div
-          onClick={() => setShowFinalPublishConfirmModal(false)}
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans text-left"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md space-y-5 shadow-2xl animate-in zoom-in-95 duration-200"
-          >
-            {/* Header Title & Aligned Close Button */}
-            <div className="flex items-center justify-between gap-3">
-              <h3 className="font-bold text-base text-[#2E2D2D]">Konfirmasi Publikasi Materi</h3>
-              <button
-                type="button"
-                onClick={() => setShowFinalPublishConfirmModal(false)}
-                className="w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer shrink-0"
-                aria-label="Tutup Modal"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <p className="text-xs text-[#737373] leading-relaxed bg-slate-50 p-3 rounded-[8px] border border-[#ECECEC]">
-              Apakah Anda yakin ingin mempublikasikan materi <strong className="text-[#2E2D2D]">{moduleTitle}</strong>? Materi ini akan langsung aktif dan dapat dipelajari oleh siswa.
-            </p>
-
-            {/* Action Buttons */}
-            <div className="flex items-center justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowFinalPublishConfirmModal(false)}
-                className="px-4 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-[#2E2D2D] text-xs font-semibold cursor-pointer transition-colors"
-              >
-                Batal
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowFinalPublishConfirmModal(false);
-                  handleSaveModuleConfirm(true);
-                }}
-                className="px-4 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold shadow-xs cursor-pointer transition-colors"
-              >
-                Terbitkan Sekarang
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       {showExitConfirmModal && (
         <div
           onClick={() => setShowExitConfirmModal(false)}

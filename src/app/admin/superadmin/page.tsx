@@ -206,67 +206,55 @@ export default function SuperadminDashboard() {
             </div>
 
             {/* RIGHT COLUMN: AI Copilot Card (Span 5) */}
-            <div className="lg:col-span-5 relative rounded-[10px] min-h-[336px] flex flex-col group">
+            <div className="lg:col-span-5 relative rounded-[12px] min-h-[336px] flex flex-col group">
               <BorderGlow
-                borderRadius={10}
-                glowColor="220 90% 60%"
+                backgroundColor="#FFFFFF"
+                borderRadius={12}
+                glowRadius={20}
+                glowIntensity={1.0}
+                coneSpread={25}
+                animated={true}
+                colors={['#2563EB', '#6366F1', '#a855f7']}
                 className="w-full h-full"
               >
-                <div className="relative z-10 w-full h-full bg-gradient-to-br from-[#EFF6FF] via-[#F8FAFC] to-[#EFF6FF] rounded-[9px] p-6 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-7 h-7 rounded-full bg-[#2563EB] flex items-center justify-center text-white">
-                        <Sparkles className="w-3.5 h-3.5" />
+                <div className="bg-gradient-to-b from-blue-50/50 via-purple-50/20 to-white p-6 flex flex-col justify-center items-center text-center w-full h-full relative overflow-hidden space-y-6">
+                  
+                  {/* Header Section: Icon + Titles in tight vertical layout */}
+                  <div className="flex flex-col items-center space-y-2.5 max-w-sm">
+                    <div className="w-10 h-10 rounded-[8px] bg-white border border-[#ECECEC] flex items-center justify-center text-[#2E2D2D] shadow-xs">
+                      <Sparkles className="w-5 h-5 text-[#2563EB]" />
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-center gap-2 flex-wrap">
+                        <h2 className="text-lg md:text-xl font-semibold text-[#2E2D2D] tracking-tight">
+                          Tanyakan AI Sitemsa
+                        </h2>
+                        <span className="px-2 py-0.5 rounded-[4px] bg-blue-50 text-[#2563EB] border border-blue-100 text-[10px] font-bold tracking-wide shrink-0">
+                          Coming Soon
+                        </span>
                       </div>
-                      <span className="text-xs font-bold uppercase tracking-wider text-[#2563EB]">
-                        AI Sistem Pengelola
-                      </span>
-                    </div>
-
-                    <h3 className="text-lg font-bold text-[#2E2D2D] leading-snug mb-2">
-                      Laporan Cepat Sekolah
-                    </h3>
-
-                    <p className="text-xs text-[#737373] leading-relaxed mb-4">
-                      Tanyakan status sistem, rekapitulasi data guru, penambahan mata pelajaran, atau performa kurikulum Sitemsa.
-                    </p>
-
-                    {/* Quick Pill Prompts */}
-                    <div className="flex flex-wrap gap-2">
-                      {quickPrompts.map((item) => (
-                        <button
-                          key={item.id}
-                          type="button"
-                          onClick={() => setAiPrompt(item.text)}
-                          className={`px-3 py-1.5 rounded-[6px] text-xs font-medium transition-colors cursor-pointer ${
-                            item.primary
-                              ? 'bg-[#2563EB] text-white hover:bg-blue-700 font-semibold'
-                              : 'bg-white text-[#2E2D2D] border border-[#ECECEC] hover:bg-slate-50'
-                          }`}
-                        >
-                          {item.text}
-                        </button>
-                      ))}
+                      <p className="text-xs text-[#737373] leading-normal">
+                        Asisten kecerdasan buatan untuk analisis sekolah & kurikulum
+                      </p>
                     </div>
                   </div>
 
-                  {/* Input Prompt Box */}
-                  <div className="relative mt-6">
-                    <input
-                      type="text"
-                      value={aiPrompt}
-                      onChange={(e) => setAiPrompt(e.target.value)}
-                      placeholder="Ketik pertanyaan untuk sistem AI..."
-                      className="w-full h-11 pl-4 pr-12 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] placeholder:text-[#AAAAAA] focus:border-[#2563EB] transition-all outline-none"
-                    />
-                    <button
-                      type="button"
-                      title="Kirim Prompt AI"
-                      className="w-8 h-8 rounded-[6px] bg-[#2563EB] hover:bg-blue-700 text-white flex items-center justify-center absolute right-1.5 top-1/2 -translate-y-1/2 transition-colors cursor-pointer"
-                    >
-                      <Send className="w-3.5 h-3.5" />
-                    </button>
+                  {/* Disabled Text Box with increased top gap */}
+                  <div className="w-full pt-2">
+                    <div className="relative w-full">
+                      <input
+                        type="text"
+                        disabled
+                        placeholder="Fitur Asisten AI segera hadir..."
+                        className="w-full h-11 pl-4 pr-11 rounded-[8px] bg-slate-100/70 border border-[#ECECEC] text-xs text-slate-400 placeholder:text-slate-400 cursor-not-allowed outline-none select-none"
+                      />
+                      <button disabled className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-[6px] text-slate-300 flex items-center justify-center cursor-not-allowed">
+                        <Send className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
+
                 </div>
               </BorderGlow>
             </div>

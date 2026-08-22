@@ -27,8 +27,11 @@ import {
   Download,
   Highlighter,
   AlertCircle,
+  Hash,
 } from 'lucide-react';
 import { ModuleItem } from '@/lib/admin-store';
+import { getMaterialBlocksForModule, getMaterialDetailForModule } from '@/app/materi/[id]/page';
+import { Tooltip } from '@/components/ui/tooltip';
 
 export type BlockType = 'text' | 'image' | 'video' | 'attachment' | 'steps' | 'callout';
 export type TestType = 'link_eksternal' | 'qr_code' | 'kuis_sitemsa';
@@ -40,14 +43,23 @@ export interface AttachedFileItem {
   fileUrl: string;
 }
 
+export interface SectionElement {
+  id: string;
+  type: 'paragraph' | 'image';
+  text?: string;
+  imageUrl?: string;
+  imageCaption?: string;
+}
+
 export interface CanvasBlock {
   id: string;
   type: BlockType;
-  // Section Text block data (Title + Content + Highlight)
+  // Section Text block data (Title + Elements + Highlight)
   sectionTitle?: string;
   textValue?: string;
   calloutText?: string;
   alignment?: 'left' | 'center' | 'right';
+  elements?: SectionElement[];
 
   // Media block data
   mediaUrl?: string;
@@ -57,6 +69,8 @@ export interface CanvasBlock {
   attachments?: AttachedFileItem[];
 
   // Step by step block data
+  stepSectionTitle?: string;
+  stepSectionSubtitle?: string;
   steps?: { title: string; desc: string }[];
 }
 
@@ -67,14 +81,13 @@ interface ModuleBlockBuilderProps {
   onSave: (moduleData: Partial<ModuleItem>, blocks: CanvasBlock[]) => void;
 }
 
-// Auto-resizing Textarea Component with zero scrollbars & Smart List Formatting (Bullets & Numbering)
+// Auto-resizing ContentEditable Text Component with genuine Justify Alignment & Zero Scrollbars
 function AutoResizeTextarea({
   value,
   onChange,
   placeholder,
   className,
   style,
-  rows = 1,
 }: {
   value: string;
   onChange: (val: string) => void;
@@ -83,128 +96,31 @@ function AutoResizeTextarea({
   style?: React.CSSProperties;
   rows?: number;
 }) {
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const divRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    if (divRef.current && divRef.current.innerText !== (value || '')) {
+      divRef.current.innerText = value || '';
     }
   }, [value]);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      const textarea = textareaRef.current;
-      if (!textarea) return;
-
-      const cursorIndex = textarea.selectionStart;
-      const textBeforeCursor = value.substring(0, cursorIndex);
-      const textAfterCursor = value.substring(cursorIndex);
-
-      const lastNewlineIndex = textBeforeCursor.lastIndexOf('\n');
-      const currentLine = textBeforeCursor.substring(lastNewlineIndex + 1);
-
-      const bulletMatch = currentLine.match(/^([•\-\*])\s*(.*)/);
-      const numberMatch = currentLine.match(/^(\d+)\.\s*(.*)/);
-
-      if (bulletMatch) {
-        e.preventDefault();
-        const bulletSymbol = bulletMatch[1] === '*' || bulletMatch[1] === '-' ? '•' : bulletMatch[1];
-        const lineContent = bulletMatch[2].trim();
-
-        if (lineContent.length === 0) {
-          const lineStartIndex = lastNewlineIndex + 1;
-          const newValue = value.substring(0, lineStartIndex) + textAfterCursor;
-          onChange(newValue);
-          setTimeout(() => {
-            if (textareaRef.current) {
-              textareaRef.current.selectionStart = textareaRef.current.selectionEnd = lineStartIndex;
-            }
-          }, 0);
-        } else {
-          const insertion = `\n${bulletSymbol} `;
-          const newValue = textBeforeCursor + insertion + textAfterCursor;
-          onChange(newValue);
-          const newCursorPos = cursorIndex + insertion.length;
-          setTimeout(() => {
-            if (textareaRef.current) {
-              textareaRef.current.selectionStart = textareaRef.current.selectionEnd = newCursorPos;
-            }
-          }, 0);
-        }
-        return;
-      }
-
-      if (numberMatch) {
-        e.preventDefault();
-        const currentNum = parseInt(numberMatch[1], 10);
-        const lineContent = numberMatch[2].trim();
-
-        if (lineContent.length === 0) {
-          const lineStartIndex = lastNewlineIndex + 1;
-          const newValue = value.substring(0, lineStartIndex) + textAfterCursor;
-          onChange(newValue);
-          setTimeout(() => {
-            if (textareaRef.current) {
-              textareaRef.current.selectionStart = textareaRef.current.selectionEnd = lineStartIndex;
-            }
-          }, 0);
-        } else {
-          const nextNum = currentNum + 1;
-          const insertion = `\n${nextNum}. `;
-          const newValue = textBeforeCursor + insertion + textAfterCursor;
-          onChange(newValue);
-          const newCursorPos = cursorIndex + insertion.length;
-          setTimeout(() => {
-            if (textareaRef.current) {
-              textareaRef.current.selectionStart = textareaRef.current.selectionEnd = newCursorPos;
-            }
-          }, 0);
-        }
-        return;
-      }
-    }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const val = e.target.value;
-    const textarea = textareaRef.current;
-    if (!textarea) {
-      onChange(val);
-      return;
-    }
-
-    const cursorIndex = textarea.selectionStart;
-    const textBeforeCursor = val.substring(0, cursorIndex);
-
-    const lastNewlineIndex = textBeforeCursor.lastIndexOf('\n');
-    const currentLine = textBeforeCursor.substring(lastNewlineIndex + 1);
-
-    if (currentLine === '- ' || currentLine === '* ') {
-      const lineStartIndex = lastNewlineIndex + 1;
-      const newVal = val.substring(0, lineStartIndex) + '• ' + val.substring(cursorIndex);
-      onChange(newVal);
-      setTimeout(() => {
-        if (textareaRef.current) {
-          textareaRef.current.selectionStart = textareaRef.current.selectionEnd = lineStartIndex + 2;
-        }
-      }, 0);
-      return;
-    }
-
-    onChange(val);
-  };
-
   return (
-    <textarea
-      ref={textareaRef}
-      rows={rows}
-      value={value}
-      onChange={handleChange}
-      onKeyDown={handleKeyDown}
-      placeholder={placeholder}
-      className={`resize-none overflow-hidden ${className || ''}`}
-      style={style}
+    <div
+      ref={divRef}
+      contentEditable
+      suppressContentEditableWarning
+      onInput={(e) => {
+        onChange(e.currentTarget.innerText);
+      }}
+      data-placeholder={placeholder}
+      className={`outline-none min-h-[1.5rem] whitespace-pre-wrap text-justify break-words ${
+        !value ? 'empty:before:content-[attr(data-placeholder)] empty:before:text-[#AAAAAA] empty:before:pointer-events-none' : ''
+      } ${className || ''}`}
+      style={{
+        textAlign: 'justify',
+        textAlignLast: 'left',
+        ...style,
+      }}
     />
   );
 }
@@ -215,23 +131,46 @@ export function ModuleBlockBuilder({
   onClose,
   onSave,
 }: ModuleBlockBuilderProps) {
+  const dbDetail = initialModule ? getMaterialDetailForModule(initialModule.id || initialModule.title) : undefined;
+
   // Title & Level state
   const [moduleTitle, setModuleTitle] = useState(
-    initialModule?.title || 'Give me a name'
+    initialModule?.title || dbDetail?.title || 'Give me a name'
   );
   const [moduleLevel, setModuleLevel] = useState<'Pemula' | 'Menengah' | 'Mahir'>(
-    initialModule?.level || 'Pemula'
+    initialModule?.level || (dbDetail?.level as any) || 'Pemula'
   );
   const [moduleDuration, setModuleDuration] = useState(
-    initialModule?.duration || '25 Menit'
+    initialModule?.duration || dbDetail?.duration || '25 Menit'
   );
 
   // Dynamic Topics / Tags state (Dribbble Style Tag Input)
   const [moduleTopics, setModuleTopics] = useState<string[]>(
-    initialModule?.topics || []
+    (initialModule?.topics && initialModule.topics.length > 0)
+      ? initialModule.topics
+      : (dbDetail?.topics || [])
   );
   const [tagInputText, setTagInputText] = useState('');
   const tagInputRef = useRef<HTMLInputElement | null>(null);
+
+  // 16:9 Cover / Thumbnail state
+  const [moduleThumbnail, setModuleThumbnail] = useState<string>(() => {
+    if (initialModule?.thumbnail) return initialModule.thumbnail;
+    if (subjectName.toLowerCase().includes('tari')) {
+      return 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=1200&q=80';
+    }
+    return 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80';
+  });
+  const thumbnailFileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleThumbnailSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const objUrl = URL.createObjectURL(file);
+      setModuleThumbnail(objUrl);
+      setIsDirty(true);
+    }
+  };
 
   // Publish / Draft Confirmation Modal state & Success Modal state
   const isAlreadyPublished = initialModule?.isPublished === true;
@@ -240,6 +179,12 @@ export function ModuleBlockBuilder({
   const [showExitConfirmModal, setShowExitConfirmModal] = useState(false);
   const [showFinalPublishConfirmModal, setShowFinalPublishConfirmModal] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+
+  // Header toolbar mini-modal states (only for editing published modules)
+  const [showThumbnailModal, setShowThumbnailModal] = useState(false);
+  const [showTopicsModal, setShowTopicsModal] = useState(false);
+  const [showEvaluasiModal, setShowEvaluasiModal] = useState(false);
+  const [isHeaderLevelDropdownOpen, setIsHeaderLevelDropdownOpen] = useState(false);
 
   // Evaluation / Quiz attached during Publish modal
   const [evaluationType, setEvaluationType] = useState<TestType | null>(
@@ -261,6 +206,44 @@ export function ModuleBlockBuilder({
   const [isLevelDropdownOpen, setIsLevelDropdownOpen] = useState(false);
   const [isQuizDropdownOpen, setIsQuizDropdownOpen] = useState(false);
 
+  // Blocks state: Populated with full database blocks if editing, or empty canvas for new material
+  const [blocks, setBlocks] = useState<CanvasBlock[]>(() => {
+    if (!initialModule) return [];
+    if (initialModule.blocks && initialModule.blocks.length > 0) {
+      return initialModule.blocks;
+    }
+    const fromDb = getMaterialBlocksForModule(initialModule.id || initialModule.title);
+    if (fromDb && fromDb.length > 0) {
+      return fromDb;
+    }
+    return [
+      {
+        id: 'blk-1',
+        type: 'text',
+        sectionTitle: initialModule.title,
+        textValue: initialModule.description,
+        alignment: 'left',
+      },
+    ];
+  });
+
+  const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+
+  // Clean up legacy draft storage keys on mount if any
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        Object.keys(localStorage).forEach((key) => {
+          if (key.startsWith('sintesa_module_draft_')) {
+            localStorage.removeItem(key);
+          }
+        });
+      } catch (err) {
+        // ignore
+      }
+    }
+  }, []);
+
   // Lock global body scroll when canvas builder is active
   useEffect(() => {
     document.documentElement.classList.add("modal-open");
@@ -271,23 +254,6 @@ export function ModuleBlockBuilder({
       document.body.style.overflow = '';
     };
   }, []);
-
-  // Blocks state: EMPTY CANVAS FOR NEW MATERIAL
-  const [blocks, setBlocks] = useState<CanvasBlock[]>(
-    initialModule
-      ? [
-          {
-            id: 'blk-1',
-            type: 'text',
-            sectionTitle: initialModule.title,
-            textValue: initialModule.description,
-            alignment: 'left',
-          },
-        ]
-      : []
-  );
-
-  const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   
   // State for Right Sidebar Visibility & Target Insert Position
   const [showRightSidebar, setShowRightSidebar] = useState(true);
@@ -295,6 +261,7 @@ export function ModuleBlockBuilder({
 
   // Modals & Native File Upload state
   const [editingImageId, setEditingImageId] = useState<string | null>(null);
+  const [editingSectionImage, setEditingSectionImage] = useState<{ blockId: string; elIndex: number } | null>(null);
   const [imageUploadMode, setImageUploadMode] = useState<'computer' | 'url'>('computer');
   const [tempImageUrl, setTempImageUrl] = useState('');
   const [editingVideoId, setEditingVideoId] = useState<string | null>(null);
@@ -309,6 +276,7 @@ export function ModuleBlockBuilder({
   const evalQrInputRef = useRef<HTMLInputElement | null>(null);
   const levelDropdownRef = useRef<HTMLDivElement | null>(null);
   const quizDropdownRef = useRef<HTMLDivElement | null>(null);
+  const headerLevelDropdownRef = useRef<HTMLDivElement | null>(null);
 
   // Close dropdowns on click outside
   useEffect(() => {
@@ -318,6 +286,9 @@ export function ModuleBlockBuilder({
       }
       if (quizDropdownRef.current && !quizDropdownRef.current.contains(event.target as Node)) {
         setIsQuizDropdownOpen(false);
+      }
+      if (headerLevelDropdownRef.current && !headerLevelDropdownRef.current.contains(event.target as Node)) {
+        setIsHeaderLevelDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -347,6 +318,7 @@ export function ModuleBlockBuilder({
 
   // Add block
   const handleAddBlock = (type: BlockType, targetIndex?: number) => {
+    setIsDirty(true);
     const actualIndex = targetIndex !== undefined ? targetIndex : insertTargetIndex;
 
     const newBlock: CanvasBlock = {
@@ -365,6 +337,8 @@ export function ModuleBlockBuilder({
     } else if (type === 'attachment') {
       newBlock.attachments = [];
     } else if (type === 'steps') {
+      newBlock.stepSectionTitle = 'Panduan Langkah Praktik';
+      newBlock.stepSectionSubtitle = 'Tuliskan deskripsi pengantar atau petunjuk instruksi di sini...';
       newBlock.steps = [
         { title: 'Langkah 1', desc: 'Penjelasan instruksi langkah pertama praktikum...' },
       ];
@@ -394,6 +368,7 @@ export function ModuleBlockBuilder({
   // Move block up
   const handleMoveUp = (index: number) => {
     if (index === 0 || animatingBlockId) return;
+    setIsDirty(true);
     const currentId = blocks[index].id;
     setAnimatingBlockId(currentId);
     setAnimatingDir('up');
@@ -415,6 +390,7 @@ export function ModuleBlockBuilder({
   // Move block down
   const handleMoveDown = (index: number) => {
     if (index === blocks.length - 1 || animatingBlockId) return;
+    setIsDirty(true);
     const currentId = blocks[index].id;
     setAnimatingBlockId(currentId);
     setAnimatingDir('down');
@@ -435,6 +411,7 @@ export function ModuleBlockBuilder({
 
   // Duplicate block
   const handleDuplicateBlock = (block: CanvasBlock, index: number) => {
+    setIsDirty(true);
     const duplicated: CanvasBlock = JSON.parse(JSON.stringify(block));
     duplicated.id = `blk-${Date.now()}`;
     const updated = [...blocks];
@@ -445,6 +422,7 @@ export function ModuleBlockBuilder({
 
   // Delete block
   const handleDeleteBlock = (id: string) => {
+    setIsDirty(true);
     const updated = blocks.filter((b) => b.id !== id);
     setBlocks(updated);
     if (selectedBlockId === id) {
@@ -454,6 +432,7 @@ export function ModuleBlockBuilder({
 
   // Update block content by ID
   const updateBlockById = (id: string, partial: Partial<CanvasBlock>) => {
+    setIsDirty(true);
     setBlocks((prev) =>
       prev.map((b) => (b.id === id ? { ...b, ...partial } : b))
     );
@@ -492,11 +471,107 @@ export function ModuleBlockBuilder({
     updateBlockById(blockId, { steps: updatedSteps });
   };
 
+  // Section Multi-Element Handlers (Paragraphs & Images in Sequence)
+  const handleAddSectionElement = (
+    blockId: string,
+    type: 'paragraph' | 'image',
+    afterIndex?: number
+  ) => {
+    const block = blocks.find((b) => b.id === blockId);
+    if (!block) return;
+
+    const currentElements: SectionElement[] =
+      block.elements && block.elements.length > 0
+        ? [...block.elements]
+        : [{ id: `el-1`, type: 'paragraph', text: block.textValue || '' }];
+
+    const newElement: SectionElement = {
+      id: `el-${Date.now()}`,
+      type,
+      text: type === 'paragraph' ? '' : undefined,
+      imageUrl: type === 'image' ? '' : undefined,
+    };
+
+    if (afterIndex !== undefined && afterIndex >= 0 && afterIndex < currentElements.length) {
+      currentElements.splice(afterIndex + 1, 0, newElement);
+    } else {
+      currentElements.push(newElement);
+    }
+
+    updateBlockById(blockId, { elements: currentElements });
+  };
+
+  const handleUpdateSectionElement = (
+    blockId: string,
+    elIndex: number,
+    partial: Partial<SectionElement>
+  ) => {
+    const block = blocks.find((b) => b.id === blockId);
+    if (!block) return;
+
+    const currentElements =
+      block.elements && block.elements.length > 0
+        ? [...block.elements]
+        : [{ id: 'el-1', type: 'paragraph' as const, text: block.textValue || '' }];
+
+    if (!currentElements[elIndex]) return;
+
+    currentElements[elIndex] = { ...currentElements[elIndex], ...partial };
+    updateBlockById(blockId, { elements: currentElements });
+  };
+
+  const handleDeleteSectionElement = (blockId: string, elIndex: number) => {
+    const block = blocks.find((b) => b.id === blockId);
+    if (!block || !block.elements) return;
+
+    const updated = block.elements.filter((_, idx) => idx !== elIndex);
+    updateBlockById(blockId, { elements: updated });
+  };
+
+  const handleMoveSectionElement = (
+    blockId: string,
+    elIndex: number,
+    direction: 'up' | 'down'
+  ) => {
+    const block = blocks.find((b) => b.id === blockId);
+    if (!block || !block.elements) return;
+
+    const updated = [...block.elements];
+    const targetIdx = direction === 'up' ? elIndex - 1 : elIndex + 1;
+    if (targetIdx < 0 || targetIdx >= updated.length) return;
+
+    const temp = updated[elIndex];
+    updated[elIndex] = updated[targetIdx];
+    updated[targetIdx] = temp;
+    updateBlockById(blockId, { elements: updated });
+  };
+
+  const handlePromptChangeSectionImage = (blockId: string, elIndex: number, currentUrl?: string) => {
+    setEditingSectionImage({ blockId, elIndex });
+    setEditingImageId(blockId);
+    setImageUploadMode('computer');
+    setTempImageUrl(currentUrl || '');
+  };
+
   // Native Image File Picker Handler
   const handleImageFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && editingImageId) {
-      const objectUrl = URL.createObjectURL(file);
+    if (!file) return;
+
+    const objectUrl = URL.createObjectURL(file);
+
+    if (editingSectionImage) {
+      handleUpdateSectionElement(
+        editingSectionImage.blockId,
+        editingSectionImage.elIndex,
+        { imageUrl: objectUrl }
+      );
+      setEditingSectionImage(null);
+      setEditingImageId(null);
+      return;
+    }
+
+    if (editingImageId) {
       updateBlockById(editingImageId, { mediaUrl: objectUrl });
       setEditingImageId(null);
     }
@@ -561,12 +636,24 @@ export function ModuleBlockBuilder({
 
   // Image Upload Modal trigger
   const handlePromptChangeImage = (id: string, currentUrl?: string) => {
+    setEditingSectionImage(null);
     setEditingImageId(id);
     setImageUploadMode('computer');
     setTempImageUrl(currentUrl || '');
   };
 
   const handleSaveImageModal = () => {
+    if (editingSectionImage) {
+      handleUpdateSectionElement(
+        editingSectionImage.blockId,
+        editingSectionImage.elIndex,
+        { imageUrl: tempImageUrl }
+      );
+      setEditingSectionImage(null);
+      setEditingImageId(null);
+      return;
+    }
+
     if (editingImageId) {
       updateBlockById(editingImageId, { mediaUrl: tempImageUrl });
     }
@@ -587,16 +674,19 @@ export function ModuleBlockBuilder({
     setEditingVideoId(null);
   };
 
-  // Tag Add / Remove handlers (Dribbble Style)
+  // Tag Add / Remove handlers (Dribbble Style - Limited to Max 4 Topics)
   const handleAddTopicTag = () => {
     const trimmed = tagInputText.trim();
     if (trimmed && !moduleTopics.includes(trimmed)) {
+      if (moduleTopics.length >= 4) return;
+      setIsDirty(true);
       setModuleTopics([...moduleTopics, trimmed]);
       setTagInputText('');
     }
   };
 
   const handleRemoveTopicTag = (tagToRemove: string) => {
+    setIsDirty(true);
     setModuleTopics(moduleTopics.filter((t) => t !== tagToRemove));
   };
 
@@ -670,6 +760,7 @@ export function ModuleBlockBuilder({
             topics: moduleTopics,
             description: autoDescription,
             isPublished: true,
+            thumbnail: moduleThumbnail,
             quizSource: evaluationType
               ? {
                   type: evaluationType,
@@ -704,6 +795,7 @@ export function ModuleBlockBuilder({
           topics: moduleTopics,
           description: autoDescription,
           isPublished: false,
+          thumbnail: moduleThumbnail,
           quizSource: evaluationType
             ? {
                 type: evaluationType,
@@ -763,7 +855,7 @@ export function ModuleBlockBuilder({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              if (isDirty || blocks.length > 0) {
+              if (isDirty) {
                 setShowExitConfirmModal(true);
               } else {
                 onClose();
@@ -796,6 +888,101 @@ export function ModuleBlockBuilder({
             </div>
             <Pencil className="w-4 h-4 text-[#737373] shrink-0" />
           </div>
+
+          {/* HEADER TOOLBAR (only when editing published module) */}
+          {initialModule && (
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-2.5 ml-1 pl-3 border-l border-[#ECECEC]"
+            >
+              {/* Thumbnail Button */}
+              <Tooltip content="Atur Thumbnail / Cover" side="bottom">
+                <button
+                  type="button"
+                  onClick={() => setShowThumbnailModal(true)}
+                  className="h-8 px-2 rounded-[6px] border border-[#ECECEC] bg-white hover:bg-slate-50 hover:border-blue-300 flex items-center gap-1.5 cursor-pointer transition-all group/thumb"
+                >
+                  {moduleThumbnail ? (
+                    <div className="w-5 h-3.5 rounded-[3px] overflow-hidden border border-[#ECECEC] shrink-0">
+                      <img src={moduleThumbnail} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <ImageIcon className="w-3.5 h-3.5 text-[#737373] group-hover/thumb:text-[#2563EB]" />
+                  )}
+                  <span className="text-[11px] font-semibold text-[#737373] group-hover/thumb:text-[#2563EB] hidden sm:inline">Cover</span>
+                </button>
+              </Tooltip>
+
+              {/* Level Dropdown Chip */}
+              <Tooltip content="Tingkat Kesulitan" side="bottom">
+                <div ref={headerLevelDropdownRef} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setIsHeaderLevelDropdownOpen(!isHeaderLevelDropdownOpen)}
+                    className="h-8 px-2.5 rounded-[6px] border border-[#ECECEC] bg-white hover:bg-slate-50 hover:border-blue-300 flex items-center gap-1.5 cursor-pointer transition-all"
+                  >
+                    <span className="text-[11px] font-bold text-[#2E2D2D]">{moduleLevel}</span>
+                    <ChevronDown className={`w-3.5 h-3.5 text-[#737373] transition-transform duration-200 ${isHeaderLevelDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {isHeaderLevelDropdownOpen && (
+                    <div className="absolute left-0 top-full mt-1.5 w-36 bg-white/95 backdrop-blur-md border border-[#ECECEC] rounded-[10px] shadow-xl p-1 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-0.5">
+                      {(['Pemula', 'Menengah', 'Mahir'] as const).map((lvl) => {
+                        const isSelected = moduleLevel === lvl;
+                        return (
+                          <button
+                            key={lvl}
+                            type="button"
+                            onClick={() => {
+                              setModuleLevel(lvl);
+                              setIsHeaderLevelDropdownOpen(false);
+                              setIsDirty(true);
+                            }}
+                            className={`w-full px-3 py-2 rounded-[6px] text-left text-xs font-semibold flex items-center justify-between transition-all cursor-pointer ${
+                              isSelected
+                                ? 'bg-blue-50/80 text-[#2563EB] font-bold'
+                                : 'text-[#2E2D2D] hover:bg-slate-50'
+                            }`}
+                          >
+                            <span>{lvl}</span>
+                            {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-[#2563EB]" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </Tooltip>
+
+              {/* Topics Button */}
+              <Tooltip content="Atur Topik Bahasan" side="bottom">
+                <button
+                  type="button"
+                  onClick={() => setShowTopicsModal(true)}
+                  className="h-8 px-2.5 rounded-[6px] border border-[#ECECEC] bg-white hover:bg-slate-50 hover:border-blue-300 flex items-center gap-1.5 cursor-pointer transition-all group/topics"
+                >
+                  <Hash className="w-3.5 h-3.5 text-[#737373] group-hover/topics:text-[#2563EB]" />
+                  <span className="text-[11px] font-semibold text-[#737373] group-hover/topics:text-[#2563EB] hidden sm:inline">
+                    {moduleTopics.length > 0 ? `${moduleTopics.length} Topik` : 'Topik'}
+                  </span>
+                </button>
+              </Tooltip>
+
+              {/* Evaluasi Button */}
+              <Tooltip content={evaluationType ? 'Pengaturan Evaluasi / Kuis' : 'Tambahkan Evaluasi / Kuis'} side="bottom">
+                <button
+                  type="button"
+                  onClick={() => setShowEvaluasiModal(true)}
+                  className="h-8 px-2.5 rounded-[6px] border border-[#ECECEC] bg-white hover:bg-slate-50 hover:border-blue-300 flex items-center gap-1.5 cursor-pointer transition-all group/eval"
+                >
+                  <FileText className="w-3.5 h-3.5 text-[#737373] group-hover/eval:text-[#2563EB]" />
+                  <span className="text-[11px] font-semibold text-[#737373] group-hover/eval:text-[#2563EB] hidden sm:inline">
+                    {evaluationType ? 'Evaluasi ✓' : 'Tambah Evaluasi'}
+                  </span>
+                </button>
+              </Tooltip>
+            </div>
+          )}
         </div>
 
         {/* Right Section: Action Buttons */}
@@ -805,17 +992,27 @@ export function ModuleBlockBuilder({
         >
           {!isAlreadyPublished && (
             <button
+              disabled={!isDirty}
               onClick={() => handleSaveModuleConfirm(false)}
-              className="px-4 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-[#2E2D2D] cursor-pointer transition-colors"
+              className={`px-4 py-2 rounded-[8px] text-xs font-semibold transition-colors ${
+                isDirty
+                  ? 'bg-slate-100 hover:bg-slate-200 text-[#2E2D2D] cursor-pointer'
+                  : 'bg-slate-100 text-[#AAAAAA] cursor-not-allowed opacity-50'
+              }`}
             >
               Save as draft
             </button>
           )}
           <button
+            disabled={!isDirty}
             onClick={handleOpenPublishModal}
-            className="px-5 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-xs font-semibold text-white shadow-xs cursor-pointer transition-colors"
+            className={`px-5 py-2 rounded-[8px] text-xs font-semibold transition-colors ${
+              isDirty
+                ? 'bg-[#2563EB] hover:bg-blue-700 text-white shadow-xs cursor-pointer'
+                : 'bg-slate-100 text-[#AAAAAA] cursor-not-allowed opacity-50 shadow-none'
+            }`}
           >
-            {isAlreadyPublished ? 'Publish Ulang' : 'Continue'}
+            {initialModule ? 'Update Materi' : 'Continue'}
           </button>
         </div>
 
@@ -893,7 +1090,7 @@ export function ModuleBlockBuilder({
                             }}
                             disabled={index === 0}
                             title="Pindah ke Atas"
-                            className="p-1.5 hover:bg-slate-100 rounded-[4px] text-[#737373] hover:text-[#2E2D2D] disabled:opacity-30 cursor-pointer"
+                            className="p-1.5 hover:bg-slate-100 rounded-[4px] text-[#2E2D2D] hover:text-[#2563EB] disabled:opacity-30 cursor-pointer"
                           >
                             <ArrowUp className="w-3.5 h-3.5" />
                           </button>
@@ -904,7 +1101,7 @@ export function ModuleBlockBuilder({
                             }}
                             disabled={index === blocks.length - 1}
                             title="Pindah ke Bawah"
-                            className="p-1.5 hover:bg-slate-100 rounded-[4px] text-[#737373] hover:text-[#2E2D2D] disabled:opacity-30 cursor-pointer"
+                            className="p-1.5 hover:bg-slate-100 rounded-[4px] text-[#2E2D2D] hover:text-[#2563EB] disabled:opacity-30 cursor-pointer"
                           >
                             <ArrowDown className="w-3.5 h-3.5" />
                           </button>
@@ -914,7 +1111,7 @@ export function ModuleBlockBuilder({
                               handleDuplicateBlock(block, index);
                             }}
                             title="Duplikat Blok"
-                            className="p-1.5 hover:bg-slate-100 rounded-[4px] text-[#737373] hover:text-[#2563EB] cursor-pointer"
+                            className="p-1.5 hover:bg-slate-100 rounded-[4px] text-[#2E2D2D] hover:text-[#2563EB] cursor-pointer"
                           >
                             <Copy className="w-3.5 h-3.5" />
                           </button>
@@ -924,7 +1121,7 @@ export function ModuleBlockBuilder({
                               handleDeleteBlock(block.id);
                             }}
                             title="Hapus Blok"
-                            className="p-1.5 hover:bg-rose-50 rounded-[4px] text-rose-600 cursor-pointer"
+                            className="p-1.5 hover:bg-rose-50 rounded-[4px] text-[#2E2D2D] hover:text-rose-600 cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -948,129 +1145,266 @@ export function ModuleBlockBuilder({
                         >
                         
                         {/* 1. TEXT SECTION BLOCK */}
-                        {block.type === 'text' && (
-                          <div className="space-y-3">
-                            {/* Heading Section Title (Clean Title) */}
-                            <input
-                              type="text"
-                              value={block.sectionTitle || ''}
-                              onChange={(e) => updateBlockById(block.id, { sectionTitle: e.target.value })}
-                              placeholder="Heading Judul Section..."
-                              className="w-full text-2xl font-bold text-[#2E2D2D] placeholder:text-[#AAAAAA] border-none focus:ring-0 outline-none bg-transparent"
-                              style={{ textAlign: block.alignment || 'left' }}
-                            />
+                        {block.type === 'text' && (() => {
+                          const elements =
+                            block.elements && block.elements.length > 0
+                              ? block.elements
+                              : [{ id: 'el-init', type: 'paragraph' as const, text: block.textValue || '' }];
 
-                            {/* Paragraf Isi Section */}
-                            <AutoResizeTextarea
-                              value={block.textValue || ''}
-                              onChange={(val) => updateBlockById(block.id, { textValue: val })}
-                              placeholder="Tuliskan isi paragraf materi di sini...."
-                              className="w-full text-sm text-[#2E2D2D] leading-relaxed placeholder:text-[#AAAAAA] border-none focus:ring-0 outline-none bg-transparent whitespace-pre-line"
-                              style={{ textAlign: block.alignment || 'left' }}
-                            />
+                          return (
+                            <div className="space-y-4">
+                              {/* Heading Section Title (Clean Title) */}
+                              <input
+                                type="text"
+                                value={block.sectionTitle || ''}
+                                onChange={(e) => updateBlockById(block.id, { sectionTitle: e.target.value })}
+                                placeholder="Heading Judul Section..."
+                                className="w-full text-2xl font-bold text-[#2E2D2D] placeholder:text-[#AAAAAA] border-none focus:ring-0 outline-none bg-transparent"
+                                style={{ textAlign: block.alignment || 'left' }}
+                              />
 
-                            {/* Integrated Highlight / Callout Box (Blue sleek card editor - Fit Content) */}
-                            {block.calloutText !== undefined && (
-                              <div className="py-2 px-3.5 rounded-[10px] bg-[#F6F5FF] border border-[#E8E7FF] text-[#2563EB] text-xs flex items-start gap-2.5 relative group/callout shadow-2xs w-full h-fit">
-                                <div className="w-1 self-stretch bg-[#2563EB] rounded-full shrink-0 my-0.5" />
-                                <div className="flex-1 min-w-0">
-                                  <AutoResizeTextarea
-                                    value={block.calloutText}
-                                    onChange={(val) => updateBlockById(block.id, { calloutText: val })}
-                                    placeholder="Tuliskan teks kalimat sorotan / highlight di sini..."
-                                    className="w-full text-xs font-medium text-[#3A3985] bg-transparent border-none focus:ring-0 outline-none p-0 leading-relaxed resize-none"
-                                  />
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    updateBlockById(block.id, { calloutText: undefined });
-                                  }}
-                                  title="Hapus Highlight"
-                                  className="text-slate-400 hover:text-rose-500 p-1 opacity-0 group-hover/callout:opacity-100 transition-opacity cursor-pointer shrink-0"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            )}
+                              {/* Multi-Element Content Stream (Paragraphs & Images with reorder) */}
+                              <div className="space-y-3">
+                                {elements.map((el, elIdx) => (
+                                  <div key={el.id || elIdx} className="group/el relative space-y-2">
+                                    {el.type === 'paragraph' ? (
+                                      <div className="relative group/pContainer">
+                                        <AutoResizeTextarea
+                                          value={el.text || ''}
+                                          onChange={(val) => handleUpdateSectionElement(block.id, elIdx, { text: val })}
+                                          placeholder="Tuliskan isi paragraf materi di sini...."
+                                          className="w-full text-sm font-medium text-[#4A4A4A] leading-relaxed placeholder:text-[#AAAAAA] border-none focus:ring-0 outline-none bg-transparent whitespace-pre-line pr-16 text-justify"
+                                          style={{ textAlign: block.alignment || 'justify' }}
+                                        />
 
-                            {/* Integrated Section Image */}
-                            {block.mediaUrl && (
-                              <div className="space-y-1.5 relative group/secImg pt-1">
-                                <div className="relative overflow-hidden rounded-[10px] border border-[#ECECEC] bg-gray-50">
-                                  {/* eslint-disable-next-next/no-img-element */}
-                                  <img
-                                    src={block.mediaUrl}
-                                    alt="Section illustration"
-                                    className="w-full max-h-[360px] object-cover rounded-[10px]"
-                                  />
-                                  <div className="absolute top-2 right-2 flex items-center gap-1.5 opacity-0 group-hover/secImg:opacity-100 transition-opacity">
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handlePromptChangeImage(block.id, block.mediaUrl);
-                                      }}
-                                      className="px-2.5 py-1 rounded-[6px] bg-white/95 text-[#2E2D2D] text-xs font-semibold shadow-xs hover:bg-white flex items-center gap-1 cursor-pointer"
-                                    >
-                                      <Pencil className="w-3 h-3" />
-                                      <span>Ganti</span>
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        updateBlockById(block.id, { mediaUrl: undefined, imageCaption: undefined });
-                                      }}
-                                      className="p-1.5 rounded-[6px] bg-white/95 text-rose-600 hover:bg-white shadow-xs cursor-pointer"
-                                      title="Hapus Gambar Section"
-                                    >
-                                      <Trash2 className="w-3 h-3" />
-                                    </button>
+                                        {/* Element Controls (Move Up/Down, Delete) */}
+                                        <div className="absolute right-0 top-0 opacity-0 group-hover/pContainer:opacity-100 transition-opacity flex items-center gap-1 bg-white p-1 rounded-[6px] border border-[#ECECEC] shadow-2xs text-[#2E2D2D]">
+                                          {elIdx > 0 && (
+                                            <button
+                                              type="button"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleMoveSectionElement(block.id, elIdx, 'up');
+                                              }}
+                                              title="Pindah ke Atas"
+                                              className="p-1 hover:bg-slate-100 rounded text-[#2E2D2D] hover:text-[#2563EB] cursor-pointer"
+                                            >
+                                              <ArrowUp className="w-3 h-3" />
+                                            </button>
+                                          )}
+                                          {elIdx < elements.length - 1 && (
+                                            <button
+                                              type="button"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleMoveSectionElement(block.id, elIdx, 'down');
+                                              }}
+                                              title="Pindah ke Bawah"
+                                              className="p-1 hover:bg-slate-100 rounded text-[#2E2D2D] hover:text-[#2563EB] cursor-pointer"
+                                            >
+                                              <ArrowDown className="w-3 h-3" />
+                                            </button>
+                                          )}
+                                          {elements.length > 1 && (
+                                            <button
+                                              type="button"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteSectionElement(block.id, elIdx);
+                                              }}
+                                              title="Hapus Paragraf"
+                                              className="p-1 hover:bg-rose-50 rounded text-[#2E2D2D] hover:text-rose-600 cursor-pointer"
+                                            >
+                                              <Trash2 className="w-3 h-3" />
+                                            </button>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      /* Image Element */
+                                      <div className="relative group/elImg my-2 flex justify-center w-full">
+                                        {!el.imageUrl ? (
+                                          <div
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handlePromptChangeSectionImage(block.id, elIdx, '');
+                                            }}
+                                            className="rounded-[10px] border-2 border-dashed border-slate-300 hover:border-[#2563EB] bg-slate-50/50 p-6 text-center transition-all cursor-pointer group/card w-full max-w-2xl"
+                                          >
+                                            <div className="w-10 h-10 rounded-full bg-white border border-[#ECECEC] text-[#2563EB] flex items-center justify-center mx-auto shadow-xs">
+                                              <ImageIcon className="w-5 h-5" />
+                                            </div>
+                                            <p className="text-xs font-bold text-[#2E2D2D] mt-2 group-hover/card:text-[#2563EB]">
+                                              Klik untuk Menambahkan Gambar
+                                            </p>
+                                          </div>
+                                        ) : (
+                                          <div className="relative overflow-hidden rounded-[10px] border border-[#ECECEC] bg-gray-50 max-w-2xl w-full">
+                                            {/* eslint-disable-next-next/no-img-element */}
+                                            <img
+                                              src={el.imageUrl}
+                                              alt="Section illustration"
+                                              className="w-full h-auto object-contain rounded-[10px] block mx-auto"
+                                            />
+                                            <div className="absolute top-2 right-2 flex items-center gap-1.5 opacity-0 group-hover/elImg:opacity-100 transition-opacity bg-white/95 p-1 rounded-[6px] shadow-xs text-[#2E2D2D]">
+                                              {elIdx > 0 && (
+                                                <button
+                                                  type="button"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleMoveSectionElement(block.id, elIdx, 'up');
+                                                  }}
+                                                  title="Pindah ke Atas"
+                                                  className="p-1 hover:bg-slate-100 rounded text-[#2E2D2D] hover:text-[#2563EB] cursor-pointer"
+                                                >
+                                                  <ArrowUp className="w-3 h-3" />
+                                                </button>
+                                              )}
+                                              {elIdx < elements.length - 1 && (
+                                                <button
+                                                  type="button"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleMoveSectionElement(block.id, elIdx, 'down');
+                                                  }}
+                                                  title="Pindah ke Bawah"
+                                                  className="p-1 hover:bg-slate-100 rounded text-[#2E2D2D] hover:text-[#2563EB] cursor-pointer"
+                                                >
+                                                  <ArrowDown className="w-3 h-3" />
+                                                </button>
+                                              )}
+                                              <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handlePromptChangeSectionImage(block.id, elIdx, el.imageUrl);
+                                                }}
+                                                className="px-2 py-0.5 rounded text-[#2E2D2D] hover:text-[#2563EB] text-xs font-semibold flex items-center gap-1 cursor-pointer"
+                                              >
+                                                <Pencil className="w-3 h-3" />
+                                                <span>Ganti</span>
+                                              </button>
+                                              <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleDeleteSectionElement(block.id, elIdx);
+                                                }}
+                                                className="p-1 rounded text-[#2E2D2D] hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
+                                                title="Hapus Gambar"
+                                              >
+                                                <Trash2 className="w-3 h-3" />
+                                              </button>
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+
+                                    {/* Helper buttons beneath each element (Only visible when block is active/selected) */}
+                                    {isSelected && (
+                                      <div className="opacity-0 group-hover/el:opacity-100 focus-within:opacity-100 transition-opacity flex items-center gap-1.5 pt-0.5 pb-1">
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleAddSectionElement(block.id, 'paragraph', elIdx);
+                                          }}
+                                          className="text-[11px] font-semibold text-[#2563EB] hover:bg-blue-50 px-2 py-0.5 rounded-[4px] cursor-pointer transition-colors"
+                                        >
+                                          + Teks
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleAddSectionElement(block.id, 'image', elIdx);
+                                          }}
+                                          className="text-[11px] font-semibold text-[#2563EB] hover:bg-blue-50 px-2 py-0.5 rounded-[4px] cursor-pointer transition-colors"
+                                        >
+                                          + Gambar
+                                        </button>
+                                      </div>
+                                    )}
                                   </div>
-                                </div>
-                                <input
-                                  type="text"
-                                  value={block.imageCaption || ''}
-                                  onChange={(e) => updateBlockById(block.id, { imageCaption: e.target.value })}
-                                  placeholder="Caption gambar (opsional)..."
-                                  className="w-full text-[11px] text-[#737373] italic border-none focus:ring-0 outline-none bg-transparent p-0"
-                                />
+                                ))}
                               </div>
-                            )}
 
-                            {/* Section Quick Action Buttons (No '+' prefix) */}
-                            <div className="flex items-center gap-2 pt-1">
-                              {block.calloutText === undefined && (
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    updateBlockById(block.id, { calloutText: '' });
-                                  }}
-                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-blue-50/70 hover:bg-blue-50 text-[#2563EB] border border-blue-200/60 text-xs font-semibold transition-colors cursor-pointer"
-                                >
-                                  <Highlighter className="w-3.5 h-3.5" />
-                                  <span>Highlight Text</span>
-                                </button>
+                              {/* Integrated Highlight / Callout Box (Only once at the end of section) */}
+                              {block.calloutText !== undefined && (
+                                <div className="py-2.5 px-3.5 rounded-[10px] bg-[#F6F5FF] border border-[#E8E7FF] text-[#2563EB] text-xs flex items-start gap-2.5 relative group/callout shadow-2xs w-full h-fit mt-3">
+                                  <div className="w-1 self-stretch bg-[#2563EB] rounded-full shrink-0 my-0.5" />
+                                  <div className="flex-1 min-w-0">
+                                    <AutoResizeTextarea
+                                      value={block.calloutText}
+                                      onChange={(val) => updateBlockById(block.id, { calloutText: val })}
+                                      placeholder="Tuliskan teks kalimat sorotan / highlight di sini..."
+                                      className="w-full text-xs font-medium text-[#3A3985] bg-transparent border-none focus:ring-0 outline-none p-0 leading-relaxed resize-none text-justify"
+                                    />
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      updateBlockById(block.id, { calloutText: undefined });
+                                    }}
+                                    title="Hapus Highlight"
+                                    className="text-slate-400 hover:text-rose-500 p-1 opacity-0 group-hover/callout:opacity-100 transition-opacity cursor-pointer shrink-0"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
                               )}
-                              {!block.mediaUrl && (
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handlePromptChangeImage(block.id, '');
-                                  }}
-                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-slate-100 hover:bg-slate-200 text-[#4A4A4A] text-xs font-semibold transition-colors cursor-pointer"
-                                >
-                                  <ImageIcon className="w-3.5 h-3.5" />
-                                  <span>Tambah Gambar</span>
-                                </button>
-                              )}
+
+                              {/* Section Bottom Action Buttons with smooth height & opacity transition (No divider line) */}
+                              <div
+                                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                                  isSelected
+                                    ? 'max-h-20 opacity-100 pt-1.5'
+                                    : 'max-h-0 opacity-0 pt-0 pointer-events-none'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleAddSectionElement(block.id, 'paragraph');
+                                    }}
+                                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-slate-100 hover:bg-slate-200 text-[#4A4A4A] text-xs font-semibold transition-colors cursor-pointer"
+                                  >
+                                    <Type className="w-3.5 h-3.5" />
+                                    <span>Tambah Teks</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleAddSectionElement(block.id, 'image');
+                                    }}
+                                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-slate-100 hover:bg-slate-200 text-[#4A4A4A] text-xs font-semibold transition-colors cursor-pointer"
+                                  >
+                                    <ImageIcon className="w-3.5 h-3.5" />
+                                    <span>Tambah Gambar</span>
+                                  </button>
+                                  {block.calloutText === undefined && (
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        updateBlockById(block.id, { calloutText: '' });
+                                      }}
+                                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-blue-50/70 hover:bg-blue-50 text-[#2563EB] border border-blue-200/60 text-xs font-semibold transition-colors cursor-pointer"
+                                    >
+                                      <Highlighter className="w-3.5 h-3.5" />
+                                      <span>Highlight Text</span>
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        )}
+                          );
+                        })()}
 
                         {/* 2. IMAGE BLOCK */}
                         {block.type === 'image' && (
@@ -1232,25 +1566,43 @@ export function ModuleBlockBuilder({
                         {/* 5. STEP BY STEP BLOCK */}
                         {block.type === 'steps' && (
                           <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                              <h4 className="text-xs font-bold text-[#737373] flex items-center gap-1.5">
-                                <ListOrdered className="w-4 h-4 text-[#2563EB]" /> Langkah Praktikum Berurutan
-                              </h4>
+                            {/* Section Header: Title & Subtitle (Tanpa garis pembatas) */}
+                            <div className="space-y-1.5">
+                              {/* Judul Section Input */}
+                              <div>
+                                <AutoResizeTextarea
+                                  value={block.stepSectionTitle ?? 'Panduan Langkah Praktik'}
+                                  onChange={(val) => updateBlockById(block.id, { stepSectionTitle: val })}
+                                  placeholder="Tuliskan Judul Section (misal: Panduan Langkah Praktik Eksplorasi Gerak)..."
+                                  className="w-full text-base md:text-lg font-bold text-[#2E2D2D] leading-snug border-none focus:ring-0 outline-none bg-transparent placeholder:text-[#AAAAAA] p-0"
+                                />
+                              </div>
+
+                              {/* Subtitle / Deskripsi Pengantar Input */}
+                              <div>
+                                <AutoResizeTextarea
+                                  value={block.stepSectionSubtitle ?? ''}
+                                  onChange={(val) => updateBlockById(block.id, { stepSectionSubtitle: val })}
+                                  placeholder="Tuliskan subtitle atau deskripsi pengantar (misal: Berdasarkan contoh tema 'Kehidupan di Lingkungan Sekolah')..."
+                                  className="w-full text-xs md:text-sm font-medium text-[#737373] leading-relaxed border-none focus:ring-0 outline-none bg-transparent placeholder:text-[#AAAAAA] p-0"
+                                />
+                              </div>
                             </div>
 
+                            {/* Step Cards List */}
                             <div className="space-y-3">
                               {(block.steps || []).map((step, sIdx) => (
-                                <div key={sIdx} className="p-4 rounded-[10px] bg-slate-50/80 border border-[#ECECEC] space-y-2 relative group/step">
+                                <div key={sIdx} className="p-4 rounded-[10px] bg-slate-50/80 border border-[#ECECEC] space-y-2 relative group/step hover:border-blue-200 transition-colors">
                                   <div className="flex items-center gap-3">
-                                    <span className="w-7 h-7 rounded-full bg-[#2563EB] text-white text-xs font-bold flex items-center justify-center shrink-0">
-                                      {sIdx + 1}
+                                    <span className="w-7 h-7 rounded-full bg-[#2563EB] text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-2xs">
+                                      {String(sIdx + 1).padStart(2, '0')}
                                     </span>
                                     <input
                                       type="text"
                                       value={step.title}
                                       onChange={(e) => handleUpdateStepItem(block.id, sIdx, 'title', e.target.value)}
-                                      placeholder={`Langkah ${sIdx + 1}`}
-                                      className="flex-1 font-bold text-xs text-[#2E2D2D] border-b border-dashed border-slate-300 focus:border-[#2563EB] outline-none bg-transparent pb-0.5"
+                                      placeholder={`Judul Langkah ${sIdx + 1} (misal: Eksplorasi Berdasarkan Unsur Waktu)`}
+                                      className="flex-1 font-bold text-xs md:text-sm text-[#2E2D2D] border-b border-dashed border-slate-300 focus:border-[#2563EB] outline-none bg-transparent pb-0.5"
                                     />
                                     {(block.steps || []).length > 1 && (
                                       <button
@@ -1259,7 +1611,7 @@ export function ModuleBlockBuilder({
                                           handleDeleteStepItem(block.id, sIdx);
                                         }}
                                         title="Hapus Langkah Ini"
-                                        className="text-slate-400 hover:text-rose-600 p-1 rounded-[4px]"
+                                        className="text-slate-400 hover:text-rose-600 p-1 rounded-[4px] cursor-pointer transition-colors"
                                       >
                                         <Trash2 className="w-3.5 h-3.5" />
                                       </button>
@@ -1269,8 +1621,8 @@ export function ModuleBlockBuilder({
                                   <AutoResizeTextarea
                                     value={step.desc}
                                     onChange={(val) => handleUpdateStepItem(block.id, sIdx, 'desc', val)}
-                                    placeholder="Tuliskan penjelasan detail untuk langkah ini..."
-                                    className="w-full text-xs text-[#737373] leading-relaxed border-none focus:ring-0 outline-none bg-transparent pl-10"
+                                    placeholder="Tuliskan penjelasan detail dan instruksi untuk langkah ini..."
+                                    className="w-full text-xs font-medium text-[#737373] leading-relaxed border-none focus:ring-0 outline-none bg-transparent pl-10"
                                   />
                                 </div>
                               ))}
@@ -1665,7 +2017,9 @@ export function ModuleBlockBuilder({
 
             {/* Modal Header (Title Only, No Border Line, No Subtitle) */}
             <div className="p-6 pb-0 bg-white shrink-0">
-              <h2 className="text-lg sm:text-xl font-bold text-[#2E2D2D]">Konfirmasi & Publikasi Materi</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-[#2E2D2D]">
+                {initialModule ? 'Konfirmasi Pembaruan Materi' : 'Konfirmasi & Publikasi Materi'}
+              </h2>
             </div>
 
             {/* Modal Body */}
@@ -1684,6 +2038,76 @@ export function ModuleBlockBuilder({
                 </div>
               )}
 
+              {/* 0. COVER / THUMBNAIL MATERI (RASIO 16:9) - Only for new modules */}
+              {!initialModule && (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="font-bold text-xs text-[#2E2D2D] block">
+                    Cover / Thumbnail Materi (16:9)
+                  </label>
+                  {moduleThumbnail && (
+                    <button
+                      type="button"
+                      onClick={() => thumbnailFileInputRef.current?.click()}
+                      className="text-[11px] font-bold text-[#2563EB] hover:underline cursor-pointer"
+                    >
+                      Ganti Thumbnail
+                    </button>
+                  )}
+                </div>
+
+                <input
+                  type="file"
+                  ref={thumbnailFileInputRef}
+                  onChange={handleThumbnailSelect}
+                  accept="image/*"
+                  className="hidden"
+                />
+
+                {moduleThumbnail ? (
+                  <div className="relative w-full aspect-video rounded-[10px] overflow-hidden border border-[#ECECEC] bg-slate-50 group/cover">
+                    {/* eslint-disable-next-next/no-img-element */}
+                    <img
+                      src={moduleThumbnail}
+                      alt="Thumbnail Materi"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => thumbnailFileInputRef.current?.click()}
+                        className="px-3 py-1.5 rounded-[6px] bg-white text-[#2E2D2D] text-xs font-bold shadow-md hover:bg-slate-50 transition-all cursor-pointer"
+                      >
+                        Ganti Gambar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setModuleThumbnail('');
+                          setIsDirty(true);
+                        }}
+                        className="px-3 py-1.5 rounded-[6px] bg-rose-600 text-white text-xs font-bold shadow-md hover:bg-rose-700 transition-all cursor-pointer"
+                      >
+                        Hapus
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => thumbnailFileInputRef.current?.click()}
+                    className="w-full aspect-video rounded-[10px] border border-dashed border-[#2563EB] bg-blue-50/50 hover:bg-blue-50 text-xs font-bold text-[#2563EB] flex flex-col items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                      <Upload className="w-5 h-5 text-[#2563EB]" />
+                    </div>
+                    <span>Upload Cover / Thumbnail Materi (16:9)</span>
+                    <span className="text-[10px] text-[#737373] font-normal">Format: PNG, JPG, JPEG (Maks. 5MB)</span>
+                  </button>
+                )}
+              </div>
+              )}
+
               {/* 1. JUDUL MATERI (READ-ONLY) */}
               <div className="space-y-1.5">
                 <label className="font-bold text-xs text-[#2E2D2D] block">Judul Materi</label>
@@ -1695,8 +2119,10 @@ export function ModuleBlockBuilder({
                 />
               </div>
 
-              {/* 2. ROW: LEVEL & DURASI (CUSTOM POPOVER DROPDOWNS MATCHING PROFILE STYLE) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* 2. ROW: LEVEL & DURASI */}
+              <div className={initialModule ? '' : 'grid grid-cols-1 sm:grid-cols-2 gap-4'}>
+                {/* Level dropdown - only in modal for new modules */}
+                {!initialModule && (
                 <div ref={levelDropdownRef} className="space-y-1.5 relative">
                   <label className="font-bold text-xs text-[#2E2D2D] block">Tingkat Kesulitan / Level</label>
                   <div className="relative">
@@ -1738,6 +2164,7 @@ export function ModuleBlockBuilder({
                     )}
                   </div>
                 </div>
+                )}
 
                 <div className="space-y-1.5">
                   <label className="font-bold text-xs text-[#2E2D2D] block">Estimasi Durasi Pengerjaan</label>
@@ -1751,9 +2178,15 @@ export function ModuleBlockBuilder({
                 </div>
               </div>
 
-              {/* 3. TOPIK BAHASAN (DRIBBBLE-STYLE INLINE TAG INPUT) */}
+              {/* 3. TOPIK BAHASAN - Only for new modules */}
+              {!initialModule && (
               <div className="space-y-1.5">
-                <label className="font-bold text-xs text-[#2E2D2D] block">Topik Bahasan</label>
+                <div className="flex items-center justify-between">
+                  <label className="font-bold text-xs text-[#2E2D2D] block">Topik Bahasan</label>
+                  <span className={`text-[11px] font-semibold ${moduleTopics.length >= 4 ? 'text-amber-600' : 'text-[#737373]'}`}>
+                    {moduleTopics.length}/4 Topik
+                  </span>
+                </div>
                 <div
                   className="min-h-[44px] p-2 rounded-[8px] bg-white border border-[#ECECEC] focus-within:border-[#2563EB] flex flex-wrap items-center gap-2 transition-colors cursor-text"
                   onClick={() => tagInputRef.current?.focus()}
@@ -1777,26 +2210,30 @@ export function ModuleBlockBuilder({
                     </span>
                   ))}
 
-                  <input
-                    ref={tagInputRef}
-                    type="text"
-                    value={tagInputText}
-                    onChange={(e) => setTagInputText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleAddTopicTag();
-                      } else if (e.key === 'Backspace' && !tagInputText && moduleTopics.length > 0) {
-                        handleRemoveTopicTag(moduleTopics[moduleTopics.length - 1]);
-                      }
-                    }}
-                    placeholder={moduleTopics.length === 0 ? "Ketik topik bahasan lalu tekan Enter..." : "Ketik topik..."}
-                    className="flex-1 min-w-[140px] text-xs text-[#2E2D2D] outline-none border-none bg-transparent p-1 placeholder:text-[#AAAAAA]"
-                  />
+                  {moduleTopics.length < 4 && (
+                    <input
+                      ref={tagInputRef}
+                      type="text"
+                      value={tagInputText}
+                      onChange={(e) => setTagInputText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddTopicTag();
+                        } else if (e.key === 'Backspace' && !tagInputText && moduleTopics.length > 0) {
+                          handleRemoveTopicTag(moduleTopics[moduleTopics.length - 1]);
+                        }
+                      }}
+                      placeholder={moduleTopics.length === 0 ? "Ketik topik bahasan lalu tekan Enter..." : "Tambah topik..."}
+                      className="flex-1 min-w-[140px] text-xs text-[#2E2D2D] outline-none border-none bg-transparent p-1 placeholder:text-[#AAAAAA]"
+                    />
+                  )}
                 </div>
               </div>
+              )}
 
-              {/* 4. BAHAN EVALUASI & KUIS ATTACHMENT (FULL WHITE CARD FRAME & SINGLE PLUS ICON) */}
+              {/* 4. BAHAN EVALUASI - Only for new modules */}
+              {!initialModule && (
               <div className="space-y-2 pt-1">
                 <label className="font-bold text-xs text-[#2E2D2D] block">Bahan Evaluasi / Kuis (Opsional)</label>
 
@@ -2005,6 +2442,7 @@ export function ModuleBlockBuilder({
                   </div>
                 )}
               </div>
+              )}
 
             </div>
 
@@ -2047,10 +2485,10 @@ export function ModuleBlockBuilder({
                     {isPublishing ? (
                       <>
                         <RefreshCw className="w-3.5 h-3.5 animate-spin text-white shrink-0" />
-                        <span>{isAlreadyPublished ? 'Menerbitkan Ulang...' : 'Menerbitkan Materi...'}</span>
+                        <span>{initialModule ? 'Memperbarui Materi...' : 'Menerbitkan Materi...'}</span>
                       </>
                     ) : (
-                      <span>{isAlreadyPublished ? 'Publish Ulang' : 'Publish Materi'}</span>
+                      <span>{initialModule ? 'Update Materi' : 'Publish Materi'}</span>
                     )}
                   </button>
                 );
@@ -2076,9 +2514,13 @@ export function ModuleBlockBuilder({
             </div>
 
             <div className="space-y-2">
-              <h3 className="font-bold text-lg text-[#2E2D2D]">Materi Berhasil Dipublikasikan!</h3>
+              <h3 className="font-bold text-lg text-[#2E2D2D]">
+                {initialModule ? 'Materi Berhasil Diperbarui!' : 'Materi Berhasil Dipublikasikan!'}
+              </h3>
               <p className="text-xs text-[#737373] leading-relaxed max-w-xs mx-auto">
-                Materi pembelajaran ini sekarang telah aktif dan dapat diakses oleh seluruh siswa di platform Sitemsa.
+                {initialModule
+                  ? 'Perubahan materi pembelajaran telah berhasil disimpan dan langsung diperbarui di platform Sitemsa.'
+                  : 'Materi pembelajaran ini sekarang telah aktif dan dapat diakses oleh seluruh siswa di platform Sitemsa.'}
               </p>
             </div>
 
@@ -2226,6 +2668,398 @@ export function ModuleBlockBuilder({
           </div>
         </div>
       )}
+
+      {/* ==================== HEADER TOOLBAR MINI-MODALS (EDITING PUBLISHED) ==================== */}
+
+      {/* THUMBNAIL UPLOAD MODAL */}
+      {showThumbnailModal && (
+        <div
+          onClick={() => setShowThumbnailModal(false)}
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-lg bg-white rounded-[16px] shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden"
+          >
+            <div className="p-5 pb-4">
+              <h3 className="text-sm font-bold text-[#2E2D2D]">Cover / Thumbnail Materi</h3>
+              <p className="text-[11px] text-[#737373] mt-0.5">Format: PNG, JPG, JPEG (Maks. 5MB) • Rasio 16:9</p>
+            </div>
+            <div className="px-5 pb-5 space-y-3">
+              {moduleThumbnail ? (
+                <div className="relative w-full aspect-video rounded-[10px] overflow-hidden border border-[#ECECEC] bg-slate-50 group/cover">
+                  <img
+                    src={moduleThumbnail}
+                    alt="Thumbnail Materi"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => thumbnailFileInputRef.current?.click()}
+                      className="px-3 py-1.5 rounded-[6px] bg-white text-[#2E2D2D] text-xs font-bold shadow-md hover:bg-slate-50 transition-all cursor-pointer"
+                    >
+                      Ganti Gambar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setModuleThumbnail('');
+                        setIsDirty(true);
+                      }}
+                      className="px-3 py-1.5 rounded-[6px] bg-rose-600 text-white text-xs font-bold shadow-md hover:bg-rose-700 transition-all cursor-pointer"
+                    >
+                      Hapus
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => thumbnailFileInputRef.current?.click()}
+                  className="w-full aspect-video rounded-[10px] border border-dashed border-[#2563EB] bg-blue-50/50 hover:bg-blue-50 text-xs font-bold text-[#2563EB] flex flex-col items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
+                >
+                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                    <Upload className="w-5 h-5 text-[#2563EB]" />
+                  </div>
+                  <span>Upload Cover / Thumbnail Materi (16:9)</span>
+                </button>
+              )}
+            </div>
+            <div className="px-5 pb-4 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowThumbnailModal(false)}
+                className="px-4 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-[#2E2D2D] transition-colors cursor-pointer"
+              >
+                Selesai
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TOPICS EDIT MODAL */}
+      {showTopicsModal && (
+        <div
+          onClick={() => setShowTopicsModal(false)}
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-md bg-white rounded-[16px] shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden"
+          >
+            <div className="p-5 pb-4">
+              <h3 className="text-sm font-bold text-[#2E2D2D]">Topik Bahasan</h3>
+              <p className="text-[11px] text-[#737373] mt-0.5">Tambahkan topik untuk memudahkan pencarian materi (Maks. 4)</p>
+            </div>
+            <div className="px-5 pb-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className={`text-[11px] font-semibold ${moduleTopics.length >= 4 ? 'text-amber-600' : 'text-[#737373]'}`}>
+                  {moduleTopics.length}/4 Topik
+                </span>
+              </div>
+              <div
+                className="min-h-[44px] p-2 rounded-[8px] bg-white border border-[#ECECEC] focus-within:border-[#2563EB] flex flex-wrap items-center gap-2 transition-colors cursor-text"
+                onClick={() => tagInputRef.current?.focus()}
+              >
+                {moduleTopics.map((topic) => (
+                  <span
+                    key={topic}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] bg-blue-50 text-[#2563EB] font-bold text-xs border border-blue-100/80 animate-in fade-in zoom-in-95 duration-150"
+                  >
+                    <span>{topic}</span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveTopicTag(topic);
+                        setIsDirty(true);
+                      }}
+                      className="text-blue-400 hover:text-blue-700 cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </span>
+                ))}
+
+                {moduleTopics.length < 4 && (
+                  <input
+                    ref={tagInputRef}
+                    type="text"
+                    value={tagInputText}
+                    onChange={(e) => setTagInputText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddTopicTag();
+                        setIsDirty(true);
+                      } else if (e.key === 'Backspace' && !tagInputText && moduleTopics.length > 0) {
+                        handleRemoveTopicTag(moduleTopics[moduleTopics.length - 1]);
+                        setIsDirty(true);
+                      }
+                    }}
+                    placeholder={moduleTopics.length === 0 ? "Ketik topik lalu tekan Enter..." : "Tambah topik..."}
+                    className="flex-1 min-w-[140px] text-xs text-[#2E2D2D] outline-none border-none bg-transparent p-1 placeholder:text-[#AAAAAA]"
+                  />
+                )}
+              </div>
+            </div>
+            <div className="px-5 pb-4 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowTopicsModal(false)}
+                className="px-4 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-[#2E2D2D] transition-colors cursor-pointer"
+              >
+                Selesai
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* EVALUASI EDIT MODAL */}
+      {showEvaluasiModal && (
+        <div
+          onClick={() => setShowEvaluasiModal(false)}
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-lg bg-white rounded-[16px] shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden"
+          >
+            <div className="p-5 pb-4">
+              <h3 className="text-sm font-bold text-[#2E2D2D]">Bahan Evaluasi / Kuis</h3>
+              <p className="text-[11px] text-[#737373] mt-0.5">Tambahkan kuis atau tautan evaluasi untuk materi ini (Opsional)</p>
+            </div>
+            <div className="px-5 pb-5">
+              {!evaluationType ? (
+                <button
+                  type="button"
+                  onClick={() => { handleSwitchEvaluationType('kuis_sitemsa'); setIsDirty(true); }}
+                  className="w-full py-3 rounded-[8px] border-2 border-dashed border-blue-300 hover:border-[#2563EB] bg-white hover:bg-blue-50/40 text-xs font-bold text-[#2563EB] inline-flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Tambah Bahan Evaluasi / Kuis</span>
+                </button>
+              ) : (
+                <div className="p-4 rounded-[12px] bg-white border border-[#ECECEC] space-y-4 shadow-2xs">
+                  <div className="flex items-center justify-between pb-1">
+                    <span className="font-bold text-[#2E2D2D] text-xs flex items-center gap-1.5">
+                      <FileText className="w-4 h-4 text-[#2563EB]" /> Pengaturan Bahan Evaluasi
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => { handleSwitchEvaluationType(null); setIsDirty(true); }}
+                      className="text-xs text-rose-600 font-semibold hover:underline cursor-pointer flex items-center gap-1"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" /> Hapus Evaluasi
+                    </button>
+                  </div>
+
+                  {/* Evaluation Type Select Buttons */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => { handleSwitchEvaluationType('kuis_sitemsa'); setIsDirty(true); }}
+                      className={`p-2.5 rounded-[8px] border text-center text-xs font-bold transition-all cursor-pointer ${
+                        evaluationType === 'kuis_sitemsa'
+                          ? 'bg-blue-50 border-[#2563EB] text-[#2563EB]'
+                          : 'bg-white border-[#ECECEC] text-[#737373] hover:bg-slate-50'
+                      }`}
+                    >
+                      Kuis Sitemsa
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { handleSwitchEvaluationType('link_eksternal'); setIsDirty(true); }}
+                      className={`p-2.5 rounded-[8px] border text-center text-xs font-bold transition-all cursor-pointer ${
+                        evaluationType === 'link_eksternal'
+                          ? 'bg-blue-50 border-[#2563EB] text-[#2563EB]'
+                          : 'bg-white border-[#ECECEC] text-[#737373] hover:bg-slate-50'
+                      }`}
+                    >
+                      Link Eksternal
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { handleSwitchEvaluationType('qr_code'); setIsDirty(true); }}
+                      className={`p-2.5 rounded-[8px] border text-center text-xs font-bold transition-all cursor-pointer ${
+                        evaluationType === 'qr_code'
+                          ? 'bg-blue-50 border-[#2563EB] text-[#2563EB]'
+                          : 'bg-white border-[#ECECEC] text-[#737373] hover:bg-slate-50'
+                      }`}
+                    >
+                      Barcode / QR Code
+                    </button>
+                  </div>
+
+                  {/* Kuis Sitemsa */}
+                  {evaluationType === 'kuis_sitemsa' && (
+                    <div ref={quizDropdownRef} className="space-y-1.5 pt-1 relative">
+                      <label className="font-bold text-xs text-[#2E2D2D] block">Pilih Kuis Sitemsa</label>
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setIsQuizDropdownOpen(!isQuizDropdownOpen)}
+                          className="w-full h-9 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs font-semibold text-[#2E2D2D] outline-none hover:border-[#2563EB] focus:border-[#2563EB] flex items-center justify-between cursor-pointer transition-colors"
+                        >
+                          <span className={evalTitle ? 'text-[#2E2D2D] font-bold' : 'text-[#737373]'}>
+                            {evalTitle || 'Pilih Kuis Sitemsa'}
+                          </span>
+                          <ChevronDown className={`w-4 h-4 text-[#2E2D2D] transition-transform duration-200 ${isQuizDropdownOpen ? 'rotate-180' : ''}`} />
+                        </button>
+
+                        {isQuizDropdownOpen && (
+                          <div className="absolute left-0 bottom-full mb-1.5 w-full bg-white/95 backdrop-blur-md border border-[#ECECEC] rounded-[12px] shadow-xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-0.5">
+                            {[
+                              'Kuis 1: Daspro & Variabel Python (3 Soal)',
+                              'Kuis 2: Rangkaian Listrik Seri & Paralel (5 Soal)',
+                              'Kuis 3: Logika & Algoritma Lanjutan (4 Soal)',
+                            ].map((quizName) => {
+                              const isSelected = evalTitle === quizName;
+                              return (
+                                <button
+                                  key={quizName}
+                                  type="button"
+                                  onClick={() => {
+                                    setEvalTitle(quizName);
+                                    setIsQuizDropdownOpen(false);
+                                    setIsDirty(true);
+                                  }}
+                                  className={`w-full px-3 py-2.5 rounded-[8px] text-left text-xs font-semibold flex items-center justify-between transition-all cursor-pointer ${
+                                    isSelected
+                                      ? 'bg-blue-50/80 text-[#2563EB] font-bold'
+                                      : 'text-[#2E2D2D] hover:bg-slate-50'
+                                  }`}
+                                >
+                                  <span>{quizName}</span>
+                                  {isSelected && <CheckCircle2 className="w-4 h-4 text-[#2563EB]" />}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Link Eksternal */}
+                  {evaluationType === 'link_eksternal' && (
+                    <div className="space-y-3 pt-1">
+                      <div className="space-y-1.5">
+                        <label className="font-bold text-xs text-[#2E2D2D] block">Judul Kuis Eksternal</label>
+                        <input
+                          type="text"
+                          value={evalTitle}
+                          onChange={(e) => { setEvalTitle(e.target.value); setIsDirty(true); }}
+                          placeholder="Contoh: Kuis Quizizz Lab Elektronika..."
+                          className="w-full h-10 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] outline-none focus:border-[#2563EB] transition-colors"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="font-bold text-xs text-[#2E2D2D] block">Link / URL Kuis</label>
+                        <input
+                          type="text"
+                          value={evalUrl}
+                          onChange={(e) => { setEvalUrl(e.target.value); setIsDirty(true); }}
+                          placeholder="Contoh: https://quizizz.com/join?gc=123456"
+                          className="w-full h-10 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] outline-none focus:border-[#2563EB] transition-colors"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* QR Code */}
+                  {evaluationType === 'qr_code' && (
+                    <div className="space-y-3 pt-1">
+                      <div className="space-y-1.5">
+                        <label className="font-bold text-xs text-[#2E2D2D] block">Judul Kuis Barcode</label>
+                        <input
+                          type="text"
+                          value={evalTitle}
+                          onChange={(e) => { setEvalTitle(e.target.value); setIsDirty(true); }}
+                          placeholder="Contoh: Kuis Pindai Barcode (Quizizz Lab)"
+                          className="w-full h-10 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] outline-none focus:border-[#2563EB] transition-colors"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="font-bold text-xs text-[#2E2D2D] block">Gambar Barcode / QR Code</label>
+                        {!evalQrUrl ? (
+                          <button
+                            type="button"
+                            onClick={() => evalQrInputRef.current?.click()}
+                            className="w-full py-2.5 px-4 rounded-[8px] border border-dashed border-[#2563EB] bg-blue-50/50 hover:bg-blue-50 text-xs font-bold text-[#2563EB] flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
+                          >
+                            <Upload className="w-4 h-4 text-[#2563EB]" />
+                            <span>Upload Gambar Barcode / QR Code</span>
+                          </button>
+                        ) : (
+                          <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-[8px] border border-[#ECECEC]">
+                            <div className="flex items-center gap-3 truncate min-w-0 pr-2">
+                              <div
+                                onClick={() => setExpandedImagePreviewUrl(evalQrUrl)}
+                                className="w-10 h-10 rounded-[6px] bg-white p-1 border border-[#ECECEC] shrink-0 flex items-center justify-center cursor-pointer hover:border-[#2563EB] hover:scale-105 transition-all"
+                                title="Klik untuk memperbesar"
+                              >
+                                <img src={evalQrUrl} alt="QR Code" className="w-full h-full object-contain" />
+                              </div>
+                              <span className="text-xs font-semibold text-[#2E2D2D] truncate">
+                                Barcode Terpasang
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => evalQrInputRef.current?.click()}
+                                className="px-3 py-1.5 rounded-[6px] bg-white border border-[#ECECEC] hover:bg-slate-100 text-xs font-semibold text-[#2E2D2D] cursor-pointer transition-colors"
+                              >
+                                Ganti
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => { setEvalQrUrl(''); setIsDirty(true); }}
+                                className="px-3 py-1.5 rounded-[6px] bg-rose-50 hover:bg-rose-100 text-xs font-semibold text-rose-600 cursor-pointer transition-colors"
+                              >
+                                Hapus
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            <div className="px-5 pb-4 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowEvaluasiModal(false)}
+                className="px-4 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-[#2E2D2D] transition-colors cursor-pointer"
+              >
+                Selesai
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hidden File Inputs for native picking */}
+      <input
+        type="file"
+        ref={attachmentFileInputRef}
+        onChange={handleAttachmentFileSelect}
+        className="hidden"
+        accept=".pdf,.docx,.doc,.zip,.rar,.pptx,.xlsx,.txt,.png,.jpg,.jpeg"
+      />
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleImageFileSelect}
+        className="hidden"
+        accept="image/*"
+      />
     </div>
   );
 }

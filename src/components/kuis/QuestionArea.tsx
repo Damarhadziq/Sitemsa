@@ -16,6 +16,7 @@ import {
   Clock,
   X,
 } from "lucide-react";
+import { ProgressService } from "@/services/progress.service";
 
 // Web Audio API Synthesizer (Zero-dependency SFX)
 function playQuizSound(type: "pop" | "correct" | "wrong") {
@@ -251,6 +252,20 @@ export function QuestionArea() {
       setTimeLeft(45);
     } else {
       setIsCompleted(true);
+      const finalScorePercent = Math.round((correctCount / QUIZ_QUESTIONS.length) * 100);
+      try {
+        ProgressService.recordQuizAttempt('std-1', {
+          quizId: 'quiz-active',
+          quizTitle: 'Kuis Evaluasi Sitemsa',
+          subject: 'Seni Tari',
+          score: finalScorePercent,
+          maxScore: 100,
+          status: finalScorePercent >= 70 ? 'Lulus' : 'Perlu Bimbingan',
+        });
+        ProgressService.updateProgress('std-1', 'Seni Tari', 100);
+      } catch (e) {
+        console.error('Failed to auto-record quiz progress', e);
+      }
     }
   };
 

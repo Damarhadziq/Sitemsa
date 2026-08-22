@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { useAdminStore } from "@/lib/admin-store";
 import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react";
 import {
   ArrowLeft01Icon,
@@ -53,7 +54,7 @@ interface StepItem {
 export interface SectionItem {
   number?: string | number;
   title?: string;
-  text: string;
+  text?: string;
   imageUrl?: string;
   imageCaption?: string;
 }
@@ -485,34 +486,34 @@ console.log(\`Siswa \${namaSiswa} memperoleh nilai \${nilaiUjian}\`);`,
     author: "Pak Ahmad Fauzi, S.Pd.",
     updatedAt: "15 Agustus 2026",
     icon: PaintBrushIcon,
-    topics: ["Koreografi", "Wirama", "Wiraga", "Wirasa", "Rangsang Visual & Auditif", "Elemen Ruang Waktu Tenaga"],
+    topics: ["Koreografi", "Wirama", "Wiraga", "Wirasa"],
     description: "Mempelajari pengertian koreografi, unsur pendukung tari (wirama, wiraga, wirasa), sumber rangsang ide, serta elemen utama ruang, waktu, dan tenaga.",
     imageUrl: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=1200&q=80",
     imageCaption: "Ilustrasi 9.1: Penataan Komposisi dan Gerak Koreografi Tari.",
     contentSections: [
       {
-        id: "pengertian-koreografi",
-        title: "Pengertian Koreografi",
+        id: "apa-itu-koreografi",
+        title: "Apa Itu Koreografi?",
         paragraphs: [
-          "Menurut M. Jazuli koreografi diartikan sebagai pengetahuan penyusunan tari dan untuk menyebutkan hasil susunan tari. Dalam pengertian yang lebih khusus pada saat ini, erat hubungannya dengan masalah bentuk dan gaya tari. Pencipta tari atau penata tarinya disebut koreografer.",
+          "Menurut M.Jazuli koreografi diartikan sebagai pengetahuan penyusunan tari dan untuk menyebutkan hasil susunan tari. Dalam pengertian yang lebih khusus pada saat ini, erat hubungannya dengan masalah bentuk dan gaya tari. Pencipta tari atau penata tarinya disebut koreografer.",
           "Secara etimologis, koreografi berasal dari bahasa Yunani: choreia (tari/gerak berirama) dan graphia (tulisan/catatan). Jadi secara harfiah, koreografi berarti tulisan tari atau catatan gerak. Namun, dalam perkembangannya, koreografi tidak hanya sekadar mencatat gerak, melainkan proses kreatif dalam merancang, menyusun, dan mengorganisasikan gerak tubuh menjadi komposisi tari yang utuh, terstruktur, komunikatif, dan estetis.",
         ],
       },
       {
-        id: "konsep-koreografi",
-        title: "Konsep Koreografi",
+        id: "apa-itu-konsep-koreografi",
+        title: "Apa Itu Konsep Koreografi?",
         paragraphs: [
           "Secara sederhana, koreografi adalah proses kreatif dalam merancang, menyusun, dan mengorganisasikan gerak tubuh menjadi sebuah komposisi tari yang utuh, terstruktur, komunikatif, memiliki nilai estetis, dan makna tertentu. Koreografi juga melibatkan pengaturan ruang, waktu, tenaga, serta unsur pendukung seperti musik, tata busana, tata rias, dan properti.",
         ],
         callout: "Koreografi adalah jiwa atau fondasi dari sebuah karya tari, yang mencakup pengaturan ruang, waktu, tenaga, serta unsur pendukung seperti musik, tata busana, tata rias, dan properti.",
       },
       {
-        id: "unsur-pendukung-tari",
+        id: "unsur-unsur-pendukung-tari",
         title: "Unsur-Unsur Pendukung Tari",
         paragraphs: [
-          "1) Wirama: Keselarasan dan ketepatan gerakan tubuh penari dengan irama musik atau lagu yang mengiringinya.",
-          "2) Wiraga: Gerak fisik atau keterampilan tubuh dalam menguasai serta mengeksekusi gerak-gerak tubuhnya dengan baik, tepat, dan indah.",
-          "3) Wirasa: Kemampuan seorang penari dalam menghayati, mengekspresikan, dan menyampaikan perasaan, emosi, serta makna yang terkandung di balik sebuah tarian melalui gerak dan mimik wajah.",
+          "1. Wirama\nadalah keselarasan dan ketepatan gerakan tubuh penari dengan irama musik atau lagu yang mengiringinya",
+          "2. Wiraga\nadalah gerak fisik atau keterampilan tubuh dalam menguasai serta mengeksekusi gerak-gerak tubuhnya dengan baik , tepat, dan indah.",
+          "3. Wirasa\nadalah kemampuan seorang penari dalam menghayati, mengekspresikan, dan menyampaikan perasaan, emosi, serta makna yang terkandung di balik sebuah tarian melalui gerak dan mimik wajah.",
         ],
       },
       {
@@ -520,17 +521,17 @@ console.log(\`Siswa \${namaSiswa} memperoleh nilai \${nilaiUjian}\`);`,
         title: "Sumber Ide atau Rangsang Koreografi",
         paragraphs: [
           "Menurut Jacqueline Smith (dalam Suharto, 1985), rangsang adalah sesuatu yang membangkitkan pikiran, semangat, atau mendorong kegiatan. Dalam seni tari, rangsang yang paling umum menjadi awal lahirnya karya tari adalah rangsang visual dan auditif.",
-          "1) Rangsang Visual: Segala sesuatu yang dapat ditangkap oleh panca indra penglihatan (mata), seperti alam sekitar, benda, fenomena sosial, dan karya seni lain.",
-          "2) Rangsang Auditif: Berasal dari bunyi atau musik yang didengar. Musik dengan irama lembut dapat merangsang gerakan lambat dan tenang, sedangkan musik dengan ritme cepat cenderung mendorong gerakan dinamis. Namun, koreografer juga dapat menciptakan kontras, misalnya gerakan cepat diiringi musik lambat, untuk efek artistik tertentu.",
+          "1. Rangsang Visual\nRangsang visual adalah segala sesuatu yang dapat ditangkap oleh panca indra penglihatan (mata), seperti alam sekitar, benda, fenomena social, dan karya seni lain.",
+          "2. Rangsang Auditif\nRangsang auditif berasal dari bunyi atau musik yang didengar. Musik dengan irama lembut dapat merangsang gerakan lambat dan tenang, sedangkan musik dengan ritme cepat cenderung mendorong gerakan dinamis. Namun, koreografer juga dapat menciptakan kontras, misalnya gerakan cepat diiringi musik lambat, untuk efek artistik tertentu.",
         ],
       },
       {
         id: "elemen-utama-koreografi",
         title: "Elemen Utama Koreografi",
         paragraphs: [
-          "1) Ruang (Space): Ruang berkaitan dengan area yang digunakan penari berupa ruang gerak dan juga ruang pementasan.",
-          "2) Waktu (Time): Waktu berkaitan dengan durasi, tempo, dan ritme gerakan. Gerak tari dapat dilakukan dengan tempo cepat, sedang, atau lambat sesuai dengan karakter tarian yang ingin disampaikan.",
-          "3) Tenaga (Energy): Tenaga berkaitan dengan intensitas dan kualitas gerak, misalnya gerakan yang kuat, lembut, tegas, atau mengalir. Penggunaan tenaga yang tepat akan menciptakan dinamika dan ekspresi dalam tarian.",
+          "1. Ruang (Space) – ruang berkaitan dengan area yang digunakan penari berupa ruang gerak dan juga ruang pementasan.",
+          "2. Waktu (Time) – Waktu berkaitan dengan durasi, tempo, dan ritme gerakan. Gerak tari dapat dilakukan dengan tempo cepat, sedang, atau lambat sesuai dengan karakter tarian yang ingin disampaikan.",
+          "3. Tenaga (Energy) – Tenaga berkaitan dengan intensitas dan kualitas gerak, misalnya gerakan yang kuat, lembut, tegas, atau mengalir. Penggunaan tenaga yang tepat akan menciptakan dinamika dan ekspresi dalam tarian",
         ],
         callout: "Ruang, waktu, dan tenaga perlu diatur dengan tepat agar gerak tari memiliki dinamika, ekspresi, dan karakter yang sesuai.",
       },
@@ -552,12 +553,12 @@ console.log(\`Siswa \${namaSiswa} memperoleh nilai \${nilaiUjian}\`);`,
         {
           stepNumber: 3,
           title: "Membuat Sinopsis",
-          text: "Menuliskan sinopsis atau ringkasan cerita tentang tari yang akan dibuat atau dibawakan.",
+          text: "Menuliskan synopsis atau ringkasan cerita tentang tari yang akan dibuat atau dibawakan.",
         },
         {
           stepNumber: 4,
           title: "Membuat Urutan Tarian",
-          text: "Membuat urutan atau alur cerita tari yang akan dibuat agar saat eksplorasi gerak sudah ada pegangan ketentuan penggambaran geraknya.",
+          text: "Membuat urutan atau alur cerita tari yang akan dibuat, hal ini dilakukan supaya Ketika eksplorasi gerak sudah ada pegangan untuk ketentuan penggambaran geraknya.",
         },
         {
           stepNumber: 5,
@@ -567,12 +568,12 @@ console.log(\`Siswa \${namaSiswa} memperoleh nilai \${nilaiUjian}\`);`,
         {
           stepNumber: 6,
           title: "Tentukan Pola Lantai",
-          text: "Menentukan pola lantai yang akan dibuat berdasarkan alur atau urutan gerak yang telah dibuat.",
+          text: "Menentukan pola lantai yang akan dibuat, serta dibuat berdasarkan banyaknya alur atau urutan gerak yang telah dibuat.",
         },
         {
           stepNumber: 7,
           title: "Menentukan Iringan Musik",
-          text: "Mencari iringan musik yang akan digunakan untuk bahan presentasi kelompok.",
+          text: "Mencari iringan music yang akan digunakan untuk bahan presentasi kelompok.",
         },
       ],
     },
@@ -623,12 +624,12 @@ console.log(\`Siswa \${namaSiswa} memperoleh nilai \${nilaiUjian}\`);`,
         title: "Tujuan Melakukan Eksplorasi Gerak",
         paragraphs: [
           "Melakukan eksplorasi gerak memiliki beberapa tujuan utama bagi penari maupun koreografer muda, antara lain:",
-          "1) Mengembangkan kreativitas siswa dalam menciptakan gerakan tari baru.",
-          "2) Melatih keberanian untuk mencoba berbagai variasi gerak.",
-          "3) Menemukan gerak yang selaras dengan tema tari yang diusung.",
-          "4) Mengembangkan gerak dasar/sederhana menjadi gerak yang lebih kaya dan bervariasi.",
-          "5) Meningkatkan kemampuan siswa dalam menyusun gerak menjadi sebuah koreografi utuh.",
-          "6) Melatih kepekaan tubuh terhadap ruang, waktu, tenaga, dan ekspresi.",
+          "1. Mengembangkan kreativitas siswa dalam menciptakan gerakan tari baru.",
+          "2. Melatih keberanian untuk mencoba berbagai variasi dan kemungkinan gerak.",
+          "3. Menemukan gerak yang selaras dan sesuai dengan tema tari yang diusung.",
+          "4. Mengembangkan gerak dasar/sederhana menjadi gerak yang lebih kaya dan bervariasi.",
+          "5. Meningkatkan kemampuan siswa dalam menyusun gerak menjadi sebuah koreografi utuh.",
+          "6. Melatih kepekaan tubuh terhadap ruang, waktu, tenaga, dan ekspresi.",
         ],
       },
       {
@@ -636,11 +637,11 @@ console.log(\`Siswa \${namaSiswa} memperoleh nilai \${nilaiUjian}\`);`,
         title: "Sumber Rangsangan atau Ide Eksplorasi",
         paragraphs: [
           "Gerakan tari dapat bersumber dan dikembangkan dari berbagai jenis rangsangan, di antaranya:",
-          "1) Rangsangan Visual: Gerak terinspirasi dari objek yang dilihat, seperti gerak tumbuhan, hewan, aktivitas manusia, atau fenomena alam.",
-          "2) Rangsangan Audio: Gerak dikembangkan berdasarkan suara, instrumen, atau musik yang didengar. Perubahan tempo, ritme, dan karakter musik sangat memengaruhi gerak.",
-          "3) Rangsangan Kinestetik: Gerak muncul dari pengalaman fisik tubuh saat melakukan suatu gerakan tertentu, yang kemudian dikembangkan lagi menjadi bentuk gerak baru.",
-          "4) Rangsangan Gagasan/Ide: Gerakan berasal dari konsep, cerita, perasaan, atau tema abstrak (misalnya tema perjuangan, persahabatan, atau kehidupan remaja).",
-          "5) Rangsangan Lingkungan: Gerakan terinspirasi dari dinamika aktivitas sekitar, seperti suasana sekolah, pasar, sawah, atau fasilitas umum.",
+          "1. Rangsangan Visual: Gerak terinspirasi dari objek yang dilihat, seperti gerak tumbuhan, hewan, aktivitas manusia, atau fenomena alam.",
+          "2. Rangsangan Audio: Gerak dikembangkan berdasarkan suara, instrumen, atau musik yang didengar. Perubahan tempo, ritme, dan karakter musik sangat memengaruhi gerak.",
+          "3. Rangsangan Kinestetik: Gerak muncul dari pengalaman fisik tubuh saat melakukan suatu gerakan tertentu, yang kemudian dikembangkan lagi menjadi bentuk gerak baru.",
+          "4. Rangsangan Gagasan/Ide: Gerakan berasal dari konsep, cerita, perasaan, atau tema abstrak (misalnya: tema perjuangan, persahabatan, atau kehidupan remaja).",
+          "5. Rangsangan Lingkungan: Gerakan terinspirasi dari dinamika aktivitas sekitar, seperti suasana sekolah, pasar, sawah, atau fasilitas umum.",
         ],
       },
       {
@@ -648,11 +649,11 @@ console.log(\`Siswa \${namaSiswa} memperoleh nilai \${nilaiUjian}\`);`,
         title: "Unsur-Unsur Utama yang Dieksplorasi",
         paragraphs: [
           "Dalam proses eksplorasi, siswa mengolah dan memvariasikan gerak tubuh melalui elemen-elemen dasar seni tari berikut:",
-          "1) Ruang: Arah hadap, level (tinggi/sedang/rendah), pola lantai, jarak, dan posisi tubuh.",
-          "2) Waktu: Tempo (cepat/lambat), ritme, durasi, dan aksentuasi.",
-          "3) Tenaga: Kuat-lemah, berat-ringan, tegang-rileks.",
-          "4) Tubuh: Gerak kepala, tangan, badan, kaki, serta kombinasi anggota tubuh.",
-          "5) Ekspresi: Mimik wajah, gestur sikap tubuh, dan penghayatan makna.",
+          "1. Ruang: Arah hadap, level (tinggi/sedang/rendah), pola lantai, jarak, dan posisi tubuh",
+          "2. Waktu: Tempo (cepat/lambat), ritme, durasi, dan aksentuasi",
+          "3. Tenaga: Kuat-lemah, berat-ringan, tegang-rileks",
+          "4. Tubuh: Gerak kepala, tangan, badan, kaki, serta kombinasi anggota tubuh",
+          "5. Ekspresi: Mimik wajah, gestur sikap tubuh, dan penghayatan makna",
         ],
         callout: "Tips Penting: Kombinasi perubahan elemen ruang, waktu, dan tenaga pada satu gerak dasar dapat memberikan makna, nuansa, serta emosi panggung yang sangat berbeda.",
       },
@@ -661,44 +662,44 @@ console.log(\`Siswa \${namaSiswa} memperoleh nilai \${nilaiUjian}\`);`,
         title: "Teknik Mengembangkan Gerak Dasar",
         paragraphs: [
           "Satu gerak dasar yang sederhana dapat ditransformasikan menjadi beragam variasi gerak koreografi melalui teknik berikut:",
-          "1) Mengubah arah (depan, belakang, samping, diagonal)",
-          "2) Mengubah level (tinggi, sedang, rendah)",
-          "3) Mengubah tempo (dipercepat, diperlambat, freeze)",
-          "4) Mengubah tenaga (hentakan kuat atau ayunan lembut)",
-          "5) Mengubah ukuran gerak (diperluas atau diperkecil)",
-          "6) Mengubah anggota tubuh (transfer gerakan dari tangan ke kaki)",
-          "7) Mengulang & menggabungkan motif gerak berbeda",
+          "1. Mengubah arah: Ke depan, belakang, samping kanan/kiri, atau diagonal.",
+          "2. Mengubah level: Level tinggi (melompat/jinjit), sedang (berdiri/membungkuk), rendah (duduk/jongkok).",
+          "3. Mengubah tempo: Dipercepat, diperlambat, atau dihentikan sejenak (freeze)",
+          "4. Mengubah tenaga: Gerak dilakukan dengan hentakan kuat atau ayunan lembut.",
+          "5. Mengubah ukuran gerak: Gerakan diperluas (jangkauan lebar) atau diperkecil.",
+          "6. Mengubah anggota tubuh: Mentransfer gerakan dari tangan ke kaki atau kombinasi keduanya.",
+          "7. Mengulang & Menggabungkan: Repetisi gerakan dengan modifikasi atau menggabungkan dua motif gerak berbeda",
         ],
       },
     ],
     stepByStepSection: {
       title: "Panduan Langkah Praktik Eksplorasi Gerak",
-      description: "Berdasarkan contoh tema 'Kehidupan di Lingkungan Sekolah' dengan gerak dasar 'Berjalan':",
+      description: "Berikut adalah Panduan Langkah Praktik Eksplorasi Gerak berdasarkan contoh tema \"Kehidupan di Lingkungan Sekolah\" dengan gerak dasar \"Berjalan\":",
       steps: [
         {
           stepNumber: 1,
-          title: "Eksplorasi Berdasarkan Unsur Waktu (Tempo)",
-          text: "Cobalah melakukan gerak dasar berjalan dengan variasi tempo lambat (tenang, ragu, khidmat) dan tempo cepat (tergesa-gesa, bersemangat).",
+          title: "Langkah 1: Eksplorasi Berdasarkan Unsur Waktu (Tempo)",
+          text: "Cobalah melakukan gerak dasar berjalan dengan variasi tempo lambat dan tempo cepat.\n• Berjalan Tempo Lambat: Melangkah perlahan untuk menggambarkan kesan tenang, ragu, atau khidmat.\n• Berjalan Tempo Cepat: Melangkah tergesa-gesa/setengah berlari untuk menggambarkan kesan terburu-buru atau bersemangat.",
         },
         {
           stepNumber: 2,
-          title: "Eksplorasi Berdasarkan Unsur Ruang (Arah & Level)",
-          text: "Ubah arah langkah kaki (menyamping, diagonal, memutar) dan ketinggian tubuh (level rendah dengan posisi lutut ditekuk/jongkok).",
+          title: "Langkah 2: Eksplorasi Berdasarkan Unsur Ruang (Arah & Level)",
+          text: "Ubah arah langkah kaki dan ketinggian tubuh (level) saat berjalan.\n• Arah Samping & Diagonal: Berjalan menyamping ke kanan/kiri atau mengambil garis diagonal.\n• Level Rendah: Berjalan dengan posisi lutut ditekuk/jongkok.\n• Perubahan Arah/Berputar: Berjalan lalu memutar badan ke arah belakang.",
         },
         {
           stepNumber: 3,
-          title: "Eksplorasi Berdasarkan Unsur Tubuh & Tenaga",
-          text: "Kombinasikan gerakan berjalan dengan dorongan tenaga kuat (tegap bertenaga) atau tenaga lembut (ayunan mengalir) serta ayunan tangan.",
+          title: "Langkah 3: Eksplorasi Berdasarkan Unsur Tubuh & Tenaga",
+          text: "Kombinasikan gerakan berjalan dengan dorongan tenaga dan gerakan anggota tubuh lain.\n• Kombinasi Tubuh: Berjalan sambil mengayunkan atau mengangkat tangan ke atas.\n• Tenaga Kuat: Berjalan dengan pijakan dan posisi tubuh tegap terikat (bertenaga).\n• Tenaga Lembut: Berjalan dengan ayunan tubuh yang rileks dan mengalir.",
         },
         {
           stepNumber: 4,
-          title: "Penambahan Pose Akhir dan Ekspresi",
+          title: "Langkah 4: Penambahan Pose Akhir dan Ekspresi",
           text: "Lakukan gerak berjalan kemudian berhenti secara mendadak (pose) diiringi ekspresi wajah yang sesuai dengan tema.",
         },
         {
           stepNumber: 5,
-          title: "Merangkai Variasi Menjadi Koreografi",
-          text: "Pilih 3 hingga 5 variasi gerak berjalan yang telah dicoba, lalu hubungkan secara berurutan menjadi satu kesatuan motif gerak singkat.",
+          title: "Langkah 5: Merangkai Variasi Menjadi Koreografi",
+          text: "Pilih 3 hingga 5 variasi gerak berjalan yang telah dicoba di atas, lalu hubungkan gerak tersebut secara berurutan menjadi satu kesatuan motif gerak/koreografi singkat.",
         },
       ],
     },
@@ -724,88 +725,92 @@ console.log(\`Siswa \${namaSiswa} memperoleh nilai \${nilaiUjian}\`);`,
     author: "Pak Ahmad Fauzi, S.Pd.",
     updatedAt: "17 Agustus 2026",
     icon: PaintBrushIcon,
-    topics: ["Komposisi Tari", "Pola Lantai", "Level Vertikal", "Prinsip Unity Balance", "Jenis Panggung"],
+    topics: ["Komposisi Tari", "Pola Lantai", "Level Vertikal", "Prinsip Unity Balance"],
     description: "Mempelajari unsur utama komposisi tari, pola lantai, level, arah hadap, prinsip kesatuan & keseimbangan, serta ragam panggung pertunjukan.",
     imageUrl: "https://images.unsplash.com/photo-1469488865564-c2de10f69f96?auto=format&fit=crop&w=1200&q=80",
     imageCaption: "Ilustrasi 12.1: Dinamika Formasi Pola Lantai dan Tata Panggung Tari.",
     contentSections: [
       {
-        id: "komposisi-tari",
-        title: "Pengertian Komposisi Tari",
+        id: "apa-itu-komposisi-tari",
+        title: "Apa itu Komposisi Tari?",
         paragraphs: [
-          "Komposisi berasal dari kata compose yang berarti meletakkan, mengatur, dan menyusun bagian-bagian menjadi satu kesatuan yang utuh. Dalam seni tari, komposisi menjadi suatu bentuk untuk memberikan wujud estetik terhadap pertunjukan seni tari. Ruang menjadi hal penting dalam tari karena dapat dihidupkan melalui gerak dan perpindahan penari di atas panggung.",
+          "Komposisi berasal dari kata comose yang berarti meletakkan, mengatur, dan menyusun bagian-bagian menjadi satu kesatuan yang utuh. Dalam seni tari, komposisi menjadi suatu bentuk untuk memberikan wujud estetik terhadap pertunjukan seni tari. Ruang menjadi hal penting dalam tari karena dapat dihidupkan melalui gerak dan perpindahan penari di atas panggung.",
         ],
       },
       {
         id: "unsur-utama-komposisi",
         title: "Unsur Utama Komposisi Tari",
         paragraphs: [
-          "1) Pola Lantai (Floor Pattern): Garis-garis yang dilalui oleh penari dan menjadi alur visual dari sebuah tarian. Pola lantai berfungsi untuk mengisi ruang panggung, menggambarkan alur cerita, serta memberikan daya tarik kepada penonton.",
-          "2) Level (Dimensi Vertikal): Tinggi rendahnya posisi tubuh penari berkaitan dengan lantai. Variasi level memberikan kesan estetis dalam pertunjukan tari. Level tinggi dapat menggambarkan kekuatan dan kegembiraan, level sedang menggambarkan ketenangan atau kesetaraan, sedangkan level rendah dapat menggambarkan kerendahan hati atau kesedihan.",
-          "3) Arah Hadap (Direction): Penyesuaian arah tubuh penari ketika melakukan gerak, seperti menghadap ke depan, belakang, samping kanan, samping kiri, atau bawah. Perubahan arah hadap dapat menciptakan dinamika estetis dan membantu mengarahkan fokus penonton.",
+          "1. Pola Lantai (Floor Pattern)\nPola lantai merupakan garis-garis yang dilalui oleh penari dan menjadi alur visual dari sebuah tarian. Pola lantai berfungsi untuk mengisi ruang panggung, menggambarkan alur cerita, serta memberikan daya tarik kepada penonton.",
+          "2. Level (Dimensi Vertikal)\nLevel merupakan tinggi rendahnya posisi tubuh penari berkaitan dengan lantai. Variasi level memberikan kesan estetis dalam pertunjukan tari. Level tinggi dapat menggambarkan kekuatan dan kegembiraan, level sedang menggambarkan ketenangan atau kesetaraan, sedangkan level rendah dapat menggambarkan kerendahan hati atau kesedihan.",
+          "3. Arah Hadap (Direction)\nArah hadap adalah penyesuaian arah tubuh penari ketika melakukan gerak, seperti menghadap ke depan, belakang, samping kanan, samping kiri, atau bawah. Perubahan arah hadap dapat menciptakan dinamika estetis dan membantu mengarahkan fokus penonton.",
+        ],
+      },
+      {
+        id: "jenis-pola-lantai-dan-maknanya",
+        title: "Jenis Pola Lantai dan Maknanya",
+        items: [
+          {
+            imageUrl: "/images/tari/pola-lantai-makna.png",
+          },
         ],
         callout: "Pemilihan pola lantai perlu disesuaikan dengan tema dan suasana yang ingin ditampilkan dalam karya tari.",
       },
       {
-        id: "prinsip-komposisi",
+        id: "prinsip-prinsip-komposisi-tari",
         title: "Prinsip-Prinsip Komposisi Tari",
         paragraphs: [
-          "1) Kesatuan (Unity atau Cohesion): Prinsip komposisi tari yang menunjukkan adanya hubungan antara berbagai elemen tari (gerak, pola lantai, iringan musik, tata busana, tata cahaya) sebagai pendukung tema tari sehingga menjadi satu kesatuan karya tari yang utuh dan harmonis.",
-          "2) Keseimbangan (Balance): Berkaitan dengan pengaturan visual di atas panggung, baik keseimbangan simetris (posisi penari di sisi kanan dan kiri panggung sama) maupun keseimbangan asimetris (posisi tidak sama tetapi jumlah/bentuknya tetap seimbang secara visual).",
-          "3) Kontras (Contrast): Menggunakan perbedaan untuk menciptakan dinamika dan membuat pertunjukan menjadi lebih hidup melalui perbedaan kecepatan gerak, level, formasi, dan arah hadap.",
-          "4) Komposisi Kelompok: Gerak yang dilakukan oleh beberapa penari dengan hubungan timbal balik (kelompok kecil 2-4 orang atau kelompok besar 5+ orang) dengan pola formasi seimbang, serempak, zig-zag, atau terpecah.",
-        ],
-      },
-      {
-        id: "panggung-pertunjukan",
-        title: "Panggung & Jenis-Jenis Panggung",
-        paragraphs: [
-          "Panggung merupakan ruang fisik tempat penari mengekspresikan karya seni di hadapan penonton. Ragam jenis panggung meliputi:",
+          "Dalam koreografi, terdapat ide gerak yang utuh dan memiliki nilai estetik yang disusun melalui komposisi tari. Komposisi berfungsi untuk mengatur berbagai elemen tari sebagai pelengkap di atas panggung. Dalam koreografi, elemen-elemen tersebut menjadi penting dan disusun berdasarkan prinsip-prinsip fundamental yang diterapkan oleh penari.",
+          "1. Kesatuan (Unity atau Cohesion)\nKesatuan merupakan prinsip komposisi tari yang menunjukkan adanya hubungan antara berbagai elemen tari, seperti gerak, pola lantai, iringan musik, tata busana, dan tata cahaya sebagai pendukung tema tari.\nSetiap gerak yang awalnya terpisah kemudian disusun dan dihubungkan sehingga menjadi sebuah karya tari yang utuh dan harmonis. Penonton tidak melihat pertunjukan sebagai bagian-bagian yang terpisah, tetapi sebagai satu kesatuan pertunjukan yang memiliki keterkaitan dan menjaga integritas artistik karya tari.",
+          "2. Keseimbangan (Balance)\nberkaitan dengan pengaturan visual di atas panggung. Seorang koreografer perlu memperhatikan ruang dan posisi penari, terutama keseimbangan antara sisi kanan dan kiri panggung.\n• Keseimbangan simetris, yaitu posisi penari di sisi kanan dan kiri panggung dibuat sama atau seimbang.\n• Keseimbangan asimetris, yaitu posisi penari di sisi kanan dan kiri tidak sama, tetapi jumlah atau bentuknya tetap seimbang secara visual.",
+          "3. Kontras (Contrast)\nKontras (Contrast) merupakan prinsip komposisi tari yang menggunakan perbedaan untuk menciptakan dinamika dan membuat pertunjukan menjadi lebih hidup. Kontras dapat ditampilkan melalui perbedaan kecepatan gerak, level, formasi, dan arah hadap.",
+          "4. Komposisi kelompok\nmerupakan gerak yang dilakukan oleh beberapa penari dengan penari satu dengan yang lain memiliki hubungan secara timbal balik. Jumlah penari dapat dibedakan dengan kelompok kecil dengan jumlah dua, tiga, empat dan kelompok besar minimal bejumlah lima. Isi atau pola lantai yang digunakan dapat dibuat dengan seimbang serampak zig zag atau terpecah-pecah.",
         ],
         items: [
           {
-            number: 1,
-            title: "Panggung Proscenium",
-            text: "Panggung yang dibatasi oleh bingkai (frame) atau lengkungan (arch) di bagian depan. Penonton menyaksikan pertunjukan dari satu arah depan. (Contoh: Gedung Kesenian Jakarta dan Teater Besar Taman Ismail Marzuki).",
+            imageUrl: "/images/tari/komposisi-kelompok.png",
+          },
+        ],
+      },
+      {
+        id: "panggung",
+        title: "Panggung & Jenis-Jenis Panggung",
+        paragraphs: [
+          "Panggung merupakan ruang fisik tempat penari mengekspresikan karya seni di hadapan penonton. Jenis panggung dapat memengaruhi koreografi, tata ruang gerak, hubungan penari dengan penonton, serta kesan estetis pertunjukan.",
+          "Jenis-jenis panggung:",
+        ],
+        items: [
+          {
+            text: "1. Panggung Proscenium\nPanggung proscenium adalah panggung yang dibatasi oleh bingkai (frame) atau lengkungan (arch) di bagian depan. Penonton menyaksikan pertunjukan dari satu arah, yaitu dari depan, sehingga pertunjukan terlihat seperti berada di dalam sebuah bingkai gambar.\nContoh: Gedung Kesenian Jakarta dan Teater Besar Taman Ismail Marzuki.",
             imageUrl: "/images/tari/panggung-proscenium.png",
-            imageCaption: "Panggung Proscenium: Panggung berbingkai depan di mana penonton duduk menyaksikan dari satu arah frontal.",
           },
           {
-            number: 2,
-            title: "Panggung Thrust",
-            text: "Panggung yang menjorok ke arah penonton sehingga penonton dapat menyaksikan pertunjukan dari tiga sisi panggung (sisi kiri, kanan, dan depan), seperti pada Sendratari Ramayana.",
+            text: "2. Panggung Thrust\nPanggung thrust adalah panggung yang menjorok ke arah penonton, sehingga penonton dapat menyaksikan pertunjukan dari tiga sisi panggung, yaitu sisi kiri, kanan, dan depan.\nPanggung jenis ini dapat ditemukan pada beberapa festival tari tradisional, seperti pertunjukan Sendratari Ramayana.",
             imageUrl: "/images/tari/panggung-thrust.jpg",
-            imageCaption: "Panggung Thrust: Panggung yang menjorok ke tengah dan dapat disaksikan penonton dari 3 sisi.",
           },
           {
-            number: 3,
-            title: "Panggung Arena",
-            text: "Panggung yang berada di tengah-tengah dan dikelilingi penonton dari keempat sisi (360°), seperti di pendopo dan pertunjukan tari rakyat.",
+            text: "3. Panggung arena\nPanggung arena adalah panggung yang berada di tengah-tengah dan dikelilingi penonton dari keempat sisi (360°). Pada panggung ini, tidak terdapat satu sisi depan yang dominan sehingga penari perlu memperhatikan gerakan dan posisi tubuh dari berbagai arah.\nContoh: pertunjukan tari di pendopo, arena pertunjukan rakyat, dan beberapa karya tari kontemporer eksperimental.",
             imageUrl: "/images/tari/panggung-arena.jpg",
-            imageCaption: "Panggung Arena: Panggung yang dikelilingi penonton dari 4 sisi secara 360 derajat.",
           },
           {
-            number: 4,
-            title: "Panggung Terbuka (Open Air Stage)",
-            text: "Panggung yang berada di ruang terbuka tanpa atap, memanfaatkan lingkungan alam atau bangunan di sekitarnya sebagai latar pertunjukan (Contoh: Candi Prambanan, panggung terbuka Taman Budaya, dan amphitheater).",
+            text: "4. Panggung Terbuka (Open Air Stage)\nPanggung terbuka (Open Air Stage) adalah panggung yang berada di ruang terbuka tanpa atap, biasanya memanfaatkan lingkungan alam atau bangunan di sekitarnya sebagai latar pertunjukan.\nPanggung ini dapat digunakan untuk pertunjukan tari dengan jumlah penonton yang besar, seperti Sendratari Ramayana di Candi Prambanan, panggung terbuka Taman Budaya, dan amphitheater",
             imageUrl: "/images/tari/panggung-open-air.png",
-            imageCaption: "Panggung Terbuka (Open Air / Amphitheater): Panggung terbuka berlatar alam atau arsitektur budaya.",
           },
         ],
       },
     ],
     stepByStepSection: {
-      title: "Langkah-Langkah Praktik Komposisi Tari / Pola Lantai",
+      title: "Langkah-langkah Praktik Komposisi Tari/Pola Lantai",
       description: "Tahapan sistematis penyusunan komposisi pola lantai kelompok tari:",
       steps: [
-        { stepNumber: 1, title: "Membentuk Kelompok", text: "Peserta didik membentuk kelompok tari sesuai arahan guru." },
-        { stepNumber: 2, title: "Menentukan Pola Lantai", text: "Kelompok memilih beberapa pola lantai, seperti horizontal, vertikal, diagonal, lengkung, atau zig-zag." },
-        { stepNumber: 3, title: "Menentukan Level", text: "Peserta didik menentukan penggunaan level tinggi, sedang, dan rendah pada setiap formasi." },
-        { stepNumber: 4, title: "Menentukan Arah Hadap", text: "Peserta didik menentukan arah hadap penari agar komposisi terlihat lebih dinamis." },
-        { stepNumber: 5, title: "Menyusun Perpindahan Formasi", text: "Peserta didik menentukan urutan perpindahan dari satu pola lantai ke pola lantai berikutnya." },
-        { stepNumber: 6, title: "Melakukan Latihan", text: "Kelompok mempraktikkan gerak dan perpindahan pola lantai dengan memperhatikan jarak serta posisi penari." },
-        { stepNumber: 7, title: "Mengevaluasi Komposisi", text: "Peserta didik mengamati keseimbangan, kesatuan, dan kontras dalam komposisi yang telah dibuat." },
-        { stepNumber: 8, title: "Menampilkan Hasil", text: "Kelompok menampilkan hasil komposisi tari di depan kelas." },
+        { stepNumber: 1, title: "Membentuk kelompok", text: "Peserta didik membentuk kelompok sesuai arahan guru." },
+        { stepNumber: 2, title: "Menentukan pola lantai", text: "Kelompok memilih beberapa pola lantai, seperti horizontal, vertikal, diagonal, lengkung, atau zig-zag." },
+        { stepNumber: 3, title: "Menentukan level", text: "Peserta didik menentukan penggunaan level tinggi, sedang, dan rendah pada setiap formasi." },
+        { stepNumber: 4, title: "Menentukan arah hadap", text: "Peserta didik menentukan arah hadap penari agar komposisi terlihat lebih dinamis." },
+        { stepNumber: 5, title: "Menyusun perpindahan formasi", text: "Peserta didik menentukan urutan perpindahan dari satu pola lantai ke pola lantai berikutnya." },
+        { stepNumber: 6, title: "Melakukan latihan", text: "Kelompok mempraktikkan gerak dan perpindahan pola lantai dengan memperhatikan jarak serta posisi setiap penari." },
+        { stepNumber: 7, title: "Mengevaluasi komposisi", text: "Peserta didik mengamati keseimbangan, kesatuan, dan kontras dalam komposisi yang telah dibuat." },
+        { stepNumber: 8, title: "Menampilkan hasil", text: "Kelompok menampilkan hasil komposisi tari di depan kelas." },
       ],
     },
     attachment: {
@@ -830,51 +835,48 @@ console.log(\`Siswa \${namaSiswa} memperoleh nilai \${nilaiUjian}\`);`,
     author: "Pak Ahmad Fauzi, S.Pd.",
     updatedAt: "18 Agustus 2026",
     icon: PaintBrushIcon,
-    topics: ["Tata Rias Tari", "Rias Korektif", "Rias Karakter", "Rias Fantasi", "Aplikasi Makeup"],
+    topics: ["Tata Rias Tari", "Rias Korektif", "Rias Karakter", "Rias Fantasi"],
     description: "Mempelajari fungsi tata rias panggung, jenis rias (korektif, karakter, fantasi), dan langkah-langkah aplikasi riasan korektif.",
     imageUrl: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1200&q=80",
     imageCaption: "Ilustrasi 13.1: Tata Rias Wajah Penari untuk Memperjelas Watak dan Karakter Tokoh.",
     contentSections: [
       {
-        id: "pengertian-tata-rias",
-        title: "Pengertian Tata Rias Tari",
+        id: "apa-itu-tata-rias-tari",
+        title: "Apa itu Tata Rias Tari?",
         paragraphs: [
           "Tata rias adalah kegiatan menata atau merias wajah penari dengan menggunakan bahan kosmetik tertentu yang disesuaikan dengan kebutuhan pertunjukan. Tata rias tidak hanya bertujuan untuk mempercantik wajah, tetapi juga membantu memperjelas karakter, watak, tokoh, dan ekspresi penari di atas panggung.",
-          "Menurut Harymawan, tata rias merupakan seni menggunakan kosmetik untuk mewujudkan wajah sesuai dengan peranan yang dimainkan di atas panggung dengan mempertimbangkan kondisi pementasan, termasuk pencahayaan dan jarak penonton.",
+          "Menurut Harymawan, tata rias merupakan seni menggunakan kosmetik untuk mewujudkan wajah sesuai dengan peranan yang dimainkan di atas panggung. Tata rias juga perlu mempertimbangkan kondisi pementasan, termsuk pencahayaan dan jarak penonton.",
         ],
       },
       {
         id: "fungsi-tata-rias",
         title: "Fungsi Tata Rias",
-        paragraphs: [
-          "1) Mendukung Tema Tari: Tata rias harus disesuaikan dengan tema karya tari (kehidupan masyarakat, kepahlawanan, percintaan, alam, cerita rakyat, kerajaan).",
-          "2) Memperjelas Karakter dan Tokoh Penari: Memperkuat karakter (lembut, gagah, tegas, lucu, tua, muda, anggun) serta sifat dan kedudukan tokoh melalui bentuk alis, mata, garis wajah, dan warna riasan.",
-          "3) Memperjelas Ekspresi Wajah: Membantu penonton melihat penghayatan emosi penari dari kejauhan.",
-          "4) Menunjang Keindahan Penampilan: Meningkatkan nilai estetis dan keserasian antara tata rias, tata busana, gerak, musik, dan tata cahaya.",
-          "5) Memperkuat Identitas Budaya: Menunjukkan identitas budaya daerah melalui ciri khas riasan tradisional.",
+        items: [
+          {
+            text: "1. Mendukung Tema Tari\nTata rias harus disesuaikan dengan tema yang diangkat dalam karya tari. Tema tari dapat berupa kehidupan masyarakat, kepahlawanan, percintaan, alam, cerita rakyat, kehidupan kerajaan, maupun tema-tema lainnya.\nSumber: Doc. Ujian koreografi Unnes 2026\nTarian diatas salah satu contoh fungsi tata rias sebagai pendukung tema tarian.",
+            imageUrl: "/images/tari/tata-rias-karakter.jpg",
+          },
+          {
+            text: "2. Memperjelas Karakter dan Tokoh Penari\nTata rias berfungsi untuk memperkuat karakter dan memperjelas tokoh yang dibawakan oleh penari. Karakter dapat berupa lembut, gagah, tegas, lucu, tua, muda, atau anggun, sedangkan tokoh dapat dibedakan berdasarkan sifat, usia, kedudukan, dan perannya dalam cerita. Perbedaan tersebut dapat ditampilkan melalui bentuk alis, mata, garis wajah, dan warna riasan.",
+          },
+          {
+            text: "3. Memperjelas Ekspresi Wajah\nEkspresi wajah merupakan salah satu bagian penting dalam penyajian tari, terutama pada tari yang menekankan penghayatan dan karakter",
+          },
+          {
+            text: "4. Menunjang Keindahan Penampilan\nTata rias juga berfungsi untuk meningkatkan nilai estetis atau keindahan penampilan penari. Keindahan tersebut bukan hanya berkaitan dengan wajah penari, tetapi juga dengan keserasian antara tata rias, tata busana, gerak, musik, tata cahaya, dan konsep tari.",
+          },
+          {
+            text: "5. Memperkuat Identitas Budaya\nPada tari tradisional, tata rias dapat menjadi salah satu bagian yang menunjukkan identitas budaya suatu daerah. Bentuk rias, penggunaan warna, hiasan kepala, serta aksesori tertentu dapat memiliki ciri khas yang membedakan suatu tari dengan tari dari daerah lainnya.",
+          },
         ],
       },
       {
-        id: "jenis-tata-rias",
+        id: "jenis-jenis-tata-rias-tari",
         title: "Jenis-Jenis Tata Rias Tari",
-        items: [
-          {
-            number: 1,
-            title: "Tata Rias Korektif",
-            text: "Bertujuan untuk memperbaiki, mempertegas, dan menonjolkan bentuk wajah penari agar terlihat lebih jelas dan menarik tanpa mengubah wajah secara drastis, dengan menekankan pada alis, mata, hidung, pipi, dan bibir.",
-          },
-          {
-            number: 2,
-            title: "Tata Rias Karakter & Fantasi",
-            text: "Tata rias karakter digunakan untuk menciptakan atau memperkuat karakter watak tertentu seperti gagah, tegas, tua, keras, lembut, lucu, atau antagonis. Sedangkan tata rias fantasi menciptakan tampilan imajinatif dan unik yang terinspirasi dari alam, binatang, tumbuhan, atau tokoh mitologi.",
-            imageUrl: "/images/tari/tata-rias-karakter.jpg",
-            imageCaption: "Tata Rias Karakter & Fantasi: Mempertegas penjiwaan watak tokoh pementasan melalui garis wajah dan ornamen estetis.",
-          },
-          {
-            number: 3,
-            title: "Tata Rias Fantasi",
-            text: "Digunakan untuk menciptakan tampilan imajinatif dan unik yang tidak selalu mengikuti bentuk wajah manusia biasa (terinspirasi dari alam, binatang, tumbuhan, atau tokoh mitologi).",
-          },
+        paragraphs: [
+          "1. Tata Rias Korektif\nTata rias korektif merupakan tata rias yang bertujuan untuk memperbaiki, mempertegas, dan menonjolkan bentuk wajah sehingga penampilan penari terlihat lebih jelas dan menarik. Riasan ini pada dasarnya tidak mengubah wajah penari secara drastis, tetapi lebih menekankan pada bagian-bagian tertentu seperti alis, mata, hidung, pipi, dan bibir",
+          "2. Tata Rias Karakter\nTata rias karakter adalah tata rias yang digunakan untuk menciptakan atau memperkuat karakter tertentu yang dibawakan oleh penari. Riasan ini dapat membuat wajah penari terlihat memiliki sifat atau watak tertentu, seperti gagah, tegas, tua, keras, lembut, lucu, atau memiliki karakter antagonis.",
+          "3. Tata Rias Fantasi\nTata rias fantasi merupakan tata rias yang digunakan untuk menciptakan tampilan yang bersifat imajinatif, unik, dan tidak selalu mengikuti bentuk wajah manusia dalam kehidupan sehari-hari. Riasan ini memberikan kebebasan kepada penata rias untuk mengembangkan bentuk, warna, dan ornamen sesuai dengan konsep pertunjukan.\nTata rias fantasi biasanya menggunakan kombinasi warna dan bentuk yang lebih berani. Riasan dapat disesuaikan dengan tema yang berkaitan dengan dunia imajinasi, alam, binatang, tumbuhan, atau tokoh-tokoh tertentu.",
         ],
         callout: "Riasan yang digunakan oleh penari perlu disesuaikan dengan konsep tari, karakter tokoh, jenis pertunjukan, tata cahaya, serta jarak antara penari dengan penonton. Dengan tata rias yang tepat, penampilan penari menjadi lebih jelas dan mendukung penyampaian karya secara keseluruhan.",
       },
@@ -883,16 +885,56 @@ console.log(\`Siswa \${namaSiswa} memperoleh nilai \${nilaiUjian}\`);`,
       title: "Step by Step Tata Rias Korektif",
       description: "Tahapan aplikasi tata rias korektif penari panggung:",
       steps: [
-        { stepNumber: 1, title: "Membersihkan Wajah", text: "Bersihkan wajah terlebih dahulu dengan pembersih wajah agar bebas dari kotoran dan minyak." },
-        { stepNumber: 2, title: "Menggunakan Skincare", text: "Aplikasikan toner, pelembap secara merata, dan sunscreen bila pertunjukan berlangsung di luar ruangan." },
-        { stepNumber: 3, title: "Menggunakan Alas Bedak", text: "Letakkan foundation pada dahi, pipi, hidung, dan dagu, lalu ratakan menggunakan spons makeup." },
-        { stepNumber: 4, title: "Melakukan Koreksi Bentuk Wajah", text: "Aplikasikan produk koreksi (shading/contour & highlight) pada bagian wajah yang ingin ditegaskan." },
-        { stepNumber: 5, title: "Menggunakan Bedak", text: "Tepuk-tepukkan bedak secara merata untuk mengunci dasar riasan agar lebih rapi dan awet." },
-        { stepNumber: 6, title: "Membentuk Alis", text: "Rapikan dan isi bagian alis mengikuti garis alami agar ekspresi penari lebih tegas." },
-        { stepNumber: 7, title: "Merias Bagian Mata", text: "Aplikasikan eyeshadow dan eyeliner untuk mempertegas garis dan kelopak mata secara seimbang." },
-        { stepNumber: 8, title: "Menggunakan Perona Pipi", text: "Aplikasikan blush on pada pipi agar wajah terlihat segar dan berdimensi di bawah lampu panggung." },
-        { stepNumber: 9, title: "Memberikan Warna pada Bibir", text: "Rapikan bibir dan oleskan lipstik secara merata sesuai konsep riasan dan kostum tari." },
-        { stepNumber: 10, title: "Mengecek dan Merapikan Hasil Riasan", text: "Periksa keseimbangan riasan kanan dan kiri untuk memastikan kerapian pementasan." },
+        {
+          stepNumber: 1,
+          title: "Membersihkan Wajah",
+          text: "Bersihkan wajah terlebih dahulu agar wajah bebas dari kotoran dan minyak.\nCara aplikasi:\n1) Tuangkan atau gunakan pembersih wajah secukupnya.\n2) Usapkan secara lembut ke seluruh wajah.\n3) Bersihkan menggunakan kapas atau bilas sesuai jenis produknya.",
+        },
+        {
+          stepNumber: 2,
+          title: "Menggunakan Skincare",
+          text: "Skincare digunakan untuk mempersiapkan kondisi kulit sebelum menggunakan makeup.\nCara aplikasi:\n1) Aplikasikan toner secara merata pada wajah.\n2) Gunakan pelembap secukupnya, lalu ratakan dengan lembut.\n3) Pada riasan untuk pertunjukan di luar ruangan, gunakan sunscreen sesuai petunjuk produk.\n4) Tunggu hingga produk meresap sebelum melanjutkan ke makeup.",
+        },
+        {
+          stepNumber: 3,
+          title: "Menggunakan Alas Bedak",
+          text: "Foundation digunakan untuk meratakan warna kulit dan menjadi dasar riasan.\nCara aplikasi:\n1) Ambil foundation secukupnya.\n2) Letakkan pada beberapa bagian wajah seperti dahi, pipi, hidung, dan dagu.\n3) Ratakan menggunakan spons atau alat aplikasi makeup hingga merata.",
+        },
+        {
+          stepNumber: 4,
+          title: "Melakukan Koreksi Bentuk Wajah",
+          text: "Koreksi dilakukan untuk membantu mempertegas atau menyempurnakan bentuk wajah.\nCara aplikasi:\n1) Aplikasikan produk koreksi pada bagian wajah yang ingin ditegaskan.\n2) Ratakan secara perlahan agar tidak terlihat belang.\n3) Sesuaikan dengan bentuk wajah dan kebutuhan riasan.",
+        },
+        {
+          stepNumber: 5,
+          title: "Menggunakan Bedak",
+          text: "Bedak berfungsi membantu mengunci dasar riasan agar lebih rapi.\nCara aplikasi:\n1) Ambil bedak menggunakan spons atau kuas.\n2) Tepuk-tepukkan secara perlahan pada wajah.\n3) Pastikan seluruh bagian wajah tertutup secara merata.",
+        },
+        {
+          stepNumber: 6,
+          title: "Membentuk Alis",
+          text: "Alis diperjelas agar ekspresi wajah penari lebih terlihat.\nCara aplikasi:\n1) Rapikan bentuk alis.\n2) Isi bagian alis yang terlihat kurang tebal menggunakan produk alis.\n3) Bentuk mengikuti garis alis secara alami.",
+        },
+        {
+          stepNumber: 7,
+          title: "Merias Bagian Mata",
+          text: "Riasan mata membantu memperjelas mata dan ekspresi penari di atas panggung.\nCara aplikasi:\n1) Aplikasikan eyeshadow sesuai konsep riasan.\n2) Gunakan eyeliner untuk mempertegas garis mata.\n3) Pastikan riasan kanan dan kiri terlihat seimbang.",
+        },
+        {
+          stepNumber: 8,
+          title: "Menggunakan Perona Pipi",
+          text: "Perona pipi memberikan kesan segar sekaligus membantu mempertegas bentuk wajah.\nCara aplikasi:\n1) Ambil perona pipi menggunakan kuas.\n2) Aplikasikan pada bagian pipi secara perlahan.\n3) Ratakan agar warna terlihat menyatu dengan riasan.",
+        },
+        {
+          stepNumber: 9,
+          title: "Memberikan Warna pada Bibir",
+          text: "Lipstik digunakan untuk memperjelas bentuk dan warna bibir.\nCara aplikasi:\n1) Rapikan bagian bibir terlebih dahulu.\n2) Aplikasikan lipstik secara merata.\n3) Sesuaikan warna dengan konsep tari dan kostum.",
+        },
+        {
+          stepNumber: 10,
+          title: "Mengecek dan Merapikan Hasil Riasan",
+          text: "Tahap terakhir dilakukan untuk memastikan seluruh riasan sudah sesuai.\nCara aplikasi:\n1) Periksa keseimbangan riasan kanan dan kiri.\n2) Rapikan bagian yang kurang rata.\n3) Pastikan riasan terlihat rapi, jelas, dan sesuai dengan kebutuhan pertunjukan.",
+        },
       ],
     },
     attachment: {
@@ -917,59 +959,64 @@ console.log(\`Siswa \${namaSiswa} memperoleh nilai \${nilaiUjian}\`);`,
     author: "Pak Ahmad Fauzi, S.Pd.",
     updatedAt: "19 Agustus 2026",
     icon: PaintBrushIcon,
-    topics: ["Tata Busana", "Pakaian Tubuh & Kepala", "Aksesori Tari", "Sapit Urang", "Tari Merak"],
+    topics: ["Tata Busana", "Pakaian Tubuh & Kepala", "Aksesori Tari", "Sapit Urang"],
     description: "Mempelajari peranan tata busana dalam mendukung karakter tari, unsur busana, serta praktik memakai kain jarit model sapit urang.",
     imageUrl: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=1200&q=80",
     imageCaption: "Ilustrasi 14.1: Kelengkapan Kostum dan Busana Tari Tradisional Nusantara.",
     contentSections: [
       {
-        id: "pengertian-tata-busana",
-        title: "Pengertian Tata Kostum & Busana dalam Seni Tari",
+        id: "apa-itu-tata-kostum-busana",
+        title: "Apa Itu Tata Kostum/Busana dalam Seni Tari?",
         paragraphs: [
           "Tata kostum atau tata busana dalam seni tari adalah segala sesuatu yang berkaitan dengan pakaian, perlengkapan, dan aksesori yang dikenakan oleh penari saat pertunjukan. Tata busana membantu memperjelas tema, karakter, tokoh, suasana, identitas budaya, dan nilai estetis dalam karya tari.",
         ],
       },
       {
-        id: "hubungan-kostum-gerak",
+        id: "hubungan-kostum-dengan-gerak-tari",
         title: "Hubungan Kostum dengan Gerak Tari",
         paragraphs: [
           "Busana harus memungkinkan penari bergerak secara leluasa dan nyaman. Kostum yang terlalu berat, terlalu ketat, terlalu longgar, atau memiliki aksesori yang tidak sesuai dapat menghambat gerakan dan mengganggu keamanan pertunjukan.",
         ],
       },
       {
-        id: "unsur-tata-busana",
+        id: "unsur-unsur-tata-busana-tari",
         title: "Unsur-Unsur Tata Busana Tari",
         paragraphs: [
-          "1) Pakaian Dasar: Pakaian yang digunakan sebagai lapisan dasar sebelum mengenakan kostum utama untuk kenyamanan tubuh penari.",
-          "2) Pakaian Tubuh: Pakaian utama yang dikenakan pada badan penari (kebaya, rompi, kemben, baju kurung) yang disesuaikan dengan tema dan karakter tari.",
-          "3) Pakaian Kepala: Perlengkapan di bagian kepala seperti mahkota, gelungan, ikat kepala, siger, atau jamang yang memperkuat karakter.",
-          "4) Pakaian Kaki: Perlengkapan di bagian kaki seperti kaus kaki atau gelang kaki (binggel).",
-          "5) Aksesori: Perlengkapan tambahan untuk memperindah kostum seperti kalung, gelang, anting, ikat pinggang, dan selendang (sampur).",
-          "6) Properti Pelengkap: Perlengkapan yang dikenakan untuk mendukung kebutuhan pementasan.",
+          "1. Pakaian Dasar\nPakaian yang digunakan sebagai lapisan dasar sebelum mengenakan kostum utama. Pakaian ini membantu menyiapkan tubuh sebelum menggunakan busana tari.",
+          "2. Pakaian Tubuh\nMerupakan pakaian utama yang dikenakan pada tubuh penari dan menjadi bagian utama dari kostum tari. Bentuk dan warnanya disesuaikan dengan tema serta karakter tari.",
+          "3. Pakaian Kepala\nMerupakan perlengkapan yang dikenakan pada bagian kepala, seperti mahkota, gelungan, ikat kepala, siger, atau hiasan kepala lainnya. Pakaian kepala dapat membantu memperkuat karakter dan identitas tari.",
+          "4. Pakaian Kaki\nMerupakan perlengkapan yang digunakan pada bagian kaki, seperti kaus kaki, gelang kaki, atau perlengkapan lainnya yang mendukung penampilan penari.",
+          "5. Aksesori\nMerupakan perlengkapan tambahan yang digunakan untuk memperindah dan melengkapi kostum, seperti kalung, gelang, anting, ikat pinggang, dan selendang.",
+          "6. Properti Pelengkap\nMerupakan perlengkapan yang dikenakan atau digunakan penari untuk mendukung karakter dan kebutuhan pertunjukan, sehingga penampilan tari menjadi lebih sesuai dengan tema dan konsepnya.",
         ],
         callout: "Tata busana tari terdiri dari berbagai unsur yang saling melengkapi. Pemilihannya perlu disesuaikan dengan tema, karakter, gerak, dan kebutuhan pertunjukan agar kostum tidak hanya indah, tetapi juga mendukung penampilan penari.",
       },
       {
-        id: "karakter-tata-busana",
+        id: "visualisasi-karakter-tata-busana",
         title: "Visualisasi Karakter Melalui Tata Busana",
         paragraphs: [
-          "1) Tari Merak: Pada Tari Merak, tata busana dirancang dengan bentuk, warna, dan hiasan yang terinspirasi dari burung merak untuk memperkuat karakter serta mendukung visualisasi keluwesan gerak.",
-          "2) Tari Tradisional Jawa: Pada tari tradisional Jawa, penggunaan kain, kebaya, jarik, sampur, serta berbagai aksesori disesuaikan dengan jenis dan karakter tari.",
+          "Sumber: Doc. Ujian koreografi Unnes 2026",
+          "Pada Tari Merak, tata busana dirancang dengan bentuk, warna, dan hiasan yang terinspirasi dari burung merak. Penggunaan kostum tersebut membantu memperkuat karakter burung merak yang menjadi sumber inspirasi tari sekaligus mendukung visualisasi gerak, terutama pada gerakan yang menggambarkan keindahan dan keluwesan burung merak.",
         ],
-        callout: "Tata busana pada tari tradisional Jawa tidak hanya berfungsi untuk memperindah penampilan penari, tetapi juga memperkuat karakter, suasana, dan identitas budaya Jawa yang terdapat dalam karya tari.",
+        items: [
+          {
+            imageUrl: "/images/tari/tata-busana-merak.png",
+          },
+        ],
+        callout: "pada tari tradisional Jawa, penggunaan kain, kebaya, jarik, sampur, serta berbagai aksesori disesuaikan dengan jenis dan karakter tari. Tata busana tersebut tidak hanya berfungsi untuk memperindah penampilan penari, tetapi juga memperkuat karakter, suasana, dan identitas budaya Jawa yang terdapat dalam karya tari.",
       },
     ],
     stepByStepSection: {
       title: "Cara Menggunakan Kain Jarit Bentuk Sapit Urang",
-      description: "Sapit urang merupakan cara memakai kain jarit dalam busana tari Jawa agar rapi, kuat, dan kaki dapat melangkah leluasa:",
+      description: "Sapit urang merupakan salah satu cara memakai kain jarit dalam busana tari Jawa. Bentuk kain dibuat rapi dan kuat pada bagian depan, sehingga mendukung penampilan penari serta tetap memungkinkan gerak kaki dengan leluasa. Langkah-langkah:",
       steps: [
-        { stepNumber: 1, title: "Siapkan Kain Jarit", text: "Bentangkan kain jarit dan pastikan bagian motif serta arah kain sudah sesuai." },
-        { stepNumber: 2, title: "Posisikan Kain pada Tubuh", text: "Letakkan kain melingkari tubuh dari arah belakang ke depan dengan posisi kain sejajar dan rapi." },
-        { stepNumber: 3, title: "Atur Bagian Depan Kain", text: "Tarik dan rapikan bagian depan kain sehingga membentuk sapit urang (lipatan kain yang mengarah dan merapat di depan)." },
-        { stepNumber: 4, title: "Buat Lipatan Kain", text: "Lipat bagian kain secara teratur dan pastikan lipatannya rapi serta tidak terlalu longgar." },
-        { stepNumber: 5, title: "Kencangkan Kain", text: "Rapikan dan kuatkan ikatan pada bagian pinggang agar kain tidak mudah bergeser ketika penari bergerak." },
-        { stepNumber: 6, title: "Periksa Panjang Kain", text: "Pastikan panjang kain sesuai kebutuhan tari dan tidak menghambat langkah atau gerakan kaki." },
-        { stepNumber: 7, title: "Rapikan Keseluruhan", text: "Periksa kembali posisi motif, lipatan, dan bagian pinggang agar nyaman dan siap digunakan menari." },
+        { stepNumber: 1, title: "Siapkan kain jarit", text: "Bentangkan kain jarit dan pastikan bagian motif serta arah kain sudah sesuai." },
+        { stepNumber: 2, title: "Posisikan kain pada tubuh", text: "Letakkan kain melingkari tubuh dari arah belakang ke depan dengan posisi kain sejajar dan rapi." },
+        { stepNumber: 3, title: "Atur bagian depan kain", text: "Tarik dan rapikan bagian depan kain sehingga membentuk sapit urang, yaitu lipatan atau bentuk kain yang mengarah dan merapat di bagian depan." },
+        { stepNumber: 4, title: "Buat lipatan kain", text: "Lipat bagian kain secara teratur dan pastikan lipatannya rapi serta tidak terlalu longgar." },
+        { stepNumber: 5, title: "Kencangkan kain", text: "Rapikan dan kuatkan ikatan pada bagian pinggang agar kain tidak mudah bergeser ketika penari bergerak." },
+        { stepNumber: 6, title: "Periksa panjang kain", text: "Pastikan panjang kain sesuai dengan kebutuhan tari dan tidak menghambat langkah atau gerakan kaki." },
+        { stepNumber: 7, title: "Rapikan keseluruhan", text: "Periksa kembali posisi motif, lipatan, dan bagian pinggang agar rapi, nyaman, dan siap digunakan untuk menari." },
       ],
     },
     attachment: {
@@ -994,53 +1041,67 @@ console.log(\`Siswa \${namaSiswa} memperoleh nilai \${nilaiUjian}\`);`,
     author: "Pak Ahmad Fauzi, S.Pd.",
     updatedAt: "20 Agustus 2026",
     icon: PaintBrushIcon,
-    topics: ["Properti Tari", "Stimulus Gerak", "Fungsi Properti", "Eksplorasi Properti", "Topeng & Kipas"],
+    topics: ["Properti Tari", "Stimulus Gerak", "Fungsi Properti", "Eksplorasi Properti"],
     description: "Memahami pemanfaatan properti sebagai pendukung dan stimulus koreografi gerak, serta ragam fungsi properti dalam karya tari.",
     imageUrl: "https://images.unsplash.com/photo-1547153760-18fc86324498?auto=format&fit=crop&w=1200&q=80",
     imageCaption: "Ilustrasi 15.1: Penggunaan Properti Topeng dan Selendang dalam Eksplorasi Gerak Tari.",
     contentSections: [
       {
-        id: "pengertian-properti",
-        title: "Pengertian Properti Tari",
+        id: "apa-itu-properti-tari",
+        title: "Apa itu Property Tari?",
         paragraphs: [
           "Properti tari adalah segala benda atau perlengkapan yang digunakan penari dalam pertunjukan untuk mendukung tema, karakter, suasana, dan gagasan tari. Properti dapat berupa benda khusus untuk pertunjukan maupun benda sederhana yang ada di sekitar.",
-          "Pemilihan properti harus disesuaikan dengan tema, konsep, karakter, dan gerak tari agar dapat mendukung koreografi secara optimal.",
+          "Pemilihan properti tidak boleh sembarangan. Properti harus disesuaikan dengan tema, konsep, karakter, dan gerak tari agar dapat mendukung koreografi.",
         ],
         callout: "Properti tidak harus mahal atau rumit. Benda sederhana dapat menjadi properti tari apabila dimanfaatkan secara kreatif untuk mendukung penciptaan gerak.",
       },
       {
-        id: "properti-pendukung-koreografi",
+        id: "properti-sebagai-pendukung-koreografi",
         title: "Properti sebagai Pendukung Koreografi",
         paragraphs: [
-          "Properti tidak hanya berfungsi sebagai pelengkap atau hiasan, tetapi juga dapat menjadi stimulus untuk menciptakan dan mengembangkan gerak tari. Contohnya kain dapat digunakan untuk gerakan mengayun, menarik, memutar, mengembangkan, atau mengibaskan. Topeng dapat digunakan untuk memperkuat karakter tokoh.",
-          "Hubungan properti dengan koreografi berlangsung dalam alur: Tema → Ide/Gagasan → Properti → Eksplorasi Gerak → Koreografi. Artinya, properti yang digunakan sebaiknya berasal dari kebutuhan konsep tari dan dikembangkan menjadi bagian koreografi.",
+          "Properti tidak hanya berfungsi sebagai pelengkap atau hiasan, tetapi juga dapat menjadi stimulus untuk menciptakan dan mengembangkan gerak tari.",
+          "Contohnya, kain dapat digunakan dengan berbagai gerakan seperti mengayun, menarik, memutar, mengembangkan, atau mengibaskan. Topeng dapat digunakan untuk memperkuat karakter atau tokoh, sedangkan kain dapat membantu membangun suasana dan visualisasi tema.",
+          "Sumber: Doc. Ujian koreografi Unnes 2026",
+        ],
+        items: [
+          {
+            imageUrl: "/images/tari/properti-tari.png",
+          },
         ],
       },
       {
-        id: "fungsi-properti",
+        id: "hubungan-properti-dengan-koreografi",
+        title: "Hubungan Properti dengan Koreografi",
+        paragraphs: [
+          "Tema → Ide/Gagasan → Properti → Eksplorasi Gerak → Koreografi",
+          "Artinya, properti yang digunakan sebaiknya berasal dari kebutuhan konsep tari dan kemudian dikembangkan menjadi bagian dari koreografi.",
+        ],
+      },
+      {
+        id: "fungsi-properti-tari",
         title: "Fungsi Properti Tari",
         paragraphs: [
-          "1) Memperkuat Tema: Membantu memperjelas tema yang diangkat (misal tari bertema petani menggunakan caping/cangkul).",
-          "2) Memperkuat Karakter: Cara memegang, membawa, atau menggerakkan properti mempertegas watak tokoh.",
-          "3) Mengembangkan Gerak: Menjadi sumber inspirasi untuk menciptakan berbagai variasi gerak baru.",
-          "4) Memperjelas Cerita atau Gagasan: Membantu penonton memahami pesan dan jalan cerita tarian.",
-          "5) Menambah Nilai Estetis: Bentuk, warna, dan manuver properti memperkaya tampilan visual koreografi.",
-          "6) Mengembangkan Kreativitas: Mendorong peserta didik menemukan kemungkinan gerak dan melatih imajinasi.",
+          "1. Memperkuat Tema\nProperti membantu memperjelas tema yang diangkat. Misalnya, tari bertema kehidupan petani dapat menggunakan benda yang berkaitan dengan aktivitas pertanian.",
+          "2. Memperkuat Karakter\nCara penari memegang, membawa, atau menggerakkan properti dapat membantu menunjukkan karakter yang dibawakan.",
+          "3. Mengembangkan Gerak\nProperti dapat menjadi sumber inspirasi untuk menciptakan berbagai variasi gerak.",
+          "4. Memperjelas Cerita atau Gagasan\nProperti membantu penonton memahami cerita, aktivitas, atau gagasan yang disampaikan melalui tari.",
+          "5. Menambah Nilai Estetis\nBentuk, warna, ukuran, dan gerakan properti dapat memperkaya tampilan visual koreografi.",
+          "6. Mengembangkan Kreativitas\nPenggunaan properti mendorong peserta didik untuk menemukan berbagai kemungkinan gerak dan melatih imajinasi serta kreativitas.",
         ],
         callout: "Properti tari bukan sekadar pelengkap pertunjukan, tetapi dapat menjadi bagian dari proses penciptaan, eksplorasi, dan pengembangan gerak dalam koreografi.",
       },
     ],
     stepByStepSection: {
       title: "Eksplorasi Gerak Menggunakan Properti",
-      description: "Langkah-langkah mengeksplorasi gerak tari dengan berbagai alat/properti (topeng, kipas, gendewa, selendang):",
+      description: "Langkah-langkah eksplorasi gerak menggunakan properti:",
       steps: [
-        { stepNumber: 1, title: "Tentukan Tema atau Ide Tari", text: "Tentukan gagasan pokok atau cerita yang ingin diekspresikan." },
-        { stepNumber: 2, title: "Pilih Properti yang Sesuai", text: "Gunakan benda yang selaras dengan konsep dan tema tarian." },
-        { stepNumber: 3, title: "Amati Bentuk dan Karakteristik Properti", text: "Perhatikan ukuran, berat, kelenturan, dan fungsi benda." },
-        { stepNumber: 4, title: "Coba Berbagai Cara Menggunakan Properti", text: "Bereksplorasi dengan gerakan mengayun, menarik, memutar, membawa, atau mengibaskan properti." },
-        { stepNumber: 5, title: "Kembangkan Gerakan Menjadi Beberapa Variasi", text: "Ubah tempo, level, dan arah hadap saat menggerakkan properti." },
-        { stepNumber: 6, title: "Pilih Gerakan yang Paling Sesuai", text: "Seleksi gerakan yang paling kuat mencerminkan tema dan karakter tokoh." },
-        { stepNumber: 7, title: "Susun Gerakan Menjadi Bagian Koreografi", text: "Rangkai motif-motif gerak properti menjadi kesatuan komposisi tari yang utuh." },
+        { stepNumber: 1, title: "Tentukan Tema atau Ide Tari", text: "Tentukan tema atau ide tari." },
+        { stepNumber: 2, title: "Pilih Properti yang Sesuai", text: "Pilih properti yang sesuai dengan tema." },
+        { stepNumber: 3, title: "Amati Bentuk dan Karakteristik Properti", text: "Amati bentuk, ukuran, dan karakteristik properti." },
+        { stepNumber: 4, title: "Coba Berbagai Cara Menggunakan Properti", text: "Coba berbagai cara menggunakan properti, seperti mengayun, menarik, memutar, membawa, atau mengibaskan." },
+        { stepNumber: 5, title: "Kembangkan Gerakan Menjadi Beberapa Variasi", text: "Kembangkan gerakan menjadi beberapa variasi." },
+        { stepNumber: 6, title: "Pilih Gerakan yang Paling Sesuai", text: "Pilih gerakan yang paling sesuai dengan tema dan karakter." },
+        { stepNumber: 7, title: "Susun Gerakan Menjadi Bagian Koreografi", text: "Susun gerakan menjadi bagian dari koreografi." },
       ],
     },
     attachment: {
@@ -1057,6 +1118,164 @@ console.log(\`Siswa \${namaSiswa} memperoleh nilai \${nilaiUjian}\`);`,
     nextMaterial: { id: 1, title: "Variabel, Tipe Data & Operasi Logika" },
   },
 };
+
+export { MATERIAL_DATABASE };
+
+export function getMaterialDetailForModule(moduleTitleOrId: string | number): MaterialDetail | undefined {
+  const idMap: Record<string, number> = {
+    'mod-tari-1': 9,
+    'mod-tari-2': 10,
+    'mod-tari-3': 12,
+    'mod-tari-4': 13,
+    'mod-tari-5': 14,
+    'mod-tari-6': 15,
+    'mod-1': 1,
+    'mod-2': 2,
+    'mod-3': 3,
+    'mod-4': 4,
+    'mod-5': 5,
+    'mod-6': 6,
+    'mod-7': 7,
+    'mod-8': 8,
+    'mod-oto-1': 16,
+    'mod-oto-2': 17,
+    'mod-or-1': 18,
+    'mod-or-2': 19,
+  };
+
+  const keyStr = String(moduleTitleOrId).toLowerCase().trim();
+
+  if (typeof moduleTitleOrId === 'number' || (!isNaN(Number(moduleTitleOrId)) && MATERIAL_DATABASE[Number(moduleTitleOrId)])) {
+    return MATERIAL_DATABASE[Number(moduleTitleOrId)];
+  } else if (idMap[keyStr]) {
+    return MATERIAL_DATABASE[idMap[keyStr]];
+  } else {
+    return Object.values(MATERIAL_DATABASE).find(
+      (m) =>
+        m.title.toLowerCase().trim() === keyStr ||
+        keyStr.includes(m.title.toLowerCase().trim()) ||
+        m.title.toLowerCase().trim().includes(keyStr)
+    );
+  }
+}
+
+export function getMaterialBlocksForModule(moduleTitleOrId: string | number): any[] {
+  const material = getMaterialDetailForModule(moduleTitleOrId);
+
+  if (!material) return [];
+
+  const generatedBlocks: any[] = [];
+  let blockCounter = 1;
+
+  // 1. Convert content sections with multi-element paragraphs and images support
+  if (material.contentSections && material.contentSections.length > 0) {
+    material.contentSections.forEach((section) => {
+      const elements: any[] = [];
+      let elCounter = 1;
+
+      // Add paragraphs if present
+      if (section.paragraphs && section.paragraphs.length > 0) {
+        section.paragraphs.forEach((p) => {
+          if (p && p.trim()) {
+            elements.push({
+              id: `el-${Date.now()}-${elCounter++}`,
+              type: 'paragraph',
+              text: p,
+            });
+          }
+        });
+      }
+
+      // Add items (text and/or image) if present
+      if (section.items && section.items.length > 0) {
+        section.items.forEach((item) => {
+          if (item.imageUrl) {
+            elements.push({
+              id: `el-${Date.now()}-${elCounter++}`,
+              type: 'image',
+              imageUrl: item.imageUrl,
+              imageCaption: '',
+            });
+          }
+          if (item.text && item.text.trim()) {
+            elements.push({
+              id: `el-${Date.now()}-${elCounter++}`,
+              type: 'paragraph',
+              text: item.text,
+            });
+          }
+        });
+      }
+
+      // If both were empty, add 1 default paragraph
+      if (elements.length === 0) {
+        elements.push({
+          id: `el-${Date.now()}-${elCounter++}`,
+          type: 'paragraph',
+          text: '',
+        });
+      }
+
+      const firstImage = elements.find((el) => el.type === 'image')?.imageUrl;
+      const allTexts = elements.filter((el) => el.type === 'paragraph').map((el) => el.text).join('\n\n');
+
+      generatedBlocks.push({
+        id: `blk-${blockCounter++}`,
+        type: 'text',
+        sectionTitle: section.title,
+        textValue: allTexts,
+        elements: elements,
+        calloutText: section.callout,
+        alignment: 'left',
+        mediaUrl: firstImage,
+      });
+    });
+  }
+
+  // 2. Convert Video section if present
+  if (material.videoSection && material.videoSection.videoUrl) {
+    generatedBlocks.push({
+      id: `blk-${blockCounter++}`,
+      type: 'video',
+      sectionTitle: material.videoSection.title,
+      mediaUrl: material.videoSection.videoUrl,
+      imageCaption: material.videoSection.caption,
+    });
+  }
+
+  // 3. Convert Step by step section
+  if (material.stepByStepSection && material.stepByStepSection.steps?.length > 0) {
+    generatedBlocks.push({
+      id: `blk-${blockCounter++}`,
+      type: 'steps',
+      stepSectionTitle: material.stepByStepSection.title,
+      stepSectionSubtitle: material.stepByStepSection.description,
+      steps: material.stepByStepSection.steps.map((s) => ({
+        title: s.title,
+        desc: s.text,
+      })),
+    });
+  }
+
+  // 4. Convert Attachment if present
+  if (material.attachment && material.attachment.fileName) {
+    generatedBlocks.push({
+      id: `blk-${blockCounter++}`,
+      type: 'attachment',
+      attachments: [
+        {
+          id: `att-${Date.now()}`,
+          name: material.attachment.fileName,
+          size: material.attachment.fileSize,
+          type: 'application/pdf',
+          url: '#',
+        },
+      ],
+    });
+  }
+
+  return generatedBlocks;
+}
 
 const getLevelBadgeClass = (level: string) => {
   switch (level) {
@@ -1075,69 +1294,18 @@ function SmartParagraph({ text }: { text: string }) {
   const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
   if (lines.length > 1) {
     return (
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         {lines.map((line, idx) => (
-          <SmartLine key={idx} line={line} />
+          <p key={idx} className="text-xs md:text-sm font-medium text-[#4A4A4A] leading-relaxed text-justify">
+            {line}
+          </p>
         ))}
       </div>
     );
   }
-  return <SmartLine line={text} />;
-}
-
-function SmartLine({ line }: { line: string }) {
-  const trimmed = line.trim();
-
-  // Matches prefixes like "1)", "1.", "(1)", "a)", "a.", "•", "-", "*"
-  const listMatch = trimmed.match(/^(\d+[\.\)]|\([a-zA-Z0-9]+\)|[a-zA-Z][\.\)]|[\-•\*])\s+(.*)$/i);
-
-  if (listMatch) {
-    const rawPrefix = listMatch[1];
-    const rest = listMatch[2];
-    const cleanBadge = rawPrefix.replace(/[\)\.\(\s]/g, "");
-
-    // Check if rest contains bold header before colon e.g. "Wirama: ..." or "Panggung Proscenium: ..."
-    const colonMatch = rest.match(/^([^:]+):\s*(.*)$/);
-    if (colonMatch) {
-      return (
-        <div className="flex items-start gap-2.5 my-1.5 pl-0.5">
-          <span className="inline-flex items-center justify-center min-w-[26px] h-[26px] px-1.5 rounded-[6px] bg-[#E8E7FF] text-[#2563EB] text-xs font-bold shrink-0 mt-0.5 select-none shadow-2xs">
-            {cleanBadge}
-          </span>
-          <div className="text-xs md:text-sm text-[#4A4A4A] leading-relaxed flex-1">
-            <strong className="font-bold text-[#1E1E1E]">{colonMatch[1]}: </strong>
-            <span>{colonMatch[2]}</span>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="flex items-start gap-2.5 my-1.5 pl-0.5">
-        <span className="inline-flex items-center justify-center min-w-[26px] h-[26px] px-1.5 rounded-[6px] bg-[#E8E7FF] text-[#2563EB] text-xs font-bold shrink-0 mt-0.5 select-none shadow-2xs">
-          {cleanBadge}
-        </span>
-        <p className="text-xs md:text-sm text-[#4A4A4A] leading-relaxed flex-1">
-          {rest}
-        </p>
-      </div>
-    );
-  }
-
-  // Check if standalone bold colon title without number prefix e.g. "Wirama: ..."
-  const standaloneColonMatch = trimmed.match(/^([^:]+):\s*(.*)$/);
-  if (standaloneColonMatch && standaloneColonMatch[1].length < 40 && !standaloneColonMatch[1].includes("http")) {
-    return (
-      <p className="text-xs md:text-sm text-[#4A4A4A] leading-relaxed">
-        <strong className="font-bold text-[#1E1E1E]">{standaloneColonMatch[1]}: </strong>
-        <span>{standaloneColonMatch[2]}</span>
-      </p>
-    );
-  }
-
   return (
-    <p className="text-xs md:text-sm text-[#4A4A4A] leading-relaxed whitespace-pre-line">
-      {trimmed}
+    <p className="text-xs md:text-sm font-medium text-[#4A4A4A] leading-relaxed whitespace-pre-line text-justify">
+      {text}
     </p>
   );
 }
@@ -1151,8 +1319,112 @@ export default function MaterialDetailPage({
   const searchParams = useSearchParams();
   const fromParam = searchParams.get("from");
 
-  const materialId = parseInt(id, 10) || 1;
-  const material = MATERIAL_DATABASE[materialId] || MATERIAL_DATABASE[1];
+  const { modules } = useAdminStore();
+
+  const baseMaterial = useMemo(() => {
+    return getMaterialDetailForModule(id) || MATERIAL_DATABASE[parseInt(id, 10) || 1] || MATERIAL_DATABASE[1];
+  }, [id]);
+
+  // Construct dynamic live material merging admin store changes
+  const material = useMemo(() => {
+    const storeMod = modules.find(
+      (m) =>
+        m.id === id ||
+        String(m.id) === String(baseMaterial.id) ||
+        m.title.toLowerCase().trim() === baseMaterial.title.toLowerCase().trim()
+    );
+
+    if (!storeMod) return baseMaterial;
+
+    // If storeMod has blocks, build contentSections, stepByStepSection, videoSection, attachment
+    if (storeMod.blocks && storeMod.blocks.length > 0) {
+      const dynamicSections: ContentSection[] = [];
+      let dynamicStepByStep: any = undefined;
+      let dynamicVideo: any = undefined;
+      let dynamicAttachment: any = baseMaterial.attachment;
+
+      storeMod.blocks.forEach((block: any, bIdx: number) => {
+        if (block.type === 'text') {
+          const items: any[] = [];
+          const paragraphs: string[] = [];
+
+          if (block.elements && block.elements.length > 0) {
+            block.elements.forEach((el: any) => {
+              if (el.type === 'paragraph' && el.text) {
+                paragraphs.push(el.text);
+              } else if (el.type === 'image' && el.imageUrl) {
+                items.push({ imageUrl: el.imageUrl, text: el.imageCaption || '' });
+              }
+            });
+          } else {
+            if (block.textValue) paragraphs.push(block.textValue);
+            if (block.mediaUrl) items.push({ imageUrl: block.mediaUrl, text: '' });
+          }
+
+          dynamicSections.push({
+            id: `sec-${bIdx + 1}`,
+            title: block.sectionTitle || 'Heading',
+            paragraphs: paragraphs,
+            items: items.length > 0 ? items : undefined,
+            callout: block.calloutText || undefined,
+          });
+        } else if (block.type === 'image' && block.mediaUrl) {
+          dynamicSections.push({
+            id: `sec-img-${bIdx + 1}`,
+            title: block.imageCaption || 'Ilustrasi Materi',
+            paragraphs: [],
+            items: [{ imageUrl: block.mediaUrl, text: '' }],
+          });
+        } else if (block.type === 'video' && block.mediaUrl) {
+          dynamicVideo = {
+            title: block.sectionTitle || 'Video Simulasi & Pembelajaran',
+            videoUrl: block.mediaUrl,
+            caption: block.imageCaption || '',
+          };
+        } else if (block.type === 'steps' && block.steps && block.steps.length > 0) {
+          dynamicStepByStep = {
+            title: block.stepSectionTitle || 'Langkah-langkah Praktik',
+            description: block.stepSectionSubtitle || 'Panduan praktikum terstruktur:',
+            steps: block.steps.map((s: any, sIdx: number) => ({
+              stepNumber: sIdx + 1,
+              title: s.title,
+              text: s.desc,
+            })),
+          };
+        } else if (block.type === 'attachment' && block.attachments && block.attachments.length > 0) {
+          dynamicAttachment = {
+            fileName: block.attachments[0].fileName,
+            fileSize: block.attachments[0].fileSize,
+          };
+        }
+      });
+
+      return {
+        ...baseMaterial,
+        title: storeMod.title || baseMaterial.title,
+        description: storeMod.description || baseMaterial.description,
+        level: (storeMod.level as any) || baseMaterial.level,
+        duration: storeMod.duration || baseMaterial.duration,
+        topics: storeMod.topics || baseMaterial.topics,
+        imageUrl: storeMod.thumbnail || baseMaterial.imageUrl,
+        contentSections: dynamicSections.length > 0 ? dynamicSections : baseMaterial.contentSections,
+        stepByStepSection: dynamicStepByStep || baseMaterial.stepByStepSection,
+        videoSection: dynamicVideo || baseMaterial.videoSection,
+        attachment: dynamicAttachment,
+      };
+    }
+
+    return {
+      ...baseMaterial,
+      title: storeMod.title || baseMaterial.title,
+      description: storeMod.description || baseMaterial.description,
+      level: (storeMod.level as any) || baseMaterial.level,
+      duration: storeMod.duration || baseMaterial.duration,
+      topics: storeMod.topics || baseMaterial.topics,
+      imageUrl: storeMod.thumbnail || baseMaterial.imageUrl,
+    };
+  }, [baseMaterial, modules, id]);
+
   const initialSectionId = material.videoSection ? "video-tutorial" : (material.contentSections[0]?.id || "pengantar");
   const [activeSection, setActiveSection] = useState(initialSectionId);
   const [copiedCode, setCopiedCode] = useState(false);
@@ -1229,7 +1501,7 @@ export default function MaterialDetailPage({
       setIsLoading(false);
     }, 250);
     return () => clearTimeout(timer);
-  }, [materialId]);
+  }, [id]);
 
   // Scroll Sync Active Section Observer
   useEffect(() => {
@@ -1366,15 +1638,14 @@ export default function MaterialDetailPage({
                 </div>
               </header>
 
-              {/* Main Feature Image */}
+              {/* Main Feature Image / Hero Thumbnail (16:9 Aspect Ratio) */}
               <figure>
-                <div className="relative w-full h-[280px] md:h-[380px] rounded-[12px] overflow-hidden border border-[#ECECEC] bg-[#FAFAFA]">
-                  <Image
+                <div className="relative w-full aspect-video rounded-[12px] overflow-hidden border border-[#ECECEC] bg-[#FAFAFA]">
+                  {/* eslint-disable-next-next/no-img-element */}
+                  <img
                     src={material.imageUrl}
                     alt={material.title}
-                    fill
-                    className="object-cover"
-                    priority
+                    className="w-full h-full object-cover"
                   />
                 </div>
               </figure>
@@ -1418,42 +1689,27 @@ export default function MaterialDetailPage({
                       </div>
                     )}
 
-                    {/* Integrated Per-Point Media Block (Clean Canvas Layout, No Frame) */}
+                    {/* Integrated Per-Point Media Block (Clean Direct Text Layout, Natural Image Resolution, No Captions) */}
                     {section.items && section.items.length > 0 && (
-                      <div className="space-y-6 my-4">
+                      <div className="space-y-4 my-3">
                         {section.items.map((item, i) => (
-                          <div key={i} className="space-y-3">
-                            <div className="flex items-start gap-2.5 pl-0.5">
-                              <span className="inline-flex items-center justify-center min-w-[26px] h-[26px] px-1.5 rounded-[6px] bg-[#E8E7FF] text-[#2563EB] text-xs font-bold shrink-0 mt-0.5 select-none shadow-2xs">
-                                {item.number ?? i + 1}
-                              </span>
-                              <div className="flex-1 text-xs md:text-sm text-[#4A4A4A] leading-relaxed">
-                                {item.title ? (
-                                  <>
-                                    <strong className="font-bold text-[#1E1E1E]">{item.title}: </strong>
-                                    <span>{item.text}</span>
-                                  </>
-                                ) : (
-                                  <span>{item.text}</span>
-                                )}
-                              </div>
-                            </div>
+                          <div key={i} className="space-y-2.5">
+                            {item.text && (
+                              <p className="text-xs md:text-sm font-medium text-[#4A4A4A] leading-relaxed text-justify">
+                                {item.text}
+                              </p>
+                            )}
 
                             {item.imageUrl && (
-                              <div className="space-y-1.5 pl-0 sm:pl-9">
-                                <div className="relative w-full h-56 sm:h-72 md:h-80 rounded-[12px] overflow-hidden border border-[#ECECEC] bg-gray-50 shadow-2xs">
-                                  <Image
+                              <div className="my-3 flex justify-center w-full">
+                                <div className="overflow-hidden rounded-[12px] border border-[#ECECEC] bg-gray-50 max-w-2xl w-full">
+                                  {/* eslint-disable-next-next/no-img-element */}
+                                  <img
                                     src={item.imageUrl}
-                                    alt={item.title || item.imageCaption || "Ilustrasi Materi"}
-                                    fill
-                                    className="object-cover"
+                                    alt="Ilustrasi Materi"
+                                    className="w-full h-auto object-contain rounded-[12px] block mx-auto"
                                   />
                                 </div>
-                                {item.imageCaption && (
-                                  <p className="text-[11px] text-[#737373] italic">
-                                    {item.imageCaption}
-                                  </p>
-                                )}
                               </div>
                             )}
                           </div>
@@ -1465,7 +1721,7 @@ export default function MaterialDetailPage({
                     {section.callout && (
                       <div className="my-3 p-4 rounded-[12px] bg-[#F6F5FF] border border-[#E8E7FF] text-[#2563EB] text-xs md:text-sm leading-relaxed flex items-start gap-3 shadow-2xs">
                         <div className="w-1.5 self-stretch bg-[#2563EB] rounded-full shrink-0" />
-                        <p className="text-[#3A3985] font-medium leading-relaxed flex-1">
+                        <p className="text-[#3A3985] font-medium leading-relaxed flex-1 text-justify">
                           {section.callout}
                         </p>
                       </div>
@@ -1501,28 +1757,28 @@ export default function MaterialDetailPage({
                     <h2 className="text-lg md:text-xl font-bold text-[#2E2D2D]">
                       {material.stepByStepSection.title}
                     </h2>
-                    <p className="text-xs md:text-sm text-[#737373] leading-relaxed mt-1">
+                    <p className="text-xs md:text-sm font-medium text-[#737373] leading-relaxed mt-1 text-justify">
                       {material.stepByStepSection.description}
                     </p>
                   </div>
 
                   {/* 1 Single Frame Container Box */}
                   <div className="bg-white border border-[#ECECEC] rounded-[10px] overflow-hidden divide-y divide-[#ECECEC]">
-                    {material.stepByStepSection.steps.map((step) => (
+                    {material.stepByStepSection.steps.map((step: any) => (
                       <div
                         key={step.stepNumber}
                         className="p-4 md:p-5 space-y-3 bg-white transition-colors hover:bg-[#F6F5FF]"
                       >
                         <div className="flex items-center gap-3">
                           <span className="w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center shrink-0 bg-[#0400F4] text-white">
-                            0{step.stepNumber}
+                            {String(step.stepNumber).padStart(2, '0')}
                           </span>
                           <h3 className="text-sm md:text-base font-bold text-[#2E2D2D]">
                             {step.title}
                           </h3>
                         </div>
 
-                        <p className="text-xs md:text-sm text-[#4A4A4A] leading-relaxed pl-11">
+                        <p className="text-xs md:text-sm font-medium text-[#4A4A4A] leading-relaxed pl-11 text-justify">
                           {step.text}
                         </p>
 

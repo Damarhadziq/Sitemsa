@@ -17,7 +17,6 @@ import {
   MusicNote01Icon,
   Car01Icon,
   Dumbbell01Icon,
-  CheckmarkCircle01Icon,
 } from "@hugeicons/core-free-icons";
 
 interface ModulItem {
@@ -126,7 +125,7 @@ const MODUL_DATA: ModulItem[] = [
     title: "Konsep Koreografi dalam Seni Tari",
     level: "Pemula",
     duration: "30 Menit",
-    topics: ["Koreografi", "Wirama", "Wiraga", "Wirasa", "Rangsang Visual & Auditif", "Elemen Ruang Waktu Tenaga"],
+    topics: ["Koreografi", "Wirama", "Wiraga", "Wirasa"],
     description: "Mempelajari pengertian koreografi, unsur pendukung tari (wirama, wiraga, wirasa), sumber rangsang ide, serta elemen utama ruang, waktu, dan tenaga.",
     icon: MusicNote01Icon,
     isAiRecommended: true,
@@ -148,7 +147,7 @@ const MODUL_DATA: ModulItem[] = [
     title: "Koreografi: Pola Lantai dalam Penunjang Komposisi Tari",
     level: "Menengah",
     duration: "40 Menit",
-    topics: ["Komposisi Tari", "Pola Lantai", "Level Vertikal", "Prinsip Unity Balance", "Jenis Panggung"],
+    topics: ["Komposisi Tari", "Pola Lantai", "Level Vertikal", "Prinsip Unity Balance"],
     description: "Mempelajari unsur utama komposisi tari, pola lantai, level, arah hadap, prinsip kesatuan & keseimbangan, serta ragam panggung pertunjukan.",
     icon: MusicNote01Icon,
   },
@@ -158,7 +157,7 @@ const MODUL_DATA: ModulItem[] = [
     title: "Tata Rias dalam Seni Tari",
     level: "Pemula",
     duration: "30 Menit",
-    topics: ["Tata Rias Tari", "Rias Korektif", "Rias Karakter", "Rias Fantasi", "Aplikasi Makeup"],
+    topics: ["Tata Rias Tari", "Rias Korektif", "Rias Karakter", "Rias Fantasi"],
     description: "Mempelajari fungsi tata rias panggung, jenis rias (korektif, karakter, fantasi), dan langkah-langkah aplikasi riasan korektif.",
     icon: MusicNote01Icon,
   },
@@ -168,7 +167,7 @@ const MODUL_DATA: ModulItem[] = [
     title: "Tata Kostum dan Busana dalam Seni Tari",
     level: "Pemula",
     duration: "30 Menit",
-    topics: ["Tata Busana", "Pakaian Tubuh & Kepala", "Aksesori Tari", "Sapit Urang", "Tari Merak"],
+    topics: ["Tata Busana", "Pakaian Tubuh & Kepala", "Aksesori Tari", "Sapit Urang"],
     description: "Mempelajari peranan tata busana dalam mendukung karakter tari, unsur busana, serta praktik memakai kain jarit model sapit urang.",
     icon: MusicNote01Icon,
   },
@@ -178,7 +177,7 @@ const MODUL_DATA: ModulItem[] = [
     title: "Properti dalam Seni Tari",
     level: "Pemula",
     duration: "25 Menit",
-    topics: ["Properti Tari", "Stimulus Gerak", "Fungsi Properti", "Eksplorasi Properti", "Topeng & Kipas"],
+    topics: ["Properti Tari", "Stimulus Gerak", "Fungsi Properti", "Eksplorasi Properti"],
     description: "Memahami pemanfaatan properti sebagai pendukung dan stimulus koreografi gerak, serta ragam fungsi properti dalam karya tari.",
     icon: MusicNote01Icon,
   },
@@ -525,7 +524,7 @@ function MateriLandingContent() {
                       : "bg-[#FAFAFA] border border-[#ECECEC] text-[#737373] hover:text-[#2E2D2D] hover:bg-gray-100"
                   }`}
                 >
-                  {category} ({count})
+                  {category}{isActive ? ` (${count})` : ""}
                 </button>
               );
             })}
@@ -564,7 +563,10 @@ function MateriLandingContent() {
                       </span>
                     </div>
 
-                    <h3 className="text-xs md:text-sm font-semibold text-[#2E2D2D] leading-snug group-hover:text-[#2563EB] transition-colors duration-200">
+                    <h3
+                      title={item.title}
+                      className="text-xs md:text-sm font-semibold text-[#2E2D2D] leading-snug group-hover:text-[#2563EB] transition-colors duration-200 truncate"
+                    >
                       {item.title}
                     </h3>
 
@@ -648,9 +650,12 @@ function MateriLandingContent() {
                       </span>
                     </div>
 
-                    {/* Title */}
+                    {/* Title (Single Line with Ellipsis) */}
                     <div>
-                      <h3 className="text-sm md:text-base font-semibold text-[#2E2D2D] leading-snug group-hover:text-[#2563EB] transition-colors duration-200">
+                      <h3
+                        title={modul.title}
+                        className="text-sm md:text-base font-semibold text-[#2E2D2D] leading-snug group-hover:text-[#2563EB] transition-colors duration-200 truncate"
+                      >
                         {modul.title}
                       </h3>
                     </div>
@@ -661,13 +666,12 @@ function MateriLandingContent() {
                         Topik Bahasan:
                       </span>
                       <div className="flex flex-wrap gap-1.5 pt-0.5">
-                        {modul.topics.map((topic, idx) => (
+                        {modul.topics.slice(0, 4).map((topic, idx) => (
                           <span
                             key={idx}
-                            className="inline-flex items-center gap-1 bg-[#FAFAFA] border border-[#ECECEC] text-[#2E2D2D] px-2.5 py-1 rounded-[6px] text-[11px] font-medium"
+                            className="bg-[#FAFAFA] border border-[#ECECEC] text-[#4A4A4A] px-2.5 py-1 rounded-[6px] text-[11px] font-medium"
                           >
-                            <HugeiconsIcon icon={CheckmarkCircle01Icon} size={11} className="text-[#2563EB]" />
-                            <span>{topic}</span>
+                            {topic}
                           </span>
                         ))}
                       </div>

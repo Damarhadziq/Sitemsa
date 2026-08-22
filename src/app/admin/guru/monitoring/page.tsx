@@ -62,7 +62,16 @@ export default function AdminGuruMonitoringPage() {
     };
   }, [selectedStudentModal]);
 
-  const subjectStudents = students.filter((s) => s.enrolledSubjects.includes(currentSubject));
+  const subjectStudents = students.filter((s) => {
+    const hasProgress = (s.moduleProgress?.[currentSubject] ?? 0) > 0;
+    const hasQuiz = s.quizHistory?.some(
+      (q) => q.subject.toLowerCase() === currentSubject.toLowerCase()
+    );
+    const isEnrolled = s.enrolledSubjects?.some(
+      (sub) => sub.toLowerCase() === currentSubject.toLowerCase()
+    );
+    return hasProgress || hasQuiz || isEnrolled;
+  });
 
   const filteredStudents = subjectStudents.filter(
     (s) =>
@@ -257,7 +266,7 @@ export default function AdminGuruMonitoringPage() {
                 {filteredStudents.length === 0 && (
                   <tr>
                     <td colSpan={6} className="py-12 text-center text-[#737373] text-xs">
-                      Tidak ada siswa terdaftar pada bidang {currentSubject}.
+                      Belum ada siswa yang membaca materi atau mengerjakan evaluasi pada bidang {currentSubject}.
                     </td>
                   </tr>
                 )}

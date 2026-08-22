@@ -62,6 +62,7 @@ export interface SectionItem {
 export interface ContentSection {
   id: string;
   title: string;
+  elements?: any[];
   paragraphs?: string[];
   items?: SectionItem[];
   callout?: string;
@@ -851,21 +852,29 @@ console.log(\`Siswa \${namaSiswa} memperoleh nilai \${nilaiUjian}\`);`,
       {
         id: "fungsi-tata-rias",
         title: "Fungsi Tata Rias",
-        items: [
+        elements: [
           {
-            text: "1. Mendukung Tema Tari\nTata rias harus disesuaikan dengan tema yang diangkat dalam karya tari. Tema tari dapat berupa kehidupan masyarakat, kepahlawanan, percintaan, alam, cerita rakyat, kehidupan kerajaan, maupun tema-tema lainnya.\nSumber: Doc. Ujian koreografi Unnes 2026\nTarian diatas salah satu contoh fungsi tata rias sebagai pendukung tema tarian.",
+            type: "image",
             imageUrl: "/images/tari/tata-rias-karakter.jpg",
           },
           {
+            type: "paragraph",
+            text: "1. Mendukung Tema Tari\nTata rias harus disesuaikan dengan tema yang diangkat dalam karya tari. Tema tari dapat berupa kehidupan masyarakat, kepahlawanan, percintaan, alam, cerita rakyat, kehidupan kerajaan, maupun tema-tema lainnya.\nSumber: Doc. Ujian koreografi Unnes 2026\nTarian diatas salah satu contoh fungsi tata rias sebagai pendukung tema tarian.",
+          },
+          {
+            type: "paragraph",
             text: "2. Memperjelas Karakter dan Tokoh Penari\nTata rias berfungsi untuk memperkuat karakter dan memperjelas tokoh yang dibawakan oleh penari. Karakter dapat berupa lembut, gagah, tegas, lucu, tua, muda, atau anggun, sedangkan tokoh dapat dibedakan berdasarkan sifat, usia, kedudukan, dan perannya dalam cerita. Perbedaan tersebut dapat ditampilkan melalui bentuk alis, mata, garis wajah, dan warna riasan.",
           },
           {
+            type: "paragraph",
             text: "3. Memperjelas Ekspresi Wajah\nEkspresi wajah merupakan salah satu bagian penting dalam penyajian tari, terutama pada tari yang menekankan penghayatan dan karakter",
           },
           {
+            type: "paragraph",
             text: "4. Menunjang Keindahan Penampilan\nTata rias juga berfungsi untuk meningkatkan nilai estetis atau keindahan penampilan penari. Keindahan tersebut bukan hanya berkaitan dengan wajah penari, tetapi juga dengan keserasian antara tata rias, tata busana, gerak, musik, tata cahaya, dan konsep tari.",
           },
           {
+            type: "paragraph",
             text: "5. Memperkuat Identitas Budaya\nPada tari tradisional, tata rias dapat menjadi salah satu bagian yang menunjukkan identitas budaya suatu daerah. Bentuk rias, penggunaan warna, hiasan kepala, serta aksesori tertentu dapat memiliki ciri khas yang membedakan suatu tari dengan tari dari daerah lainnya.",
           },
         ],
@@ -1173,38 +1182,50 @@ export function getMaterialBlocksForModule(moduleTitleOrId: string | number): an
       const elements: any[] = [];
       let elCounter = 1;
 
-      // Add paragraphs if present
-      if (section.paragraphs && section.paragraphs.length > 0) {
-        section.paragraphs.forEach((p) => {
-          if (p && p.trim()) {
-            elements.push({
-              id: `el-${Date.now()}-${elCounter++}`,
-              type: 'paragraph',
-              text: p,
-            });
-          }
+      if (section.elements && section.elements.length > 0) {
+        section.elements.forEach((el) => {
+          elements.push({
+            id: `el-${Date.now()}-${elCounter++}`,
+            type: el.type,
+            text: el.text || '',
+            imageUrl: el.imageUrl || '',
+            imageCaption: el.imageCaption || '',
+          });
         });
-      }
+      } else {
+        // Add paragraphs if present
+        if (section.paragraphs && section.paragraphs.length > 0) {
+          section.paragraphs.forEach((p) => {
+            if (p && p.trim()) {
+              elements.push({
+                id: `el-${Date.now()}-${elCounter++}`,
+                type: 'paragraph',
+                text: p,
+              });
+            }
+          });
+        }
 
-      // Add items (text and/or image) if present
-      if (section.items && section.items.length > 0) {
-        section.items.forEach((item) => {
-          if (item.imageUrl) {
-            elements.push({
-              id: `el-${Date.now()}-${elCounter++}`,
-              type: 'image',
-              imageUrl: item.imageUrl,
-              imageCaption: '',
-            });
-          }
-          if (item.text && item.text.trim()) {
-            elements.push({
-              id: `el-${Date.now()}-${elCounter++}`,
-              type: 'paragraph',
-              text: item.text,
-            });
-          }
-        });
+        // Add items (text and/or image) if present
+        if (section.items && section.items.length > 0) {
+          section.items.forEach((item) => {
+            if (item.imageUrl) {
+              elements.push({
+                id: `el-${Date.now()}-${elCounter++}`,
+                type: 'image',
+                imageUrl: item.imageUrl,
+                imageCaption: '',
+              });
+            }
+            if (item.text && item.text.trim()) {
+              elements.push({
+                id: `el-${Date.now()}-${elCounter++}`,
+                type: 'paragraph',
+                text: item.text,
+              });
+            }
+          });
+        }
       }
 
       // If both were empty, add 1 default paragraph
@@ -1229,6 +1250,14 @@ export function getMaterialBlocksForModule(moduleTitleOrId: string | number): an
         alignment: 'left',
         mediaUrl: firstImage,
       });
+
+      if (section.codeSnippet && section.codeSnippet.code) {
+        generatedBlocks.push({
+          id: `blk-${blockCounter++}`,
+          type: 'code',
+          codeSnippet: section.codeSnippet,
+        });
+      }
     });
   }
 
@@ -1258,17 +1287,16 @@ export function getMaterialBlocksForModule(moduleTitleOrId: string | number): an
   }
 
   // 4. Convert Attachment if present
-  if (material.attachment && material.attachment.fileName) {
+  if (material.attachment) {
     generatedBlocks.push({
       id: `blk-${blockCounter++}`,
       type: 'attachment',
       attachments: [
         {
-          id: `att-${Date.now()}`,
-          name: material.attachment.fileName,
-          size: material.attachment.fileSize,
-          type: 'application/pdf',
-          url: '#',
+          id: 'att-init-1',
+          fileName: material.attachment.fileName,
+          fileSize: material.attachment.fileSize,
+          fileUrl: '#',
         },
       ],
     });
@@ -1364,9 +1392,17 @@ export default function MaterialDetailPage({
           dynamicSections.push({
             id: `sec-${bIdx + 1}`,
             title: block.sectionTitle || 'Heading',
+            elements: block.elements && block.elements.length > 0 ? block.elements : undefined,
             paragraphs: paragraphs,
             items: items.length > 0 ? items : undefined,
             callout: block.calloutText || undefined,
+          });
+        } else if (block.type === 'code' && block.codeSnippet) {
+          dynamicSections.push({
+            id: `sec-code-${bIdx + 1}`,
+            title: '',
+            paragraphs: [],
+            codeSnippet: block.codeSnippet,
           });
         } else if (block.type === 'image' && block.mediaUrl) {
           dynamicSections.push({
@@ -1434,9 +1470,7 @@ export default function MaterialDetailPage({
   const [isTocOpen, setIsTocOpen] = useState(false);
 
   // Compute smart back URL preserving category filter
-  const savedFilter = typeof window !== "undefined" ? sessionStorage.getItem("sintesa_materi_filter") : null;
-  const activeCategory = fromParam || savedFilter;
-  const backUrl = activeCategory && activeCategory !== "Semua" ? `/materi?kategori=${encodeURIComponent(activeCategory)}` : "/materi";
+  const backUrl = fromParam && fromParam !== "Semua" ? `/materi?kategori=${encodeURIComponent(fromParam)}` : "/materi";
 
   // Record material view for AI recommendation intelligence
   useEffect(() => {
@@ -1677,44 +1711,76 @@ export default function MaterialDetailPage({
                     id={section.id}
                     className="space-y-4"
                   >
-                    <h2 className="text-lg md:text-xl font-bold text-[#2E2D2D]">
-                      {section.title}
-                    </h2>
-
-                    {section.paragraphs && section.paragraphs.length > 0 && (
-                      <div className="space-y-2.5">
-                        {section.paragraphs.map((p, pIdx) => (
-                          <SmartParagraph key={pIdx} text={p} />
-                        ))}
-                      </div>
+                    {section.title && (
+                      <h2 className="text-lg md:text-xl font-bold text-[#2E2D2D]">
+                        {section.title}
+                      </h2>
                     )}
 
-                    {/* Integrated Per-Point Media Block (Clean Direct Text Layout, Natural Image Resolution, No Captions) */}
-                    {section.items && section.items.length > 0 && (
-                      <div className="space-y-4 my-3">
-                        {section.items.map((item, i) => (
-                          <div key={i} className="space-y-2.5">
-                            {item.text && (
-                              <p className="text-xs md:text-sm font-medium text-[#4A4A4A] leading-relaxed text-justify">
-                                {item.text}
-                              </p>
-                            )}
-
-                            {item.imageUrl && (
-                              <div className="my-3 flex justify-center w-full">
-                                <div className="overflow-hidden rounded-[12px] border border-[#ECECEC] bg-gray-50 max-w-2xl w-full">
+                    {/* Render Elements in Exact Ordered Sequence if available */}
+                    {section.elements && section.elements.length > 0 ? (
+                      <div className="space-y-4">
+                        {section.elements.map((el: any, elIdx: number) => {
+                          if (el.type === 'image' && el.imageUrl) {
+                            return (
+                              <div key={elIdx} className="my-3 w-full">
+                                <div className="overflow-hidden rounded-[12px] border border-[#ECECEC] bg-slate-50 w-full aspect-video">
                                   {/* eslint-disable-next-next/no-img-element */}
                                   <img
-                                    src={item.imageUrl}
+                                    src={el.imageUrl}
                                     alt="Ilustrasi Materi"
-                                    className="w-full h-auto object-contain rounded-[12px] block mx-auto"
+                                    className="w-full h-full object-cover rounded-[12px]"
                                   />
                                 </div>
                               </div>
-                            )}
-                          </div>
-                        ))}
+                            );
+                          }
+                          if (el.type === 'paragraph' && el.text) {
+                            return (
+                              <SmartParagraph key={elIdx} text={el.text} />
+                            );
+                          }
+                          return null;
+                        })}
                       </div>
+                    ) : (
+                      <>
+                        {section.paragraphs && section.paragraphs.length > 0 && (
+                          <div className="space-y-2.5">
+                            {section.paragraphs.map((p, pIdx) => (
+                              <SmartParagraph key={pIdx} text={p} />
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Integrated Per-Point Media Block (Clean Direct Text Layout, Natural Image Resolution, No Captions) */}
+                        {section.items && section.items.length > 0 && (
+                          <div className="space-y-4 my-3">
+                            {section.items.map((item, i) => (
+                              <div key={i} className="space-y-2.5">
+                                {item.imageUrl && (
+                                  <div className="my-3 w-full">
+                                    <div className="overflow-hidden rounded-[12px] border border-[#ECECEC] bg-slate-50 w-full aspect-video">
+                                      {/* eslint-disable-next-next/no-img-element */}
+                                      <img
+                                        src={item.imageUrl}
+                                        alt="Ilustrasi Materi"
+                                        className="w-full h-full object-cover rounded-[12px]"
+                                      />
+                                    </div>
+                                  </div>
+                                )}
+
+                                {item.text && (
+                                  <p className="text-xs md:text-sm font-medium text-[#4A4A4A] leading-relaxed text-justify">
+                                    {item.text}
+                                  </p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </>
                     )}
 
                     {/* Highlight / Callout Box (Blue sleek card without title) */}

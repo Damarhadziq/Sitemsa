@@ -222,7 +222,13 @@ function Pagination({
   );
 }
 
+import { useAdminStore } from "@/lib/admin-store";
+
 export default function DocumentationPage() {
+  const { docs, faqs } = useAdminStore();
+  const allDocs = useMemo(() => (docs && docs.length > 0 ? docs : TUTORIAL_ARTICLES), [docs]);
+  const allFaqs = useMemo(() => (faqs && faqs.length > 0 ? faqs : FAQ_LIST), [faqs]);
+
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [desktopActiveArticleId, setDesktopActiveArticleId] = useState<string>("siswa-alur-pembelajaran");
   const [mobileSelectedId, setMobileSelectedId] = useState<string | null>(null);
@@ -238,13 +244,13 @@ export default function DocumentationPage() {
   }, [searchQuery]);
 
   const filteredArticles = useMemo(() => {
-    return TUTORIAL_ARTICLES.filter((art) => {
+    return allDocs.filter((art) => {
       const matchesSearch =
         art.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         art.summary.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesSearch;
     });
-  }, [searchQuery]);
+  }, [allDocs, searchQuery]);
 
   const desktopTotalPages = Math.ceil(filteredArticles.length / ITEMS_PER_PAGE);
   const mobileTotalPages = Math.ceil(filteredArticles.length / ITEMS_PER_PAGE);
@@ -261,14 +267,14 @@ export default function DocumentationPage() {
 
   const desktopActiveArticle = useMemo(() => {
     return (
-      TUTORIAL_ARTICLES.find((art) => art.id === desktopActiveArticleId) || TUTORIAL_ARTICLES[0]
+      allDocs.find((art) => art.id === desktopActiveArticleId) || allDocs[0] || TUTORIAL_ARTICLES[0]
     );
-  }, [desktopActiveArticleId]);
+  }, [allDocs, desktopActiveArticleId]);
 
   const mobileActiveArticle = useMemo(() => {
     if (!mobileSelectedId || mobileSelectedId === "faq-section") return null;
-    return TUTORIAL_ARTICLES.find((art) => art.id === mobileSelectedId) || null;
-  }, [mobileSelectedId]);
+    return allDocs.find((art) => art.id === mobileSelectedId) || null;
+  }, [allDocs, mobileSelectedId]);
 
   const isDesktopFaqActive = desktopActiveArticleId === "faq-section";
   const isMobileFaqActive = mobileSelectedId === "faq-section";
@@ -384,7 +390,7 @@ export default function DocumentationPage() {
                   </header>
 
                   <div className="space-y-4">
-                    {FAQ_LIST.map((faq, fIdx) => (
+                    {allFaqs.map((faq, fIdx) => (
                       <section key={fIdx} className="space-y-2">
                         <h3 className="text-sm md:text-base font-semibold text-[#2E2D2D]">
                           {faq.question}
@@ -504,7 +510,7 @@ export default function DocumentationPage() {
                   </header>
 
                   <div className="space-y-6 pt-2">
-                    {FAQ_LIST.map((faq, fIdx) => (
+                    {allFaqs.map((faq, fIdx) => (
                       <section key={fIdx} className="space-y-2">
                         <h3 className="text-base font-bold text-[#2E2D2D]">
                           {faq.question}

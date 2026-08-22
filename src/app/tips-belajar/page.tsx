@@ -238,19 +238,53 @@ function TipsBelajarSkeleton() {
   );
 }
 
+import { useAdminStore } from "@/lib/admin-store";
+
 function TipsBelajarContent() {
   const searchParams = useSearchParams();
   const queryIdStr = searchParams.get("id");
+  const { articles } = useAdminStore();
+
+  const allArticles: ArticleItem[] = useMemo(() => {
+    if (!articles || articles.length === 0) return TIPS_ARTICLES;
+    return articles.map((art, idx) => {
+      const sections = art.content
+        ? art.content
+            .split('\n\n')
+            .filter(Boolean)
+            .map((para, pIdx) => ({
+              title: pIdx === 0 ? 'Poin Utama Pembahasan' : `Langkah ${pIdx + 1}`,
+              description: para,
+            }))
+        : [];
+
+      return {
+        id: parseInt(art.id.replace(/\D/g, ''), 10) || idx + 1,
+        title: art.title,
+        author: art.author || 'Tim Sitemsa',
+        summary: art.excerpt || art.title,
+        contentSections:
+          sections.length > 0
+            ? sections
+            : [
+                {
+                  title: 'Penjelasan & Panduan Belajar',
+                  description: art.content || art.excerpt || 'Belum ada detail pembahasan.',
+                },
+              ],
+      };
+    });
+  }, [articles]);
 
   const initialId = useMemo(() => {
     if (queryIdStr) {
       const parsed = parseInt(queryIdStr, 10);
-      if (!isNaN(parsed) && TIPS_ARTICLES.some((a) => a.id === parsed)) {
+      if (!isNaN(parsed) && allArticles.some((a) => a.id === parsed)) {
         return parsed;
       }
     }
-    return 1;
-  }, [queryIdStr]);
+    return allArticles[0]?.id || 1;
+  }, [queryIdStr, allArticles]);
 
   const [desktopSelectedId, setDesktopSelectedId] = useState<number>(initialId);
   const [mobileSelectedId, setMobileSelectedId] = useState<number | null>(null);
@@ -264,12 +298,12 @@ function TipsBelajarContent() {
   }, [searchQuery]);
 
   const filteredArticles = useMemo(() => {
-    return TIPS_ARTICLES.filter(
+    return allArticles.filter(
       (art) =>
         art.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         art.summary.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [searchQuery]);
+  }, [allArticles, searchQuery]);
 
   const desktopTotalPages = Math.ceil(filteredArticles.length / ITEMS_PER_PAGE);
   const mobileTotalPages = Math.ceil(filteredArticles.length / ITEMS_PER_PAGE);
@@ -285,13 +319,13 @@ function TipsBelajarContent() {
   }, [filteredArticles, mobilePage]);
 
   const desktopActiveArticle = useMemo(() => {
-    return TIPS_ARTICLES.find((art) => art.id === desktopSelectedId) || TIPS_ARTICLES[0];
-  }, [desktopSelectedId]);
+    return allArticles.find((art) => art.id === desktopSelectedId) || allArticles[0] || TIPS_ARTICLES[0];
+  }, [allArticles, desktopSelectedId]);
 
   const mobileActiveArticle = useMemo(() => {
     if (mobileSelectedId === null) return null;
-    return TIPS_ARTICLES.find((art) => art.id === mobileSelectedId) || null;
-  }, [mobileSelectedId]);
+    return allArticles.find((art) => art.id === mobileSelectedId) || null;
+  }, [allArticles, mobileSelectedId]);
 
   return (
     <main className="max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-16 w-full flex-1 space-y-6">

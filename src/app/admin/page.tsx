@@ -6,9 +6,11 @@ import { useAuth } from '@/lib/auth-context';
 
 export default function AdminIndexPage() {
   const router = useRouter();
-  const { user, role } = useAuth();
+  const { user, role, isLoading } = useAuth();
 
   useEffect(() => {
+    if (isLoading) return;
+
     if (!user) {
       router.replace('/admin/login');
     } else if (role === 'superadmin') {
@@ -16,7 +18,7 @@ export default function AdminIndexPage() {
     } else {
       router.replace('/admin/guru');
     }
-  }, [user, role, router]);
+  }, [user, role, isLoading, router]);
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center font-sans">

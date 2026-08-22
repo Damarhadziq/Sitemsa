@@ -3,7 +3,6 @@
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import { AdminHeader } from '@/components/admin/AdminHeader';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -39,13 +38,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </div>
 
       {/* Desktop Main Layout (>= 1024px) */}
-      <div className="hidden lg:flex min-h-screen bg-white font-sans text-[#111827]">
+      <div className="hidden lg:flex h-screen overflow-hidden bg-white font-sans text-[#111827]">
         {/* Sidebar */}
         <AdminSidebar />
 
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col min-w-0 min-h-screen bg-white">
-          <AdminHeader />
+        <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto bg-white">
           <main className="flex-1 p-6 lg:p-8 max-w-[1400px] w-full mx-auto bg-white">{children}</main>
         </div>
       </div>

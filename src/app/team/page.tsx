@@ -95,7 +95,14 @@ const getMemberDetails = (division: string) => {
   }
 };
 
+import { useAdminStore } from "@/lib/admin-store";
+
 export default function TeamPage() {
+  const { teamMembers: storeTeamMembers } = useAdminStore();
+  const allTeamMembers = React.useMemo(() => {
+    return storeTeamMembers && storeTeamMembers.length > 0 ? storeTeamMembers : teamMembers;
+  }, [storeTeamMembers]);
+
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
 
   React.useEffect(() => {
@@ -131,14 +138,14 @@ export default function TeamPage() {
             Arsitek di Balik <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2563EB] to-[#8B5CF6]">Sitemsa</span>
           </h1>
           <p className="text-[#737373] text-xs md:text-sm max-w-xl mx-auto leading-relaxed">
-            Mengenal lebih dekat 24 inovator tangguh dari Tim PPL Lantip SMK Negeri 1 Semarang yang membangun platform pembelajaran ini.
+            Mengenal lebih dekat {allTeamMembers.length} inovator tangguh dari Tim PPL Lantip SMK Negeri 1 Semarang yang membangun platform pembelajaran ini.
           </p>
         </div>
 
         {/* ANIMATED 4x6 GRID CARDS DIRECTLY ON CANVAS */}
         <div className="w-full">
           <AnimatedList
-            items={teamMembers}
+            items={allTeamMembers}
             layout="grid"
             gridClassName="grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
             initialSelectedIndex={-1}

@@ -32,6 +32,11 @@ export function Tooltip({
     setIsOpen(false);
   };
 
+  const handleClick = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setIsOpen(false);
+  };
+
   useEffect(() => {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -59,6 +64,7 @@ export function Tooltip({
       onMouseLeave={handleMouseLeave}
       onFocus={handleMouseEnter}
       onBlur={handleMouseLeave}
+      onClick={handleClick}
     >
       {children}
       {isOpen && (

@@ -258,14 +258,11 @@ function MateriLandingContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [aiRecommendedModules, setAiRecommendedModules] = useState<ModulItem[]>([]);
 
-  // Restore category from URL query or sessionStorage on mount / searchParams change
+  // Set category only if explicitly specified in URL query (e.g. from home page card click), otherwise default to "Semua"
   useEffect(() => {
-    const savedFilter = typeof window !== 'undefined' ? sessionStorage.getItem('sintesa_materi_filter') : null;
     const initialCategory =
       kategoriParam && CATEGORIES.includes(kategoriParam)
         ? kategoriParam
-        : savedFilter && CATEGORIES.includes(savedFilter)
-        ? savedFilter
         : "Semua";
 
     setSelectedCategory(initialCategory);
@@ -367,7 +364,6 @@ function MateriLandingContent() {
     setSelectedCategory(category);
     setCurrentPage(1);
     if (typeof window !== 'undefined') {
-      sessionStorage.setItem('sintesa_materi_filter', category);
       const newUrl = category === 'Semua' ? '/materi' : `/materi?kategori=${encodeURIComponent(category)}`;
       window.history.replaceState(null, '', newUrl);
     }

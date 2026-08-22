@@ -28,12 +28,14 @@ import {
   Highlighter,
   AlertCircle,
   Hash,
+  Code,
+  Check,
 } from 'lucide-react';
 import { ModuleItem } from '@/lib/admin-store';
 import { getMaterialBlocksForModule, getMaterialDetailForModule } from '@/app/materi/[id]/page';
 import { Tooltip } from '@/components/ui/tooltip';
 
-export type BlockType = 'text' | 'image' | 'video' | 'attachment' | 'steps' | 'callout';
+export type BlockType = 'text' | 'image' | 'video' | 'attachment' | 'steps' | 'callout' | 'code';
 export type TestType = 'link_eksternal' | 'qr_code' | 'kuis_sitemsa';
 
 export interface AttachedFileItem {
@@ -60,6 +62,12 @@ export interface CanvasBlock {
   calloutText?: string;
   alignment?: 'left' | 'center' | 'right';
   elements?: SectionElement[];
+
+  // Code block data (Informatika)
+  codeSnippet?: {
+    language: string;
+    code: string;
+  };
 
   // Media block data
   mediaUrl?: string;
@@ -170,6 +178,7 @@ export function ModuleBlockBuilder({
       setModuleThumbnail(objUrl);
       setIsDirty(true);
     }
+    e.target.value = '';
   };
 
   // Publish / Draft Confirmation Modal state & Success Modal state
@@ -270,6 +279,9 @@ export function ModuleBlockBuilder({
 
   // Attachment file upload state
   const [changingAttachmentFileId, setChangingAttachmentFileId] = useState<string | null>(null);
+  const [copiedBlockId, setCopiedBlockId] = useState<string | null>(null);
+  const targetAttachmentBlockIdRef = useRef<string | null>(null);
+  const targetAttachmentItemIdRef = useRef<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const attachmentFileInputRef = useRef<HTMLInputElement | null>(null);
@@ -344,6 +356,11 @@ export function ModuleBlockBuilder({
       ];
     } else if (type === 'callout') {
       newBlock.textValue = 'Prinsip Utama: Deklarasikan variabel dengan nama yang deskriptif dan mencerminkan isi datanya agar kode mudah dibaca oleh tim pengembangan.';
+    } else if (type === 'code') {
+      newBlock.codeSnippet = {
+        language: 'JavaScript / TypeScript',
+        code: '// Deklarasi Variabel & Tipe Data Dasar\nlet namaSiswa = "Budi Pratama"; // String\nlet nilaiUjian = 95;           // Integer\nlet ipk = 3.85;                // Float\nlet isLulus = true;            // Boolean\n\nconsole.log(`Siswa ${namaSiswa} memperoleh nilai ${nilaiUjian}`);',
+      };
     }
 
     if (actualIndex !== undefined) {
@@ -580,20 +597,23 @@ export function ModuleBlockBuilder({
   // Native Attachment File Picker Handler
   const handleAttachmentFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && selectedBlockId) {
+    const targetBlockId = targetAttachmentBlockIdRef.current || selectedBlockId;
+    const targetItemId = targetAttachmentItemIdRef.current || changingAttachmentFileId;
+
+    if (file && targetBlockId) {
       const objectUrl = URL.createObjectURL(file);
       const formattedSize =
         file.size > 1024 * 1024
           ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
           : `${Math.round(file.size / 1024)} KB`;
 
-      const block = blocks.find((b) => b.id === selectedBlockId);
+      const block = blocks.find((b) => b.id === targetBlockId);
       if (block) {
         const currentAttachments = block.attachments || [];
 
-        if (changingAttachmentFileId) {
+        if (targetItemId) {
           const updated = currentAttachments.map((item) =>
-            item.id === changingAttachmentFileId
+            item.id === targetItemId
               ? {
                   ...item,
                   fileName: file.name,
@@ -602,8 +622,7 @@ export function ModuleBlockBuilder({
                 }
               : item
           );
-          updateBlockById(selectedBlockId, { attachments: updated });
-          setChangingAttachmentFileId(null);
+          updateBlockById(targetBlockId, { attachments: updated });
         } else {
           const newFileItem: AttachedFileItem = {
             id: `att-${Date.now()}`,
@@ -611,19 +630,29 @@ export function ModuleBlockBuilder({
             fileSize: formattedSize,
             fileUrl: objectUrl,
           };
-          updateBlockById(selectedBlockId, {
+          updateBlockById(targetBlockId, {
             attachments: [...currentAttachments, newFileItem],
           });
         }
+        setIsDirty(true);
       }
     }
+    setChangingAttachmentFileId(null);
+    targetAttachmentBlockIdRef.current = null;
+    targetAttachmentItemIdRef.current = null;
+    e.target.value = '';
   };
 
   // Trigger Add / Change Attachment
   const triggerAddAttachmentFileFromComputer = (blockId: string, fileItemId?: string) => {
+    targetAttachmentBlockIdRef.current = blockId;
+    targetAttachmentItemIdRef.current = fileItemId || null;
     setSelectedBlockId(blockId);
     setChangingAttachmentFileId(fileItemId || null);
-    attachmentFileInputRef.current?.click();
+    if (attachmentFileInputRef.current) {
+      attachmentFileInputRef.current.value = '';
+      attachmentFileInputRef.current.click();
+    }
   };
 
   // Delete individual attached file from list
@@ -632,6 +661,7 @@ export function ModuleBlockBuilder({
     if (!block || !block.attachments) return;
     const updated = block.attachments.filter((item) => item.id !== fileItemId);
     updateBlockById(blockId, { attachments: updated });
+    setIsDirty(true);
   };
 
   // Image Upload Modal trigger
@@ -842,7 +872,15 @@ export function ModuleBlockBuilder({
           if (file) {
             setEvalQrUrl(URL.createObjectURL(file));
           }
+          e.target.value = '';
         }}
+        accept="image/*"
+        className="hidden"
+      />
+      <input
+        type="file"
+        ref={thumbnailFileInputRef}
+        onChange={handleThumbnailSelect}
         accept="image/*"
         className="hidden"
       />
@@ -914,8 +952,8 @@ export function ModuleBlockBuilder({
               </Tooltip>
 
               {/* Level Dropdown Chip */}
-              <Tooltip content="Tingkat Kesulitan" side="bottom">
-                <div ref={headerLevelDropdownRef} className="relative">
+              <div ref={headerLevelDropdownRef} className="relative">
+                <Tooltip content="Tingkat Kesulitan" side="bottom">
                   <button
                     type="button"
                     onClick={() => setIsHeaderLevelDropdownOpen(!isHeaderLevelDropdownOpen)}
@@ -924,35 +962,35 @@ export function ModuleBlockBuilder({
                     <span className="text-[11px] font-bold text-[#2E2D2D]">{moduleLevel}</span>
                     <ChevronDown className={`w-3.5 h-3.5 text-[#737373] transition-transform duration-200 ${isHeaderLevelDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
+                </Tooltip>
 
-                  {isHeaderLevelDropdownOpen && (
-                    <div className="absolute left-0 top-full mt-1.5 w-36 bg-white/95 backdrop-blur-md border border-[#ECECEC] rounded-[10px] shadow-xl p-1 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-0.5">
-                      {(['Pemula', 'Menengah', 'Mahir'] as const).map((lvl) => {
-                        const isSelected = moduleLevel === lvl;
-                        return (
-                          <button
-                            key={lvl}
-                            type="button"
-                            onClick={() => {
-                              setModuleLevel(lvl);
-                              setIsHeaderLevelDropdownOpen(false);
-                              setIsDirty(true);
-                            }}
-                            className={`w-full px-3 py-2 rounded-[6px] text-left text-xs font-semibold flex items-center justify-between transition-all cursor-pointer ${
-                              isSelected
-                                ? 'bg-blue-50/80 text-[#2563EB] font-bold'
-                                : 'text-[#2E2D2D] hover:bg-slate-50'
-                            }`}
-                          >
-                            <span>{lvl}</span>
-                            {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-[#2563EB]" />}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </Tooltip>
+                {isHeaderLevelDropdownOpen && (
+                  <div className="absolute left-0 top-full mt-1.5 w-36 bg-white/95 backdrop-blur-md border border-[#ECECEC] rounded-[10px] shadow-xl p-1 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-0.5">
+                    {(['Pemula', 'Menengah', 'Mahir'] as const).map((lvl) => {
+                      const isSelected = moduleLevel === lvl;
+                      return (
+                        <button
+                          key={lvl}
+                          type="button"
+                          onClick={() => {
+                            setModuleLevel(lvl);
+                            setIsHeaderLevelDropdownOpen(false);
+                            setIsDirty(true);
+                          }}
+                          className={`w-full px-3 py-2 rounded-[6px] text-left text-xs font-semibold flex items-center justify-between transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-blue-50/80 text-[#2563EB] font-bold'
+                              : 'text-[#2E2D2D] hover:bg-slate-50'
+                          }`}
+                        >
+                          <span>{lvl}</span>
+                          {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-[#2563EB]" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
 
               {/* Topics Button */}
               <Tooltip content="Atur Topik Bahasan" side="bottom">
@@ -1229,7 +1267,7 @@ export function ModuleBlockBuilder({
                                               e.stopPropagation();
                                               handlePromptChangeSectionImage(block.id, elIdx, '');
                                             }}
-                                            className="rounded-[10px] border-2 border-dashed border-slate-300 hover:border-[#2563EB] bg-slate-50/50 p-6 text-center transition-all cursor-pointer group/card w-full max-w-2xl"
+                                            className="rounded-[12px] border-2 border-dashed border-slate-300 hover:border-[#2563EB] bg-slate-50/50 p-6 text-center transition-all cursor-pointer group/card w-full"
                                           >
                                             <div className="w-10 h-10 rounded-full bg-white border border-[#ECECEC] text-[#2563EB] flex items-center justify-center mx-auto shadow-xs">
                                               <ImageIcon className="w-5 h-5" />
@@ -1239,12 +1277,12 @@ export function ModuleBlockBuilder({
                                             </p>
                                           </div>
                                         ) : (
-                                          <div className="relative overflow-hidden rounded-[10px] border border-[#ECECEC] bg-gray-50 max-w-2xl w-full">
+                                          <div className="relative overflow-hidden rounded-[12px] border border-[#ECECEC] bg-slate-50 w-full aspect-video">
                                             {/* eslint-disable-next-next/no-img-element */}
                                             <img
                                               src={el.imageUrl}
                                               alt="Section illustration"
-                                              className="w-full h-auto object-contain rounded-[10px] block mx-auto"
+                                              className="w-full h-full object-cover rounded-[12px]"
                                             />
                                             <div className="absolute top-2 right-2 flex items-center gap-1.5 opacity-0 group-hover/elImg:opacity-100 transition-opacity bg-white/95 p-1 rounded-[6px] shadow-xs text-[#2E2D2D]">
                                               {elIdx > 0 && (
@@ -1431,12 +1469,12 @@ export function ModuleBlockBuilder({
                               </div>
                             ) : (
                               <div className="space-y-2 group/mediaContainer relative">
-                                <div className="relative overflow-hidden rounded-[12px] border border-[#ECECEC]">
+                                <div className="relative overflow-hidden rounded-[12px] border border-[#ECECEC] w-full aspect-video bg-slate-50">
                                   {/* eslint-disable-next-next/no-img-element */}
                                   <img
                                     src={block.mediaUrl}
                                     alt="Uploaded content"
-                                    className="w-full max-h-[480px] object-cover rounded-[12px]"
+                                    className="w-full h-full object-cover rounded-[12px]"
                                   />
 
                                   {/* OVERLAY CHANGE BUTTON ON HOVER */}
@@ -1538,26 +1576,30 @@ export function ModuleBlockBuilder({
                               </div>
                             ) : (
                               <div className="space-y-2">
-                                {block.attachments.map((fileItem) => (
-                                  <div
-                                    key={fileItem.id}
-                                    className="p-3 rounded-[10px] bg-white border border-[#ECECEC] flex items-center justify-between hover:border-[#2563EB] transition-colors shadow-2xs"
-                                  >
-                                    <div className="flex items-center gap-3 truncate min-w-0 pr-2">
-                                      <div className="w-9 h-9 rounded-[8px] bg-blue-50 text-[#2563EB] flex items-center justify-center shrink-0">
-                                        <File className="w-4 h-4" />
+                                {block.attachments.map((fileItem) => {
+                                  const fileName = fileItem.fileName || (fileItem as any).name || 'Dokumen Terlampir';
+                                  const fileSize = fileItem.fileSize || (fileItem as any).size || 'File';
+                                  return (
+                                    <div
+                                      key={fileItem.id}
+                                      className="p-3 rounded-[10px] bg-white border border-[#ECECEC] flex items-center justify-between hover:border-[#2563EB] transition-colors shadow-2xs"
+                                    >
+                                      <div className="flex items-center gap-3 truncate min-w-0 pr-2">
+                                        <div className="w-9 h-9 rounded-[8px] bg-blue-50 text-[#2563EB] flex items-center justify-center shrink-0">
+                                          <File className="w-4 h-4" />
+                                        </div>
+                                        <div className="truncate min-w-0">
+                                          <p className="text-xs font-bold text-[#2E2D2D] truncate">{fileName}</p>
+                                          <p className="text-[11px] text-[#737373] mt-0.5">{fileSize}</p>
+                                        </div>
                                       </div>
-                                      <div className="truncate min-w-0">
-                                        <p className="text-xs font-bold text-[#2E2D2D] truncate">{fileItem.fileName}</p>
-                                        <p className="text-[11px] text-[#737373] mt-0.5">{fileItem.fileSize}</p>
-                                      </div>
-                                    </div>
 
-                                    <span className="text-xs font-bold text-[#2563EB] px-3 py-1 rounded-[6px] bg-blue-50 border border-blue-100 flex items-center gap-1 shrink-0">
-                                      <Download className="w-3.5 h-3.5" /> Download
-                                    </span>
-                                  </div>
-                                ))}
+                                      <span className="text-xs font-bold text-[#2563EB] px-3 py-1 rounded-[6px] bg-blue-50 border border-blue-100 flex items-center gap-1 shrink-0">
+                                        <Download className="w-3.5 h-3.5" /> Download
+                                      </span>
+                                    </div>
+                                  );
+                                })}
                               </div>
                             )}
                           </div>
@@ -1636,8 +1678,88 @@ export function ModuleBlockBuilder({
                               className="w-full py-2.5 rounded-[8px] border border-dashed border-blue-300 hover:border-[#2563EB] bg-blue-50/50 hover:bg-blue-50 text-xs font-bold text-[#2563EB] inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
                             >
                               <Plus className="w-4 h-4 shrink-0 text-[#2563EB]" strokeWidth={2.5} />
-                              <span className="leading-none flex items-center">Tambah Langkah {(block.steps || []).length + 1}</span>
+                              <span className="inline-block leading-none">Tambah Langkah {(block.steps || []).length + 1}</span>
                             </button>
+                          </div>
+                        )}
+
+                        {/* 6. CODE SNIPPET BLOCK (Informatika) */}
+                        {block.type === 'code' && (
+                          <div className="space-y-3 font-sans">
+                            <div className="bg-[#1E1E2E] rounded-[12px] p-4 text-white overflow-hidden shadow-xs space-y-3 border border-[#313244]">
+                              {/* Code Block Header Bar */}
+                              <div className="flex items-center justify-between text-xs text-[#A6ADC8] border-b border-[#313244] pb-2.5">
+                                <div className="flex items-center gap-2">
+                                  <Code className="w-4 h-4 text-[#89B4FA]" />
+                                  <select
+                                    value={block.codeSnippet?.language || 'JavaScript / TypeScript'}
+                                    onChange={(e) => {
+                                      setIsDirty(true);
+                                      updateBlockById(block.id, {
+                                        codeSnippet: {
+                                          language: e.target.value,
+                                          code: block.codeSnippet?.code || '',
+                                        },
+                                      });
+                                    }}
+                                    className="bg-[#313244] text-[#CDD6F4] text-xs font-mono font-semibold px-2.5 py-1 rounded-[6px] outline-none border border-[#45475A] cursor-pointer"
+                                  >
+                                    <option value="JavaScript / TypeScript">JavaScript / TypeScript</option>
+                                    <option value="Python">Python</option>
+                                    <option value="C++">C++</option>
+                                    <option value="Java">Java</option>
+                                    <option value="PHP">PHP</option>
+                                    <option value="HTML / CSS">HTML / CSS</option>
+                                    <option value="SQL">SQL</option>
+                                    <option value="C#">C#</option>
+                                    <option value="Go">Go</option>
+                                  </select>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (block.codeSnippet?.code) {
+                                      navigator.clipboard.writeText(block.codeSnippet.code);
+                                      setCopiedBlockId(block.id);
+                                      setTimeout(() => setCopiedBlockId(null), 1500);
+                                    }
+                                  }}
+                                  className="inline-flex items-center gap-1.5 bg-[#313244] hover:bg-[#45475A] text-white px-2.5 py-1 rounded-[6px] transition-colors text-[11px] font-medium cursor-pointer"
+                                >
+                                  {copiedBlockId === block.id ? (
+                                    <>
+                                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                                      <span className="text-emerald-400 font-semibold">Tersalin!</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy className="w-3.5 h-3.5" />
+                                      <span>Salin Kode</span>
+                                    </>
+                                  )}
+                                </button>
+                              </div>
+
+                              {/* Monospace Code Textarea Input */}
+                              <textarea
+                                value={block.codeSnippet?.code ?? ''}
+                                onChange={(e) => {
+                                  setIsDirty(true);
+                                  updateBlockById(block.id, {
+                                    codeSnippet: {
+                                      language: block.codeSnippet?.language || 'JavaScript / TypeScript',
+                                      code: e.target.value,
+                                    },
+                                  });
+                                }}
+                                placeholder="// Ketik atau tempelkan kode program di sini..."
+                                rows={Math.max(4, (block.codeSnippet?.code?.split('\n').length || 1) + 1)}
+                                className="w-full bg-transparent font-mono text-xs text-[#CDD6F4] leading-relaxed outline-none border-none resize-y p-0 placeholder:text-[#585B70]"
+                                spellCheck={false}
+                              />
+                            </div>
                           </div>
                         )}
 
@@ -1701,6 +1823,8 @@ export function ModuleBlockBuilder({
             <h3 className="text-xs font-bold text-[#2E2D2D]">
               {selectedBlock?.type === 'attachment'
                 ? 'Kelola Lampiran File'
+                : selectedBlock?.type === 'code'
+                ? 'Pengaturan Blok Kode'
                 : 'Insert block'}
             </h3>
             <button
@@ -1732,38 +1856,42 @@ export function ModuleBlockBuilder({
                     {(!selectedBlock.attachments || selectedBlock.attachments.length === 0) ? (
                       <p className="text-xs text-slate-400 italic py-2">Belum ada file terlampir.</p>
                     ) : (
-                      selectedBlock.attachments.map((fileItem) => (
-                        <div
-                          key={fileItem.id}
-                          className="p-2.5 rounded-[8px] bg-white border border-[#ECECEC] flex items-center justify-between text-xs space-x-2"
-                        >
-                          <div className="flex items-center gap-2 truncate min-w-0">
-                            <File className="w-4 h-4 text-[#2563EB] shrink-0" />
-                            <div className="truncate min-w-0">
-                              <p className="font-semibold text-[#2E2D2D] truncate text-xs">{fileItem.fileName}</p>
-                              <p className="text-[11px] text-[#737373] mt-0.5">{fileItem.fileSize}</p>
+                      selectedBlock.attachments.map((fileItem) => {
+                        const fileName = fileItem.fileName || (fileItem as any).name || 'Dokumen Terlampir';
+                        const fileSize = fileItem.fileSize || (fileItem as any).size || 'File';
+                        return (
+                          <div
+                            key={fileItem.id}
+                            className="p-2.5 rounded-[8px] bg-white border border-[#ECECEC] flex items-center justify-between text-xs space-x-2"
+                          >
+                            <div className="flex items-center gap-2 truncate min-w-0">
+                              <File className="w-4 h-4 text-[#2563EB] shrink-0" />
+                              <div className="truncate min-w-0">
+                                <p className="font-semibold text-[#2E2D2D] truncate text-xs">{fileName}</p>
+                                <p className="text-[11px] text-[#737373] mt-0.5">{fileSize}</p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-1 shrink-0">
+                              <button
+                                onClick={() => triggerAddAttachmentFileFromComputer(selectedBlock.id, fileItem.id)}
+                                title="Ganti File dari Komputer"
+                                className="p-1.5 rounded-[6px] hover:bg-white text-slate-500 hover:text-[#2563EB] border border-transparent hover:border-[#ECECEC] cursor-pointer transition-colors"
+                              >
+                                <RefreshCw className="w-3.5 h-3.5" />
+                              </button>
+
+                              <button
+                                onClick={() => handleDeleteAttachmentFile(selectedBlock.id, fileItem.id)}
+                                title="Hapus File"
+                                className="p-1.5 rounded-[6px] hover:bg-white text-slate-400 hover:text-rose-600 border border-transparent hover:border-[#ECECEC] cursor-pointer transition-colors"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
                             </div>
                           </div>
-
-                          <div className="flex items-center gap-1 shrink-0">
-                            <button
-                              onClick={() => triggerAddAttachmentFileFromComputer(selectedBlock.id, fileItem.id)}
-                              title="Ganti File dari Komputer"
-                              className="p-1.5 rounded-[6px] hover:bg-white text-slate-500 hover:text-[#2563EB] border border-transparent hover:border-[#ECECEC] cursor-pointer transition-colors"
-                            >
-                              <RefreshCw className="w-3.5 h-3.5" />
-                            </button>
-
-                            <button
-                              onClick={() => handleDeleteAttachmentFile(selectedBlock.id, fileItem.id)}
-                              title="Hapus File"
-                              className="p-1.5 rounded-[6px] hover:bg-white text-slate-400 hover:text-rose-600 border border-transparent hover:border-[#ECECEC] cursor-pointer transition-colors"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                      ))
+                        );
+                      })
                     )}
                   </div>
 
@@ -1775,6 +1903,65 @@ export function ModuleBlockBuilder({
                     <span className="inline-block leading-none">Tambah File Baru</span>
                   </button>
 
+                </div>
+              ) : selectedBlock?.type === 'code' ? (
+                /* IF SELECTED BLOCK IS CODE */
+                <div className="space-y-4 font-sans">
+                  <div className="p-3 rounded-[8px] bg-slate-900 text-white space-y-1">
+                    <p className="text-xs font-bold text-[#89B4FA] flex items-center gap-1.5">
+                      <Code className="w-4 h-4" /> Blok Kode Pemrograman
+                    </p>
+                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                      Tambahkan sintaksis atau potongan kode program yang rapi dan dapat disalin langsung oleh siswa.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-[#737373]">Bahasa Pemrograman:</label>
+                    <select
+                      value={selectedBlock.codeSnippet?.language || 'JavaScript / TypeScript'}
+                      onChange={(e) => {
+                        setIsDirty(true);
+                        updateBlockById(selectedBlock.id, {
+                          codeSnippet: {
+                            language: e.target.value,
+                            code: selectedBlock.codeSnippet?.code || '',
+                          },
+                        });
+                      }}
+                      className="w-full h-9 px-3 rounded-[8px] border border-[#ECECEC] text-xs font-semibold text-[#2E2D2D] outline-none focus:border-[#2563EB] bg-white cursor-pointer"
+                    >
+                      <option value="JavaScript / TypeScript">JavaScript / TypeScript</option>
+                      <option value="Python">Python</option>
+                      <option value="C++">C++</option>
+                      <option value="Java">Java</option>
+                      <option value="PHP">PHP</option>
+                      <option value="HTML / CSS">HTML / CSS</option>
+                      <option value="SQL">SQL</option>
+                      <option value="C#">C#</option>
+                      <option value="Go">Go</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-[#737373]">Isi Kode Program:</label>
+                    <textarea
+                      value={selectedBlock.codeSnippet?.code || ''}
+                      onChange={(e) => {
+                        setIsDirty(true);
+                        updateBlockById(selectedBlock.id, {
+                          codeSnippet: {
+                            language: selectedBlock.codeSnippet?.language || 'JavaScript / TypeScript',
+                            code: e.target.value,
+                          },
+                        });
+                      }}
+                      placeholder="// Ketik kode di sini..."
+                      rows={12}
+                      className="w-full p-3 rounded-[8px] border border-[#313244] bg-[#1E1E2E] text-[#CDD6F4] font-mono text-xs outline-none focus:border-[#2563EB] leading-relaxed resize-y"
+                      spellCheck={false}
+                    />
+                  </div>
                 </div>
               ) : (
                 /* DEFAULT INSERT BLOCK MENU (ORIGINAL UNTOUCHED STYLE) */
@@ -1820,6 +2007,20 @@ export function ModuleBlockBuilder({
                   <div className="space-y-2">
                     <h4 className="text-xs font-bold text-[#737373] tracking-tight">Rich media</h4>
                     <div className="space-y-1.5">
+                      {/* Code Block for Informatika */}
+                      {(subjectName === 'Informatika' || initialModule?.subject === 'Informatika' || !subjectName) && (
+                        <button
+                          onClick={() => handleAddBlock('code')}
+                          className="w-full p-3 rounded-[8px] bg-white border border-[#ECECEC] hover:border-[#2563EB] hover:bg-blue-50/50 text-left flex items-center justify-between text-xs font-semibold transition-all cursor-pointer group"
+                        >
+                          <div className="flex items-center gap-3">
+                            <Code className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
+                            <span className="text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors">Blok Kode</span>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
+                        </button>
+                      )}
+
                       <button
                         onClick={() => handleAddBlock('attachment')}
                         className="w-full p-3 rounded-[8px] bg-white border border-[#ECECEC] hover:border-[#2563EB] hover:bg-blue-50/50 text-left flex items-center justify-between text-xs font-semibold transition-all cursor-pointer group"
@@ -2055,14 +2256,6 @@ export function ModuleBlockBuilder({
                     </button>
                   )}
                 </div>
-
-                <input
-                  type="file"
-                  ref={thumbnailFileInputRef}
-                  onChange={handleThumbnailSelect}
-                  accept="image/*"
-                  className="hidden"
-                />
 
                 {moduleThumbnail ? (
                   <div className="relative w-full aspect-video rounded-[10px] overflow-hidden border border-[#ECECEC] bg-slate-50 group/cover">
@@ -3045,21 +3238,6 @@ export function ModuleBlockBuilder({
         </div>
       )}
 
-      {/* Hidden File Inputs for native picking */}
-      <input
-        type="file"
-        ref={attachmentFileInputRef}
-        onChange={handleAttachmentFileSelect}
-        className="hidden"
-        accept=".pdf,.docx,.doc,.zip,.rar,.pptx,.xlsx,.txt,.png,.jpg,.jpeg"
-      />
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleImageFileSelect}
-        className="hidden"
-        accept="image/*"
-      />
     </div>
   );
 }

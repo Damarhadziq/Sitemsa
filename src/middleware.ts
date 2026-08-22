@@ -27,6 +27,17 @@ export function middleware(request: NextRequest) {
   if (pathname.startsWith('/admin')) {
     const isValidAdmin = adminCookie && (adminCookie.value === 'superadmin' || adminCookie.value === 'guru');
 
+    // If accessing root admin path (/admin)
+    if (pathname === '/admin') {
+      if (isValidAdmin) {
+        if (adminCookie.value === 'guru') {
+          return NextResponse.redirect(new URL('/admin/guru', request.url));
+        }
+        return NextResponse.redirect(new URL('/admin/superadmin', request.url));
+      }
+      return NextResponse.redirect(new URL('/admin/login', request.url));
+    }
+
     // If accessing admin login page (/admin/login)
     if (pathname === '/admin/login') {
       if (isValidAdmin) {

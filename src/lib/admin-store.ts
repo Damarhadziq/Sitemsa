@@ -46,6 +46,35 @@ export interface WebArticle {
   isFeatured?: boolean;
 }
 
+export interface DocArticleItem {
+  id: string;
+  category: 'Modul & Pembelajaran' | 'Kuis & Barcode' | 'Profil & Nilai';
+  title: string;
+  summary: string;
+  screenshotUrl?: string;
+  sections: {
+    title: string;
+    description: string;
+    callout?: string;
+  }[];
+}
+
+export interface FaqItem {
+  id: string;
+  question: string;
+  answer: string;
+}
+
+export interface TeamMemberItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  handle: string;
+  division: string;
+  image: string;
+  borderColor: string;
+}
+
 export interface ModuleItem {
   id: string;
   subject: string;
@@ -118,6 +147,9 @@ interface AdminStoreState {
   teachers: TeacherAccount[];
   heroContent: HeroContent;
   articles: WebArticle[];
+  docs: DocArticleItem[];
+  faqs: FaqItem[];
+  teamMembers: TeamMemberItem[];
   modules: ModuleItem[];
   quizzes: QuizItem[];
   students: StudentRecord[];
@@ -133,6 +165,19 @@ interface AdminStoreState {
   addArticle: (article: Omit<WebArticle, 'id' | 'date'>) => void;
   updateArticle: (id: string, article: Partial<WebArticle>) => void;
   deleteArticle: (id: string) => void;
+
+  // Actions - Docs & FAQs (Superadmin)
+  addDoc: (doc: Omit<DocArticleItem, 'id'>) => void;
+  updateDoc: (id: string, doc: Partial<DocArticleItem>) => void;
+  deleteDoc: (id: string) => void;
+  addFaq: (faq: Omit<FaqItem, 'id'>) => void;
+  updateFaq: (id: string, faq: Partial<FaqItem>) => void;
+  deleteFaq: (id: string) => void;
+
+  // Actions - Team Members (Superadmin)
+  addTeamMember: (member: Omit<TeamMemberItem, 'id'>) => void;
+  updateTeamMember: (id: string, member: Partial<TeamMemberItem>) => void;
+  deleteTeamMember: (id: string) => void;
 
   // Actions - Subjects (Superadmin)
   addSubject: (subject: Omit<SubjectItem, 'id' | 'totalModules' | 'totalQuizzes'>) => void;
@@ -505,12 +550,22 @@ const INITIAL_STUDENTS: StudentRecord[] = [
     classGroup: 'XI RPL 1',
     avatar: 'https://i.pravatar.cc/150?img=12',
     lastActive: '2026-08-15 14:20',
-    enrolledSubjects: ['Informatika', 'Elektronika'],
+    enrolledSubjects: ['Informatika', 'Elektronika', 'Seni Tari'],
     moduleProgress: {
       Informatika: 85,
       Elektronika: 60,
+      'Seni Tari': 67,
     },
     quizHistory: [
+      {
+        id: 'qh-tari-1',
+        subject: 'Seni Tari',
+        quizTitle: 'Evaluasi Koreografi Tari & Pola Lantai',
+        score: 85,
+        maxScore: 100,
+        date: '2026-08-16',
+        status: 'Lulus',
+      },
       {
         id: 'qh-1',
         subject: 'Informatika',
@@ -539,12 +594,22 @@ const INITIAL_STUDENTS: StudentRecord[] = [
     classGroup: 'XI RPL 2',
     avatar: 'https://i.pravatar.cc/150?img=32',
     lastActive: '2026-08-15 11:45',
-    enrolledSubjects: ['Informatika', 'Seni & Desain'],
+    enrolledSubjects: ['Informatika', 'Seni & Desain', 'Seni Tari'],
     moduleProgress: {
       Informatika: 100,
       'Seni & Desain': 90,
+      'Seni Tari': 100,
     },
     quizHistory: [
+      {
+        id: 'qh-tari-2',
+        subject: 'Seni Tari',
+        quizTitle: 'Evaluasi Koreografi Tari & Pola Lantai',
+        score: 95,
+        maxScore: 100,
+        date: '2026-08-15',
+        status: 'Lulus',
+      },
       {
         id: 'qh-3',
         subject: 'Informatika',
@@ -589,12 +654,22 @@ const INITIAL_STUDENTS: StudentRecord[] = [
     classGroup: 'XI DKV 2',
     avatar: 'https://i.pravatar.cc/150?img=25',
     lastActive: '2026-08-15 09:10',
-    enrolledSubjects: ['Seni & Desain', 'Informatika'],
+    enrolledSubjects: ['Seni & Desain', 'Informatika', 'Seni Tari'],
     moduleProgress: {
       'Seni & Desain': 95,
       Informatika: 70,
+      'Seni Tari': 83,
     },
     quizHistory: [
+      {
+        id: 'qh-tari-3',
+        subject: 'Seni Tari',
+        quizTitle: 'Evaluasi Koreografi Tari & Pola Lantai',
+        score: 88,
+        maxScore: 100,
+        date: '2026-08-16',
+        status: 'Lulus',
+      },
       {
         id: 'qh-5',
         subject: 'Informatika',
@@ -720,6 +795,165 @@ const INITIAL_STUDENTS: StudentRecord[] = [
   },
 ];
 
+const INITIAL_DOCS: DocArticleItem[] = [
+  {
+    id: "siswa-alur-pembelajaran",
+    category: "Modul & Pembelajaran",
+    title: "Alur Pembelajaran & Navigasi Modul Sitemsa",
+    summary: "Panduan langkah demi langkah cara menavigasi modul materi, menonton video tutorial, dan mempraktikkan panduan kerja.",
+    screenshotUrl: "/images/docs/nav_tutorial.jpg",
+    sections: [
+      {
+        title: "Pilih Materi dari Katalog Pembelajaran",
+        description: "Buka halaman Materi melalui menu utama navigasi, lalu pilih materi vokasi sesuai bidang studi milikmu (Informatika, Elektronika, Seni Tari, Otomotif, dll).",
+      },
+      {
+        title: "Gunakan Daftar Isi Pembahasan di Sidebar",
+        description: "Di sebelah kanan layar desktop atau bagian atas mobile, gunakan widget 'Daftar Isi Pembahasan' untuk melompat secara instan ke bagian sub-materi tertentu.",
+      },
+      {
+        title: "Simak Video Tutorial & Langkah Kerja",
+        description: "Tonton video simulasi interaktif yang disediakan oleh pengajar, lalu ikuti panduan langkah kerja praktik secara bertahap.",
+      },
+    ],
+  },
+  {
+    id: "siswa-kuis-interaktif",
+    category: "Kuis & Barcode",
+    title: "Cara Mengikuti Kuis: Barcode, Link Eksternal & Internal",
+    summary: "Penjelasan lengkap mengenai 3 jenis metode uji pemahaman yang disediakan pengajar di Sitemsa.",
+    screenshotUrl: "/images/docs/barcode_tutorial.jpg",
+    sections: [
+      {
+        title: "Klik Tombol 'Mulai Uji Pemahaman'",
+        description: "Temukan kartu 'Uji Pemahaman' pada sidebar kanan di halaman materi, kemudian klik tombol utama berwarna biru.",
+      },
+      {
+        title: "Memahami 3 Tipe Kuis",
+        description: "Sitemsa mendukung 3 sumber kuis interaktif dari pengajar: 1. Barcode/QR Code Modal (Kahoot/Quizizz), 2. Konfirmasi Link Eksternal (Google Forms), dan 3. Kuis Sitemsa.",
+      },
+      {
+        title: "Memindai Barcode / Membuka Link Kuis",
+        description: "Gunakan kamera smartphone milikmu untuk memindai Barcode di layar, atau klik tombol 'Salin Link' / 'Buka Kuis Direct' jika ingin membukanya langsung di perangkat komputer.",
+      },
+    ],
+  },
+  {
+    id: "siswa-riwayat-dan-nilai",
+    category: "Profil & Nilai",
+    title: "Melacak Riwayat Belajar & Rekap Nilai Kuis",
+    summary: "Cara melihat daftar modul yang telah selesai dipelajari beserta statistik capaian nilai kuis.",
+    sections: [
+      {
+        title: "Buka Halaman Profil Siswa",
+        description: "Klik avatar foto profilmu di navbar bagian atas kanan, lalu pilih menu 'Profil Saya' atau klik tombol 'Riwayat & Nilai Kuis'.",
+      },
+      {
+        title: "Pilih Tab 'Riwayat Belajar & Nilai'",
+        description: "Di dalam modal profil, pindah ke tab kedua untuk melihat 3 daftar modul terakhir yang kamu pelajari dan skor kuis yang berhasil kamu capai.",
+      },
+    ],
+  },
+  {
+    id: "siswa-edit-profil",
+    category: "Profil & Nilai",
+    title: "Cara Mengubah Foto & Informasi Profil Siswa",
+    summary: "Petunjuk memperbarui data diri, foto avatar, serta kata sandi akun siswa di Sitemsa.",
+    sections: [
+      {
+        title: "Masuk ke Jendela Modal Profil",
+        description: "Klik foto avatar di navbar kanan atas lalu pilih opsi 'Profil Saya'.",
+      },
+      {
+        title: "Unggah Foto Baru atau Perbarui Informasi",
+        description: "Klik tombol ikon kamera untuk mengunggah foto avatar baru, kemudian simpan perubahan dengan mengklik tombol 'Simpan Perubahan'.",
+      },
+    ],
+  },
+  {
+    id: "siswa-bantu-kendala",
+    category: "Modul & Pembelajaran",
+    title: "Mengatasi Kendala Koneksi & Gagal Muat Media",
+    summary: "Tips cepat penanganan masalah saat gambar skema atau video tutorial mengalami lambat muat di ruang kelas.",
+    sections: [
+      {
+        title: "Muat Ulang Halaman Materi",
+        description: "Tekan tombol muat ulang di browser milikmu atau periksa apakah sambungan Wi-Fi laboratorium aktif.",
+      },
+      {
+        title: "Manfaatkan Opsi Lampiran Dokumen",
+        description: "Jika video simulasi terkendala, kamu dapat mengunduh lampiran file PDF panduan yang disediakan pengajar pada widget bagian bawah.",
+      },
+    ],
+  },
+  {
+    id: "siswa-sertifikat-vokasi",
+    category: "Profil & Nilai",
+    title: "Panduan Pengunduhan Sertifikat & Rekap Capaian",
+    summary: "Petunjuk mencetak sertifikat apresiasi setelah menyelesaikan seluruh modul bidang vokasi.",
+    sections: [
+      {
+        title: "Penyelesaian 100% Progres Pembelajaran",
+        description: "Pastikan seluruh modul dan kuis evaluasi pada satu bidang studi telah diselesaikan dengan skor tuntas.",
+      },
+      {
+        title: "Unduh Sertifikat Digital",
+        description: "Buka tab Riwayat Belajar di modal profil, lalu klik tombol 'Unduh Sertifikat' berbentuk format PDF resmi.",
+      },
+    ],
+  },
+];
+
+const INITIAL_FAQS: FaqItem[] = [
+  {
+    id: "faq-1",
+    question: "Mengapa Barcode QR Code kuis tidak dapat dipindai?",
+    answer: "Hal ini dapat terjadi akibat pencahayaan layar proyektor yang terlalu terang atau koneksi internet yang lambat saat memuat gambar QR Code.",
+  },
+  {
+    id: "faq-2",
+    question: "Apa solusi alternatif jika scan QR Code gagal?",
+    answer: "Di bawah gambar Barcode pada modal, tersedia tombol 'Salin Link Kuis Direct'. Kamu dapat menyalin tautan tersebut dan mengkliknya langsung untuk bergabung ke kuis.",
+  },
+  {
+    id: "faq-3",
+    question: "Apakah kuis Sitemsa bisa dikerjakan di smartphone?",
+    answer: "Ya, seluruh tampilan Sitemsa dan modal kuis sudah dioptimalkan penuh untuk layar hp maupun komputer tablet.",
+  },
+  {
+    id: "faq-4",
+    question: "Bagaimana cara mereset progres belajar modul?",
+    answer: "Progres modul diperbarui secara otomatis ketika kamu membaca materi hingga selesai. Kamu dapat mengulang membaca modul kapan saja melalui katalog materi.",
+  },
+];
+
+const INITIAL_TEAM_MEMBERS: TeamMemberItem[] = [
+  { id: "tm-1", image: "https://i.pravatar.cc/300?img=11", title: "Damar Hadziq H.", subtitle: "Developer", handle: "@damarhadziq", borderColor: "#4F46E5", division: "Pend. Informatika" },
+  { id: "tm-2", image: "https://i.pravatar.cc/300?img=13", title: "Mochammad Rizal D. D.", subtitle: "Sub-Developer", handle: "@rizaldaffa", borderColor: "#3B82F6", division: "Pend. Informatika" },
+  { id: "tm-3", image: "https://i.pravatar.cc/300?img=19", title: "M. Sulthon Abdullah A.", subtitle: "Sub-Developer", handle: "@sulthonazzam", borderColor: "#2563EB", division: "Pend. Informatika" },
+  { id: "tm-4", image: "https://i.pravatar.cc/300?img=25", title: "Lovyca Imeyra E.", subtitle: "Sub-Developer", handle: "@lovycaimeyra", borderColor: "#10B981", division: "Pend. Informatika" },
+  { id: "tm-5", image: "https://i.pravatar.cc/300?img=16", title: "Innova Riskianugrah R.", subtitle: "Instructional Designer", handle: "@innovariskia", borderColor: "#06B6D4", division: "BK" },
+  { id: "tm-6", image: "https://i.pravatar.cc/300?img=18", title: "Fateka Maulana A. K.", subtitle: "Instructional Designer", handle: "@fatekamaulana", borderColor: "#10B981", division: "BK" },
+  { id: "tm-7", image: "https://i.pravatar.cc/300?img=22", title: "Erintan Tsuraya R.", subtitle: "Instructional Designer", handle: "@erintantsuraya", borderColor: "#06B6D4", division: "BK" },
+  { id: "tm-8", image: "https://i.pravatar.cc/300?img=30", title: "Dinda Riestia", subtitle: "Instructional Designer", handle: "@dindariestia", borderColor: "#8B5CF6", division: "BK" },
+  { id: "tm-9", image: "https://i.pravatar.cc/300?img=17", title: "Ardyan Santoso", subtitle: "Instructional Designer", handle: "@ardyansantoso", borderColor: "#3B82F6", division: "Pend. Otomotif" },
+  { id: "tm-10", image: "https://i.pravatar.cc/300?img=23", title: "Satrio", subtitle: "Instructional Designer", handle: "@satrio", borderColor: "#4F46E5", division: "Pend. Otomotif" },
+  { id: "tm-11", image: "https://i.pravatar.cc/300?img=27", title: "Agam Ainun Ramadhan", subtitle: "Instructional Designer", handle: "@agamainun", borderColor: "#8B5CF6", division: "Pend. Otomotif" },
+  { id: "tm-12", image: "https://i.pravatar.cc/300?img=14", title: "Banu Mahmuda H.", subtitle: "Instructional Designer", handle: "@banumahmuda", borderColor: "#EF4444", division: "Pend. Elektronika" },
+  { id: "tm-13", image: "https://i.pravatar.cc/300?img=21", title: "Anisa Susilawati", subtitle: "Instructional Designer", handle: "@anisasusilawati", borderColor: "#8B5CF6", division: "Pend. Elektronika" },
+  { id: "tm-14", image: "https://i.pravatar.cc/300?img=26", title: "Nova Milyard", subtitle: "Instructional Designer", handle: "@novamilyard", borderColor: "#EF4444", division: "Pend. Elektronika" },
+  { id: "tm-15", image: "https://i.pravatar.cc/300?img=32", title: "Vella Pratika I. N.", subtitle: "Instructional Designer", handle: "@vellapratika", borderColor: "#F59E0B", division: "Pend. Elektronika" },
+  { id: "tm-16", image: "https://i.pravatar.cc/300?img=33", title: "Fahrul Adiyansa", subtitle: "Instructional Designer", handle: "@fahruladiyansa", borderColor: "#8B5CF6", division: "Pend. Elektronika" },
+  { id: "tm-17", image: "https://i.pravatar.cc/300?img=15", title: "Tubagus Fauzan A.", subtitle: "Instructional Designer", handle: "@tubagusfauzan", borderColor: "#06B6D4", division: "Pend. Elektronika" },
+  { id: "tm-18", image: "https://i.pravatar.cc/300?img=29", title: "Brilian Anugraheni", subtitle: "Instructional Designer", handle: "@briliananugraheni", borderColor: "#3B82F6", division: "Pend. Olahraga" },
+  { id: "tm-19", image: "https://i.pravatar.cc/300?img=31", title: "Ahmad Luthfi F.", subtitle: "Instructional Designer", handle: "@ahmadluthfi", borderColor: "#F59E0B", division: "Pend. Olahraga" },
+  { id: "tm-20", image: "https://i.pravatar.cc/300?img=34", title: "Rinal Febriarso D. P.", subtitle: "Instructional Designer", handle: "@rinalfebriarso", borderColor: "#06B6D4", division: "Pend. Olahraga" },
+  { id: "tm-21", image: "https://i.pravatar.cc/300?img=12", title: "Vivi Riska Wardani", subtitle: "Instructional Designer", handle: "@viviriska", borderColor: "#10B981", division: "Pend. Seni Tari" },
+  { id: "tm-22", image: "https://i.pravatar.cc/300?img=20", title: "Anita Dwi Ningtyas", subtitle: "Instructional Designer", handle: "@anitadwi", borderColor: "#EF4444", division: "Pend. Seni Tari" },
+  { id: "tm-23", image: "/images/meliana.jpg", title: "Meliana Dwi Yanti", subtitle: "Instructional Designer", handle: "@melianadwi", borderColor: "#10B981", division: "Pend. Seni Tari" },
+  { id: "tm-24", image: "https://i.pravatar.cc/300?img=28", title: "Hasnita Ivangka", subtitle: "Instructional Designer", handle: "@hasnitaivangka", borderColor: "#06B6D4", division: "Pend. Seni Tari" }
+];
+
 export const useAdminStore = create<AdminStoreState>()(
   persist(
     (set) => ({
@@ -727,6 +961,9 @@ export const useAdminStore = create<AdminStoreState>()(
       teachers: INITIAL_TEACHERS,
       heroContent: INITIAL_HERO,
       articles: INITIAL_ARTICLES,
+      docs: INITIAL_DOCS,
+      faqs: INITIAL_FAQS,
+      teamMembers: INITIAL_TEAM_MEMBERS,
       modules: INITIAL_MODULES,
       quizzes: INITIAL_QUIZZES,
       students: INITIAL_STUDENTS,
@@ -759,12 +996,13 @@ export const useAdminStore = create<AdminStoreState>()(
           teachers: state.teachers.map((t) => (t.id === teacherId ? { ...t, assignedSubjects } : t)),
         })),
 
-      // Website Content Actions
+      // Website Content Actions - Hero
       updateHeroContent: (newHero) =>
         set((state) => ({
           heroContent: { ...state.heroContent, ...newHero },
         })),
 
+      // Website Content Actions - Articles
       addArticle: (articleData) =>
         set((state) => ({
           articles: [
@@ -785,6 +1023,72 @@ export const useAdminStore = create<AdminStoreState>()(
       deleteArticle: (id) =>
         set((state) => ({
           articles: state.articles.filter((a) => a.id !== id),
+        })),
+
+      // Website Content Actions - Documentation & Guides
+      addDoc: (docData) =>
+        set((state) => ({
+          docs: [
+            {
+              ...docData,
+              id: `doc-${Date.now()}`,
+            },
+            ...state.docs,
+          ],
+        })),
+
+      updateDoc: (id, updatedFields) =>
+        set((state) => ({
+          docs: state.docs.map((d) => (d.id === id ? { ...d, ...updatedFields } : d)),
+        })),
+
+      deleteDoc: (id) =>
+        set((state) => ({
+          docs: state.docs.filter((d) => d.id !== id),
+        })),
+
+      // Website Content Actions - FAQs
+      addFaq: (faqData) =>
+        set((state) => ({
+          faqs: [
+            ...state.faqs,
+            {
+              ...faqData,
+              id: `faq-${Date.now()}`,
+            },
+          ],
+        })),
+
+      updateFaq: (id, updatedFields) =>
+        set((state) => ({
+          faqs: state.faqs.map((f) => (f.id === id ? { ...f, ...updatedFields } : f)),
+        })),
+
+      deleteFaq: (id) =>
+        set((state) => ({
+          faqs: state.faqs.filter((f) => f.id !== id),
+        })),
+
+      // Website Content Actions - Team Members
+      addTeamMember: (memberData) =>
+        set((state) => ({
+          teamMembers: [
+            ...state.teamMembers,
+            {
+              ...memberData,
+              id: `tm-${Date.now()}`,
+            },
+          ],
+        })),
+
+      updateTeamMember: (id, updatedFields) =>
+        set((state) => ({
+          teamMembers: state.teamMembers.map((m) => (m.id === id ? { ...m, ...updatedFields } : m)),
+        })),
+
+      deleteTeamMember: (id) =>
+        set((state) => ({
+          teamMembers: state.teamMembers.filter((m) => m.id !== id),
         })),
 
       // Subject Actions
@@ -917,7 +1221,7 @@ export const useAdminStore = create<AdminStoreState>()(
         })),
     }),
     {
-      name: 'sintesa_admin_storage_v3',
+      name: 'sintesa_admin_storage_v4',
       storage: createJSONStorage(() => localStorage),
     }
   )

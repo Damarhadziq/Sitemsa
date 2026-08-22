@@ -36,6 +36,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useAdminStore, ModuleItem, QuizQuestion } from '@/lib/admin-store';
+import { modulesClientService } from '@/services/client/modules.client';
+import { quizzesClientService } from '@/services/client/quizzes.client';
 import ModuleBlockBuilder, { CanvasBlock } from '@/components/admin/ModuleBlockBuilder';
 import { Tooltip } from '@/components/ui/tooltip';
 
@@ -299,9 +301,11 @@ export default function AdminGuruPelajaranPage() {
 
       if (deleteTarget.type === 'kuis') {
         deleteQuiz(deleteTarget.id);
+        quizzesClientService.delete(deleteTarget.id).catch((err) => console.warn('Sync delete quiz error:', err));
         showToast(<>Kuis <span className="font-bold">{deleteTarget.title}</span> berhasil dihapus.</>, 'warning');
       } else {
         deleteModule(deleteTarget.id);
+        modulesClientService.delete(deleteTarget.id).catch((err) => console.warn('Sync delete module error:', err));
         showToast(<>Materi <span className="font-bold">{deleteTarget.title}</span> berhasil dihapus.</>, 'warning');
       }
       setDeleteTarget(null);
@@ -712,28 +716,134 @@ export default function AdminGuruPelajaranPage() {
       {/* MAIN CONTENT AREA */}
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
         
-        {/* SKELETON LOADING STATE FOR WHOLE PAGE CONTENT */}
+        {/* SKELETON LOADING STATE FOR WHOLE PAGE CONTENT (BORDERLESS & MATCHING EXACT LAYOUT) */}
         {isLoading ? (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="p-5 rounded-[12px] border border-[#ECECEC] space-y-3">
-                  <Skeleton className="h-3 w-24" />
-                  <Skeleton className="h-7 w-16" />
-                  <Skeleton className="h-3 w-32" />
+          <div className="space-y-8 animate-pulse">
+            {!selectedItemId ? (
+              // LANDING OVERVIEW SKELETON
+              <div className="space-y-8">
+                {/* Section 1: Materi Skeleton */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-6 w-32 rounded-[6px]" />
+                    <Skeleton className="h-5 w-16 rounded-[4px]" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="p-5 rounded-[12px] bg-slate-100/70 space-y-3.5 h-[160px] flex flex-col justify-between">
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <Skeleton className="h-4 w-16 rounded-[4px]" />
+                            <Skeleton className="h-4 w-4 rounded-full" />
+                          </div>
+                          <Skeleton className="h-5 w-4/5 rounded-[6px]" />
+                          <Skeleton className="h-3.5 w-full rounded-[4px]" />
+                        </div>
+                        <Skeleton className="h-3 w-1/3 rounded-[4px]" />
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Skeleton className="h-56 w-full rounded-[12px]" />
-              <Skeleton className="h-56 w-full rounded-[12px]" />
-            </div>
+                {/* Section 2: Kuis Skeleton */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-6 w-32 rounded-[6px]" />
+                    <Skeleton className="h-5 w-16 rounded-[4px]" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="p-5 rounded-[12px] bg-slate-100/70 space-y-3.5 h-[160px] flex flex-col justify-between">
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <Skeleton className="h-4 w-20 rounded-[4px]" />
+                            <Skeleton className="h-4 w-4 rounded-full" />
+                          </div>
+                          <Skeleton className="h-5 w-3/4 rounded-[6px]" />
+                          <Skeleton className="h-3.5 w-full rounded-[4px]" />
+                        </div>
+                        <div className="flex gap-2">
+                          <Skeleton className="h-3.5 w-16 rounded-[4px]" />
+                          <Skeleton className="h-3.5 w-20 rounded-[4px]" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              // DETAIL MATERI / KUIS VIEW SKELETON (MATCHING EXACT REAL LAYOUT)
+              <div className="space-y-6">
+                {/* Row 1: 4 Top Metric Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className="p-6 rounded-[12px] bg-slate-100/70 h-[150px] flex flex-col justify-between"
+                    >
+                      <div className="flex justify-between items-center">
+                        <Skeleton className="h-3.5 w-24 rounded-[4px]" />
+                        <Skeleton className="w-4 h-4 rounded-full" />
+                      </div>
+                      <div className="space-y-2">
+                        <Skeleton className="h-8 w-20 rounded-[6px]" />
+                        <Skeleton className="h-3 w-32 rounded-[4px]" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Skeleton className="md:col-span-2 h-44 w-full" />
-              <Skeleton className="h-44 w-full" />
-            </div>
+                {/* Row 2: 2 Chart Cards */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {[1, 2].map((i) => (
+                    <div
+                      key={i}
+                      className="p-6 rounded-[12px] bg-slate-100/70 h-[280px] flex flex-col justify-between"
+                    >
+                      <div className="flex justify-between items-center">
+                        <Skeleton className="h-4 w-36 rounded-[4px]" />
+                        <Skeleton className="h-4 w-20 rounded-[4px]" />
+                      </div>
+                      <div className="h-32 w-full bg-slate-200/40 rounded-[10px]" />
+                      <div className="flex justify-between items-center pt-2">
+                        {[1, 2, 3, 4, 5, 6, 7].map((d) => (
+                          <Skeleton key={d} className="h-3 w-6 rounded-[4px]" />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Row 3: 12-Col Bottom Row (8 cols info/lampiran + 4 cols siswa terakhir akses) */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                  <div className="lg:col-span-8 p-6 rounded-[12px] bg-slate-100/70 space-y-5">
+                    <Skeleton className="h-5 w-48 rounded-[4px]" />
+                    <div className="space-y-3">
+                      <Skeleton className="h-10 w-full rounded-[8px]" />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        <Skeleton className="h-12 w-full rounded-[8px]" />
+                        <Skeleton className="h-12 w-full rounded-[8px]" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-4 p-6 rounded-[12px] bg-slate-100/70 space-y-4">
+                    <Skeleton className="h-5 w-36 rounded-[4px]" />
+                    <div className="space-y-3">
+                      {[1, 2, 3, 4].map((s) => (
+                        <div key={s} className="flex justify-between items-center py-1">
+                          <div className="space-y-1">
+                            <Skeleton className="h-3.5 w-24 rounded-[4px]" />
+                            <Skeleton className="h-2.5 w-16 rounded-[4px]" />
+                          </div>
+                          <Skeleton className="h-5 w-16 rounded-[4px]" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <>

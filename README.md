@@ -41,7 +41,8 @@ Buka peramban di [http://localhost:3000](http://localhost:3000).
 | Peran | Email | Kata Sandi | Halaman Utama |
 | :--- | :--- | :--- | :--- |
 | **Siswa** | `siswa@sintesa.id` | *(Bebas)* | `/` |
-| **Guru / Pengajar** | `budi.guru@sintesa.id` | *(Bebas)* | `/admin/guru` |
+| **Guru Informatika** | `budi.guru@sintesa.id` | *(Bebas)* | `/admin/guru` |
+| **Guru Seni Tari** | `tari.guru@sintesa.id` | *(Bebas)* | `/admin/guru` |
 | **Superadministrator** | `admin@sintesa.id` | *(Bebas)* | `/admin/superadmin` |
 
 ---

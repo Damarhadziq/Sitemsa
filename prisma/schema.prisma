@@ -1,0 +1,276 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  SUPERADMIN
+  GURU
+  SISWA
+}
+
+enum TeacherStatus {
+  AKTIF
+  NONAKTIF
+}
+
+enum ModuleLevel {
+  PEMULA
+  MENENGAH
+  MAHIR
+}
+
+enum QuizType {
+  KUIS_SITEMSA
+  LINK_EKSTERNAL
+  QR_CODE
+}
+
+enum AttemptStatus {
+  LULUS
+  PERLU_BIMBINGAN
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  MODULE_UPDATE
+  QUIZ_REMINDER
+}
+
+// 1. User & Profiles
+model User {
+  id              String         @id @default(cuid())
+  email           String         @unique
+  passwordHash    String
+  name            String
+  role            UserRole       @default(SISWA)
+  avatar          String?
+  phone           String?
+  nip             String?        @unique // For GURU
+  nisn            String?        @unique // For SISWA
+  classGroup      String?        // e.g. "XII RPL 1"
+  status          TeacherStatus  @default(AKTIF)
+  lastActiveAt    DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  teacherSubjects      TeacherSubject[]
+  createdModules       Module[]             @relation("CreatedByTeacher")
+  createdQuizzes       Quiz[]               @relation("CreatedByTeacher")
+  articles             Article[]            @relation("AuthoredArticles")
+  studentEnrollments   StudentEnrollment[]
+  moduleProgress       StudentModuleProgress[]
+  quizAttempts         QuizAttempt[]
+  notifications        Notification[]
+
+  @@index([role])
+  @@index([email])
+}
+
+// 2. Subject / Mata Pelajaran
+model Subject {
+  id              String         @id @default(cuid())
+  name            String         @unique
+  code            String         @unique
+  category        String
+  description     String
+  iconName        String
+  isActive        Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  teachers        TeacherSubject[]
+  modules         Module[]
+  quizzes         Quiz[]
+  enrollments     StudentEnrollment[]
+}
+
+// 3. Teacher - Subject Assignment
+model TeacherSubject {
+  id              String         @id @default(cuid())
+  teacherId       String
+  subjectId       String
+  assignedAt      DateTime       @default(now())
+
+  teacher         User           @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  subject         Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@unique([teacherId, subjectId])
+}
+
+// 4. Student Enrollment
+model StudentEnrollment {
+  id              String         @id @default(cuid())
+  studentId       String
+  subjectId       String
+  enrolledAt      DateTime       @default(now())
+
+  student         User           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subject         Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, subjectId])
+}
+
+// 5. Modules
+model Module {
+  id              String         @id @default(cuid())
+  subjectId       String
+  teacherId       String
+  title           String
+  level           ModuleLevel    @default(PEMULA)
+  duration        String
+  topics          String[]
+  description     String
+  isAiRecommended Boolean        @default(false)
+  isPublished     Boolean        @default(true)
+  quizSourceType  QuizType?
+  quizSourceTitle String?
+  externalUrl     String?
+  qrImageUrl      String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  subject         Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacher         User           @relation("CreatedByTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
+  progress        StudentModuleProgress[]
+  resources       ModuleResource[]
+
+  @@index([subjectId])
+  @@index([teacherId])
+}
+
+// 6. Module Resources
+model ModuleResource {
+  id              String         @id @default(cuid())
+  moduleId        String
+  title           String
+  fileUrl         String
+  fileType        String
+  sortOrder       Int            @default(0)
+
+  module          Module         @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+}
+
+// 7. Quizzes
+model Quiz {
+  id              String         @id @default(cuid())
+  subjectId       String
+  teacherId       String
+  title           String
+  durationMinutes Int            @default(30)
+  passScore       Int            @default(75)
+  published       Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  subject         Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacher         User           @relation("CreatedByTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
+  questions       QuizQuestion[]
+  attempts        QuizAttempt[]
+
+  @@index([subjectId])
+  @@index([teacherId])
+}
+
+// 8. Quiz Questions
+model QuizQuestion {
+  id              String         @id @default(cuid())
+  quizId          String
+  text            String
+  options         String[]
+  correctAnswer   Int
+  explanation     String
+  sortOrder       Int            @default(0)
+
+  quiz            Quiz           @relation(fields: [quizId], references: [id], onDelete: Cascade)
+}
+
+// 9. Quiz Attempt & History
+model QuizAttempt {
+  id              String         @id @default(cuid())
+  quizId          String
+  studentId       String
+  score           Int
+  maxScore        Int            @default(100)
+  status          AttemptStatus
+  answers         Json
+  submittedAt     DateTime       @default(now())
+
+  quiz            Quiz           @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  student         User           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([quizId])
+}
+
+// 10. Student Module Progress
+model StudentModuleProgress {
+  id              String         @id @default(cuid())
+  studentId       String
+  moduleId        String
+  progressPercent Int            @default(0)
+  isCompleted     Boolean        @default(false)
+  lastAccessedAt  DateTime       @default(now())
+
+  student         User           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  module          Module         @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, moduleId])
+}
+
+// 11. Articles & Tips Belajar
+model Article {
+  id              String         @id @default(cuid())
+  title           String
+  category        String
+  readTime        String
+  authorId        String
+  authorName      String
+  image           String
+  excerpt         String
+  content         String         @db.Text
+  isFeatured      Boolean        @default(false)
+  isPublished     Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  author          User           @relation("AuthoredArticles", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([category])
+  @@index([isFeatured])
+}
+
+// 12. Hero & CMS Content
+model HeroContent {
+  id              String         @id @default(cuid())
+  title           String
+  subtitle        String
+  badgeText       String
+  ctaText         String
+  ctaLink         String
+  bannerImage     String
+  isActive        Boolean        @default(true)
+  updatedAt       DateTime       @updatedAt
+}
+
+// 13. Notifications
+model Notification {
+  id              String            @id @default(cuid())
+  userId          String?
+  title           String
+  message         String
+  type            NotificationType  @default(INFO)
+  linkUrl         String?
+  isRead          Boolean           @default(false)
+  createdAt       DateTime          @default(now())
+
+  user            User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

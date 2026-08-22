@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 export interface SubjectItem {
   id: string;
@@ -234,7 +235,7 @@ const INITIAL_TEACHERS: TeacherAccount[] = [
     email: 'ahmad.guru@sitemsa.sch.id',
     avatar: 'https://i.pravatar.cc/150?img=11',
     phone: '085712345678',
-    assignedSubjects: ['Seni & Desain'],
+    assignedSubjects: ['Seni Tari', 'Seni & Desain'],
     status: 'Aktif',
     createdAt: '2025-03-12',
   },
@@ -350,6 +351,80 @@ const INITIAL_MODULES: ModuleItem[] = [
     teacherId: 't-2',
     teacherName: 'Ibu Siti Rahmawati, S.T.',
     createdAt: '2026-08-04',
+  },
+  {
+    id: 'mod-tari-1',
+    subject: 'Seni Tari',
+    title: 'Konsep Koreografi dalam Seni Tari',
+    level: 'Pemula',
+    duration: '30 Menit',
+    topics: ['Koreografi', 'Wirama', 'Wiraga', 'Wirasa', 'Rangsang Visual & Auditif', 'Elemen Ruang Waktu Tenaga'],
+    description: 'Mempelajari pengertian koreografi, unsur pendukung tari (wirama, wiraga, wirasa), sumber rangsang ide, serta elemen utama ruang, waktu, dan tenaga.',
+    teacherId: 't-3',
+    teacherName: 'Pak Ahmad Fauzi, S.Pd.',
+    createdAt: '2026-08-15',
+    isAiRecommended: true,
+  },
+  {
+    id: 'mod-tari-2',
+    subject: 'Seni Tari',
+    title: 'Koreografi: Eksplorasi Gerak Dalam Seni Tari',
+    level: 'Pemula',
+    duration: '35 Menit',
+    topics: ['Eksplorasi Gerak', 'Rangsang Kinestetik', 'Transformasi Gerak', 'Tempo & Level'],
+    description: 'Memahami prinsip eksplorasi gerak tari, berbagai sumber rangsangan (visual, audio, kinestetik, gagasan), dan teknik pengembangan gerak dasar.',
+    teacherId: 't-3',
+    teacherName: 'Pak Ahmad Fauzi, S.Pd.',
+    createdAt: '2026-08-16',
+    isAiRecommended: true,
+  },
+  {
+    id: 'mod-tari-3',
+    subject: 'Seni Tari',
+    title: 'Koreografi: Pola Lantai dalam Penunjang Komposisi Tari',
+    level: 'Menengah',
+    duration: '40 Menit',
+    topics: ['Komposisi Tari', 'Pola Lantai', 'Level Vertikal', 'Prinsip Unity Balance', 'Jenis Panggung'],
+    description: 'Mempelajari unsur utama komposisi tari, pola lantai, level, arah hadap, prinsip kesatuan & keseimbangan, serta ragam panggung pertunjukan.',
+    teacherId: 't-3',
+    teacherName: 'Pak Ahmad Fauzi, S.Pd.',
+    createdAt: '2026-08-17',
+  },
+  {
+    id: 'mod-tari-4',
+    subject: 'Seni Tari',
+    title: 'Tata Rias dalam Seni Tari',
+    level: 'Pemula',
+    duration: '30 Menit',
+    topics: ['Tata Rias Tari', 'Rias Korektif', 'Rias Karakter', 'Rias Fantasi', 'Aplikasi Makeup'],
+    description: 'Mempelajari fungsi tata rias panggung, jenis rias (korektif, karakter, fantasi), dan langkah-langkah aplikasi riasan korektif.',
+    teacherId: 't-3',
+    teacherName: 'Pak Ahmad Fauzi, S.Pd.',
+    createdAt: '2026-08-18',
+  },
+  {
+    id: 'mod-tari-5',
+    subject: 'Seni Tari',
+    title: 'Tata Kostum dan Busana dalam Seni Tari',
+    level: 'Pemula',
+    duration: '30 Menit',
+    topics: ['Tata Busana', 'Pakaian Tubuh & Kepala', 'Aksesori Tari', 'Sapit Urang', 'Tari Merak'],
+    description: 'Mempelajari peranan tata busana dalam mendukung karakter tari, unsur busana, serta praktik memakai kain jarit model sapit urang.',
+    teacherId: 't-3',
+    teacherName: 'Pak Ahmad Fauzi, S.Pd.',
+    createdAt: '2026-08-19',
+  },
+  {
+    id: 'mod-tari-6',
+    subject: 'Seni Tari',
+    title: 'Properti dalam Seni Tari',
+    level: 'Pemula',
+    duration: '25 Menit',
+    topics: ['Properti Tari', 'Stimulus Gerak', 'Fungsi Properti', 'Eksplorasi Properti', 'Topeng & Kipas'],
+    description: 'Memahami pemanfaatan properti sebagai pendukung dan stimulus koreografi gerak, serta ragam fungsi properti dalam karya tari.',
+    teacherId: 't-3',
+    teacherName: 'Pak Ahmad Fauzi, S.Pd.',
+    createdAt: '2026-08-20',
   },
 ];
 
@@ -643,167 +718,205 @@ const INITIAL_STUDENTS: StudentRecord[] = [
   },
 ];
 
-export const useAdminStore = create<AdminStoreState>((set) => ({
-  subjects: INITIAL_SUBJECTS,
-  teachers: INITIAL_TEACHERS,
-  heroContent: INITIAL_HERO,
-  articles: INITIAL_ARTICLES,
-  modules: INITIAL_MODULES,
-  quizzes: INITIAL_QUIZZES,
-  students: INITIAL_STUDENTS,
+export const useAdminStore = create<AdminStoreState>()(
+  persist(
+    (set) => ({
+      subjects: INITIAL_SUBJECTS,
+      teachers: INITIAL_TEACHERS,
+      heroContent: INITIAL_HERO,
+      articles: INITIAL_ARTICLES,
+      modules: INITIAL_MODULES,
+      quizzes: INITIAL_QUIZZES,
+      students: INITIAL_STUDENTS,
 
-  // Teacher actions
-  addTeacher: (teacherData) =>
-    set((state) => ({
-      teachers: [
-        ...state.teachers,
-        {
-          ...teacherData,
-          id: `t-${Date.now()}`,
-          createdAt: new Date().toISOString().split('T')[0],
-        },
-      ],
-    })),
+      // Teacher actions
+      addTeacher: (teacherData) =>
+        set((state) => ({
+          teachers: [
+            ...state.teachers,
+            {
+              ...teacherData,
+              id: `t-${Date.now()}`,
+              createdAt: new Date().toISOString().split('T')[0],
+            },
+          ],
+        })),
 
-  updateTeacher: (id, updatedFields) =>
-    set((state) => ({
-      teachers: state.teachers.map((t) => (t.id === id ? { ...t, ...updatedFields } : t)),
-    })),
+      updateTeacher: (id, updatedFields) =>
+        set((state) => ({
+          teachers: state.teachers.map((t) => (t.id === id ? { ...t, ...updatedFields } : t)),
+        })),
 
-  deleteTeacher: (id) =>
-    set((state) => ({
-      teachers: state.teachers.filter((t) => t.id !== id),
-    })),
+      deleteTeacher: (id) =>
+        set((state) => ({
+          teachers: state.teachers.filter((t) => t.id !== id),
+        })),
 
-  assignSubjectsToTeacher: (teacherId, assignedSubjects) =>
-    set((state) => ({
-      teachers: state.teachers.map((t) => (t.id === teacherId ? { ...t, assignedSubjects } : t)),
-    })),
+      assignSubjectsToTeacher: (teacherId, assignedSubjects) =>
+        set((state) => ({
+          teachers: state.teachers.map((t) => (t.id === teacherId ? { ...t, assignedSubjects } : t)),
+        })),
 
-  // Website Content Actions
-  updateHeroContent: (newHero) =>
-    set((state) => ({
-      heroContent: { ...state.heroContent, ...newHero },
-    })),
+      // Website Content Actions
+      updateHeroContent: (newHero) =>
+        set((state) => ({
+          heroContent: { ...state.heroContent, ...newHero },
+        })),
 
-  addArticle: (articleData) =>
-    set((state) => ({
-      articles: [
-        {
-          ...articleData,
-          id: `art-${Date.now()}`,
-          date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
-        },
-        ...state.articles,
-      ],
-    })),
+      addArticle: (articleData) =>
+        set((state) => ({
+          articles: [
+            {
+              ...articleData,
+              id: `art-${Date.now()}`,
+              date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
+            },
+            ...state.articles,
+          ],
+        })),
 
-  updateArticle: (id, updatedFields) =>
-    set((state) => ({
-      articles: state.articles.map((a) => (a.id === id ? { ...a, ...updatedFields } : a)),
-    })),
+      updateArticle: (id, updatedFields) =>
+        set((state) => ({
+          articles: state.articles.map((a) => (a.id === id ? { ...a, ...updatedFields } : a)),
+        })),
 
-  deleteArticle: (id) =>
-    set((state) => ({
-      articles: state.articles.filter((a) => a.id !== id),
-    })),
+      deleteArticle: (id) =>
+        set((state) => ({
+          articles: state.articles.filter((a) => a.id !== id),
+        })),
 
-  // Subject Actions
-  addSubject: (subjectData) =>
-    set((state) => ({
-      subjects: [
-        ...state.subjects,
-        {
-          ...subjectData,
-          id: `sub-${Date.now()}`,
-          totalModules: 0,
-          totalQuizzes: 0,
-        },
-      ],
-    })),
+      // Subject Actions
+      addSubject: (subjectData) =>
+        set((state) => ({
+          subjects: [
+            ...state.subjects,
+            {
+              ...subjectData,
+              id: `sub-${Date.now()}`,
+              totalModules: 0,
+              totalQuizzes: 0,
+            },
+          ],
+        })),
 
-  updateSubject: (id, updatedFields) =>
-    set((state) => ({
-      subjects: state.subjects.map((s) => (s.id === id ? { ...s, ...updatedFields } : s)),
-    })),
+      updateSubject: (id, updatedFields) =>
+        set((state) => ({
+          subjects: state.subjects.map((s) => (s.id === id ? { ...s, ...updatedFields } : s)),
+        })),
 
-  // Module Actions
-  addModule: (moduleData) => {
-    const newId = `mod-${Date.now()}`;
-    set((state) => ({
-      modules: [
-        {
-          ...moduleData,
-          id: newId,
-          createdAt: new Date().toISOString().split('T')[0],
-        },
-        ...state.modules,
-      ],
-    }));
-    return newId;
-  },
+      // Module Actions
+      addModule: (moduleData) => {
+        const newId = `mod-${Date.now()}`;
+        set((state) => ({
+          modules: [
+            {
+              ...moduleData,
+              id: newId,
+              createdAt: new Date().toISOString().split('T')[0],
+            },
+            ...state.modules,
+          ],
+          subjects: state.subjects.map((s) =>
+            s.name.toLowerCase() === moduleData.subject.toLowerCase()
+              ? { ...s, totalModules: (s.totalModules || 0) + 1 }
+              : s
+          ),
+        }));
+        return newId;
+      },
 
-  updateModule: (id, updatedFields) =>
-    set((state) => ({
-      modules: state.modules.map((m) => (m.id === id ? { ...m, ...updatedFields } : m)),
-    })),
+      updateModule: (id, updatedFields) =>
+        set((state) => ({
+          modules: state.modules.map((m) => (m.id === id ? { ...m, ...updatedFields } : m)),
+        })),
 
-  deleteModule: (id) =>
-    set((state) => ({
-      modules: state.modules.filter((m) => m.id !== id),
-    })),
+      deleteModule: (id) =>
+        set((state) => {
+          const mod = state.modules.find((m) => m.id === id);
+          return {
+            modules: state.modules.filter((m) => m.id !== id),
+            subjects: mod
+              ? state.subjects.map((s) =>
+                  s.name.toLowerCase() === mod.subject.toLowerCase() && s.totalModules > 0
+                    ? { ...s, totalModules: s.totalModules - 1 }
+                    : s
+                )
+              : state.subjects,
+          };
+        }),
 
-  // Quiz Actions
-  addQuiz: (quizData) => {
-    const newId = `qz-${Date.now()}`;
-    set((state) => ({
-      quizzes: [
-        {
-          ...quizData,
-          id: newId,
-          createdAt: new Date().toISOString().split('T')[0],
-        },
-        ...state.quizzes,
-      ],
-    }));
-    return newId;
-  },
+      // Quiz Actions
+      addQuiz: (quizData) => {
+        const newId = `qz-${Date.now()}`;
+        set((state) => ({
+          quizzes: [
+            {
+              ...quizData,
+              id: newId,
+              createdAt: new Date().toISOString().split('T')[0],
+            },
+            ...state.quizzes,
+          ],
+          subjects: state.subjects.map((s) =>
+            s.name.toLowerCase() === quizData.subject.toLowerCase()
+              ? { ...s, totalQuizzes: (s.totalQuizzes || 0) + 1 }
+              : s
+          ),
+        }));
+        return newId;
+      },
 
-  updateQuiz: (id, updatedFields) =>
-    set((state) => ({
-      quizzes: state.quizzes.map((q) => (q.id === id ? { ...q, ...updatedFields } : q)),
-    })),
+      updateQuiz: (id, updatedFields) =>
+        set((state) => ({
+          quizzes: state.quizzes.map((q) => (q.id === id ? { ...q, ...updatedFields } : q)),
+        })),
 
-  deleteQuiz: (id) =>
-    set((state) => ({
-      quizzes: state.quizzes.filter((q) => q.id !== id),
-    })),
+      deleteQuiz: (id) =>
+        set((state) => {
+          const qz = state.quizzes.find((q) => q.id === id);
+          return {
+            quizzes: state.quizzes.filter((q) => q.id !== id),
+            subjects: qz
+              ? state.subjects.map((s) =>
+                  s.name.toLowerCase() === qz.subject.toLowerCase() && s.totalQuizzes > 0
+                    ? { ...s, totalQuizzes: s.totalQuizzes - 1 }
+                    : s
+                )
+              : state.subjects,
+          };
+        }),
 
-  // Student Actions
-  addStudentScore: (studentId, scoreRecord) =>
-    set((state) => ({
-      students: state.students.map((s) =>
-        s.id === studentId
-          ? {
-              ...s,
-              quizHistory: [scoreRecord, ...s.quizHistory],
-            }
-          : s
-      ),
-    })),
+      // Student Actions
+      addStudentScore: (studentId, scoreRecord) =>
+        set((state) => ({
+          students: state.students.map((s) =>
+            s.id === studentId
+              ? {
+                  ...s,
+                  quizHistory: [scoreRecord, ...s.quizHistory],
+                }
+              : s
+          ),
+        })),
 
-  updateStudentProgress: (studentId, subject, progress) =>
-    set((state) => ({
-      students: state.students.map((s) =>
-        s.id === studentId
-          ? {
-              ...s,
-              moduleProgress: {
-                ...s.moduleProgress,
-                [subject]: progress,
-              },
-            }
-          : s
-      ),
-    })),
-}));
+      updateStudentProgress: (studentId, subject, progress) =>
+        set((state) => ({
+          students: state.students.map((s) =>
+            s.id === studentId
+              ? {
+                  ...s,
+                  moduleProgress: {
+                    ...s.moduleProgress,
+                    [subject]: progress,
+                  },
+                }
+              : s
+          ),
+        })),
+    }),
+    {
+      name: 'sintesa_admin_storage_v3',
+      storage: createJSONStorage(() => localStorage),
+    }
+  )
+);

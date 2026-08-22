@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { X, Plus, Copy, Trash2, CheckCircle2, ChevronDown, RefreshCw } from 'lucide-react';
 import { useAdminStore, QuizQuestion } from '@/lib/admin-store';
+import { useAuth } from '@/lib/auth-context';
 
 function BuatKuisContent() {
   const router = useRouter();
@@ -11,13 +12,28 @@ function BuatKuisContent() {
   const quizId = searchParams.get('id');
 
   const { addQuiz, updateQuiz, quizzes, subjects } = useAdminStore();
+  const { user, role, activeSubjectFilter } = useAuth();
 
   const existingQuiz = quizId ? quizzes.find((q) => q.id === quizId) : null;
   const isAlreadyPublished = existingQuiz ? existingQuiz.published === true : false;
 
-  // Quiz Form Metadata State
+  // Filter subjects based on teacher assignment or superadmin
+  const assignedSubjects = user?.assignedSubjects || [];
+  const availableSubjects =
+    role === 'superadmin'
+      ? subjects.map((s) => s.name)
+      : assignedSubjects.length > 0
+      ? assignedSubjects
+      : ['Informatika'];
+
+  const defaultSubject =
+    activeSubjectFilter && availableSubjects.includes(activeSubjectFilter)
+      ? activeSubjectFilter
+      : availableSubjects[0] || 'Informatika';
+
+  // Quiz Form Metadata State (Clean/Empty defaults)
   const [title, setTitle] = useState(existingQuiz?.title || '');
-  const [subject, setSubject] = useState(existingQuiz?.subject || subjects[0]?.name || 'Informatika');
+  const [subject, setSubject] = useState(existingQuiz?.subject || defaultSubject);
   const [duration, setDuration] = useState(existingQuiz?.duration || '15 Menit');
   const [passScore, setPassScore] = useState<number | ''>(existingQuiz?.passScore ?? 75);
   const [description, setDescription] = useState('');
@@ -29,24 +45,17 @@ function BuatKuisContent() {
   const [deleteTargetIndex, setDeleteTargetIndex] = useState<number | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
 
-  // Questions List State
+  // Questions List State - Default Kosong Murni
   const [questions, setQuestions] = useState<QuizQuestion[]>(
     existingQuiz && existingQuiz.questions && existingQuiz.questions.length > 0
       ? existingQuiz.questions
       : [
           {
             id: 'q-1',
-            text: 'Tipe data mana yang digunakan untuk menyimpan nilai kebenaran (True/False)?',
-            options: ['Integer', 'String', 'Boolean', 'Float'],
-            correctAnswer: 2,
-            explanation: 'Boolean adalah tipe data yang hanya memiliki dua nilai logika yaitu True (Benar) dan False (Salah).',
-          },
-          {
-            id: 'q-2',
-            text: 'Manakah operator yang digunakan untuk mengecek kesamaan nilai dan tipe data dalam JavaScript?',
-            options: ['==', '=', '===', '!='],
-            correctAnswer: 2,
-            explanation: 'Operator strict equality (===) memeriksa kesamaan nilai sekaligus tipe data kedua operan.',
+            text: '',
+            options: ['', '', '', ''],
+            correctAnswer: 0,
+            explanation: '',
           },
         ]
   );
@@ -134,7 +143,7 @@ function BuatKuisContent() {
       {
         id: `q-${Date.now()}`,
         text: '',
-        options: ['Pilihan A', 'Pilihan B', 'Pilihan C', 'Pilihan D'],
+        options: ['', '', '', ''],
         correctAnswer: 0,
         explanation: '',
       },
@@ -253,8 +262,8 @@ function BuatKuisContent() {
           passScore: Number(passScore) || 75,
           questionCount: questions.length,
           questions,
-          teacherId: 't-1',
-          teacherName: 'Pak Joko Supriyanto, S.Kom',
+          teacherId: user?.id || 't-1',
+          teacherName: user?.name || 'Pak Budi Prasetyo, M.Kom.',
           published,
         });
 
@@ -356,7 +365,7 @@ function BuatKuisContent() {
                   />
                 </div>
 
-                {/* Grid 2-Column: Mata Pelajaran (Custom Popover Dropdown matching Tambah Materi) & Estimasi Durasi Pengerjaan */}
+                {/* Grid 2-Column: Mata Pelajaran (Only Assigned Subjects) & Estimasi Durasi Pengerjaan */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Mata Pelajaran (Custom Dropdown Popover matching Tambah Materi level dropdown) */}
                   <div ref={subjectDropdownRef} className="space-y-1.5 relative">
@@ -375,16 +384,16 @@ function BuatKuisContent() {
 
                       {isSubjectDropdownOpen && (
                         <div
-                          className="absolute left-0 top-full mt-1.5 w-full bg-white border border-[#ECECEC] rounded-[12px] p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-0.5"
+                          className="absolute left-0 top-full mt-1.5 w-full bg-white border border-[#ECECEC] rounded-[12px] p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-0.5 shadow-xl"
                         >
-                          {subjects.map((sub) => {
-                            const isSelected = subject === sub.name;
+                          {availableSubjects.map((subName) => {
+                            const isSelected = subject === subName;
                             return (
                               <button
-                                key={sub.id}
+                                key={subName}
                                 type="button"
                                 onClick={() => {
-                                  setSubject(sub.name);
+                                  setSubject(subName);
                                   setIsSubjectDropdownOpen(false);
                                 }}
                                 className={`w-full px-3 py-2.5 rounded-[8px] text-left text-xs font-semibold flex items-center justify-between transition-all cursor-pointer ${
@@ -393,7 +402,7 @@ function BuatKuisContent() {
                                     : 'text-[#2E2D2D] hover:bg-slate-50'
                                 }`}
                               >
-                                <span>{sub.name}</span>
+                                <span>{subName}</span>
                                 {isSelected && <CheckCircle2 className="w-4 h-4 text-[#2563EB]" />}
                               </button>
                             );
@@ -470,10 +479,10 @@ function BuatKuisContent() {
                 {questions.map((q, qIndex) => (
                   <div
                     key={q.id}
-                    className="bg-white border border-[#ECECEC] rounded-[16px] p-6 space-y-5 relative group transition-colors duration-200 hover:border-[#2563EB]/40"
+                    className="bg-white border border-[#ECECEC] rounded-[16px] p-6 space-y-4 relative group transition-colors duration-200 hover:border-[#2563EB]/40"
                   >
-                    {/* Item Header (No Hashtag, e.g. Pertanyaan 1) */}
-                    <div className="flex items-center justify-between pb-3 border-b border-[#F1F5F9]">
+                    {/* Item Header (NO BORDER DIVIDER LINE, Pure Seamless) */}
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="w-7 h-7 rounded-full bg-[#EFF6FF] text-[#2563EB] text-xs font-extrabold flex items-center justify-center">
                           {qIndex + 1}
@@ -734,7 +743,7 @@ function BuatKuisContent() {
       {showPublishModal && (
         <div
           onClick={() => setShowPublishModal(false)}
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans"
+          className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans"
         >
           <div
             onClick={(e) => e.stopPropagation()}
@@ -771,7 +780,7 @@ function BuatKuisContent() {
                 />
               </div>
 
-              {/* 2. Mata Pelajaran (Custom Popover Dropdown) */}
+              {/* 2. Mata Pelajaran (Custom Popover Dropdown - Filtered by Teacher Assignment) */}
               <div ref={modalSubjectDropdownRef} className="space-y-1.5 relative">
                 <label className="text-xs font-bold text-[#2E2D2D] block">
                   Mata Pelajaran <span className="text-rose-500">*</span>
@@ -790,14 +799,14 @@ function BuatKuisContent() {
                     <div
                       className="absolute left-0 top-full mt-1.5 w-full bg-white border border-[#ECECEC] rounded-[12px] p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-0.5 shadow-xl"
                     >
-                      {subjects.map((sub) => {
-                        const isSelected = subject === sub.name;
+                      {availableSubjects.map((subName) => {
+                        const isSelected = subject === subName;
                         return (
                           <button
-                            key={sub.id}
+                            key={subName}
                             type="button"
                             onClick={() => {
-                              setSubject(sub.name);
+                              setSubject(subName);
                               setIsModalSubjectDropdownOpen(false);
                             }}
                             className={`w-full px-3 py-2.5 rounded-[8px] text-left text-xs font-semibold flex items-center justify-between transition-all cursor-pointer ${
@@ -806,7 +815,7 @@ function BuatKuisContent() {
                                 : 'text-[#2E2D2D] hover:bg-slate-50'
                             }`}
                           >
-                            <span>{sub.name}</span>
+                            <span>{subName}</span>
                             {isSelected && <CheckCircle2 className="w-4 h-4 text-[#2563EB]" />}
                           </button>
                         );
@@ -921,7 +930,7 @@ function BuatKuisContent() {
 
       {/* 4. SUCCESS MODAL WITH LOTTIE ANIMATION (Matching Tambah Materi) */}
       {showSuccessModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans">
+        <div className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans">
           <div
             onClick={(e) => e.stopPropagation()}
             className="bg-white w-full max-w-md rounded-[16px] border border-[#ECECEC] p-6 text-center space-y-5 animate-in zoom-in-95 duration-200"
@@ -963,7 +972,7 @@ function BuatKuisContent() {
       {deleteTargetIndex !== null && (
         <div
           onClick={() => setDeleteTargetIndex(null)}
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans"
+          className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans"
         >
           <div
             onClick={(e) => e.stopPropagation()}

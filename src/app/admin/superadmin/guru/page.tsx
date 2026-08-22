@@ -197,14 +197,14 @@ export default function SuperadminGuruPage() {
           setTimeout(() => setIsLoading(false), 200);
         }}
         skeleton={
-          <div className="bg-white rounded-[10px] border border-[#ECECEC] p-6 space-y-4 animate-pulse">
-            <div className="flex justify-between items-center pb-2 border-b border-[#ECECEC]">
+          <div className="bg-slate-100/60 rounded-[12px] p-6 space-y-4 animate-pulse">
+            <div className="flex justify-between items-center pb-2">
               <Skeleton className="h-4 w-32" />
               <Skeleton className="h-4 w-24" />
             </div>
             <div className="space-y-3">
               {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="flex items-center justify-between py-2 border-b border-slate-100">
+                <div key={i} className="flex items-center justify-between py-2.5">
                   <div className="flex items-center gap-3">
                     <Skeleton className="w-10 h-10 rounded-full" />
                     <div className="space-y-1">

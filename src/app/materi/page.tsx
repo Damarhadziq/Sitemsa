@@ -123,21 +123,63 @@ const MODUL_DATA: ModulItem[] = [
   {
     id: 9,
     subject: "Seni Tari",
-    title: "Ragam Gerak Dasar Posisi Kaki & Tangan",
+    title: "Konsep Koreografi dalam Seni Tari",
     level: "Pemula",
     duration: "30 Menit",
-    topics: ["Sikap Agem", "Mendhak", "Gerak Ukel Tangan"],
-    description: "Pelajari posisi anatomis dan nilai estetika awal dalam teknik seni tari tradisional.",
+    topics: ["Koreografi", "Wirama", "Wiraga", "Wirasa", "Rangsang Visual & Auditif", "Elemen Ruang Waktu Tenaga"],
+    description: "Mempelajari pengertian koreografi, unsur pendukung tari (wirama, wiraga, wirasa), sumber rangsang ide, serta elemen utama ruang, waktu, dan tenaga.",
     icon: MusicNote01Icon,
+    isAiRecommended: true,
+    aiReason: "Fondasi Utama Seni Tari",
   },
   {
     id: 10,
     subject: "Seni Tari",
-    title: "Ritme, Irama & Pengiring Musik Tradisional",
+    title: "Koreografi: Eksplorasi Gerak Dalam Seni Tari",
+    level: "Pemula",
+    duration: "35 Menit",
+    topics: ["Eksplorasi Gerak", "Rangsang Kinestetik", "Transformasi Gerak", "Tempo & Level"],
+    description: "Memahami prinsip eksplorasi gerak tari, berbagai sumber rangsangan (visual, audio, kinestetik, gagasan), dan teknik pengembangan gerak dasar.",
+    icon: MusicNote01Icon,
+  },
+  {
+    id: 12,
+    subject: "Seni Tari",
+    title: "Koreografi: Pola Lantai dalam Penunjang Komposisi Tari",
     level: "Menengah",
+    duration: "40 Menit",
+    topics: ["Komposisi Tari", "Pola Lantai", "Level Vertikal", "Prinsip Unity Balance", "Jenis Panggung"],
+    description: "Mempelajari unsur utama komposisi tari, pola lantai, level, arah hadap, prinsip kesatuan & keseimbangan, serta ragam panggung pertunjukan.",
+    icon: MusicNote01Icon,
+  },
+  {
+    id: 13,
+    subject: "Seni Tari",
+    title: "Tata Rias dalam Seni Tari",
+    level: "Pemula",
+    duration: "30 Menit",
+    topics: ["Tata Rias Tari", "Rias Korektif", "Rias Karakter", "Rias Fantasi", "Aplikasi Makeup"],
+    description: "Mempelajari fungsi tata rias panggung, jenis rias (korektif, karakter, fantasi), dan langkah-langkah aplikasi riasan korektif.",
+    icon: MusicNote01Icon,
+  },
+  {
+    id: 14,
+    subject: "Seni Tari",
+    title: "Tata Kostum dan Busana dalam Seni Tari",
+    level: "Pemula",
+    duration: "30 Menit",
+    topics: ["Tata Busana", "Pakaian Tubuh & Kepala", "Aksesori Tari", "Sapit Urang", "Tari Merak"],
+    description: "Mempelajari peranan tata busana dalam mendukung karakter tari, unsur busana, serta praktik memakai kain jarit model sapit urang.",
+    icon: MusicNote01Icon,
+  },
+  {
+    id: 15,
+    subject: "Seni Tari",
+    title: "Properti dalam Seni Tari",
+    level: "Pemula",
     duration: "25 Menit",
-    topics: ["Tempo Gamelan", "Kesesuaian Ketukan", "Dinamika Tari"],
-    description: "Penyelarasan pola gerak tari dengan ritme instrumen musik tradisional.",
+    topics: ["Properti Tari", "Stimulus Gerak", "Fungsi Properti", "Eksplorasi Properti", "Topeng & Kipas"],
+    description: "Memahami pemanfaatan properti sebagai pendukung dan stimulus koreografi gerak, serta ragam fungsi properti dalam karya tari.",
     icon: MusicNote01Icon,
   },
   {
@@ -209,26 +251,108 @@ const getLevelBadgeClass = (level: string) => {
 
 function MateriLandingContent() {
   const searchParams = useSearchParams();
-  const bidangParam = searchParams.get('bidang') || searchParams.get('subject');
+  const kategoriParam = searchParams.get('kategori') || searchParams.get('bidang') || searchParams.get('subject');
 
-  const [selectedCategory, setSelectedCategory] = useState(
-    bidangParam && CATEGORIES.includes(bidangParam) ? bidangParam : "Semua"
-  );
+  const [selectedCategory, setSelectedCategory] = useState<string>("Semua");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [aiRecommendedModules, setAiRecommendedModules] = useState<ModulItem[]>([]);
 
+  // Restore category from URL query or sessionStorage on mount / searchParams change
   useEffect(() => {
-    if (bidangParam && CATEGORIES.includes(bidangParam)) {
-      setSelectedCategory(bidangParam);
+    const savedFilter = typeof window !== 'undefined' ? sessionStorage.getItem('sintesa_materi_filter') : null;
+    const initialCategory =
+      kategoriParam && CATEGORIES.includes(kategoriParam)
+        ? kategoriParam
+        : savedFilter && CATEGORIES.includes(savedFilter)
+        ? savedFilter
+        : "Semua";
+
+    setSelectedCategory(initialCategory);
+  }, [kategoriParam]);
+
+  // Compute 3 Dynamic AI Recommendations (Popular for new users, adaptive based on access history for active users)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const rawViews = localStorage.getItem('sintesa_user_views');
+      const views: { id: number; subject: string; timestamp: number }[] = rawViews ? JSON.parse(rawViews) : [];
+
+      if (views && views.length > 0) {
+        // Frequency analysis of viewed subjects
+        const subjectCounts: Record<string, number> = {};
+        views.forEach((v) => {
+          subjectCounts[v.subject] = (subjectCounts[v.subject] || 0) + 1;
+        });
+
+        // Sort subjects by highest view frequency
+        const sortedSubjects = Object.keys(subjectCounts).sort(
+          (a, b) => subjectCounts[b] - subjectCounts[a]
+        );
+        const topSubject = sortedSubjects[0];
+
+        // Retrieve modules matching the student's top learning path
+        const favoriteSubjectModules = MODUL_DATA.filter((m) => m.subject === topSubject);
+        const otherModules = MODUL_DATA.filter((m) => m.subject !== topSubject);
+
+        const recommendations: ModulItem[] = [];
+
+        // 1. Recommend top relevant modules in user's most active subject
+        favoriteSubjectModules.forEach((m) => {
+          if (recommendations.length < 3) {
+            recommendations.push({
+              ...m,
+              isAiRecommended: true,
+              aiReason: `Minat Belajar ${topSubject}`,
+            });
+          }
+        });
+
+        // 2. Fill any remaining recommendation slot with popular cross-disciplinary modules
+        otherModules.forEach((m) => {
+          if (recommendations.length < 3) {
+            recommendations.push({
+              ...m,
+              isAiRecommended: true,
+              aiReason: "Eksplorasi Populer",
+            });
+          }
+        });
+
+        setAiRecommendedModules(recommendations.slice(0, 3));
+      } else {
+        // Default for new users: Exactly top 3 most popular and highly-viewed modules across disciplines
+        const defaultTop3: ModulItem[] = [
+          {
+            ...MODUL_DATA.find((m) => m.id === 1)!, // Informatika: Variabel, Tipe Data
+            isAiRecommended: true,
+            aiReason: "Paling Banyak Dipelajari",
+          },
+          {
+            ...MODUL_DATA.find((m) => m.id === 9)!, // Seni Tari: Konsep Koreografi
+            isAiRecommended: true,
+            aiReason: "Pilihan & Terpopuler",
+          },
+          {
+            ...MODUL_DATA.find((m) => m.id === 4)!, // Elektronika: Sirkuit Resistor
+            isAiRecommended: true,
+            aiReason: "Terfavorit di Kelas 10",
+          },
+        ];
+        setAiRecommendedModules(defaultTop3.slice(0, 3));
+      }
+    } catch {
+      // Fallback
+      setAiRecommendedModules(MODUL_DATA.filter((m) => [1, 9, 4].includes(m.id)).slice(0, 3));
     }
-  }, [bidangParam]);
+  }, []);
 
   // Simulate skeleton loading on mount
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 300);
+    }, 250);
     return () => clearTimeout(timer);
   }, []);
 
@@ -236,13 +360,18 @@ function MateriLandingContent() {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-    }, 250);
+    }, 200);
   };
 
   const handleCategoryChange = (category: string) => {
     triggerLoading();
     setSelectedCategory(category);
     setCurrentPage(1);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('sintesa_materi_filter', category);
+      const newUrl = category === 'Semua' ? '/materi' : `/materi?kategori=${encodeURIComponent(category)}`;
+      window.history.replaceState(null, '', newUrl);
+    }
   };
 
   const handleSearchChange = (query: string) => {
@@ -269,9 +398,6 @@ function MateriLandingContent() {
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
-
-  // AI Recommended items (3 modules in 1 frame)
-  const aiRecommendedModules = MODUL_DATA.filter((m) => m.isAiRecommended);
 
   return (
     <div className="min-h-screen bg-white flex flex-col font-sans">
@@ -343,7 +469,7 @@ function MateriLandingContent() {
                   {(searchQuery.trim() ? filteredModul.slice(0, 4) : MODUL_DATA.slice(0, 4)).map((item) => (
                     <Link
                       key={item.id}
-                      href={`/materi/${item.id}`}
+                      href={`/materi/${item.id}?from=${encodeURIComponent(selectedCategory)}`}
                       className="block p-2.5 rounded-[8px] hover:bg-[#F6F5FF] border border-transparent hover:border-[#2563EB]/30 transition-all duration-200 group"
                     >
                       <div className="flex items-center justify-between gap-2">
@@ -406,7 +532,7 @@ function MateriLandingContent() {
           </div>
         </section>
 
-        {/* AI Recommendations Interactive Frame */}
+        {/* AI Recommendations Interactive Frame (Exactly 3 Items) */}
         {selectedCategory === "Semua" && !searchQuery && (
           <section className="mb-10 bg-gradient-to-br from-[#FAFAFF] via-[#F4EFFF] to-[#EBE4FF] rounded-[14px] p-5 lg:p-6 border border-[#E0D7FF] relative overflow-hidden space-y-4 transition-all duration-300">
             {/* Ambient Background Glow */}
@@ -420,12 +546,12 @@ function MateriLandingContent() {
               </span>
             </div>
 
-            {/* 3 AI Recommended Material Cards */}
+            {/* Exactly 3 AI Recommended Material Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 z-10 relative">
-              {aiRecommendedModules.map((item) => (
+              {aiRecommendedModules.slice(0, 3).map((item) => (
                 <Link
                   key={item.id}
-                  href={`/materi/${item.id}`}
+                  href={`/materi/${item.id}?from=${encodeURIComponent(selectedCategory)}`}
                   className="bg-white/90 backdrop-blur-md border border-[#E0D7FF] rounded-[10px] p-4 flex flex-col justify-between transition-all duration-300 group hover:border-[#2563EB]/50 hover:bg-white"
                 >
                   <div className="space-y-2.5">
@@ -457,7 +583,7 @@ function MateriLandingContent() {
           </section>
         )}
 
-        {/* Direct Individual Materials Grid List - Cleaned Cards without Divider or Bottom Buttons */}
+        {/* Direct Individual Materials Grid List */}
         <section className="space-y-5">
           <div className="flex items-center justify-between">
             <h2 className="text-base md:text-lg font-semibold text-[#2E2D2D]">
@@ -468,21 +594,21 @@ function MateriLandingContent() {
             </span>
           </div>
 
-          {/* Skeleton Loading State */}
+          {/* Skeleton Loading State (Borderless Cards) */}
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {[1, 2, 3, 4, 5, 6].map((n) => (
                 <div
                   key={n}
-                  className="bg-[#FAFAFA] border border-[#ECECEC] rounded-[10px] p-5 h-[180px] flex flex-col justify-between animate-pulse"
+                  className="bg-slate-100/70 rounded-[12px] p-5 h-[180px] flex flex-col justify-between animate-pulse"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <div className="w-24 h-4 bg-gray-200 rounded-[4px]" />
-                      <div className="w-14 h-4 bg-gray-200 rounded-[4px]" />
+                      <div className="w-24 h-4 bg-slate-200/80 rounded-[4px]" />
+                      <div className="w-14 h-4 bg-slate-200/80 rounded-[4px]" />
                     </div>
-                    <div className="w-3/4 h-5 bg-gray-200 rounded-[4px]" />
-                    <div className="w-full h-8 bg-gray-200 rounded-[4px]" />
+                    <div className="w-3/4 h-5 bg-slate-200/80 rounded-[4px]" />
+                    <div className="w-full h-8 bg-slate-200/80 rounded-[4px]" />
                   </div>
                 </div>
               ))}
@@ -501,7 +627,7 @@ function MateriLandingContent() {
               {paginatedModul.map((modul) => (
                 <Link
                   key={modul.id}
-                  href={`/materi/${modul.id}`}
+                  href={`/materi/${modul.id}?from=${encodeURIComponent(selectedCategory)}`}
                   className="bg-white border border-[#ECECEC] rounded-[10px] p-5 flex flex-col justify-between hover:bg-[#F6F5FF] hover:border-[#2563EB]/40 transition-all duration-300 ease-out group cursor-pointer"
                 >
                   <div className="space-y-3">

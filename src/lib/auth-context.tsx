@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { authClientService } from '@/services/client/auth.client';
 
 export type UserRole = 'superadmin' | 'guru' | 'siswa' | null;
 
@@ -62,7 +63,43 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     role: 'guru',
     nip: '19881115 201201 1 002',
     avatar: 'https://i.pravatar.cc/150?img=11',
-    assignedSubjects: ['Seni & Desain'],
+    assignedSubjects: ['Seni Tari', 'Seni & Desain'],
+  },
+  'tari.guru@sintesa.id': {
+    id: 't-5',
+    name: 'Ibu Ni Wayan Sri, S.Sn.',
+    email: 'tari.guru@sintesa.id',
+    role: 'guru',
+    nip: '19920815 201801 2 006',
+    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80',
+    assignedSubjects: ['Seni Tari', 'Seni & Desain'],
+  },
+  'gurutari@sitemsa.sch.id': {
+    id: 't-5',
+    name: 'Ibu Ni Wayan Sri, S.Sn.',
+    email: 'tari.guru@sintesa.id',
+    role: 'guru',
+    nip: '19920815 201801 2 006',
+    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80',
+    assignedSubjects: ['Seni Tari', 'Seni & Desain'],
+  },
+  'guru.tari@sintesa.id': {
+    id: 't-5',
+    name: 'Ibu Ni Wayan Sri, S.Sn.',
+    email: 'tari.guru@sintesa.id',
+    role: 'guru',
+    nip: '19920815 201801 2 006',
+    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80',
+    assignedSubjects: ['Seni Tari', 'Seni & Desain'],
+  },
+  'tari@sintesa.id': {
+    id: 't-5',
+    name: 'Ibu Ni Wayan Sri, S.Sn.',
+    email: 'tari.guru@sintesa.id',
+    role: 'guru',
+    nip: '19920815 201801 2 006',
+    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80',
+    assignedSubjects: ['Seni Tari', 'Seni & Desain'],
   },
   'budi.guru@sintesa.id': {
     id: 't-1',
@@ -209,8 +246,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push('/');
   };
 
-  const loginWithCredentials = (email: string): boolean => {
+  const loginWithCredentials = (email: string, password?: string): boolean => {
     const cleanEmail = email.trim().toLowerCase();
+    
+    // Asynchronously sync with backend endpoint
+    authClientService.login({ email: cleanEmail, password }).catch((err) => {
+      console.warn('Backend login sync warning:', err);
+    });
+
     if (cleanEmail === 'admin@sitemsa.sch.id' || cleanEmail === 'admin@sintesa.id' || cleanEmail === 'admin') {
       loginAsSuperadmin();
       return true;
@@ -218,6 +261,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (TEACHER_USERS[cleanEmail]) {
       loginAsTeacher(cleanEmail);
+      return true;
+    }
+
+    if (cleanEmail.includes('tari')) {
+      loginAsTeacher('tari.guru@sintesa.id');
       return true;
     }
 
@@ -237,6 +285,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     const currentRole = user?.role;
+    authClientService.logout().catch(() => {});
     saveSession(null);
 
     if (currentRole === 'superadmin' || currentRole === 'guru') {

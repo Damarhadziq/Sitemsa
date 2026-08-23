@@ -80,9 +80,17 @@ export function AdminSidebar() {
   const [isMateriExpanded, setIsMateriExpanded] = useState(true);
   const [isKuisExpanded, setIsKuisExpanded] = useState(true);
 
-  // Filter modules & quizzes for active subject
-  const currentModules = modules.filter((m) => m.subject === currentSubject);
-  const currentQuizzes = quizzes.filter((q) => q.subject === currentSubject);
+  // Filter modules & quizzes for active subject & logged in teacher
+  const currentModules = modules.filter(
+    (m) =>
+      m.subject === currentSubject &&
+      (!user || user.role === 'superadmin' || m.teacherId === user.id || m.teacherName === user.name)
+  );
+  const currentQuizzes = quizzes.filter(
+    (q) =>
+      q.subject === currentSubject &&
+      (!user || user.role === 'superadmin' || q.teacherId === user.id || q.teacherName === user.name)
+  );
 
   const superadminNav = [
     { name: 'Dashboard', href: '/admin/superadmin', icon: LayoutDashboard },

@@ -153,8 +153,16 @@ export default function AdminGuruPelajaranPage() {
   const assignedSubjects = user?.assignedSubjects || ['Informatika'];
   const currentSubject = activeSubjectFilter || assignedSubjects[0] || 'Informatika';
 
-  const subjectModules = modules.filter((m) => m.subject === currentSubject);
-  const subjectQuizzes = quizzes.filter((q) => q.subject === currentSubject);
+  const subjectModules = modules.filter(
+    (m) =>
+      m.subject === currentSubject &&
+      (!user || user.role === 'superadmin' || m.teacherId === user.id || m.teacherName === user.name)
+  );
+  const subjectQuizzes = quizzes.filter(
+    (q) =>
+      q.subject === currentSubject &&
+      (!user || user.role === 'superadmin' || q.teacherId === user.id || q.teacherName === user.name)
+  );
 
   // Selected item ID from query param (null = Landing Overview mode)
   const selectedItemId = itemIdParam || null;

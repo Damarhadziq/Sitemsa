@@ -23,7 +23,11 @@ export default function AdminGuruMonitoringPage() {
   const assignedSubjects = user?.assignedSubjects || ['Informatika'];
   const currentSubject = activeSubjectFilter || assignedSubjects[0] || 'Informatika';
 
-  const subjectModules = modules.filter((m) => m.subject === currentSubject);
+  const subjectModules = modules.filter(
+    (m) =>
+      m.subject === currentSubject &&
+      (!user || user.role === 'superadmin' || m.teacherId === user.id || m.teacherName === user.name)
+  );
   const totalSubjectModules = subjectModules.length || 3;
 
   const [searchTerm, setSearchTerm] = useState('');

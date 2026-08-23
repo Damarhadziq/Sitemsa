@@ -299,11 +299,16 @@ export default function DocumentationPage() {
     };
   }, [mobileSelectedId]);
 
+  // Scroll to top immediately when switching or opening guide/FAQ
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [mobileSelectedId, desktopActiveArticleId]);
+
   return (
     <div className="min-h-screen bg-white text-[#2E2D2D] flex flex-col font-sans">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-16 w-full flex-1 space-y-6">
+      <main className="max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-28 sm:pb-32 md:pb-16 w-full flex-1 space-y-6">
         {/* DESKTOP VIEW (100% ORIGINAL 2-COLUMN UNTOUCHED WITH PAGINATION) */}
         <div className="hidden lg:block space-y-6">
           <section className="space-y-4 max-w-3xl">
@@ -610,7 +615,7 @@ export default function DocumentationPage() {
                     <div
                       key={art.id}
                       onClick={() => setMobileSelectedId(art.id)}
-                      className="p-5 rounded-[16px] bg-white border border-[#ECECEC] active:border-[#2563EB] active:bg-slate-50 transition-all duration-200 cursor-pointer space-y-2.5"
+                      className="p-3 rounded-[14px] bg-white border border-[#ECECEC] active:border-[#2563EB] active:bg-slate-50 transition-all duration-200 cursor-pointer space-y-2"
                     >
                       <span className="inline-block text-[11px] font-semibold text-[#2563EB] bg-[#E8E7FF] px-2.5 py-0.5 rounded-[4px]">
                         {art.category}
@@ -639,7 +644,7 @@ export default function DocumentationPage() {
               <div className="pt-2">
                 <div
                   onClick={() => setMobileSelectedId("faq-section")}
-                  className="p-5 rounded-[16px] bg-gradient-to-r from-blue-50/80 via-indigo-50/50 to-white border border-blue-100 hover:border-[#2563EB] active:border-[#2563EB] transition-all duration-200 cursor-pointer flex items-center justify-between gap-4 group"
+                  className="p-3 rounded-[14px] bg-gradient-to-r from-blue-50/80 via-indigo-50/50 to-white border border-blue-100 hover:border-[#2563EB] active:border-[#2563EB] transition-all duration-200 cursor-pointer flex items-center justify-between gap-4 group"
                 >
                   <div>
                     <h3 className="text-sm font-bold text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors">

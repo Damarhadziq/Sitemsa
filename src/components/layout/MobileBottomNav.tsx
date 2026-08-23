@@ -61,7 +61,7 @@ export function MobileBottomNav() {
   return (
     <nav
       id="mobile-bottom-nav"
-      className="mobile-bottom-nav md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#ECECEC] px-2 py-3 shadow-none"
+      className="mobile-bottom-nav md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#ECECEC] px-2 pt-2.5 pb-5 sm:pb-3 shadow-none"
     >
       <div className="grid grid-cols-5 items-center justify-items-center max-w-md mx-auto">
         {NAV_ITEMS.map((item) => {

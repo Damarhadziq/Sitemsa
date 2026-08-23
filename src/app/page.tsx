@@ -22,7 +22,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white flex flex-col font-sans">
       <Navbar />
-      <main className="max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-12 w-full flex-1">
+      <main className="max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-8 md:pb-12 w-full flex-1">
         {isLoading ? (
           <div className="space-y-8 animate-pulse">
             {/* Hero Skeleton */}

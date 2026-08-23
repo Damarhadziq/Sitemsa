@@ -4,7 +4,8 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sprout, Zap, Trophy } from "lucide-react";
+import { MateriSkeleton } from "./loading";
 import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react";
 import {
   Search01Icon,
@@ -18,6 +19,44 @@ import {
   Car01Icon,
   Dumbbell01Icon,
 } from "@hugeicons/core-free-icons";
+
+export const getLevelBadgeClass = (level: string) => {
+  switch (level) {
+    case "Pemula":
+      return "bg-emerald-50 text-emerald-700 border border-emerald-200/60 font-semibold";
+    case "Menengah":
+      return "bg-amber-50 text-amber-700 border border-amber-200/60 font-semibold";
+    case "Mahir":
+      return "bg-purple-50 text-purple-700 border border-purple-200/60 font-semibold";
+    default:
+      return "bg-gray-50 text-gray-700 border border-gray-200 font-semibold";
+  }
+};
+
+export function LevelBadge({ level }: { level: string }) {
+  if (level === "Pemula") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[4px] text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+        <Sprout className="w-3 h-3 text-emerald-600 shrink-0" />
+        <span>Pemula</span>
+      </span>
+    );
+  }
+  if (level === "Menengah") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[4px] text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/80">
+        <Zap className="w-3 h-3 text-amber-600 shrink-0" />
+        <span>Menengah</span>
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[4px] text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200/80">
+      <Trophy className="w-3 h-3 text-purple-600 shrink-0" />
+      <span>{level || "Mahir"}</span>
+    </span>
+  );
+}
 
 interface ModulItem {
   id: number;
@@ -295,19 +334,6 @@ const normalizeCategory = (cat?: string | null): string => {
 
 const ITEMS_PER_PAGE = 6;
 
-const getLevelBadgeClass = (level: string) => {
-  switch (level) {
-    case "Pemula":
-      return "bg-emerald-50 text-emerald-700 border border-emerald-200/60 font-semibold";
-    case "Menengah":
-      return "bg-amber-50 text-amber-700 border border-amber-200/60 font-semibold";
-    case "Mahir":
-      return "bg-purple-50 text-purple-700 border border-purple-200/60 font-semibold";
-    default:
-      return "bg-gray-50 text-gray-700 border border-gray-200 font-semibold";
-  }
-};
-
 function MateriLandingContent() {
   const searchParams = useSearchParams();
   const kategoriParam = searchParams.get('kategori') || searchParams.get('bidang') || searchParams.get('subject');
@@ -315,7 +341,7 @@ function MateriLandingContent() {
   const [selectedCategory, setSelectedCategory] = useState<string>("Semua");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [aiRecommendedModules, setAiRecommendedModules] = useState<ModulItem[]>([]);
 
   // Set category only if explicitly specified in URL query (e.g. from home page card click), otherwise default to "Semua"
@@ -465,7 +491,7 @@ function MateriLandingContent() {
     <div className="min-h-screen bg-white flex flex-col font-sans">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-16 w-full flex-1">
+      <main className="max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-28 sm:pb-32 md:pb-16 w-full flex-1">
         {/* Header Hero Section */}
         <section className="mb-6 text-center max-w-3xl mx-auto space-y-2 md:space-y-3">
           <h1 className="text-[28px] sm:text-3xl md:text-4xl font-bold text-[#2E2D2D] tracking-tight leading-tight max-w-[290px] sm:max-w-xs md:max-w-none mx-auto">
@@ -662,7 +688,7 @@ function MateriLandingContent() {
         )}
 
         {/* Direct Individual Materials Grid List */}
-        <section className="space-y-5">
+        <section id="daftar-materi-section" className="space-y-5">
           <div className="flex items-center justify-between">
             <h2 className="text-base md:text-lg font-semibold text-[#2E2D2D]">
               <span className="md:hidden">
@@ -683,7 +709,7 @@ function MateriLandingContent() {
               {[1, 2, 3, 4, 5, 6].map((n) => (
                 <div
                   key={n}
-                  className="bg-slate-100/70 rounded-[12px] p-5 h-[180px] flex flex-col justify-between animate-pulse"
+                  className="bg-slate-100/70 rounded-[12px] p-4 md:p-5 h-[180px] flex flex-col justify-between animate-pulse"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
@@ -711,10 +737,10 @@ function MateriLandingContent() {
                 <Link
                   key={modul.id}
                   href={`/materi/${modul.id}?from=${encodeURIComponent(selectedCategory)}`}
-                  className="bg-white border border-[#ECECEC] rounded-[10px] p-5 flex flex-col justify-between hover:bg-[#F6F5FF] hover:border-[#2563EB]/40 transition-all duration-300 ease-out group cursor-pointer"
+                  className="bg-white border border-[#ECECEC] rounded-[10px] p-3 md:p-5 flex flex-col justify-between hover:bg-[#F6F5FF] hover:border-[#2563EB]/40 transition-all duration-300 ease-out group cursor-pointer"
                 >
                   <div className="space-y-3">
-                    {/* Header Top: Icon + Subject + Color-Coded Level Badge */}
+                    {/* Header Top: Icon + Subject + Color-Coded Level Badge with Icon */}
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-[6px] bg-[#F4EFFF] flex items-center justify-center text-[#2563EB] shrink-0 group-hover:bg-[#2563EB] group-hover:text-white transition-colors duration-300">
@@ -725,10 +751,8 @@ function MateriLandingContent() {
                         </span>
                       </div>
 
-                      {/* Color-Coded Level Badge */}
-                      <span className={`px-2.5 py-0.5 rounded-[4px] text-[11px] ${getLevelBadgeClass(modul.level)}`}>
-                        {modul.level}
-                      </span>
+                      {/* Level Badge with distinct Icon */}
+                      <LevelBadge level={modul.level} />
                     </div>
 
                     {/* Title (Single Line with Ellipsis) */}
@@ -750,7 +774,7 @@ function MateriLandingContent() {
                         {modul.topics.slice(0, 4).map((topic, idx) => (
                           <span
                             key={idx}
-                            className="bg-[#FAFAFA] border border-[#ECECEC] text-[#4A4A4A] px-2.5 py-1 rounded-[6px] text-[11px] font-medium"
+                            className="bg-[#FAFAFA] border border-[#ECECEC] text-[#4A4A4A] px-2 py-0.5 md:px-2.5 md:py-1 rounded-[6px] text-[10px] md:text-[11px] font-medium"
                           >
                             {topic}
                           </span>
@@ -763,13 +787,19 @@ function MateriLandingContent() {
             </div>
           )}
 
-          {/* Interactive Pagination (Global Style: 6 items per page) */}
+          {/* Interactive Pagination (Loads exactly 6 items per page) */}
           {!isLoading && totalPages > 1 && (
             <div className="flex items-center justify-center gap-2 pt-6 pb-2">
               {/* Frameless Previous Arrow */}
               <button
                 type="button"
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                onClick={() => {
+                  setCurrentPage((prev) => {
+                    const newPage = Math.max(prev - 1, 1);
+                    document.getElementById("daftar-materi-section")?.scrollIntoView({ behavior: "smooth" });
+                    return newPage;
+                  });
+                }}
                 disabled={currentPage === 1}
                 className="w-8 h-8 rounded-full bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-gray-100 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
                 aria-label="Halaman Sebelumnya"
@@ -784,7 +814,10 @@ function MateriLandingContent() {
                   <button
                     key={page}
                     type="button"
-                    onClick={() => setCurrentPage(page)}
+                    onClick={() => {
+                      setCurrentPage(page);
+                      document.getElementById("daftar-materi-section")?.scrollIntoView({ behavior: "smooth" });
+                    }}
                     className={`w-8 h-8 rounded-full text-xs font-semibold transition-all flex items-center justify-center cursor-pointer ${
                       isActive
                         ? "bg-[#2563EB] text-white shadow-2xs"
@@ -799,7 +832,13 @@ function MateriLandingContent() {
               {/* Frameless Next Arrow */}
               <button
                 type="button"
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                onClick={() => {
+                  setCurrentPage((prev) => {
+                    const newPage = Math.min(prev + 1, totalPages);
+                    document.getElementById("daftar-materi-section")?.scrollIntoView({ behavior: "smooth" });
+                    return newPage;
+                  });
+                }}
                 disabled={currentPage === totalPages}
                 className="w-8 h-8 rounded-full bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-gray-100 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
                 aria-label="Halaman Selanjutnya"
@@ -816,7 +855,7 @@ function MateriLandingContent() {
 
 export default function MateriLandingPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<MateriSkeleton />}>
       <MateriLandingContent />
     </Suspense>
   );

@@ -339,8 +339,13 @@ function TipsBelajarContent() {
     };
   }, [mobileActiveArticle]);
 
+  // Scroll to top immediately when switching or opening tips article
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [mobileSelectedId, desktopSelectedId]);
+
   return (
-    <main className="max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-16 w-full flex-1 space-y-6">
+    <main className="max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-28 sm:pb-32 md:pb-16 w-full flex-1 space-y-6">
       {/* DESKTOP VIEW (100% ORIGINAL 2-COLUMN UNTOUCHED WITH PAGINATION) */}
       <div className="hidden lg:block space-y-6">
         <section className="space-y-4 max-w-3xl">
@@ -498,7 +503,7 @@ function TipsBelajarContent() {
                   <div
                     key={art.id}
                     onClick={() => setMobileSelectedId(art.id)}
-                    className="p-5 rounded-[16px] bg-white border border-[#ECECEC] active:border-[#2563EB] active:bg-slate-50 transition-all duration-200 cursor-pointer space-y-2.5"
+                    className="p-3 rounded-[14px] bg-white border border-[#ECECEC] active:border-[#2563EB] active:bg-slate-50 transition-all duration-200 cursor-pointer space-y-2"
                   >
                     <span className="inline-block text-[11px] font-semibold text-[#2563EB] bg-[#E8E7FF] px-2.5 py-0.5 rounded-[4px]">
                       {art.author}

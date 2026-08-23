@@ -4,7 +4,7 @@ import { useState, useEffect, use, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Sprout, Zap, Trophy } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { useAdminStore } from "@/lib/admin-store";
 import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react";
@@ -2038,13 +2038,18 @@ export default function MaterialDetailPage({
   const initialSectionId = material.videoSection ? "video-tutorial" : (material.contentSections[0]?.id || "pengantar");
   const [activeSection, setActiveSection] = useState(initialSectionId);
   const [copiedCode, setCopiedCode] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [activeQuizModal, setActiveQuizModal] = useState<"none" | "barcode" | "link_confirm">("none");
   const [isTocOpen, setIsTocOpen] = useState(false);
 
   // Compute smart back URL preserving category filter
   const backUrl = fromParam && fromParam !== "Semua" ? `/materi?kategori=${encodeURIComponent(fromParam)}` : "/materi";
+
+  // Scroll to top immediately when opening material
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [id]);
 
   // Record material view for AI recommendation intelligence
   useEffect(() => {
@@ -2103,13 +2108,6 @@ export default function MaterialDetailPage({
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 250);
-    return () => clearTimeout(timer);
-  }, [id]);
 
   // Scroll Sync Active Section Observer
   useEffect(() => {
@@ -2220,9 +2218,24 @@ export default function MaterialDetailPage({
                   <span className="bg-[#E8E7FF] text-[#0400F4] px-2.5 py-1 rounded-[4px] text-xs font-semibold">
                     {material.subject}
                   </span>
-                  <span className={`px-2.5 py-1 rounded-[4px] text-xs ${getLevelBadgeClass(material.level)}`}>
-                    {material.level}
-                  </span>
+                  {material.level === "Pemula" && (
+                    <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200/80 px-2.5 py-1 rounded-[4px] text-xs font-semibold">
+                      <Sprout className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Pemula</span>
+                    </span>
+                  )}
+                  {material.level === "Menengah" && (
+                    <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200/80 px-2.5 py-1 rounded-[4px] text-xs font-semibold">
+                      <Zap className="w-3.5 h-3.5 text-amber-600" />
+                      <span>Menengah</span>
+                    </span>
+                  )}
+                  {material.level !== "Pemula" && material.level !== "Menengah" && (
+                    <span className="inline-flex items-center gap-1 bg-purple-50 text-purple-700 border border-purple-200/80 px-2.5 py-1 rounded-[4px] text-xs font-semibold">
+                      <Trophy className="w-3.5 h-3.5 text-purple-600" />
+                      <span>{material.level || "Mahir"}</span>
+                    </span>
+                  )}
                 </div>
 
                 <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-[#2E2D2D] leading-tight tracking-tight max-w-2xl">
@@ -2614,18 +2627,11 @@ export default function MaterialDetailPage({
           }`}
         >
           {/* Header without border divider */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center">
             <h4 className="text-xs font-bold text-[#2E2D2D] flex items-center gap-1.5">
               <HugeiconsIcon icon={Task01Icon} size={16} className="text-[#2563EB]" />
               <span>Daftar Isi Pembahasan</span>
             </h4>
-            <button
-              type="button"
-              onClick={() => setIsTocOpen(false)}
-              className="w-6 h-6 rounded-full bg-gray-50 border border-[#ECECEC] text-[#737373] hover:text-[#2563EB] hover:bg-[#F6F5FF] flex items-center justify-center transition-colors cursor-pointer"
-            >
-              <HugeiconsIcon icon={Cancel01Icon} size={12} />
-            </button>
           </div>
 
           {/* Clean list without numbers */}

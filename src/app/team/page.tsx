@@ -128,7 +128,7 @@ export default function TeamPage() {
     <div className="min-h-screen bg-white flex flex-col font-sans">
       <Navbar />
 
-      <main className="flex-1 max-w-7xl mx-auto px-6 lg:px-12 pt-28 pb-20 w-full">
+      <main className="flex-1 max-w-7xl mx-auto px-6 lg:px-12 pt-28 pb-8 md:pb-20 w-full">
         {/* HEADER SECTION */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-50 via-indigo-50/70 to-blue-50/90 border border-blue-100/90 text-[#2563EB] text-xs font-bold mb-5 shadow-2xs">
@@ -211,8 +211,8 @@ export default function TeamPage() {
             className="bg-white rounded-t-[28px] sm:rounded-[24px] border-t sm:border border-[#ECECEC] max-w-lg w-full p-6 sm:p-7 shadow-2xl relative overflow-y-auto max-h-[85vh] sm:max-h-[90vh] space-y-5 animate-in slide-in-from-bottom sm:zoom-in-95 duration-250"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Mobile Drag Handle */}
-            <div className="w-12 h-1.5 rounded-full bg-slate-200 mx-auto sm:hidden -mt-1 mb-1" />
+            {/* Mobile Drag Handle (4px height) */}
+            <div className="w-10 h-1 rounded-full bg-slate-200 mx-auto sm:hidden -mt-1 mb-2" />
 
             {/* Close Button (Hidden on Mobile Bottom Sheet) */}
             <button

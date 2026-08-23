@@ -607,7 +607,7 @@ function MateriLandingContent() {
 
         {/* AI Recommendations Interactive Frame (Exactly 3 Items) */}
         {selectedCategory === "Semua" && !searchQuery && (
-          <section className="mb-10 bg-gradient-to-br from-[#FAFAFF] via-[#F4EFFF] to-[#EBE4FF] rounded-[14px] p-5 lg:p-6 border border-[#E0D7FF] relative overflow-hidden space-y-4 transition-all duration-300">
+          <section className="mb-10 bg-gradient-to-br from-[#FAFAFF] via-[#F4EFFF] to-[#EBE4FF] rounded-[14px] p-3 md:p-5 lg:p-6 border border-[#E0D7FF] relative overflow-hidden space-y-3 md:space-y-4 transition-all duration-300">
             {/* Ambient Background Glow */}
             <div className="absolute -right-12 -top-12 w-56 h-56 bg-[#2563EB]/10 rounded-full blur-2xl pointer-events-none" />
 
@@ -619,43 +619,45 @@ function MateriLandingContent() {
               </span>
             </div>
 
-            {/* Exactly 3 AI Recommended Material Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 z-10 relative">
-              {aiRecommendedModules.slice(0, 3).map((item) => (
-                <Link
-                  key={item.id}
-                  href={`/materi/${item.id}?from=${encodeURIComponent(selectedCategory)}`}
-                  className="bg-white/90 backdrop-blur-md border border-[#E0D7FF] rounded-[10px] p-4 flex flex-col justify-between transition-all duration-300 group hover:border-[#2563EB]/50 hover:bg-white"
-                >
-                  <div className="space-y-2.5">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="bg-[#E8E7FF] text-[#2563EB] px-2 py-0.5 rounded-[4px] text-[11px] font-semibold">
-                        {item.subject}
-                      </span>
-                      <span className="text-[11px] font-medium text-[#737373]">
-                        {item.aiReason}
-                      </span>
+              {/* Exactly 3 AI Recommended Material Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 z-10 relative">
+                {aiRecommendedModules.slice(0, 3).map((item) => (
+                  <Link
+                    key={item.id}
+                    href={`/materi/${item.id}?from=${encodeURIComponent(selectedCategory)}`}
+                    className="bg-white/90 backdrop-blur-md border border-[#E0D7FF] rounded-[10px] p-3 md:p-4 flex flex-col justify-between transition-all duration-300 group hover:border-[#2563EB]/50 hover:bg-white"
+                  >
+                    <div className="space-y-1.5 md:space-y-2.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="bg-[#E8E7FF] text-[#2563EB] px-2 py-0.5 rounded-[4px] text-[11px] font-semibold">
+                          {item.subject}
+                        </span>
+                        {item.aiReason && (
+                          <span className="hidden md:inline text-[11px] font-medium text-[#737373]">
+                            {item.aiReason}
+                          </span>
+                        )}
+                      </div>
+
+                      <h3
+                        title={item.title}
+                        className="text-xs md:text-sm font-semibold text-[#2E2D2D] leading-snug group-hover:text-[#2563EB] transition-colors duration-200 truncate"
+                      >
+                        {item.title}
+                      </h3>
+
+                      <p className="text-[11px] text-[#737373] line-clamp-1 md:line-clamp-2 leading-relaxed">
+                        {item.description}
+                      </p>
                     </div>
 
-                    <h3
-                      title={item.title}
-                      className="text-xs md:text-sm font-semibold text-[#2E2D2D] leading-snug group-hover:text-[#2563EB] transition-colors duration-200 truncate"
-                    >
-                      {item.title}
-                    </h3>
-
-                    <p className="text-[11px] text-[#737373] line-clamp-2 leading-relaxed">
-                      {item.description}
-                    </p>
-                  </div>
-
-                  <div className="pt-3 mt-3 flex items-center justify-between text-[11px] font-medium text-[#2563EB]">
-                    <span>Lihat Materi</span>
-                    <HugeiconsIcon icon={ArrowRight01Icon} size={12} className="group-hover:translate-x-1 transition-transform duration-200" />
-                  </div>
-                </Link>
-              ))}
-            </div>
+                    <div className="hidden md:flex pt-3 mt-3 items-center justify-between text-[11px] font-medium text-[#2563EB]">
+                      <span>Lihat Materi</span>
+                      <HugeiconsIcon icon={ArrowRight01Icon} size={12} className="group-hover:translate-x-1 transition-transform duration-200" />
+                    </div>
+                  </Link>
+                ))}
+              </div>
           </section>
         )}
 

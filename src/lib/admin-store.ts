@@ -1319,7 +1319,7 @@ export const useAdminStore = create<AdminStoreState>()(
         })),
     }),
     {
-      name: 'sintesa_admin_storage_v4',
+      name: 'sintesa_admin_storage_v6',
       storage: createJSONStorage(() => localStorage),
     }
   )

@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { ProgressService } from "@/services/progress.service";
+import { addUserNotification } from "@/services/notification.service";
 
 // Web Audio API Synthesizer (Zero-dependency SFX)
 function playQuizSound(type: "pop" | "correct" | "wrong") {
@@ -257,12 +258,20 @@ export function QuestionArea() {
         ProgressService.recordQuizAttempt('std-1', {
           quizId: 'quiz-active',
           quizTitle: 'Kuis Evaluasi Sitemsa',
-          subject: 'Seni Tari',
+          subject: 'Informatika',
           score: finalScorePercent,
           maxScore: 100,
           status: finalScorePercent >= 70 ? 'Lulus' : 'Perlu Bimbingan',
         });
-        ProgressService.updateProgress('std-1', 'Seni Tari', 100);
+        ProgressService.updateProgress('std-1', 'Informatika', 100);
+
+        // Dispatch live dynamic notification
+        addUserNotification({
+          type: 'nilai',
+          title: 'Nilai Kuis Berhasil Tercatat',
+          message: `Selamat! Kamu menyelesaikan Kuis Evaluasi Sitemsa dengan skor ${finalScorePercent}/100.`,
+          linkUrl: '/materi/1',
+        });
       } catch (e) {
         console.error('Failed to auto-record quiz progress', e);
       }

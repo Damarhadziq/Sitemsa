@@ -23,9 +23,19 @@ import {
 } from "@hugeicons/core-free-icons";
 
 import { UserProfileModal, ProfileTab } from "@/components/profile/UserProfileModal";
-import { NotificationModal, NotificationItem } from "@/components/layout/NotificationModal";
+import { NotificationModal } from "@/components/layout/NotificationModal";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { useAuth } from "@/lib/auth-context";
+import {
+  getStoredNotifications,
+  markAllNotificationsRead,
+  AppNotification,
+} from "@/services/notification.service";
+import {
+  getStudentProfile,
+  DEFAULT_DUMMY_STUDENT,
+  StudentProfile,
+} from "@/services/student-profile.service";
 
 interface QuickSearchResult {
   id: number;
@@ -34,45 +44,6 @@ interface QuickSearchResult {
   level: string;
   icon: IconSvgElement;
 }
-
-const INITIAL_NAV_NOTIFS: NotificationItem[] = [
-  {
-    id: "n1",
-    type: "materi",
-    title: "Modul Praktik Baru Rilis",
-    message: "Pak Herman Susilo menambahkan modul baru 'Analisis Sirkuit Seri & Paralel Resistor'.",
-    time: "10 menit lalu",
-    isRead: false,
-    linkUrl: "/materi/2",
-  },
-  {
-    id: "n2",
-    type: "nilai",
-    title: "Nilai Kuis Berhasil Tercatat",
-    message: "Selamat! Kuis 'Operasi Logika & Tabel Kebenaran' milikmu mendapat skor 100/100.",
-    time: "1 jam lalu",
-    isRead: false,
-    linkUrl: "/materi/1",
-  },
-  {
-    id: "n3",
-    type: "tips",
-    title: "Tips Belajar Terbaru",
-    message: "Artikel '5 Strategi Efektif Menguasai Logika Pemrograman' kini siap dibaca.",
-    time: "3 jam lalu",
-    isRead: false,
-    linkUrl: "/tips-belajar?id=1",
-  },
-  {
-    id: "n4",
-    type: "pengingat",
-    title: "Pengingat Asesmen Vokasi",
-    message: "Jangan lupa menyelesaikan laporan praktikum multimeter digital sebelum hari esok.",
-    time: "Kemarin",
-    isRead: true,
-    linkUrl: "/materi/2",
-  },
-];
 
 const QUICK_SEARCH_DATA: QuickSearchResult[] = [
   { id: 1, subject: "Informatika", title: "Variabel, Tipe Data & Operasi Logika", level: "Pemula", icon: ComputerIcon },
@@ -100,10 +71,35 @@ export function Navbar() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [profileModalTab, setProfileModalTab] = useState<ProfileTab>("profile");
   const [isNotifModalOpen, setIsNotifModalOpen] = useState(false);
-  const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NAV_NOTIFS);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [studentProfile, setStudentProfile] = useState<StudentProfile>(DEFAULT_DUMMY_STUDENT);
+
+  useEffect(() => {
+    setNotifications(getStoredNotifications());
+    setStudentProfile(getStudentProfile());
+
+    const handleNotifUpdate = () => {
+      setNotifications(getStoredNotifications());
+    };
+
+    const handleProfileUpdate = () => {
+      setStudentProfile(getStudentProfile());
+    };
+
+    window.addEventListener("sintesa-notifications-updated", handleNotifUpdate);
+    window.addEventListener("sintesa-student-profile-updated", handleProfileUpdate);
+    window.addEventListener("storage", handleNotifUpdate);
+
+    return () => {
+      window.removeEventListener("sintesa-notifications-updated", handleNotifUpdate);
+      window.removeEventListener("sintesa-student-profile-updated", handleProfileUpdate);
+      window.removeEventListener("storage", handleNotifUpdate);
+    };
+  }, []);
 
   const handleMarkAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    const updated = markAllNotificationsRead();
+    setNotifications(updated);
   };
 
   const openProfileModalTab = (tab: ProfileTab) => {
@@ -311,11 +307,10 @@ export function Navbar() {
                 }`}
                 aria-label="Profil Pengguna"
               >
-                <Image
-                  src="https://i.pravatar.cc/100?img=12"
-                  alt="Budi Santoso"
-                  width={36}
-                  height={36}
+                {/* eslint-disable-next-next/no-img-element */}
+                <img
+                  src={studentProfile.avatar || "https://i.pravatar.cc/100?img=12"}
+                  alt={studentProfile.name}
                   className="object-cover w-full h-full rounded-full"
                 />
               </button>
@@ -325,16 +320,16 @@ export function Navbar() {
                 <div className="absolute right-0 top-[calc(100%+8px)] w-64 bg-white border border-[#ECECEC] rounded-[12px] p-2 z-50 origin-top-right animate-in fade-in slide-in-from-top-1 duration-150">
                   <div className="p-3 bg-[#F9F9FF] rounded-[8px] mb-1.5 flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full overflow-hidden relative shrink-0 border border-[#ECECEC]">
-                      <Image
-                        src="https://i.pravatar.cc/100?img=12"
-                        alt="Budi Santoso"
-                        fill
-                        className="object-cover rounded-full"
+                      {/* eslint-disable-next-next/no-img-element */}
+                      <img
+                        src={studentProfile.avatar || "https://i.pravatar.cc/100?img=12"}
+                        alt={studentProfile.name}
+                        className="object-cover w-full h-full rounded-full"
                       />
                     </div>
                     <div className="overflow-hidden">
-                      <p className="text-xs font-bold text-[#2E2D2D] truncate">Budi Santoso</p>
-                      <p className="text-[11px] text-[#737373] truncate">budi@siswa.belajar.id</p>
+                      <p className="text-xs font-bold text-[#2E2D2D] truncate">{studentProfile.name}</p>
+                      <p className="text-[11px] text-[#737373] truncate">{studentProfile.email}</p>
                     </div>
                   </div>
 

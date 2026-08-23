@@ -3,67 +3,19 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import {
-  Cancel01Icon,
-  BellIcon,
-  Book01Icon,
-  Award01Icon,
-  SparklesIcon,
-} from "@hugeicons/core-free-icons";
+  AppNotification,
+  getNotificationIcon,
+  INITIAL_NOTIFICATIONS,
+} from "@/services/notification.service";
 
-export interface NotificationItem {
-  id: string;
-  type: "materi" | "nilai" | "tips" | "pengingat";
-  title: string;
-  message: string;
-  time: string;
-  isRead: boolean;
-  linkUrl?: string;
-}
-
-const INITIAL_NOTIFICATIONS: NotificationItem[] = [
-  {
-    id: "n1",
-    type: "materi",
-    title: "Modul Praktik Baru Rilis",
-    message: "Pak Herman Susilo menambahkan modul baru 'Analisis Sirkuit Seri & Paralel Resistor'.",
-    time: "10 menit lalu",
-    isRead: false,
-    linkUrl: "/materi/2",
-  },
-  {
-    id: "n2",
-    type: "nilai",
-    title: "Nilai Kuis Berhasil Tercatat",
-    message: "Selamat! Kuis 'Operasi Logika & Tabel Kebenaran' milikmu mendapat skor 100/100.",
-    time: "1 jam lalu",
-    isRead: false,
-    linkUrl: "/materi/1",
-  },
-  {
-    id: "n3",
-    type: "tips",
-    title: "Tips Belajar Terbaru",
-    message: "Artikel '5 Strategi Efektif Menguasai Logika Pemrograman' kini siap dibaca.",
-    time: "3 jam lalu",
-    isRead: false,
-    linkUrl: "/tips-belajar?id=1",
-  },
-  {
-    id: "n4",
-    type: "pengingat",
-    title: "Pengingat Asesmen Vokasi",
-    message: "Jangan lupa menyelesaikan laporan praktikum multimeter digital sebelum hari esok.",
-    time: "Kemarin",
-    isRead: true,
-    linkUrl: "/materi/2",
-  },
-];
+export type NotificationItem = AppNotification;
 
 interface NotificationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  notifications?: NotificationItem[];
+  notifications?: AppNotification[];
   onMarkAllRead?: () => void;
 }
 
@@ -141,15 +93,7 @@ export function NotificationModal({
               {/* Type Icon */}
               <div className="shrink-0 mt-0.5">
                 <HugeiconsIcon
-                  icon={
-                    item.type === "materi"
-                      ? Book01Icon
-                      : item.type === "nilai"
-                      ? Award01Icon
-                      : item.type === "tips"
-                      ? SparklesIcon
-                      : BellIcon
-                  }
+                  icon={getNotificationIcon(item.type)}
                   size={16}
                   className={!item.isRead ? "text-[#2563EB]" : "text-[#2E2D2D]"}
                 />

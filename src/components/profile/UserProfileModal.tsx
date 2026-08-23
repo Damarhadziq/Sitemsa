@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -11,6 +11,12 @@ import {
   Camera01Icon,
   ArrowLeft01Icon,
 } from "@hugeicons/core-free-icons";
+import {
+  getStudentProfile,
+  saveStudentProfile,
+  StudentProfile,
+  DEFAULT_DUMMY_STUDENT,
+} from "@/services/student-profile.service";
 
 export type ProfileTab = "profile" | "history" | "settings";
 
@@ -27,23 +33,35 @@ export function UserProfileModal({
 }: UserProfileModalProps) {
   const [activeTab, setActiveTab] = useState<ProfileTab>(initialTab);
   const [prevInitialTab, setPrevInitialTab] = useState(initialTab);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Baseline initial profile state
-  const [savedProfile, setSavedProfile] = useState({
-    name: "Budi Santoso",
-    email: "budi@siswa.belajar.id",
-    school: "SMKN 1 Semarang",
-    nisn: "0084920194",
-    grade: "XI PPLG 1",
-  });
+  const [savedProfile, setSavedProfile] = useState<StudentProfile>(DEFAULT_DUMMY_STUDENT);
 
-  const [name, setName] = useState("Budi Santoso");
-  const [email, setEmail] = useState("budi@siswa.belajar.id");
-  const [school, setSchool] = useState("SMKN 1 Semarang");
-  const [nisn, setNisn] = useState("0084920194");
-  const [grade, setGrade] = useState("XI PPLG 1");
+  const [name, setName] = useState(DEFAULT_DUMMY_STUDENT.name);
+  const [email, setEmail] = useState(DEFAULT_DUMMY_STUDENT.email);
+  const [school, setSchool] = useState(DEFAULT_DUMMY_STUDENT.school);
+  const [nisn, setNisn] = useState(DEFAULT_DUMMY_STUDENT.nisn);
+  const [grade, setGrade] = useState(DEFAULT_DUMMY_STUDENT.grade);
+  const [avatar, setAvatar] = useState(DEFAULT_DUMMY_STUDENT.avatar);
+  const [bio, setBio] = useState(DEFAULT_DUMMY_STUDENT.bio || "");
   const [historySubView, setHistorySubView] = useState<"overview" | "all-materials" | "all-quizzes">("overview");
   const [isSavedToast, setIsSavedToast] = useState(false);
+
+  // Load from persistent store when modal is opened
+  useEffect(() => {
+    if (isOpen) {
+      const p = getStudentProfile();
+      setSavedProfile(p);
+      setName(p.name);
+      setEmail(p.email);
+      setSchool(p.school);
+      setNisn(p.nisn);
+      setGrade(p.grade);
+      setAvatar(p.avatar);
+      setBio(p.bio || "");
+    }
+  }, [isOpen]);
 
   // Track if any field has changed compared to saved profile
   const hasChanges =
@@ -51,7 +69,9 @@ export function UserProfileModal({
     email !== savedProfile.email ||
     school !== savedProfile.school ||
     nisn !== savedProfile.nisn ||
-    grade !== savedProfile.grade;
+    grade !== savedProfile.grade ||
+    avatar !== savedProfile.avatar ||
+    bio !== (savedProfile.bio || "");
 
   if (prevInitialTab !== initialTab) {
     setPrevInitialTab(initialTab);
@@ -90,13 +110,36 @@ export function UserProfileModal({
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
     if (!hasChanges) return;
-    setSavedProfile({ name, email, school, nisn, grade });
+    const updated = saveStudentProfile({ name, email, school, nisn, grade, avatar, bio });
+    setSavedProfile(updated);
     setIsSavedToast(true);
     setTimeout(() => setIsSavedToast(false), 3000);
   };
 
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === "string") {
+          setAvatar(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-black/80 flex items-end justify-center md:items-center p-0 md:p-4 animate-in fade-in duration-200 overscroll-contain font-sans">
+      {/* Hidden avatar file input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleAvatarChange}
+        accept="image/*"
+        className="hidden"
+      />
+
       {/* Backdrop listener */}
       <div className="absolute inset-0" onClick={onClose} />
 
@@ -158,11 +201,11 @@ export function UserProfileModal({
               {/* Avatar Header Row */}
               <div className="flex items-center gap-4 p-4 bg-[#FAFAFA] border border-[#ECECEC] rounded-[12px]">
                 <div className="relative w-16 h-16 rounded-full overflow-hidden border border-[#ECECEC] shrink-0 bg-white">
-                  <Image
-                    src="https://i.pravatar.cc/100?img=12"
+                  {/* eslint-disable-next-next/no-img-element */}
+                  <img
+                    src={avatar || "https://i.pravatar.cc/100?img=12"}
                     alt={name}
-                    fill
-                    className="object-cover rounded-full"
+                    className="object-cover w-full h-full rounded-full"
                   />
                 </div>
                 <div className="space-y-1">
@@ -170,6 +213,7 @@ export function UserProfileModal({
                   <p className="text-xs text-[#737373]">{email}</p>
                   <button
                     type="button"
+                    onClick={() => fileInputRef.current?.click()}
                     className="mt-1 px-3 py-1.5 bg-white border border-[#ECECEC] hover:bg-gray-50 text-[11px] font-semibold text-[#2E2D2D] rounded-[8px] transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                   >
                     <HugeiconsIcon icon={Camera01Icon} size={13} />

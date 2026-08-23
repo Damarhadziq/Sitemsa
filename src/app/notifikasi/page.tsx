@@ -1,86 +1,49 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
-import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react";
-import {
-  BellIcon,
-  BookOpen01Icon,
-  Task01Icon,
-  SparklesIcon,
-  Settings02Icon,
-  Tick01Icon,
-} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { BellIcon } from "@hugeicons/core-free-icons";
 import { ArrowLeft } from "lucide-react";
-
-export interface NotificationPageItem {
-  id: number;
-  title: string;
-  description: string;
-  timestamp: string;
-  isRead: boolean;
-  type: "materi" | "kuis" | "system" | "promo";
-  icon: IconSvgElement;
-  linkUrl?: string;
-}
-
-const INITIAL_NOTIFICATIONS: NotificationPageItem[] = [
-  {
-    id: 1,
-    title: "Materi Baru Ditambahkan!",
-    description: "Modul Informatika 'Pengenalan Kecerdasan Buatan & Machine Learning' sekarang dapat dipelajari di katalog materi utama Sitemsa.",
-    timestamp: "10 menit yang lalu",
-    isRead: false,
-    type: "materi",
-    icon: BookOpen01Icon,
-    linkUrl: "/materi/1",
-  },
-  {
-    id: 2,
-    title: "Pengingat Kuis Mingguan",
-    description: "Jangan lupa selesaikan kuis 'Struktur Percabangan (If-Else & Switch)' untuk menjaga streak belajarmu minggu ini.",
-    timestamp: "1 jam yang lalu",
-    isRead: false,
-    type: "kuis",
-    icon: Task01Icon,
-    linkUrl: "/materi/2",
-  },
-  {
-    id: 3,
-    title: "Pemberitahuan Sistem",
-    description: "Pembaruan platform Sitemsa v2.4 telah diterapkan dengan peningkatan performa, pembaruan responsif mobile, dan UI baru.",
-    timestamp: "Kemarin, 14:30",
-    isRead: true,
-    type: "system",
-    icon: Settings02Icon,
-    linkUrl: "#",
-  },
-  {
-    id: 4,
-    title: "Fitur Baru: Tips Belajar Pomodoro",
-    description: "Pelajari strategi efektif mengelola waktu belajar dengan metode Pomodoro di kanal Tips Belajar resmi Sitemsa.",
-    timestamp: "2 hari yang lalu",
-    isRead: true,
-    type: "promo",
-    icon: SparklesIcon,
-    linkUrl: "/tips-belajar?id=2",
-  },
-];
+import {
+  getStoredNotifications,
+  markAllNotificationsRead,
+  markNotificationAsRead,
+  getNotificationIcon,
+  AppNotification,
+} from "@/services/notification.service";
 
 export default function NotifikasiPage() {
   const router = useRouter();
-  const [notifications, setNotifications] = useState<NotificationPageItem[]>(INITIAL_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [activeFilter, setActiveFilter] = useState<"semua" | "unread">("semua");
 
+  useEffect(() => {
+    setNotifications(getStoredNotifications());
+
+    const handleUpdate = () => {
+      setNotifications(getStoredNotifications());
+    };
+
+    window.addEventListener("sintesa-notifications-updated", handleUpdate);
+    window.addEventListener("storage", handleUpdate);
+
+    return () => {
+      window.removeEventListener("sintesa-notifications-updated", handleUpdate);
+      window.removeEventListener("storage", handleUpdate);
+    };
+  }, []);
+
   const handleMarkAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    const updated = markAllNotificationsRead();
+    setNotifications(updated);
   };
 
-  const handleMarkAsRead = (id: number) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
-    );
+  const handleMarkItemRead = (id: string) => {
+    const updated = markNotificationAsRead(id);
+    setNotifications(updated);
   };
 
   const filteredNotifs = notifications.filter((n) => {
@@ -94,7 +57,7 @@ export default function NotifikasiPage() {
     <div className="min-h-screen bg-white flex flex-col font-sans">
       <Navbar />
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 w-full flex-1 space-y-6">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-28 sm:pb-32 md:pb-16 w-full flex-1 space-y-6">
         {/* Sticky Fixed Arrow Back Button (Matching Tips & Dokumentasi Detail) */}
         <div className="sticky top-20 z-30 pt-1 pb-1">
           <button
@@ -108,7 +71,7 @@ export default function NotifikasiPage() {
           </button>
         </div>
 
-        {/* Headline Section (Under arrow, title + label, no subtitle, no divider line) */}
+        {/* Headline Section */}
         <header className="space-y-4 pt-1">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h1 className="text-2xl sm:text-3xl font-bold text-[#2E2D2D] tracking-tight">
@@ -153,7 +116,7 @@ export default function NotifikasiPage() {
           </div>
         </header>
 
-        {/* Notification Direct Canvas List (Frameless, clean dividers, blue title and icon on unread) */}
+        {/* Notification List Styled Exactly Matching Desktop Notification Modal */}
         <section className="pt-2 divide-y divide-[#ECECEC]">
           {filteredNotifs.length === 0 ? (
             <div className="py-16 text-center space-y-3">
@@ -169,45 +132,41 @@ export default function NotifikasiPage() {
             </div>
           ) : (
             filteredNotifs.map((item) => (
-              <div
+              <Link
                 key={item.id}
-                onClick={() => handleMarkAsRead(item.id)}
-                className="py-4.5 px-2.5 -mx-2.5 rounded-[10px] hover:bg-slate-50/80 transition-colors duration-150 flex items-start gap-3.5 cursor-pointer group"
+                href={item.linkUrl || "#"}
+                onClick={() => handleMarkItemRead(item.id)}
+                className="flex items-start gap-3 py-3.5 px-3 -mx-3 hover:bg-[#F6F5FF] transition-colors duration-150 rounded-[10px] cursor-pointer group"
               >
-                {/* Type Icon (Blue when unread, subtle neutral when read) */}
-                <div
-                  className={`w-10 h-10 rounded-[8px] flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
-                    item.isRead
-                      ? "bg-[#F3F3F3] text-[#737373]"
-                      : "bg-[#2563EB] text-white shadow-2xs"
-                  }`}
-                >
-                  <HugeiconsIcon icon={item.icon} size={20} />
+                {/* Type Icon (Matching Desktop Modal Style: clean outline icon, blue on unread) */}
+                <div className="shrink-0 mt-0.5">
+                  <HugeiconsIcon
+                    icon={getNotificationIcon(item.type)}
+                    size={18}
+                    className={!item.isRead ? "text-[#2563EB]" : "text-[#737373]"}
+                  />
                 </div>
 
-                {/* Notification Text Content */}
-                <div className="flex-1 min-w-0 space-y-1.5">
-                  <h2
-                    className={`text-sm leading-snug truncate transition-colors ${
-                      item.isRead
-                        ? "font-semibold text-[#2E2D2D] group-hover:text-[#2563EB]"
-                        : "font-bold text-[#2563EB]"
-                    }`}
-                  >
-                    {item.title}
-                  </h2>
+                {/* Content */}
+                <div className="flex-1 min-w-0 space-y-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <h2
+                      className={`text-sm leading-tight truncate transition-colors ${
+                        !item.isRead ? "font-bold text-[#2563EB]" : "font-semibold text-[#2E2D2D] group-hover:text-[#2563EB]"
+                      }`}
+                    >
+                      {item.title}
+                    </h2>
+                    <span className="text-[11px] text-[#AAAAAA] shrink-0 font-normal">
+                      {item.time}
+                    </span>
+                  </div>
 
-                  {/* Description: Max 2 lines with ellipsis */}
-                  <p className="text-xs text-[#737373] leading-relaxed font-normal line-clamp-2">
-                    {item.description}
+                  <p className="text-xs leading-relaxed text-[#737373] line-clamp-2">
+                    {item.message}
                   </p>
-
-                  {/* Timestamp placed at bottom */}
-                  <span className="text-[11px] text-[#888888] font-medium block pt-0.5">
-                    {item.timestamp}
-                  </span>
                 </div>
-              </div>
+              </Link>
             ))
           )}
         </section>

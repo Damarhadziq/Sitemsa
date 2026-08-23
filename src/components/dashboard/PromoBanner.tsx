@@ -12,13 +12,6 @@ export function PromoBanner() {
       {/* Left Content */}
       <div className="flex-1 flex flex-col justify-between space-y-4 z-10">
         <div className="space-y-3">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="inline-flex items-center gap-1.5 text-white border border-white px-2.5 py-1 rounded-[6px] text-xs font-medium bg-transparent">
-              <HugeiconsIcon icon={SparklesIcon} size={14} />
-              <span>Inovasi Pembelajaran</span>
-            </span>
-          </div>
-
           <h2 className="text-2xl lg:text-3xl font-bold tracking-tight text-white leading-snug">
             Ruang Belajar Digital yang Dirancang untuk Mengasah Potensimu
           </h2>

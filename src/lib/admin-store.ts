@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { addUserNotification } from '@/services/notification.service';
 
 export interface SubjectItem {
   id: string;
@@ -1226,6 +1227,16 @@ export const useAdminStore = create<AdminStoreState>()(
               : s
           ),
         }));
+
+        try {
+          addUserNotification({
+            type: 'materi',
+            title: 'Modul Praktik Baru Rilis',
+            message: `${moduleData.teacherName || 'Pengajar'} menambahkan modul baru '${moduleData.title}' di bidang ${moduleData.subject}.`,
+            linkUrl: `/materi`,
+          });
+        } catch {}
+
         return newId;
       },
 
@@ -1267,6 +1278,16 @@ export const useAdminStore = create<AdminStoreState>()(
               : s
           ),
         }));
+
+        try {
+          addUserNotification({
+            type: 'pengingat',
+            title: 'Kuis Evaluasi Baru Tersedia',
+            message: `Kuis baru '${quizData.title}' untuk mata pelajaran ${quizData.subject} kini telah dibuka.`,
+            linkUrl: `/materi`,
+          });
+        } catch {}
+
         return newId;
       },
 

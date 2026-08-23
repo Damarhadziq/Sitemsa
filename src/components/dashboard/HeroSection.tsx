@@ -1,10 +1,33 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { getStudentProfile, DEFAULT_DUMMY_STUDENT } from '@/services/student-profile.service';
+
 export function HeroSection() {
+  const [firstName, setFirstName] = useState(DEFAULT_DUMMY_STUDENT.name.split(' ')[0]);
+
+  useEffect(() => {
+    const updateName = () => {
+      const p = getStudentProfile();
+      setFirstName(p.name ? p.name.split(' ')[0] : 'Siswa');
+    };
+
+    updateName();
+    window.addEventListener('sintesa-student-profile-updated', updateName);
+    window.addEventListener('storage', updateName);
+
+    return () => {
+      window.removeEventListener('sintesa-student-profile-updated', updateName);
+      window.removeEventListener('storage', updateName);
+    };
+  }, []);
+
   return (
     <section className="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
       {/* Left Greeting */}
       <div>
         <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#2E2D2D] tracking-tight leading-tight">
-          Selamat Pagi, Budi!
+          Selamat Pagi, {firstName}!
         </h1>
       </div>
 

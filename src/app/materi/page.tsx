@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react";
 import {
   Search01Icon,
@@ -99,24 +99,70 @@ const MODUL_DATA: ModulItem[] = [
   },
   {
     id: 7,
-    subject: "Bimbingan dan Konseling",
-    title: "Penerapan Teknik Pomodoro dalam Belajar",
+    subject: "Bimbingan Konseling",
+    title: "Yuk, Lawan Rasa Malas: Self-Management untuk Konsisten Belajar!",
     level: "Pemula",
-    duration: "15 Menit",
-    topics: ["Interval 25 Min", "Sesi Istirahat", "Evaluasi Fokus"],
-    description: "Metode manajemen waktu teruji untuk meningkatkan konsentrasi tanpa mengalami keletihan mental.",
+    duration: "30 Menit",
+    topics: ["Prokrastinasi", "Penyebab & Dampak", "Self-Management", "Dukungan Kelompok"],
+    description: "Memahami pengertian prokrastinasi, penyebab dan dampaknya, serta penerapan strategi self-management dan simulasi Buaya Gigitan untuk konsisten belajar.",
     icon: UserGroupIcon,
     isAiRecommended: true,
-    aiReason: "Rekomendasi Produktivitas",
+    aiReason: "Fondasi Self-Management",
   },
   {
     id: 8,
-    subject: "Bimbingan dan Konseling",
-    title: "Matriks Prioritas Eisenhower untuk Pelajar",
+    subject: "Bimbingan Konseling",
+    title: "Talent Quest: Temukan Potensimu, Kembangkan Dirimu!",
     level: "Pemula",
-    duration: "20 Menit",
-    topics: ["Mendesak vs Penting", "Delegasi Tugas", "Penjadwalan"],
-    description: "Klasifikasikan tugas harianmu agar tidak tertumpuk di akhir tenggat waktu.",
+    duration: "35 Menit",
+    topics: ["Potensi Diri", "Ragam Potensi", "Strength-Based", "Talent Quest Board"],
+    description: "Mengenal dan mengembangkan potensi diri melalui pendekatan strength-based, refleksi personal, dan simulasi permainan edukatif Talent Quest.",
+    icon: UserGroupIcon,
+    isAiRecommended: true,
+    aiReason: "Eksplorasi Minat & Bakat",
+  },
+  {
+    id: 16,
+    subject: "Bimbingan Konseling",
+    title: "Jati Diri Tanpa Kenakalan",
+    level: "Menengah",
+    duration: "40 Menit",
+    topics: ["Jati Diri Remaja", "Bentuk Kenakalan", "Norma Pergaulan", "Peer Pressure", "Mind Mapping"],
+    description: "Memahami pembentukan jati diri remaja, menyelaraskan norma pergaulan teman sebaya, mengatasi peer pressure, dan studi kasus problem-based learning.",
+    icon: UserGroupIcon,
+  },
+  {
+    id: 17,
+    subject: "Bimbingan Konseling",
+    title: "Membangun Konsep Diri Positif",
+    level: "Pemula",
+    duration: "30 Menit",
+    topics: ["Pengertian Konsep Diri", "Self-Image", "Self-Esteem", "Ideal Self", "Faktor Lingkungan"],
+    description: "Memahami konsep diri remaja, 3 komponen utama (self-image, self-esteem, ideal self), faktor lingkungan, serta aktivitas refleksi diri telapak tangan.",
+    icon: UserGroupIcon,
+    isAiRecommended: true,
+    aiReason: "Pengembangan Konsep Diri",
+  },
+  {
+    id: 18,
+    subject: "Bimbingan Konseling",
+    title: "Personal Branding: Membangun Citra Diri Positif",
+    level: "Pemula",
+    duration: "35 Menit",
+    topics: ["Personal Branding", "Potensi Diri", "Unsur Branding", "Kesiapan PKL & Kerja"],
+    description: "Mengenali keunikan dan potensi diri, membangun citra profesional positif, serta persiapan menghadapi PKL dan dunia kerja bagi siswa SMK.",
+    icon: UserGroupIcon,
+    isAiRecommended: true,
+    aiReason: "Kesiapan Karir & Vokasi",
+  },
+  {
+    id: 19,
+    subject: "Bimbingan Konseling",
+    title: "Persiapan Magang dan Etika di Dunia Kerja",
+    level: "Menengah",
+    duration: "40 Menit",
+    topics: ["Persiapan Magang", "Soft Skills Vokasi", "Etika Kerja", "Tips Profesional"],
+    description: "Panduan komprehensif persiapan administratif, keterampilan, mental, dan penampilan serta etika profesional saat magang di industri.",
     icon: UserGroupIcon,
   },
   {
@@ -227,11 +273,25 @@ const CATEGORIES = [
   "Semua",
   "Informatika",
   "Elektronika",
-  "Bimbingan dan Konseling",
+  "Bimbingan Konseling",
   "Seni Tari",
   "Otomotif",
   "Keolahragaan",
 ];
+
+const normalizeCategory = (cat?: string | null): string => {
+  if (!cat) return "";
+  const c = cat.toLowerCase().replace(/\s+/g, ' ').trim();
+  if (c === 'bimbingan konseling' || c === 'bimbingan dan konseling' || c === 'bk' || c.includes('konseling')) {
+    return 'Bimbingan Konseling';
+  }
+  if (c.includes('informatika') || c.includes('komputer')) return 'Informatika';
+  if (c.includes('elektronika')) return 'Elektronika';
+  if (c.includes('tari')) return 'Seni Tari';
+  if (c.includes('otomotif')) return 'Otomotif';
+  if (c.includes('olahraga') || c.includes('keolahragaan')) return 'Keolahragaan';
+  return cat;
+};
 
 const ITEMS_PER_PAGE = 6;
 
@@ -260,12 +320,18 @@ function MateriLandingContent() {
 
   // Set category only if explicitly specified in URL query (e.g. from home page card click), otherwise default to "Semua"
   useEffect(() => {
-    const initialCategory =
-      kategoriParam && CATEGORIES.includes(kategoriParam)
-        ? kategoriParam
-        : "Semua";
+    setCurrentPage(1);
+    if (!kategoriParam) {
+      setSelectedCategory("Semua");
+      return;
+    }
 
-    setSelectedCategory(initialCategory);
+    const normalizedParam = normalizeCategory(kategoriParam);
+    const matchedCategory = CATEGORIES.find(
+      (c) => normalizeCategory(c).toLowerCase() === normalizedParam.toLowerCase()
+    );
+
+    setSelectedCategory(matchedCategory || "Semua");
   }, [kategoriParam]);
 
   // Compute 3 Dynamic AI Recommendations (Popular for new users, adaptive based on access history for active users)
@@ -380,7 +446,8 @@ function MateriLandingContent() {
   // Filter modules
   const filteredModul = MODUL_DATA.filter((item) => {
     const matchesCategory =
-      selectedCategory === "Semua" || item.subject === selectedCategory;
+      selectedCategory === "Semua" ||
+      normalizeCategory(item.subject).toLowerCase() === normalizeCategory(selectedCategory).toLowerCase();
     const matchesSearch =
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -400,17 +467,17 @@ function MateriLandingContent() {
 
       <main className="max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-16 w-full flex-1">
         {/* Header Hero Section */}
-        <section className="mb-6 text-center max-w-3xl mx-auto space-y-3">
-          <h1 className="text-2xl md:text-4xl font-bold text-[#2E2D2D] tracking-tight leading-tight">
+        <section className="mb-6 text-center max-w-3xl mx-auto space-y-2 md:space-y-3">
+          <h1 className="text-[28px] sm:text-3xl md:text-4xl font-bold text-[#2E2D2D] tracking-tight leading-tight max-w-[290px] sm:max-w-xs md:max-w-none mx-auto">
             Eksplorasi Materi & Modul Interaktif
           </h1>
 
-          <p className="text-xs md:text-sm text-[#737373] leading-relaxed max-w-xl mx-auto">
+          <p className="hidden md:block text-xs md:text-sm text-[#737373] leading-relaxed max-w-xl mx-auto">
             Pilih materi favoritmu dan tingkatkan keahlian secara bertahap.
           </p>
 
           {/* Interactive Search Bar with Live Recommendation Dropdown */}
-          <div className="pt-2 max-w-xl mx-auto relative">
+          <div className="pt-4 sm:pt-5 md:pt-2 max-w-xl mx-auto relative">
             <div className="relative">
               {/* Left Search Icon (Fades out when focused) */}
               <div
@@ -488,42 +555,53 @@ function MateriLandingContent() {
           </div>
         </section>
 
-        {/* Category Tabs Filter */}
-        <section className="mb-8 overflow-x-auto pb-2 scrollbar-none">
-          <div className="flex items-center justify-start md:justify-center gap-2 min-w-max">
-            {CATEGORIES.map((category) => {
-              const isActive = selectedCategory === category;
-              const q = searchQuery.toLowerCase();
-              const count =
-                category === "Semua"
-                  ? MODUL_DATA.filter(
-                      (m) =>
-                        m.title.toLowerCase().includes(q) ||
-                        m.subject.toLowerCase().includes(q) ||
-                        m.description.toLowerCase().includes(q)
-                    ).length
-                  : MODUL_DATA.filter(
-                      (m) =>
-                        m.subject === category &&
-                        (m.title.toLowerCase().includes(q) ||
-                          m.subject.toLowerCase().includes(q) ||
-                          m.description.toLowerCase().includes(q))
-                    ).length;
+        {/* Category Tabs Filter with Smooth Scroll Blur / Fade Edges */}
+        <section className="mb-8 relative -mx-6 px-6 md:mx-0 md:px-0">
+          {/* Left Gradient Fade (Mobile Only) */}
+          <div className="pointer-events-none absolute left-0 top-0 bottom-2 w-7 bg-gradient-to-r from-white via-white/90 to-transparent z-10 md:hidden" />
 
-              return (
-                <button
-                  key={category}
-                  onClick={() => handleCategoryChange(category)}
-                  className={`px-3.5 py-1.5 rounded-[6px] text-xs font-medium transition-all duration-200 cursor-pointer ${
-                    isActive
-                      ? "bg-[#2563EB] text-white"
-                      : "bg-[#FAFAFA] border border-[#ECECEC] text-[#737373] hover:text-[#2E2D2D] hover:bg-gray-100"
-                  }`}
-                >
-                  {category}{isActive ? ` (${count})` : ""}
-                </button>
-              );
-            })}
+          {/* Right Gradient Fade (Mobile Only) */}
+          <div className="pointer-events-none absolute right-0 top-0 bottom-2 w-7 bg-gradient-to-l from-white via-white/90 to-transparent z-10 md:hidden" />
+
+          {/* Scrollable Container with CSS Mask Image */}
+          <div className="overflow-x-auto pb-2 scrollbar-none [mask-image:linear-gradient(to_right,transparent,black_24px,black_calc(100%-24px),transparent)] md:[mask-image:none]">
+            <div className="flex items-center justify-start md:justify-center gap-2 min-w-max px-4 md:px-0">
+              {CATEGORIES.map((category) => {
+                const isActive =
+                  selectedCategory === category ||
+                  normalizeCategory(selectedCategory).toLowerCase() === normalizeCategory(category).toLowerCase();
+                const q = searchQuery.toLowerCase();
+                const count =
+                  category === "Semua"
+                    ? MODUL_DATA.filter(
+                        (m) =>
+                          m.title.toLowerCase().includes(q) ||
+                          m.subject.toLowerCase().includes(q) ||
+                          m.description.toLowerCase().includes(q)
+                      ).length
+                    : MODUL_DATA.filter(
+                        (m) =>
+                          normalizeCategory(m.subject).toLowerCase() === normalizeCategory(category).toLowerCase() &&
+                          (m.title.toLowerCase().includes(q) ||
+                            m.subject.toLowerCase().includes(q) ||
+                            m.description.toLowerCase().includes(q))
+                      ).length;
+
+                return (
+                  <button
+                    key={category}
+                    onClick={() => handleCategoryChange(category)}
+                    className={`px-3.5 py-1.5 rounded-[6px] text-xs font-medium transition-all duration-200 cursor-pointer ${
+                      isActive
+                        ? "bg-[#2563EB] text-white"
+                        : "bg-[#FAFAFA] border border-[#ECECEC] text-[#737373] hover:text-[#2E2D2D] hover:bg-gray-100"
+                    }`}
+                  >
+                    {category}{isActive ? ` (${count})` : ""}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </section>
 
@@ -585,7 +663,12 @@ function MateriLandingContent() {
         <section className="space-y-5">
           <div className="flex items-center justify-between">
             <h2 className="text-base md:text-lg font-semibold text-[#2E2D2D]">
-              Daftar Materi Pembelajaran {selectedCategory !== "Semua" ? `: ${selectedCategory}` : ""}
+              <span className="md:hidden">
+                {selectedCategory === "Semua" ? "Daftar Materi Pembelajaran" : `Materi ${selectedCategory}`}
+              </span>
+              <span className="hidden md:inline">
+                Daftar Materi Pembelajaran {selectedCategory !== "Semua" ? `: ${selectedCategory}` : ""}
+              </span>
             </h2>
             <span className="hidden lg:inline text-xs text-[#737373]">
               Menampilkan {paginatedModul.length} dari {filteredModul.length} Materi
@@ -678,18 +761,18 @@ function MateriLandingContent() {
             </div>
           )}
 
-          {/* Interactive Pagination */}
+          {/* Interactive Pagination (Global Style: 6 items per page) */}
           {!isLoading && totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 pt-6">
+            <div className="flex items-center justify-center gap-2 pt-6 pb-2">
               {/* Frameless Previous Arrow */}
               <button
                 type="button"
                 onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                className="w-8 h-8 rounded-full bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-gray-100 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                className="w-8 h-8 rounded-full bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-gray-100 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
                 aria-label="Halaman Sebelumnya"
               >
-                <HugeiconsIcon icon={ArrowLeft01Icon} size={16} />
+                <ChevronLeft className="w-4 h-4" />
               </button>
 
               {/* Numbered Page Buttons - Active is 100% Circle Filled */}
@@ -698,10 +781,11 @@ function MateriLandingContent() {
                 return (
                   <button
                     key={page}
+                    type="button"
                     onClick={() => setCurrentPage(page)}
-                    className={`w-8 h-8 rounded-full text-xs font-semibold transition-all flex items-center justify-center ${
+                    className={`w-8 h-8 rounded-full text-xs font-semibold transition-all flex items-center justify-center cursor-pointer ${
                       isActive
-                        ? "bg-[#2563EB] text-white"
+                        ? "bg-[#2563EB] text-white shadow-2xs"
                         : "bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-gray-100"
                     }`}
                   >
@@ -715,17 +799,15 @@ function MateriLandingContent() {
                 type="button"
                 onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                className="w-8 h-8 rounded-full bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-gray-100 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                className="w-8 h-8 rounded-full bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-gray-100 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
                 aria-label="Halaman Selanjutnya"
               >
-                <HugeiconsIcon icon={ArrowRight01Icon} size={16} />
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           )}
         </section>
       </main>
-
-      <Footer />
     </div>
   );
 }

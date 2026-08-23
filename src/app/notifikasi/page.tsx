@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
 import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react";
 import {
   BellIcon,
@@ -154,10 +153,10 @@ export default function NotifikasiPage() {
           </div>
         </header>
 
-        {/* Notification Cards List (No ellipses/unread dots, no selengkapnya button, max 2 line desc, timestamp at bottom) */}
-        <section className="space-y-3 pt-1">
+        {/* Notification Direct Canvas List (Frameless, clean dividers, blue title and icon on unread) */}
+        <section className="pt-2 divide-y divide-[#ECECEC]">
           {filteredNotifs.length === 0 ? (
-            <div className="p-12 text-center bg-[#FAFAFA] border border-[#ECECEC] rounded-[12px] space-y-3">
+            <div className="py-16 text-center space-y-3">
               <div className="w-12 h-12 rounded-full bg-[#F4EFFF] text-[#2563EB] mx-auto flex items-center justify-center">
                 <HugeiconsIcon icon={BellIcon} size={24} />
               </div>
@@ -173,40 +172,38 @@ export default function NotifikasiPage() {
               <div
                 key={item.id}
                 onClick={() => handleMarkAsRead(item.id)}
-                className={`p-4.5 rounded-[14px] border transition-all duration-200 flex items-start gap-3.5 cursor-pointer ${
-                  item.isRead
-                    ? "bg-white border-[#ECECEC] hover:border-[#2563EB]/40"
-                    : "bg-[#F6F5FF] border-[#2563EB]/30 hover:border-[#2563EB]"
-                }`}
+                className="py-4.5 px-2.5 -mx-2.5 rounded-[10px] hover:bg-slate-50/80 transition-colors duration-150 flex items-start gap-3.5 cursor-pointer group"
               >
-                {/* Type Icon */}
+                {/* Type Icon (Blue when unread, subtle neutral when read) */}
                 <div
-                  className={`w-10 h-10 rounded-[8px] flex items-center justify-center shrink-0 mt-0.5 ${
+                  className={`w-10 h-10 rounded-[8px] flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
                     item.isRead
-                      ? "bg-[#FAFAFA] text-[#737373] border border-[#ECECEC]"
-                      : "bg-[#2563EB] text-white"
+                      ? "bg-[#F3F3F3] text-[#737373]"
+                      : "bg-[#2563EB] text-white shadow-2xs"
                   }`}
                 >
                   <HugeiconsIcon icon={item.icon} size={20} />
                 </div>
 
-                {/* Card Content */}
+                {/* Notification Text Content */}
                 <div className="flex-1 min-w-0 space-y-1.5">
                   <h2
-                    className={`text-sm font-bold leading-snug truncate ${
-                      item.isRead ? "text-[#2E2D2D]" : "text-[#2563EB]"
+                    className={`text-sm leading-snug truncate transition-colors ${
+                      item.isRead
+                        ? "font-semibold text-[#2E2D2D] group-hover:text-[#2563EB]"
+                        : "font-bold text-[#2563EB]"
                     }`}
                   >
                     {item.title}
                   </h2>
 
                   {/* Description: Max 2 lines with ellipsis */}
-                  <p className="text-xs text-[#737373] leading-relaxed font-medium line-clamp-2">
+                  <p className="text-xs text-[#737373] leading-relaxed font-normal line-clamp-2">
                     {item.description}
                   </p>
 
                   {/* Timestamp placed at bottom */}
-                  <span className="text-[11px] text-[#737373] font-medium block pt-1">
+                  <span className="text-[11px] text-[#888888] font-medium block pt-0.5">
                     {item.timestamp}
                   </span>
                 </div>
@@ -215,8 +212,6 @@ export default function NotifikasiPage() {
           )}
         </section>
       </main>
-
-      <Footer />
     </div>
   );
 }

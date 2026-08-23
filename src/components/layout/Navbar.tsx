@@ -79,10 +79,14 @@ const QUICK_SEARCH_DATA: QuickSearchResult[] = [
   { id: 2, subject: "Informatika", title: "Struktur Percabangan (If-Else & Switch)", level: "Pemula", icon: ComputerIcon },
   { id: 3, subject: "Informatika", title: "Perulangan & Iterasi Algoritma", level: "Menengah", icon: ComputerIcon },
   { id: 4, subject: "Elektronika", title: "Komponen Pasif (Resistor, Kapasitor, Induktor)", level: "Pemula", icon: CpuIcon },
-  { id: 5, subject: "Elektronika", title: "Hukum Ohm & Sirkuit Listrik Dasar", level: "Pemula", icon: CpuIcon },
-  { id: 6, subject: "Bimbingan & Konseling", title: "Manajemen Waktu & Teknik Pomodoro", level: "Pemula", icon: UserGroupIcon },
-  { id: 7, subject: "Seni Tari", title: "Wiraga, Wirama, & Wirasa dalam Tari", level: "Pemula", icon: MusicNote01Icon },
-  { id: 8, subject: "Otomotif", title: "Prinsip Kerja Mesin 4-Langkah", level: "Menengah", icon: Car01Icon },
+  { id: 7, subject: "Bimbingan Konseling", title: "Yuk, Lawan Rasa Malas: Self-Management", level: "Pemula", icon: UserGroupIcon },
+  { id: 8, subject: "Bimbingan Konseling", title: "Talent Quest: Temukan Potensimu", level: "Pemula", icon: UserGroupIcon },
+  { id: 16, subject: "Bimbingan Konseling", title: "Jati Diri Tanpa Kenakalan", level: "Menengah", icon: UserGroupIcon },
+  { id: 17, subject: "Bimbingan Konseling", title: "Membangun Konsep Diri Positif", level: "Pemula", icon: UserGroupIcon },
+  { id: 18, subject: "Bimbingan Konseling", title: "Personal Branding: Membangun Citra Diri", level: "Pemula", icon: UserGroupIcon },
+  { id: 19, subject: "Bimbingan Konseling", title: "Persiapan Magang dan Etika di Dunia Kerja", level: "Menengah", icon: UserGroupIcon },
+  { id: 9, subject: "Seni Tari", title: "Konsep Koreografi dalam Seni Tari", level: "Pemula", icon: MusicNote01Icon },
+  { id: 11, subject: "Otomotif", title: "Prinsip Kerja Mesin 4-Langkah", level: "Menengah", icon: Car01Icon },
 ];
 
 export function Navbar() {

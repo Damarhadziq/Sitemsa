@@ -6,7 +6,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
 import { useAdminStore } from "@/lib/admin-store";
 import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react";
 import {
@@ -412,70 +411,639 @@ console.log(\`Siswa \${namaSiswa} memperoleh nilai \${nilaiUjian}\`);`,
     prevMaterial: { id: 3, title: "Prinsip Kerja & Pembongkaran Mesin 4-Langkah" },
     nextMaterial: { id: 5, title: "Manajemen Waktu & Teknik Pomodoro dalam Belajar" },
   },
-  5: {
-    id: 5,
-    subject: "Bimbingan & Konseling",
-    title: "Manajemen Waktu & Teknik Pomodoro dalam Belajar",
+  7: {
+    id: 7,
+    subject: "Bimbingan Konseling",
+    title: "Yuk, Lawan Rasa Malas: Self-Management untuk Konsisten Belajar!",
     level: "Pemula",
-    duration: "15 Menit",
-    author: "Ibu Dra. Siti Rahmawati",
-    updatedAt: "05 Agustus 2026",
+    duration: "30 Menit",
+    author: "Dinda Riestia",
+    updatedAt: "21 Agustus 2026",
     icon: UserGroupIcon,
-    topics: ["Manajemen Waktu", "Teknik Pomodoro", "Fokus & Rehat", "Skala Prioritas"],
-    description: "Tingkatkan produktivitas belajar siswa dengan siklus interval fokus 25 menit dan rehat sejenak.",
+    topics: ["Prokrastinasi", "Penyebab & Dampak", "Self-Management", "Dukungan Kelompok"],
+    description: "Memahami pengertian prokrastinasi, penyebab dan dampaknya, serta penerapan strategi self-management dan simulasi Buaya Gigitan untuk konsisten belajar.",
     imageUrl: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1200&q=80",
-    imageCaption: "Ilustrasi 5.1: Penggunaan Timer Pomodoro untuk Menjaga Fokus Belajar Tanpa Kelelahan.",
-    videoSection: {
-      title: "Video Panduan: Strategi Manajemen Waktu & Sesi Belajar Bebas Stres",
-      videoUrl: "https://www.youtube.com/embed/mNBmG24djoY",
-      caption: "Video 5.1: Penjelasan ilmiah mengapa otak manusia membutuhkan rehat 5 menit tiap 25 menit belajar intensif.",
-    },
+    imageCaption: "Ilustrasi 7.1: Pengelolaan Diri (Self-Management) dan Konsistensi Belajar Remaja.",
     contentSections: [
       {
-        id: "konsep-pomodoro",
-        title: "Mengapa Teknik Pomodoro Sangat Efektif?",
+        id: "pengertian-prokrastinasi",
+        title: "Pengertian Prokrastinasi (Kebiasaan Menunda)",
         paragraphs: [
-          "Teknik Pomodoro dikembangkan oleh Francesco Cirillo pada akhir 1980-an. Metode ini membagi waktu belajar menjadi blok 25 menit yang disebut 'Pomodoro', diselingi dengan istirahat singkat selama 5 menit.",
-          "Metode ini mencegah kelelahan mental (burnout), melatih fokus penuh tanpa distraksi ponsel, serta meningkatkan daya ingat jangka panjang (retensi memori).",
+          "Prokrastinasi adalah kecenderungan menunda-nunda untuk memulai atau menyelesaikan suatu tugas, meskipun individu menyadari bahwa penundaan tersebut dapat menimbulkan konsekuensi yang kurang baik bagi dirinya. Prokrastinasi bukan sekadar malas, melainkan pola perilaku yang seringkali berkaitan dengan kesulitan mengelola waktu, prioritas, dan dorongan diri sendiri.",
         ],
-        callout: "Aturan Emas: Selama 25 menit sesi Pomodoro berjalan, jauhkan semua pemberitahuan ponsel dan fokus 100% hanya pada 1 tugas belajar.",
+        callout: "Prokrastinasi bukan sekadar malas, melainkan pola perilaku yang seringkali berkaitan dengan kesulitan mengelola waktu, prioritas, dan dorongan diri sendiri.",
+      },
+      {
+        id: "penyebab-umum-prokrastinasi",
+        title: "Penyebab Umum Prokrastinasi",
+        paragraphs: [
+          "Beberapa penyebab umum mengapa seseorang melakukan prokrastinasi antara lain:\n1. Kesulitan memulai karena tugas terasa berat atau membosankan.\n2. Mudah teralihkan oleh distraksi (gawai, media sosial, obrolan, dll).\n3. Belum terbiasa menyusun prioritas saat banyak tugas menumpuk.\n4. Merasa masih ada banyak waktu sehingga menunda hingga mendekati tenggat.\n5. Kurangnya dukungan atau pengingat dari lingkungan sekitar.",
+        ],
+      },
+      {
+        id: "dampak-prokrastinasi",
+        title: "Dampak Prokrastinasi",
+        paragraphs: [
+          "Menunda pekerjaan menimbulkan dampak nyata terhadap performa akademik dan psikologis:\n1. Kualitas hasil pekerjaan menurun karena dikerjakan terburu-buru.\n2. Menimbulkan stres dan tekanan menjelang tenggat waktu.\n3. Menurunkan kepercayaan orang lain (guru, teman kelompok) terhadap komitmen kita.\n4. Jika berulang, dapat menjadi kebiasaan yang menghambat performa belajar dan bekerja di masa depan.",
+        ],
+      },
+      {
+        id: "konsep-manfaat-self-management",
+        title: "Konsep dan Manfaat Self-Management",
+        paragraphs: [
+          "Self-management (manajemen diri) adalah kemampuan mengatur pikiran, perasaan, dan perilaku diri sendiri secara sadar untuk mencapai tujuan yang diinginkan, termasuk dalam hal disiplin belajar. Dengan self-management yang baik, seseorang lebih mampu menahan dorongan untuk menunda, menyusun prioritas, dan tetap konsisten menjalankan rencana yang telah dibuat.",
+        ],
+        callout: "Dengan self-management yang baik, seseorang lebih mampu menahan dorongan untuk menunda, menyusun prioritas, dan tetap konsisten menjalankan rencana yang telah dibuat.",
+      },
+      {
+        id: "strategi-mengatasi-distraksi",
+        title: "Strategi Mengatasi Distraksi dan Menyusun Prioritas",
+        paragraphs: [
+          "a. Kenali distraksi utamamu, sadari hal-hal yang paling sering mengalihkan perhatian.\nb. Batasi akses ke distraksi, misalnya menjauhkan gawai saat mengerjakan tugas penting.\nc. Susun prioritas, kerjakan tugas dengan tenggat terdekat atau tingkat kesulitan tertinggi lebih dulu.\nd. Pecah tugas besar jadi langkah kecil, supaya tidak terasa berat untuk dimulai.\ne. Beri jeda dan reward, istirahat sejenak dan hargai diri sendiri setelah menyelesaikan bagian tugas.",
+        ],
+      },
+      {
+        id: "pentingnya-dukungan-kelompok",
+        title: "Pentingnya Dukungan Kelompok",
+        paragraphs: [
+          "Diskusi dan dukungan dari teman sebaya dapat membantu seseorang lebih terbuka mengenali kebiasaan menundanya, saling mengingatkan, serta saling menguatkan komitmen untuk berubah. Suasana kelompok yang suportif dan tidak menghakimi membuat peserta didik lebih nyaman berbagi pengalaman personal terkait kebiasaan belajarnya.",
+        ],
       },
     ],
     stepByStepSection: {
-      title: "Langkah Praktik Penerapan Sesi Belajar Pomodoro Harian",
-      description: "Gunakan 3 langkah praktis ini setiap kali Anda hendak mengerjakan tugas atau belajar ujian:",
+      title: "Step by Step Bimbingan Kelompok: Praktik Buaya Gigitan",
+      description: "Tahapan alur bimbingan kelompok dan refleksi pemecahan masalah prokrastinasi:",
       steps: [
         {
           stepNumber: 1,
-          title: "Langkah 1: Tentukan Tugas & Matikan Distraksi",
-          text: "Pilih 1 topik materi yang ingin dipelajari. Aktifkan mode Jangan Ganggu (Do Not Disturb) pada ponsel Anda.",
-          mediaUrl: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&q=80",
+          title: "Memahami Orientasi Masalah (C2)",
+          text: "Peserta didik menyimak penjelasan Guru BK tentang pengertian prokrastinasi dan kaitannya dengan manajemen diri (self-management), serta memperhatikan contoh cara bermain Buaya Gigitan dan mekanisme amplop pertanyaan yang diperagakan Guru BK.",
         },
         {
           stepNumber: 2,
-          title: "Langkah 2: Atur Timer 25 Menit & Fokus Penuh",
-          text: "Nyalakan pengatur waktu (timer) selama 25 menit. Pelajari materi secara intensif hingga bel timer berbunyi.",
-          mediaUrl: "https://images.unsplash.com/photo-1495364141860-b0d03eccd065?auto=format&fit=crop&w=800&q=80",
+          title: "Mengaplikasi Permainan Buaya Gigitan (C3)",
+          text: "Kelompok duduk melingkar mengelilingi mainan Buaya Gigitan yang diletakkan di tengah. Peserta didik menekan salah satu gigi buaya secara bergiliran searah jarum jam.",
         },
         {
           stepNumber: 3,
-          title: "Langkah 3: Istirahat Sejenak 5 Menit",
-          text: "Begitu timer berbunyi, segera beristirahat selama 5 menit. Berdirilah, minum air putih, dan lakukan peregangan ringan sebelum memulai sesi berikutnya.",
-          mediaUrl: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80",
+          title: "Mekanisme Amplop Pertanyaan (C4)",
+          text: "Jika tekanan seorang peserta didik menyebabkan mulut buaya menutup (“tergigit”), peserta didik tersebut wajib mengambil 1 amplop dari tumpukan amplop pertanyaan dan menjawabnya di hadapan kelompok.",
+        },
+        {
+          stepNumber: 4,
+          title: "Feedback & Solusi Teman Sebaya (C6)",
+          text: "Setelah peserta didik selesai menjawab, seluruh anggota kelompok lain wajib secara bergiliran: (a) memberikan feedback/tanggapan atas jawaban yang disampaikan, (b) menceritakan pengalaman serupa yang pernah mereka alami terkait situasi yang sama, dan (c) memberikan saran atau cara untuk keluar dari situasi tersebut kepada anggota yang menjawab.",
+        },
+        {
+          stepNumber: 5,
+          title: "Pencatatan LKPD & Rotasi Giliran",
+          text: "Peserta didik yang menjawab maupun yang memberi tanggapan mencatat poin-poin penting dari sesi tersebut ke dalam LKPD pada baris giliran yang sesuai. Guru BK mereset mainan Buaya Gigitan dan permainan berlanjut hingga seluruh anggota kelompok mendapat giliran menjawab minimal 1 kali.",
+        },
+        {
+          stepNumber: 6,
+          title: "Fasilitasi & Pemerataan Diskusi",
+          text: "Jika hingga separuh waktu diskusi berjalan masih ada anggota yang belum pernah “tergigit”, Guru BK mengarahkan giliran khusus agar anggota tersebut tetap mendapat kesempatan mengambil amplop dan menjawab, memastikan tiap sesi tanya-jawab dan feedback berlangsung mendalam namun tetap suportif dan tidak menghakimi.",
+        },
+        {
+          stepNumber: 7,
+          title: "Kartu Komitmenku & Penguatan (A4, P3)",
+          text: "Peserta didik mengisi bagian “Kartu Komitmenku” pada LKPD: menuliskan 1 kebiasaan yang ingin diubah dan 1 langkah pertama yang akan dilakukan minggu ini dengan mempertimbangkan saran-saran yang diterima, membacakan secara sukarela, serta menerima penguatan komitmen dari Guru BK.",
         },
       ],
     },
     attachment: {
-      fileName: "Panduan_Manajemen_Waktu_Pomodoro_Siswa.pdf",
-      fileSize: "1.2 MB",
+      fileName: "RPL_Bimbingan_Kelompok_Self_Management.pdf",
+      fileSize: "1.8 MB",
     },
     quizSource: {
       type: "internal",
-      title: "Kuis Latihan Pomodoro Sitemsa",
-      description: "Kerjakan 5 soal refleksi manajemen waktu belajar langsung di platform Sitemsa.",
-      internalUrl: "/kuis/5",
+      title: "Evaluasi Bimbingan Konseling",
+      description: "Uji pemahaman materi self-management dan strategi mengatasi prokrastinasi.",
+      internalUrl: "/kuis/7",
     },
-    prevMaterial: { id: 4, title: "Wiraga, Wirama, & Wirasa dalam Tari Tradisional" },
+    prevMaterial: { id: 6, title: "Pemrograman Dasar Arduino & Sensor" },
+    nextMaterial: { id: 8, title: "Talent Quest: Temukan Potensimu, Kembangkan Dirimu!" },
+  },
+
+  8: {
+    id: 8,
+    subject: "Bimbingan Konseling",
+    title: "Talent Quest: Temukan Potensimu, Kembangkan Dirimu!",
+    level: "Pemula",
+    duration: "35 Menit",
+    author: "Dinda Riestia",
+    updatedAt: "22 Agustus 2026",
+    icon: UserGroupIcon,
+    topics: ["Potensi Diri", "Ragam Potensi", "Strength-Based", "Talent Quest Board"],
+    description: "Mengenal dan mengembangkan potensi diri melalui pendekatan strength-based, refleksi personal, dan simulasi permainan edukatif Talent Quest.",
+    imageUrl: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "Ilustrasi 8.1: Eksplorasi Potensi Diri dan Pendekatan Strength-Based Peserta Didik.",
+    contentSections: [
+      {
+        id: "pengertian-potensi-diri",
+        title: "Pengertian Potensi Diri",
+        paragraphs: [
+          "Potensi diri adalah kemampuan, kekuatan, minat, dan karakter positif yang dimiliki seseorang, baik yang sudah terlihat maupun yang masih perlu ditemukan dan dikembangkan. Setiap individu memiliki potensi yang berbeda sehingga tidak perlu membandingkan kelebihan diri dengan orang lain.",
+          "Dalam pendekatan strength-based, individu diarahkan untuk mengenali dan menggunakan kekuatan yang dimilikinya sebagai modal untuk berkembang. Penelitian menunjukkan bahwa penggunaan kekuatan personal berkaitan dengan meningkatnya self-esteem, vitalitas, dan pengalaman positif (Govindji & Linley, 2011).",
+        ],
+        callout: "Dalam pendekatan strength-based, individu diarahkan untuk mengenali dan menggunakan kekuatan yang dimilikinya sebagai modal untuk berkembang.",
+      },
+      {
+        id: "ragam-potensi-diri",
+        title: "Ragam Potensi Diri",
+        paragraphs: [
+          "Potensi dapat muncul dalam berbagai bidang kehidupan, antara lain:\n• Akademik/Belajar: memahami materi, berpikir kritis, memecahkan masalah, dan belajar hal baru.\n• Sosial/Emosional: berkomunikasi, bekerja sama, memahami orang lain, dan mengelola emosi.\n• Kreatif/Fisik: membuat karya, menghasilkan ide, menggunakan keterampilan praktik, olahraga, atau aktivitas fisik lainnya.",
+        ],
+      },
+      {
+        id: "pentingnya-mengenali-potensi-diri",
+        title: "Pentingnya Mengenali Potensi Diri",
+        paragraphs: [
+          "Mengenali potensi membantu peserta didik:\n1. Meningkatkan kesadaran dan kepercayaan diri;\n2. Mengurangi kebiasaan membandingkan diri secara negatif dengan orang lain;\n3. Mengetahui kemampuan yang dapat dikembangkan; dan\n4. Membantu menentukan arah pengembangan diri serta masa depan.",
+        ],
+      },
+      {
+        id: "cara-mengenali-mengembangkan-potensi",
+        title: "Cara Mengenali dan Mengembangkan Potensi",
+        paragraphs: [
+          "Potensi dapat ditemukan melalui:\n• Refleksi: mengingat pengalaman atau kegiatan yang pernah dilakukan dengan baik.\n• Feedback: meminta pendapat positif dari teman, guru, atau orang terdekat.\n• Eksplorasi: mencoba kegiatan baru untuk menemukan minat dan kemampuan.\n• Latihan: mengembangkan kemampuan secara konsisten.\n• Tindak lanjut: menentukan satu langkah kecil untuk menggunakan dan mengembangkan potensi tersebut.",
+        ],
+        callout: 'Ingat: "Belum menemukan kelebihanmu bukan berarti kamu tidak punya potensi. Bisa jadi kamu belum cukup banyak mencoba."',
+      },
+    ],
+    stepByStepSection: {
+      title: "Step by Step Bimbingan Klasikal: Permainan Talent Quest",
+      description: "Alur simulasi permainan kelompok Talent Quest untuk mengenali potensi diri:",
+      steps: [
+        {
+          stepNumber: 1,
+          title: "Orientasi & Pembagian Kelompok",
+          text: "Peserta didik memperhatikan penjelasan Guru BK terkait topik potensi diri dan aturan permainan Talent Quest. Peserta didik dibagi ke dalam kelompok kecil (4–5 orang), tiap kelompok memilih 1 warna token dan menentukan urutan giliran anggota (nomor 1, 2, 3, dst).",
+        },
+        {
+          stepNumber: 2,
+          title: "Giliran Bermain & Melempar Dadu",
+          text: "Kelompok bermain secara bergiliran (kelompok 1, kelompok 2, dst): 1 wakil kelompok sesuai urutan maju ke depan, melempar dadu, dan menjalankan token kelompoknya di papan sesuai jumlah mata dadu.",
+        },
+        {
+          stepNumber: 3,
+          title: "Pengambilan Kartu Refleksi Sesuai Warna",
+          text: "Wakil kelompok melihat warna kotak yang didarati, lalu mengambil 1 kartu dari tumpukan yang sesuai warna tersebut (Abu-abu/Kuning/Hijau/Merah), kecuali kotak Diamond yang tidak memerlukan pengambilan kartu apa pun.",
+        },
+        {
+          stepNumber: 4,
+          title: "Menjawab Pertanyaan Reflektif (Abu-abu, Kuning, Hijau)",
+          text: "Jika kartu berwarna Abu-abu, Kuning, atau Hijau: wakil kelompok membacakan pertanyaan reflektif ke kelompoknya dan menjawabnya secara individu di Lembar Jawaban Pribadi (anggota lain boleh menambahkan masukan positif, namun yang menjawab & menulis tetap si wakil).",
+        },
+        {
+          stepNumber: 5,
+          title: "Tantangan Kelompok / Dare (Merah)",
+          text: "Jika kartu berwarna Merah: seluruh kelompok bersama-sama melaksanakan tantangan kelompok (dare) yang tertulis di kartu, dipimpin oleh wakil yang mengambil kartu tersebut.",
+        },
+        {
+          stepNumber: 6,
+          title: "Aturan Kotak Khusus (Diamond, Tangga, & Ular)",
+          text: "Jika mendarat di kotak Diamond: peserta didik tidak mendapat pertanyaan/tantangan apa pun, token tetap di tempat, dan giliran langsung berpindah. Jika kotak memiliki tanda tangga atau ular: peserta didik tetap menjawab/melaksanakan kartu sesuai warna kotak terlebih dahulu, baru setelah itu token naik (tangga) atau turun (ular) ke kotak tujuan.",
+        },
+        {
+          stepNumber: 7,
+          title: "Rotasi Ronde & Pengumuman Pemenang",
+          text: "Pada ronde berikutnya, giliran maju berpindah ke anggota bernomor urut selanjutnya. Permainan berhenti setelah jumlah ronde yang disepakati habis; Guru BK mengumumkan kelompok dengan token terjauh sebagai pemenang disertai apresiasi.",
+        },
+        {
+          stepNumber: 8,
+          title: "Lembar Refleksi Akhir & Penguatan",
+          text: "Peserta didik mengisi Lembar Refleksi Akhir secara individu: menuliskan potensi diri (dari domain apa pun) yang paling ia banggakan dari hasil bermain, serta 1 rencana sederhana untuk mengembangkannya. Guru BK mengarahkan peserta didik mengaitkan hasil permainan dengan pemahaman baru tentang potensi dirinya secara menyeluruh.",
+        },
+      ],
+    },
+    attachment: {
+      fileName: "Materi_Klasikal_Talent_Quest_BK.pdf",
+      fileSize: "2.3 MB",
+    },
+    quizSource: {
+      type: "internal",
+      title: "Evaluasi Potensi Diri",
+      description: "Kuis refleksi pemahaman potensi dan arah pengembangan diri.",
+      internalUrl: "/kuis/8",
+    },
+    prevMaterial: { id: 7, title: "Yuk, Lawan Rasa Malas: Self-Management untuk Konsisten Belajar!" },
+    nextMaterial: { id: 16, title: "Jati Diri Tanpa Kenakalan" },
+  },
+
+  16: {
+    id: 16,
+    subject: "Bimbingan Konseling",
+    title: "Jati Diri Tanpa Kenakalan",
+    level: "Menengah",
+    duration: "40 Menit",
+    author: "Dinda Riestia",
+    updatedAt: "23 Agustus 2026",
+    icon: UserGroupIcon,
+    topics: ["Jati Diri Remaja", "Bentuk Kenakalan", "Norma Pergaulan", "Peer Pressure", "Mind Mapping"],
+    description: "Memahami pembentukan jati diri remaja, menyelaraskan norma pergaulan teman sebaya, mengatasi peer pressure, dan studi kasus problem-based learning.",
+    imageUrl: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "Ilustrasi 16.1: Menjaga Jati Diri Positif dan Solidaritas Sehat dalam Pergaulan Remaja.",
+    contentSections: [
+      {
+        id: "pengertian-jati-diri",
+        title: "Pengertian Jati Diri",
+        paragraphs: [
+          "Jati diri adalah keseluruhan ciri khas, nilai, dan prinsip yang dipegang seseorang sehingga membedakannya dari orang lain, sekaligus menjadi pedoman dalam bersikap dan bertindak. Pada masa remaja, pencarian jati diri berlangsung sangat intens, salah satunya melalui interaksi dan pergaulan dengan teman sebaya.",
+          "Remaja yang memiliki jati diri kuat akan lebih mampu bertahan pada nilai-nilai yang diyakininya meskipun mendapat tekanan dari lingkungan pergaulan.",
+        ],
+        callout: "Remaja yang memiliki jati diri kuat akan lebih mampu bertahan pada nilai-nilai yang diyakininya meskipun mendapat tekanan dari lingkungan pergaulan.",
+      },
+      {
+        id: "pengertian-bentuk-kenakalan",
+        title: "Pengertian dan Bentuk-Bentuk Kenakalan Remaja",
+        paragraphs: [
+          "Kenakalan remaja adalah perilaku menyimpang yang dilakukan remaja dan melanggar norma sosial, norma sekolah, maupun norma hukum, seringkali dipicu oleh tekanan untuk diterima dalam kelompok pergaulan.",
+          "Bentuk-bentuk kenakalan remaja yang umum dijumpai antara lain:\n• Membolos atau menyontek secara masif karena ikut-ikutan teman.\n• Mengucilkan atau merundung (bullying) teman yang dianggap berbeda.\n• Terlibat tawuran atau perkelahian kelompok.\n• Merokok, konsumsi minuman keras, atau zat terlarang karena ajakan kelompok.\n• Melanggar tata tertib sekolah demi solidaritas semu dengan kelompok pergaulan.",
+        ],
+      },
+      {
+        id: "norma-pergaulan-teman-sebaya",
+        title: "Norma-Norma Pergaulan Teman Sebaya",
+        paragraphs: [
+          "Norma pergaulan adalah aturan tidak tertulis yang mengatur bagaimana seseorang seharusnya bersikap dalam suatu kelompok pertemanan. Norma ini dapat berbeda-beda antarkelompok, tergantung latar belakang budaya, ekonomi, kebiasaan, maupun nilai yang dipegang tiap anggota.",
+          "Perbedaan norma inilah yang sering menjadi sumber gesekan ketika seseorang bergaul dengan teman-teman dari latar belakang yang beragam.",
+        ],
+      },
+      {
+        id: "menyelaraskan-norma-diri",
+        title: "Menyelaraskan Norma Diri dengan Norma Pergaulan yang Beragam",
+        paragraphs: [
+          "• Kenali norma dan nilai yang kamu pegang sebagai bagian dari jati dirimu.\n• Kenali dan pahami norma yang dianut lingkungan pergaulan, meskipun berbeda dari norma pribadi.\n• Pilah mana perbedaan yang bisa ditoleransi dan mana yang bertentangan dengan nilai/prinsip diri.\n• Komunikasikan batasanmu secara jujur dan tegas, tanpa harus memutus hubungan pertemanan.\n• Cari titik temu, seperti kesamaan minat atau tujuan, untuk membangun kepercayaan dan solidaritas yang sehat.",
+        ],
+      },
+      {
+        id: "menyikapi-peer-pressure",
+        title: "Menyikapi Tekanan Teman Sebaya (Peer Pressure) Tanpa Kehilangan Jati Diri",
+        paragraphs: [
+          "• Sadari bahwa menolak ajakan yang merugikan bukan berarti tidak setia kawan.\n• Latih keberanian mengatakan “tidak” dengan cara yang tetap menghargai teman.\n• Cari dukungan dari teman atau orang dewasa yang memiliki nilai sejalan denganmu.\n• Ingat kembali tujuan dan cita-citamu setiap kali mendapat tekanan untuk melakukan hal yang bertentangan dengan nilai dirimu.\n• Bangun pertemanan yang saling menguatkan, bukan yang membuatmu harus mengorbankan jati diri demi diterima.",
+        ],
+        callout: "Bangun pertemanan yang saling menguatkan, bukan yang membuatmu harus mengorbankan jati diri demi diterima.",
+      },
+    ],
+    stepByStepSection: {
+      title: "Step by Step Bimbingan: Problem Based Learning & Mind Mapping",
+      description: "Alur studi kasus dan perumusan pemecahan masalah kenakalan remaja:",
+      steps: [
+        {
+          stepNumber: 1,
+          title: "Memahami Orientasi Masalah (C2)",
+          text: "Guru BK menayangkan/membagikan lembar studi kasus mengenai fenomena pergaulan teman sebaya yang mengarah pada kenakalan remaja. Peserta didik menyimak dan mengidentifikasi masalah utama, norma yang dilanggar, serta latar belakang perbedaan yang memicu konflik dalam kasus tersebut.",
+        },
+        {
+          stepNumber: 2,
+          title: "Organisasi Belajar & Pembagian Kelompok (C4, P3)",
+          text: "Peserta didik dibagi ke dalam kelompok kecil (4–5 orang). Tiap kelompok mendiskusikan studi kasus: mengidentifikasi norma yang dilanggar tokoh, latar belakang perbedaan yang memicu tekanan dari teman sebaya, serta dampaknya terhadap jati diri tokoh dalam kasus.",
+        },
+        {
+          stepNumber: 3,
+          title: "Perumusan Solusi Alternatif",
+          text: "Tiap kelompok merumuskan alternatif solusi/cara menyelaraskan norma pergaulan yang beragam tanpa harus terjerumus pada kenakalan, berdasarkan hasil diskusi kelompok.",
+        },
+        {
+          stepNumber: 4,
+          title: "Penuangan ke Dalam Mind Map",
+          text: "Tiap kelompok menuangkan hasil identifikasi masalah, analisis, dan solusi ke dalam Mind Map pada kertas plano/HVS yang telah disediakan, menggunakan LKPD sebagai panduan cabang utama, namun bebas menambahkan cabang, gambar, simbol, atau warna sesuai kreativitas kelompok.",
+        },
+        {
+          stepNumber: 5,
+          title: "Bimbingan & Scaffolding Guru BK",
+          text: "Guru BK berkeliling membimbing dan memberi scaffolding pada tiap kelompok selama proses diskusi maupun saat menyusun mind map.",
+        },
+        {
+          stepNumber: 6,
+          title: "Presentasi & Evaluasi Pemecahan Masalah (A4, P3)",
+          text: "Tiap kelompok mempresentasikan mind map yang telah dibuat secara singkat di depan kelas. Kelompok lain diberi kesempatan menanggapi, bertanya, atau menambahkan pendapat setelah presentasi.",
+        },
+        {
+          stepNumber: 7,
+          title: "Penguatan Konsep & Refleksi Individu",
+          text: "Guru BK memberikan penguatan dan meluruskan konsep pada tiap hasil presentasi kelompok. Peserta didik merefleksikan secara individu norma pergaulan sehat apa yang akan mereka terapkan mulai sekarang, dituliskan pada bagian refleksi di LKPD.",
+        },
+      ],
+    },
+    attachment: {
+      fileName: "RPL_Klasikal_Jati_Diri_Tanpa_Kenakalan.pdf",
+      fileSize: "2.0 MB",
+    },
+    quizSource: {
+      type: "internal",
+      title: "Evaluasi Jati Diri Remaja",
+      description: "Uji pemahaman menghadapi peer pressure dan menjaga prinsip diri.",
+      internalUrl: "/kuis/16",
+    },
+    prevMaterial: { id: 8, title: "Talent Quest: Temukan Potensimu, Kembangkan Dirimu!" },
+    nextMaterial: { id: 17, title: "Membangun Konsep Diri Positif" },
+  },
+
+  17: {
+    id: 17,
+    subject: "Bimbingan Konseling",
+    title: "Membangun Konsep Diri Positif",
+    level: "Pemula",
+    duration: "30 Menit",
+    author: "Erintan Tsuraya Rahadatul'Aisy",
+    updatedAt: "24 Agustus 2026",
+    icon: UserGroupIcon,
+    topics: ["Pengertian Konsep Diri", "Self-Image", "Self-Esteem", "Ideal Self", "Faktor Pembentuk"],
+    description: "Memahami konsep diri remaja, 3 komponen utama (self-image, self-esteem, ideal self), faktor lingkungan, serta aktivitas refleksi diri telapak tangan.",
+    imageUrl: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "Ilustrasi 17.1: Pembentukan Konsep Diri Positif dan Eksplorasi Kepribadian Remaja.",
+    contentSections: [
+      {
+        id: "pengertian-konsep-diri",
+        title: "Pengertian Konsep Diri",
+        paragraphs: [
+          "Konsep diri adalah cara seseorang memandang, memahami, dan menilai dirinya sendiri. Konsep diri terbentuk dari pengalaman, interaksi sosial, serta bagaimana seseorang menafsirkan berbagai pengalaman tersebut. Hapsari et al. (2023) menjelaskan bahwa konsep diri merupakan persepsi seseorang terhadap dirinya yang terbentuk melalui pengalaman dan interpretasi terhadap lingkungan. Konsep diri juga dapat menjadi sumber motivasi dan membantu seseorang mengorganisasi pengalaman hidupnya.",
+          "Pada masa remaja, konsep diri menjadi semakin penting karena individu mengalami berbagai perubahan fisik, sosial, emosional, dan akademik. Crone et al. (2022) menjelaskan bahwa perkembangan konsep diri pada masa remaja mengalami perubahan yang berkaitan dengan evaluasi diri, pengambilan perspektif, dan perbandingan sosial. Perubahan tersebut dapat menjadi tantangan sekaligus kesempatan untuk mengembangkan pemahaman diri yang lebih positif.",
+        ],
+        callout: "Konsep diri merupakan persepsi seseorang terhadap dirinya yang terbentuk melalui pengalaman dan interpretasi terhadap lingkungan, sekaligus menjadi sumber motivasi hidup.",
+      },
+      {
+        id: "komponen-konsep-diri",
+        title: "Komponen Konsep Diri",
+        paragraphs: [
+          "Dalam materi ini, konsep diri terdiri dari tiga komponen utama:",
+          "a. Self-Image (Gambaran Diri)\nSelf-image adalah bagaimana seseorang memandang atau menggambarkan dirinya sendiri, termasuk pandangan terhadap karakteristik, kemampuan, penampilan, serta berbagai aspek yang dianggap melekat pada dirinya. McMullen (2020) menjelaskan bahwa self-image berkaitan dengan bagaimana individu melihat dirinya dan terdiri atas berbagai sikap, pendapat, serta ideal mengenai diri.\nHal ini dapat mencakup:\n• bagaimana seseorang melihat kondisi fisiknya;\n• kemampuan yang dimiliki;\n• sifat dan kepribadian;\n• kemampuan berinteraksi dengan orang lain;\n• peran yang dimiliki di keluarga, sekolah, maupun lingkungan sosial.\nContoh: \"Saya orang yang cukup ramah, tetapi saya masih gugup ketika berbicara di depan banyak orang.\"",
+          "b. Self-Esteem (Harga Diri)\nSelf-esteem adalah penilaian atau perasaan seseorang terhadap nilai dan keberhargaan dirinya. Jadi, jika self-image lebih berkaitan dengan bagaimana seseorang melihat dirinya, self-esteem berkaitan dengan bagaimana seseorang menilai dan menghargai dirinya berdasarkan gambaran tersebut. Calhoun (1977) membedakan self-esteem dari self-concept dengan menjelaskan self-esteem sebagai kepuasan individu terhadap konsep dirinya. Morin (2017) juga menempatkan self-esteem sebagai bagian dari self-views, yaitu aspek yang berkaitan dengan isi pandangan dan perasaan seseorang mengenai dirinya.\nContoh self-esteem yang sehat:\n• berani mencoba meskipun belum yakin hasilnya sempurna;\n• mampu menerima kritik;\n• tidak langsung menganggap kegagalan sebagai bukti bahwa dirinya tidak mampu;\n• menghargai usaha yang telah dilakukan.\nReview sistematis Hapsari et al. (2023) juga menunjukkan bahwa konsep diri merupakan konstruk yang multidimensional sehingga perlu dipahami secara menyeluruh.",
+          "c. Ideal Self (Diri Ideal)\nIdeal self adalah gambaran mengenai diri yang diinginkan atau ingin dicapai seseorang di masa depan. Ideal self berisi harapan, aspirasi, karakteristik, atau kualitas yang ingin dimiliki individu. Dalam kajian mengenai ideal self, Boyatzis dan kolega menjelaskan ideal self sebagai gambaran tentang versi diri masa depan yang paling diinginkan, yang berkaitan dengan nilai, tujuan, harapan, dan aspirasi seseorang. Sementara itu, Endo (1987) mendefinisikan ideal self sebagai struktur kognitif yang memuat representasi mengenai keadaan diri yang diinginkan dan tidak diinginkan.\nContohnya:\n• ingin menjadi lebih percaya diri;\n• ingin menjadi siswa yang disiplin;\n• ingin mampu berbicara di depan umum;\n• ingin memiliki hubungan sosial yang lebih baik;\n• ingin mengembangkan kemampuan tertentu.\nIdeal self dapat menjadi arah untuk berkembang. Namun, tujuan tersebut sebaiknya realistis dan dilakukan secara bertahap.\nContoh:\nKondisi sekarang: \"Saya masih takut presentasi.\"\nDiri ideal: \"Saya ingin mampu melakukan presentasi dengan percaya diri.\"\nLangkah: \"Saya akan berlatih berbicara selama 5–10 menit sebelum presentasi.\"",
+        ],
+        callout: "Ideal self dapat menjadi arah untuk berkembang secara realistis dan bertahap dari kondisi sekarang menuju versi diri terbaik.",
+      },
+      {
+        id: "faktor-mempengaruhi-konsep-diri",
+        title: "Faktor yang Mempengaruhi Konsep Diri",
+        paragraphs: [
+          "Konsep diri tidak terbentuk hanya dari dalam diri individu. Lingkungan sosial juga memiliki peran penting:",
+          "a. Keluarga: Keluarga menjadi tempat pertama seseorang belajar mengenal dirinya. Dukungan, perhatian, penerimaan, dan cara keluarga memberikan kritik dapat membentuk cara seseorang memandang dan menghargai dirinya.\n\nb. Teman Sebaya: Teman sebaya berpengaruh besar pada masa remaja. Dukungan dan penerimaan teman dapat meningkatkan kepercayaan diri, sedangkan penolakan atau ejekan dapat membuat seseorang merasa kurang percaya diri.\n\nc. Guru dan Lingkungan Sekolah: Guru dan lingkungan sekolah membantu siswa mengenali kemampuan, potensi, dan perannya sebagai seorang siswa. Lingkungan sekolah yang aman dan mendukung dapat membantu siswa memiliki pandangan positif terhadap dirinya.\n\nd. Pengalaman Hidup: Berbagai pengalaman, baik keberhasilan maupun kegagalan, dapat membentuk konsep diri. Keberhasilan dapat meningkatkan kepercayaan diri, sedangkan kegagalan dapat menjadi pembelajaran untuk berkembang.\n\ne. Media Sosial: Media sosial dapat memengaruhi cara remaja melihat dan menilai dirinya. Penggunaan yang positif dapat menjadi sumber inspirasi, tetapi terlalu sering membandingkan diri dengan orang lain dapat membuat seseorang merasa kurang percaya diri.",
+        ],
+      },
+    ],
+    stepByStepSection: {
+      title: "Aktivitas Refleksi & Diskusi Konsep Diri Positif",
+      description: "Langkah-langkah refleksi individu metode telapak tangan dan diskusi kelompok:",
+      steps: [
+        {
+          stepNumber: 1,
+          title: "Jiplak Telapak Tangan pada Kertas",
+          text: "Jiplak telapak tanganmu pada selembar kertas terpisah sebagai media pemetaan konsep diri.",
+        },
+        {
+          stepNumber: 2,
+          title: "Isi Jari Jempol (Kelebihan & Kebanggaan)",
+          text: "Tuliskan kelebihan atau hal yang paling kamu banggakan dari dalam dirimu.",
+        },
+        {
+          stepNumber: 3,
+          title: "Isi Jari Telunjuk (Cita-cita & Tujuan)",
+          text: "Tuliskan cita-cita atau tujuan utama yang ingin dan harus kamu capai di masa depan.",
+        },
+        {
+          stepNumber: 4,
+          title: "Isi Jari Tengah (Kekurangan yang Ingin Diubah)",
+          text: "Tuliskan kekurangan atau kebiasaan kurang baik yang ingin kamu hilangkan secara bertahap.",
+        },
+        {
+          stepNumber: 5,
+          title: "Isi Jari Manis (Rasa Syukur)",
+          text: "Tuliskan hal-hal berharga apa saja yang paling kamu syukuri dalam perjalanan hidupmu.",
+        },
+        {
+          stepNumber: 6,
+          title: "Isi Jari Kelingking (Kebiasaan Kecil Positif)",
+          text: "Tuliskan kebiasaan kecil positif yang sering dan konsisten kamu lakukan sehari-hari.",
+        },
+        {
+          stepNumber: 7,
+          title: "Diskusi Kelompok Suportif (5-6 Orang)",
+          text: "Bentuk kelompok kecil dan diskusikan: (1) momen ketika kamu merasa percaya diri, (2) cara bangkit saat kurang percaya diri, dan (3) satu langkah konkret minggu ini untuk lebih menghargai dirimu.",
+        },
+      ],
+    },
+    attachment: {
+      fileName: "Materi_Membangun_Konsep_Diri_Positif.pdf",
+      fileSize: "2.1 MB",
+    },
+    quizSource: {
+      type: "internal",
+      title: "Refleksi Konsep Diri",
+      description: "Uji pemahaman dan asesmen konsep diri positif peserta didik.",
+      internalUrl: "/kuis/17",
+    },
+    prevMaterial: { id: 16, title: "Jati Diri Tanpa Kenakalan" },
+    nextMaterial: { id: 18, title: "Personal Branding: Membangun Citra Diri Positif" },
+  },
+
+  18: {
+    id: 18,
+    subject: "Bimbingan Konseling",
+    title: "Personal Branding: Membangun Citra Diri Positif",
+    level: "Pemula",
+    duration: "35 Menit",
+    author: "Erintan Tsuraya Rahadatul'Aisy",
+    updatedAt: "24 Agustus 2026",
+    icon: UserGroupIcon,
+    topics: ["Personal Branding", "Potensi Diri", "Unsur Branding", "Kesiapan PKL & Kerja"],
+    description: "Mengenali keunikan dan potensi diri, membangun citra profesional positif, serta persiapan menghadapi PKL dan dunia kerja bagi siswa SMK.",
+    imageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "Ilustrasi 18.1: Membangun Identitas Profesional dan Citra Diri Positif Siswa SMK.",
+    contentSections: [
+      {
+        id: "pengertian-personal-branding",
+        title: "Pengertian Personal Branding",
+        paragraphs: [
+          "Personal branding adalah proses seseorang dalam mengenali, mengembangkan, dan menunjukkan kemampuan, karakter, nilai, serta keunikan dirinya sehingga terbentuk kesan tertentu dari orang lain. Personal branding berkaitan dengan bagaimana seseorang mengomunikasikan kompetensi dan karakter dirinya untuk membangun identitas profesional (Kushal & Nargundkar, 2021).",
+          "Personal branding tidak hanya berkaitan dengan bagaimana seseorang terlihat, tetapi juga bagaimana ia bersikap, berkomunikasi, bekerja, dan menunjukkan kemampuan secara konsisten. Pengembangan personal branding dapat membantu peserta didik memahami kekuatan dirinya dan menghubungkannya dengan kebutuhan dunia kerja (Alonso-García et al., 2018). Bagi siswa SMK, personal branding penting karena dapat membantu mempersiapkan diri menghadapi PKL, wawancara kerja, dunia kerja, maupun pengembangan karier. Personal branding yang baik dibangun berdasarkan potensi dan karakter diri yang sebenarnya, bukan dengan berpura-pura menjadi orang lain (Kushal & Nargundkar, 2021).",
+        ],
+        callout: "Personal branding yang baik dibangun berdasarkan potensi dan karakter diri yang sebenarnya secara autentik, bukan dengan berpura-pura menjadi orang lain.",
+      },
+      {
+        id: "tujuan-personal-branding",
+        title: "Tujuan Personal Branding",
+        paragraphs: [
+          "Personal branding bertujuan untuk:\n1. Membantu seseorang mengenali potensi dan keunikan dirinya.\n2. Meningkatkan kepercayaan diri.\n3. Membantu seseorang menunjukkan kemampuan secara positif.\n4. Membangun kesan positif di lingkungan sekolah maupun kerja.\n5. Meningkatkan kemampuan berkomunikasi dan berinteraksi.\n6. Mendukung kesiapan menghadapi PKL dan dunia kerja.\n7. Membantu menentukan arah pengembangan diri dan karier.",
+          "Pengembangan personal branding dalam pembelajaran dapat membantu peserta didik melakukan refleksi terhadap kemampuan dirinya, memahami kekuatan yang dimiliki, serta belajar mengkomunikasikan kompetensi kepada lingkungan profesional (Kushal & Nargundkar, 2021).",
+        ],
+      },
+      {
+        id: "mengenali-potensi-diri",
+        title: "Mengenali Potensi Diri",
+        paragraphs: [
+          "Potensi diri adalah kemampuan, kekuatan, minat, atau bakat yang dimiliki seseorang dan masih dapat dikembangkan melalui proses belajar dan pengalaman. Mengenali potensi diri merupakan bagian penting dalam membangun personal branding karena seseorang perlu mengetahui kemampuan, kelebihan, dan karakteristik dirinya sebelum menentukan hal yang ingin ditonjolkan (Building Your Brand, 2016).",
+          "Jenis-Jenis Potensi Diri:\n• Potensi intelektual: Kemampuan memahami informasi, berpikir kritis, memecahkan masalah, dan mengambil keputusan.\n• Potensi kreativitas: Kemampuan menghasilkan ide, karya, atau cara baru dalam menyelesaikan sesuatu.\n• Potensi komunikasi: Kemampuan menyampaikan pendapat dan informasi serta membangun hubungan dengan orang lain.\n• Potensi kepemimpinan: Kemampuan mengarahkan, mengorganisasi, mengambil keputusan, dan bertanggung jawab terhadap kelompok.\n• Potensi sosial: Kemampuan bekerja sama, berempati, menghargai orang lain, dan beradaptasi dengan lingkungan.\n• Potensi keterampilan: Kemampuan melakukan pekerjaan tertentu, seperti desain, pemrograman, editing, administrasi, teknik, tata boga, dan keterampilan sesuai bidang keahlian.",
+        ],
+      },
+      {
+        id: "cara-mengenali-potensi-diri",
+        title: "Cara Mengenali Potensi Diri",
+        paragraphs: [
+          "Untuk mengenali potensi diri, peserta didik dapat melakukan beberapa hal berikut:\n1. Mengenali hal yang disukai: Perhatikan kegiatan yang membuat diri merasa tertarik dan bersemangat.\n2. Mengidentifikasi kemampuan: Tuliskan hal-hal yang dapat dilakukan dengan baik.\n3. Mengingat pengalaman keberhasilan: Perhatikan kegiatan atau tugas yang pernah berhasil dilakukan.\n4. Meminta umpan balik: Tanyakan kepada guru, teman, atau keluarga mengenai kelebihan yang mereka lihat.\n5. Mencoba berbagai kegiatan: Pengalaman baru dapat membantu menemukan kemampuan yang sebelumnya belum diketahui.\n6. Mengevaluasi diri: Tentukan kemampuan yang sudah dimiliki dan kemampuan yang masih perlu dikembangkan.",
+        ],
+      },
+      {
+        id: "unsur-personal-branding",
+        title: "Unsur-Unsur Personal Branding",
+        paragraphs: [
+          "Personal branding dapat dibangun melalui beberapa unsur berikut:\n1. Kemampuan: Kemampuan menjadi salah satu dasar dalam menunjukkan keunikan diri. Kompetensi yang dimiliki perlu dikembangkan dan dikomunikasikan agar dapat diketahui oleh orang lain (Kushal & Nargundkar, 2021).\n2. Karakter: Karakter seperti jujur, disiplin, bertanggung jawab, dan dapat dipercaya akan mempengaruhi kesan orang lain terhadap diri seseorang.\n3. Komunikasi: Cara berbicara, mendengarkan, menyampaikan pendapat, dan berinteraksi menjadi bagian penting dalam membangun personal branding. Kemampuan mengkomunikasikan keterampilan juga menjadi bagian dari kesiapan menghadapi dunia kerja (Kushal & Nargundkar, 2021).\n4. Penampilan yang Sesuai: Penampilan yang bersih, rapi, dan sesuai dengan situasi dapat menunjukkan kesiapan dan profesionalitas.\n5. Sikap: Sikap sopan, menghargai orang lain, terbuka terhadap masukan, dan mampu bekerja sama dapat membantu membentuk kesan positif.\n6. Konsistensi: Personal branding tidak terbentuk hanya dalam satu kesempatan. Kesan terhadap seseorang dibangun melalui kemampuan, karakter, dan perilaku yang ditunjukkan secara konsisten (Alonso-García et al., 2018).",
+        ],
+        callout: "Kesan terhadap seseorang dibangun melalui kemampuan, karakter, komunikasi, dan perilaku yang ditunjukkan secara konsisten.",
+      },
+      {
+        id: "cara-membangun-personal-branding-positif",
+        title: "Cara Membangun Personal Branding Positif untuk Siswa SMK",
+        paragraphs: [
+          "1. Kenali diri sendiri: Ketahui minat, kemampuan, kelebihan, kekurangan, dan nilai yang dimiliki.\n2. Tentukan keunggulan yang ingin dikembangkan: Pilih kemampuan yang sesuai dengan minat dan bidang keahlian.\n3. Terus belajar dan berlatih: Potensi tidak akan berkembang tanpa latihan dan pengalaman.\n4. Tunjukkan kemampuan melalui tindakan: Ikuti kegiatan, proyek, organisasi, PKL, atau aktivitas lain yang dapat menjadi pengalaman.\n5. Bangun komunikasi yang baik: Berbicara dengan jelas, sopan, percaya diri, dan menghargai lawan bicara.\n6. Bangun sikap profesional: Biasakan disiplin, tepat waktu, bertanggung jawab, jujur, dan mampu bekerja sama.\n7. Terima kritik dan evaluasi diri: Evaluasi diri membantu individu mengetahui kekuatan dan aspek yang masih perlu dikembangkan.\n8. Konsisten: Pertahankan perilaku positif dalam berbagai situasi karena personal branding dibangun melalui proses yang berkelanjutan.",
+        ],
+      },
+    ],
+    stepByStepSection: {
+      title: "Panduan Analisis Kasus Personal Branding",
+      description: "Langkah analisis studi kasus persiapan PKL dan dunia industri:",
+      steps: [
+        {
+          stepNumber: 1,
+          title: "Identifikasi Potensi & Bakat Utama",
+          text: "Identifikasi keahlian teknis dan minat khusus yang kamu kuasai (misal: desain grafis, coding, editing, otomotif).",
+        },
+        {
+          stepNumber: 2,
+          title: "Dokumentasikan Portofolio Karya",
+          text: "Kumpulkan hasil tugas dan proyek nyata terbaik yang pernah dibuat ke dalam portofolio digital/fisik.",
+        },
+        {
+          stepNumber: 3,
+          title: "Latih Komunikasi Artikulatif",
+          text: "Latih cara menjelaskan hasil karya dan proses pengerjaannya dengan bahasa yang sopan, runtut, dan percaya diri.",
+        },
+        {
+          stepNumber: 4,
+          title: "Kembangkan Sikap Profesional",
+          text: "Terapkan disiplin waktu, etika berkomunikasi dengan pembimbing, serta keterbukaan menerima umpan balik.",
+        },
+      ],
+    },
+    attachment: {
+      fileName: "Materi_Personal_Branding_SMK.pdf",
+      fileSize: "2.4 MB",
+    },
+    quizSource: {
+      type: "internal",
+      title: "Studi Kasus Personal Branding",
+      description: "Analisis situasi Dimas dan uji pemahaman personal branding vokasi.",
+      internalUrl: "/kuis/18",
+    },
+    prevMaterial: { id: 17, title: "Membangun Konsep Diri Positif" },
+    nextMaterial: { id: 19, title: "Persiapan Magang dan Etika di Dunia Kerja" },
+  },
+
+  19: {
+    id: 19,
+    subject: "Bimbingan Konseling",
+    title: "Persiapan Magang dan Etika di Dunia Kerja",
+    level: "Menengah",
+    duration: "40 Menit",
+    author: "Erintan Tsuraya Rahadatul'Aisy",
+    updatedAt: "24 Agustus 2026",
+    icon: UserGroupIcon,
+    topics: ["Persiapan Magang", "Soft Skills Vokasi", "Etika Kerja", "Tips Profesional"],
+    description: "Panduan komprehensif persiapan administratif, keterampilan, mental, dan penampilan serta etika profesional saat magang di industri.",
+    imageUrl: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "Ilustrasi 19.1: Kesiapan Siswa SMK Mengikuti Magang dan Penerapan Etika Profesional Industri.",
+    contentSections: [
+      {
+        id: "pengertian-magang-dunia-kerja",
+        title: "Pengertian Magang dan Dunia Kerja",
+        paragraphs: [
+          "Magang merupakan kegiatan pembelajaran yang memberikan kesempatan kepada peserta didik untuk memperoleh pengalaman secara langsung di lingkungan kerja. Melalui magang, peserta didik dapat menerapkan pengetahuan dan keterampilan yang telah dipelajari di sekolah sekaligus mengenal budaya, aturan, dan tuntutan dunia kerja.",
+          "Memasuki dunia kerja tidak hanya membutuhkan kemampuan teknis sesuai bidang keahlian, tetapi juga membutuhkan sikap profesional, kemampuan berkomunikasi, tanggung jawab, kedisiplinan, dan kemampuan bekerja sama. Penelitian Brodsky et al. (2024) menunjukkan bahwa pengalaman magang dapat menjadi ruang pembelajaran informal yang membantu peserta memperoleh pengalaman kerja, keterampilan, dan jaringan profesional.",
+        ],
+        callout: "Magang adalah jembatan emas penerapan kompetensi kejuruan sekaligus pembentukan sikap profesional dan etika kerja nyata.",
+      },
+      {
+        id: "persiapan-sebelum-magang",
+        title: "Persiapan Sebelum Magang atau Bekerja",
+        paragraphs: [
+          "Persiapan sebelum memasuki dunia kerja tidak hanya berkaitan dengan kemampuan teknis, tetapi juga kesiapan diri, kemampuan beradaptasi, dan keterampilan interpersonal. Penelitian pada mahasiswa magang menunjukkan bahwa pengalaman magang dapat berkontribusi terhadap pengembangan self-regulation, self-awareness, dan self-direction (Downs et al., 2024).",
+          "Hal-hal yang perlu dipersiapkan antara lain:\n1. Persiapan Administrasi:\n• Menyiapkan dokumen yang diperlukan.\n• Mengetahui lokasi dan jadwal magang.\n• Memahami aturan yang berlaku di tempat magang.\n• Menyiapkan perlengkapan yang dibutuhkan.\n\n2. Persiapan Pengetahuan dan Keterampilan:\n• Memahami kompetensi dasar sesuai jurusan.\n• Mempelajari tugas yang kemungkinan akan diberikan.\n• Menguasai penggunaan alat atau teknologi yang berkaitan dengan pekerjaan.\n• Meningkatkan kemampuan komunikasi dan kerja sama.\n\n3. Persiapan Mental:\n• Memiliki kemauan untuk belajar.\n• Berani bertanya ketika belum memahami tugas.\n• Mampu menerima kritik dan saran.\n• Bersedia beradaptasi dengan lingkungan baru.\n• Tidak mudah menyerah ketika menghadapi kesulitan.\n\n4. Persiapan Penampilan:\n• Berpakaian sesuai ketentuan tempat kerja.\n• Menjaga kebersihan dan kerapian diri.\n• Menggunakan atribut atau perlengkapan kerja sesuai kebutuhan.",
+        ],
+      },
+      {
+        id: "soft-skills-dunia-kerja",
+        title: "Soft Skills yang Dibutuhkan di Dunia Kerja",
+        paragraphs: [
+          "Selain hard skills, peserta didik perlu mengembangkan soft skills, yaitu kemampuan yang berkaitan dengan sikap dan cara berinteraksi dengan orang lain:\n1. Komunikasi: mampu menyampaikan informasi dengan jelas dan sopan.\n2. Kerja sama: mampu bekerja bersama orang lain untuk mencapai tujuan.\n3. Manajemen waktu: mampu mengatur waktu dan menyelesaikan tugas sesuai batas waktu.\n4. Problem solving: mampu mencari solusi ketika menghadapi masalah.\n5. Adaptasi: mampu menyesuaikan diri dengan lingkungan dan situasi baru.\n6. Tanggung jawab: mampu menyelesaikan tugas dan menerima konsekuensi dari tindakan.\n7. Inisiatif: memiliki kemauan untuk bertindak dan belajar tanpa selalu menunggu perintah.",
+        ],
+      },
+      {
+        id: "etika-dunia-kerja",
+        title: "Etika di Dunia Kerja",
+        paragraphs: [
+          "Etika kerja adalah nilai dan aturan mengenai perilaku yang baik dan tepat ketika berada di lingkungan kerja agar tercipta lingkungan yang profesional, nyaman, dan saling menghargai:\n1. Disiplin: Datang tepat waktu, mengikuti jadwal, dan mematuhi peraturan yang berlaku.\n2. Bertanggung jawab: Menyelesaikan tugas dengan sungguh-sungguh dan tidak mengabaikan pekerjaan.\n3. Sopan dan menghargai orang lain: Menggunakan bahasa yang baik serta menghormati pembimbing, atasan, rekan kerja, dan pihak lainnya.\n4. Jujur: Menyampaikan informasi sesuai keadaan dan tidak mengambil sesuatu yang bukan haknya.\n5. Mau belajar dan menerima kritik: Tidak malu bertanya ketika belum memahami pekerjaan serta menerima masukan sebagai bagian dari proses belajar.\n6. Menjaga komunikasi: Menyampaikan informasi dengan jelas dan memberi tahu pembimbing apabila mengalami kendala.\n7. Menjaga kerahasiaan: Tidak menyebarkan informasi atau dokumen perusahaan yang bersifat rahasia.\n8. Menjaga fasilitas: Menggunakan peralatan kerja dengan baik dan bertanggung jawab.",
+        ],
+        callout: "Integritas, disiplin waktu, dan kerahasiaan perusahaan merupakan pilar utama etika profesional di dunia industri.",
+      },
+      {
+        id: "perilaku-dihindari",
+        title: "Perilaku yang Sebaiknya Dihindari",
+        paragraphs: [
+          "Beberapa perilaku yang dapat memberikan kesan kurang profesional antara lain:\n1. Datang terlambat tanpa alasan yang jelas.\n2. Bermain HP ketika sedang bekerja tanpa izin.\n3. Mengabaikan instruksi pembimbing.\n4. Menunda-nunda pekerjaan.\n5. Berbicara tidak sopan kepada orang lain.\n6. Menyalahkan orang lain ketika melakukan kesalahan.\n7. Menyebarkan informasi internal perusahaan.\n8. Menggunakan fasilitas tempat kerja secara sembarangan.\n9. Tidak menjaga kebersihan dan kerapian.\n10. Menolak kritik atau masukan.",
+        ],
+      },
+      {
+        id: "tips-peserta-magang-profesional",
+        title: "Tips Menjadi Peserta Magang yang Profesional",
+        paragraphs: [
+          "• Sebelum bekerja:\nDatang tepat waktu (10–15 menit lebih awal). Pastikan perlengkapan sudah siap. Ketahui tugas yang harus dilakukan.\n\n• Saat bekerja:\nDengarkan instruksi dengan seksama. Bertanya jika belum memahami tugas. Kerjakan tugas dengan teliti. Jaga komunikasi dan sopan santun. Gunakan HP sesuai aturan perusahaan.\n\n• Setelah bekerja:\nPeriksa kembali hasil pekerjaan. Rapikan peralatan dan tempat kerja. Evaluasi hal yang sudah dipelajari. Catat hal yang masih perlu diperbaiki.",
+        ],
+      },
+    ],
+    stepByStepSection: {
+      title: "Checklist Kesiapan Magang Harian Siswa SMK",
+      description: "Panduan alur harian menjadi peserta magang yang disiplin dan profesional:",
+      steps: [
+        {
+          stepNumber: 1,
+          title: "Persiapan Keberangkatan (H-30 Menit)",
+          text: "Pastikan seragam/pakaian rapi sesuai SOP industri, kartu identitas, buku jurnal magang, dan alat kerja telah siap.",
+        },
+        {
+          stepNumber: 2,
+          title: "Tiba Tepat Waktu (10–15 Menit Lebih Awal)",
+          text: "Hadir sebelum jam kerja dimulai, lakukan presensi, dan sapa pembimbing lapangan serta rekan kerja dengan sopan.",
+        },
+        {
+          stepNumber: 3,
+          title: "Briefing & Penerimaan Instruksi Kerja",
+          text: "Simak arahan tugas harian dengan fokus. Catat poin-poin penting dan jangan ragu bertanya jika ada bagian teknis yang belum dipahami.",
+        },
+        {
+          stepNumber: 4,
+          title: "Eksekusi Pekerjaan dengan Teliti & Tanggung Jawab",
+          text: "Kerjakan tugas sesuai standar keselamatan dan mutu perusahaan. Jauhkan penggunaan gawai pribadi selama jam operasional.",
+        },
+        {
+          stepNumber: 5,
+          title: "Pemeriksaan Akhir & Perapian Area Kerja",
+          text: "Cek kembali hasil pekerjaan, bersihkan dan kembalikan peralatan kerja ke tempat semula, serta lakukan evaluasi mandiri.",
+        },
+      ],
+    },
+    attachment: {
+      fileName: "Panduan_Etika_dan_Persiapan_Magang_SMK.pdf",
+      fileSize: "2.6 MB",
+    },
+    quizSource: {
+      type: "internal",
+      title: "Kuis Mitos & Fakta Dunia Kerja",
+      description: "Uji pemahaman 20 butir mitos vs fakta seputar dunia magang dan etika kerja.",
+      internalUrl: "/kuis/19",
+    },
+    prevMaterial: { id: 18, title: "Personal Branding: Membangun Citra Diri Positif" },
     nextMaterial: { id: 9, title: "Konsep Koreografi dalam Seni Tari" },
   },
   9: {
@@ -1138,18 +1706,24 @@ export function getMaterialDetailForModule(moduleTitleOrId: string | number): Ma
     'mod-tari-4': 13,
     'mod-tari-5': 14,
     'mod-tari-6': 15,
+    'mod-bk-1': 7,
+    'mod-bk-2': 8,
+    'mod-bk-3': 16,
+    'mod-bk-4': 17,
+    'mod-bk-5': 18,
+    'mod-bk-6': 19,
     'mod-1': 1,
     'mod-2': 2,
     'mod-3': 3,
     'mod-4': 4,
-    'mod-5': 5,
+    'mod-5': 7,
     'mod-6': 6,
     'mod-7': 7,
     'mod-8': 8,
-    'mod-oto-1': 16,
-    'mod-oto-2': 17,
-    'mod-or-1': 18,
-    'mod-or-2': 19,
+    'mod-oto-1': 20,
+    'mod-oto-2': 21,
+    'mod-or-1': 22,
+    'mod-or-2': 23,
   };
 
   const keyStr = String(moduleTitleOrId).toLowerCase().trim();
@@ -1868,16 +2442,19 @@ export default function MaterialDetailPage({
               )}
 
               {/* Attachment Download Block */}
-              <section className="bg-[#FAFAFA] border border-[#ECECEC] rounded-[12px] p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-[8px] bg-[#F4EFFF] text-[#0400F4] flex items-center justify-center shrink-0">
+              <section className="bg-[#FAFAFA] border border-[#ECECEC] rounded-[12px] p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className="w-10 h-10 rounded-[8px] bg-[#F4EFFF] text-[#2563EB] flex items-center justify-center shrink-0">
                     <HugeiconsIcon icon={File01Icon} size={20} />
                   </div>
-                  <div>
-                    <p className="text-xs md:text-sm font-semibold text-[#2E2D2D]">
-                      {material.attachment.fileName}
+                  <div className="min-w-0 flex-1">
+                    <p
+                      title={material.attachment.fileName}
+                      className="text-xs md:text-sm font-semibold text-[#2E2D2D] truncate"
+                    >
+                      {material.attachment.fileName.replace(/_/g, " ")}
                     </p>
-                    <p className="text-[11px] text-[#737373]">
+                    <p className="text-[11px] text-[#737373] truncate">
                       Modul Pelengkap • {material.attachment.fileSize}
                     </p>
                   </div>
@@ -1889,7 +2466,7 @@ export default function MaterialDetailPage({
                     e.preventDefault();
                     alert(`Mengunduh file: ${material.attachment.fileName}`);
                   }}
-                  className="inline-flex items-center justify-center gap-1.5 bg-white border border-[#ECECEC] hover:bg-[#F6F5FF] hover:border-[#0400F4]/40 text-[#0400F4] px-4 py-2 rounded-[6px] text-xs font-semibold transition-all duration-200"
+                  className="inline-flex items-center justify-center gap-1.5 bg-white border border-[#ECECEC] hover:bg-[#F6F5FF] hover:border-[#2563EB]/40 text-[#2563EB] px-4 py-2.5 sm:py-2 rounded-[6px] text-xs font-semibold transition-all duration-200 shrink-0 w-full sm:w-auto"
                 >
                   <HugeiconsIcon icon={Download01Icon} size={15} />
                   <span>Unduh Modul PDF</span>
@@ -2229,8 +2806,6 @@ export default function MaterialDetailPage({
           </div>
         </div>
       )}
-
-      <Footer />
     </div>
   );
 }

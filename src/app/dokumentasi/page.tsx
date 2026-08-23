@@ -3,7 +3,6 @@
 import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Search01Icon,
@@ -286,6 +285,19 @@ export default function DocumentationPage() {
       setTimeout(() => setCopiedLink(false), 2000);
     }
   };
+
+  // Hide mobile bottom navigation only when reading detail documentation/faq on mobile
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (mobileSelectedId !== null) {
+      document.documentElement.classList.add("hide-mobile-bottom-nav");
+    } else {
+      document.documentElement.classList.remove("hide-mobile-bottom-nav");
+    }
+    return () => {
+      document.documentElement.classList.remove("hide-mobile-bottom-nav");
+    };
+  }, [mobileSelectedId]);
 
   return (
     <div className="min-h-screen bg-white text-[#2E2D2D] flex flex-col font-sans">
@@ -646,8 +658,6 @@ export default function DocumentationPage() {
           )}
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

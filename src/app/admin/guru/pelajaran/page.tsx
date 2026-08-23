@@ -226,10 +226,22 @@ export default function AdminGuruPelajaranPage() {
   useEffect(() => {
     if (actionParam === 'add-materi') {
       handleOpenBlockBuilder();
+      // Clean query parameter from URL so refresh won't stay stuck on add-materi
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('action');
+        window.history.replaceState(null, '', url.pathname + (url.search ? url.search : ''));
+      }
     } else if (actionParam === 'add-kuis') {
       setShowAddQuizModal(true);
       setQuizModalStep('choice');
       setUploadedFile(null);
+      // Clean query parameter from URL
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('action');
+        window.history.replaceState(null, '', url.pathname + (url.search ? url.search : ''));
+      }
     }
   }, [actionParam]);
 

@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Clock01Icon,
@@ -236,8 +235,6 @@ export default function ProfilePage() {
           </div>
         </div>
       </main>
-
-      <Footer />
 
       <UserProfileModal
         isOpen={isModalOpen}

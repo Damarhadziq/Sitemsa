@@ -1,5 +1,4 @@
 import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function TipsBelajarLoading() {
@@ -54,7 +53,6 @@ export default function TipsBelajarLoading() {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }

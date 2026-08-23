@@ -1,5 +1,4 @@
 import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DokumentasiLoading() {
@@ -39,7 +38,6 @@ export default function DokumentasiLoading() {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }

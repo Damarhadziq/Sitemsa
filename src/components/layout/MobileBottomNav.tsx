@@ -14,8 +14,14 @@ import {
 export function MobileBottomNav() {
   const pathname = usePathname();
 
-  // Hide bottom bar on quiz taking page or admin routes
-  if (pathname.startsWith("/kuis") || pathname.startsWith("/admin")) {
+  // Hide bottom bar on notifikasi, material detail reading page, quiz taking page, login, or admin routes
+  if (
+    pathname.startsWith("/kuis") ||
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/notifikasi") ||
+    (pathname.startsWith("/materi/") && pathname !== "/materi")
+  ) {
     return null;
   }
 
@@ -30,7 +36,7 @@ export function MobileBottomNav() {
       label: "Materi",
       href: "/materi",
       icon: BookOpen01Icon,
-      isActive: pathname.startsWith("/materi"),
+      isActive: pathname === "/materi",
     },
     {
       label: "Tips",
@@ -53,7 +59,10 @@ export function MobileBottomNav() {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#ECECEC] px-2 py-3 shadow-none">
+    <nav
+      id="mobile-bottom-nav"
+      className="mobile-bottom-nav md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#ECECEC] px-2 py-3 shadow-none"
+    >
       <div className="grid grid-cols-5 items-center justify-items-center max-w-md mx-auto">
         {NAV_ITEMS.map((item) => {
           const active = item.isActive;

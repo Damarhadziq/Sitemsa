@@ -3,7 +3,6 @@
 import { useState, useMemo, Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Search01Icon } from "@hugeicons/core-free-icons";
@@ -327,6 +326,19 @@ function TipsBelajarContent() {
     return allArticles.find((art) => art.id === mobileSelectedId) || null;
   }, [allArticles, mobileSelectedId]);
 
+  // Hide mobile bottom navigation only when reading detail article on mobile
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (mobileActiveArticle !== null) {
+      document.documentElement.classList.add("hide-mobile-bottom-nav");
+    } else {
+      document.documentElement.classList.remove("hide-mobile-bottom-nav");
+    }
+    return () => {
+      document.documentElement.classList.remove("hide-mobile-bottom-nav");
+    };
+  }, [mobileActiveArticle]);
+
   return (
     <main className="max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-16 w-full flex-1 space-y-6">
       {/* DESKTOP VIEW (100% ORIGINAL 2-COLUMN UNTOUCHED WITH PAGINATION) */}
@@ -524,7 +536,6 @@ export default function TipsBelajarPage() {
       <Suspense fallback={<TipsBelajarSkeleton />}>
         <TipsBelajarContent />
       </Suspense>
-      <Footer />
     </div>
   );
 }

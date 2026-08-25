@@ -90,8 +90,8 @@ function OtpVerificationContent() {
 
   return (
     <div className="w-full max-w-[420px] animate-in fade-in duration-200">
-      {/* Back button (Web Utama Signature Style) */}
-      <div className="flex items-center gap-3 mb-6">
+      {/* Back button (Icon Only) */}
+      <div className="mb-7">
         <button
           type="button"
           onClick={() => router.push(fromAction === 'reset' ? '/lupa-password' : '/signup')}
@@ -100,7 +100,6 @@ function OtpVerificationContent() {
         >
           <ArrowLeft size={16} />
         </button>
-        <span className="text-xs font-semibold text-[#737373]">Kembali</span>
       </div>
 
       {/* Header */}

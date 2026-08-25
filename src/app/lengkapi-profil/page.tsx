@@ -80,8 +80,8 @@ function OnboardingContent() {
 
   return (
     <div className="w-full max-w-[480px] animate-in fade-in duration-200">
-      {/* Back button (Web Utama Signature Style) */}
-      <div className="flex items-center gap-3 mb-5">
+      {/* Back button (Icon Only) */}
+      <div className="mb-7">
         <button
           type="button"
           onClick={() => router.push('/signup')}
@@ -90,7 +90,6 @@ function OnboardingContent() {
         >
           <ArrowLeft size={16} />
         </button>
-        <span className="text-xs font-semibold text-[#737373]">Kembali ke Pendaftaran</span>
       </div>
 
       {/* Header */}

@@ -39,17 +39,16 @@ export default function LupaPasswordPage() {
       <div className="flex-1 flex items-center justify-center px-6 sm:px-12 py-10 max-w-xl mx-auto w-full">
         <div className="w-full max-w-[420px] animate-in fade-in duration-200">
           
-          {/* Back button (Web Utama Signature Style) */}
-          <div className="flex items-center gap-3 mb-6">
+          {/* Back button (Icon Only) */}
+          <div className="mb-7">
             <button
               type="button"
               onClick={() => router.push('/login')}
               className="w-9 h-9 rounded-full bg-white border border-[#ECECEC] text-[#2E2D2D] hover:bg-[#F6F5FF] hover:border-[#2563EB] hover:text-[#2563EB] flex items-center justify-center transition-all cursor-pointer shadow-none shrink-0"
-              aria-label="Kembali ke Halaman Masuk"
+              aria-label="Kembali"
             >
               <ArrowLeft size={16} />
             </button>
-            <span className="text-xs font-semibold text-[#737373]">Kembali ke Halaman Masuk</span>
           </div>
 
           {/* Header */}

@@ -14,6 +14,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isPending, setIsPending] = useState(false);
   const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
@@ -75,30 +76,26 @@ export default function SignupPage() {
       <div className="flex-1 flex items-center justify-center px-6 sm:px-12 py-8 sm:py-10 max-w-xl mx-auto w-full">
         <div className="w-full max-w-[420px] animate-in fade-in duration-200">
           
-          {/* Back button (Web Utama Signature Style: Rounded Icon Button) */}
-          <div className="flex items-center gap-3 mb-5">
+          {/* Back button (Icon Only - without copy) */}
+          <div className="mb-7">
             <button
               type="button"
               onClick={() => router.push('/login')}
               className="w-9 h-9 rounded-full bg-white border border-[#ECECEC] text-[#2E2D2D] hover:bg-[#F6F5FF] hover:border-[#2563EB] hover:text-[#2563EB] flex items-center justify-center transition-all cursor-pointer shadow-none shrink-0"
-              aria-label="Kembali ke Halaman Masuk"
+              aria-label="Kembali"
             >
               <ArrowLeft size={16} />
             </button>
-            <span className="text-xs font-semibold text-[#737373]">Kembali ke Halaman Masuk</span>
           </div>
 
-          {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#2E2D2D] tracking-tight mb-1.5">
+          {/* Headline (Tanpa Subtitle) */}
+          <div className="mb-8 sm:mb-9">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#2E2D2D] tracking-tight">
               Daftar Akun Siswa
             </h1>
-            <p className="text-xs sm:text-sm text-[#737373] leading-relaxed">
-              Mulai perjalanan belajarmu di platform pembelajaran digital Sitemsa SMKN 1 Semarang.
-            </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-3.5 sm:gap-4">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-4.5">
             {errorMsg && (
               <div className="bg-red-50 text-red-600 p-2.5 rounded-[10px] text-xs font-medium border border-red-200 animate-in fade-in">
                 {errorMsg}
@@ -162,69 +159,76 @@ export default function SignupPage() {
               </div>
             </div>
 
-            {/* Konfirmasi Kata Sandi */}
+            {/* Konfirmasi Kata Sandi (Dengan icon Eye) */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-[#2E2D2D]" htmlFor="confirmPassword">
                 Konfirmasi Kata Sandi
               </label>
-              <input
-                id="confirmPassword"
-                type={showPassword ? 'text' : 'password'}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Ulangi kata sandi"
-                required
-                className="w-full h-[42px] sm:h-[44px] px-3.5 py-2.5 rounded-[10px] bg-[#FAFAFA] border border-[#ECECEC] text-xs sm:text-sm text-[#2E2D2D] placeholder-[#737373] focus:outline-none focus:border-[#2563EB] focus:bg-white transition-all shadow-none"
-              />
+              <div className="relative">
+                <input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Ulangi kata sandi"
+                  required
+                  className="w-full h-[42px] sm:h-[44px] px-3.5 py-2.5 rounded-[10px] bg-[#FAFAFA] border border-[#ECECEC] text-xs sm:text-sm text-[#2E2D2D] placeholder-[#737373] focus:outline-none focus:border-[#2563EB] focus:bg-white transition-all shadow-none pr-11"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#2E2D2D] focus:outline-none cursor-pointer"
+                >
+                  {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isPending}
-              className="w-full h-[42px] sm:h-[44px] bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.99] text-white font-semibold rounded-[10px] transition-all disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center text-xs sm:text-sm cursor-pointer shadow-none mt-2"
-            >
-              {isPending ? 'Mendaftarkan Akun...' : 'Lanjutkan ke Verifikasi OTP'}
-            </button>
+            {/* Buttons Area with Added Spacing */}
+            <div className="flex flex-col mt-6 sm:mt-7">
+              {/* Submit Button ("Verifikasi") */}
+              <button
+                type="submit"
+                disabled={isPending}
+                className="w-full h-[42px] sm:h-[44px] bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.99] text-white font-semibold rounded-[10px] transition-all disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center text-xs sm:text-sm cursor-pointer shadow-none"
+              >
+                {isPending ? 'Memproses...' : 'Verifikasi'}
+              </button>
 
-            {/* Divider */}
-            <div className="relative flex items-center py-1.5">
-              <div className="flex-grow border-t border-[#ECECEC]"></div>
-              <span className="flex-shrink-0 px-3 text-[11px] sm:text-xs text-[#737373]">atau</span>
-              <div className="flex-grow border-t border-[#ECECEC]"></div>
-            </div>
+              {/* Divider */}
+              <div className="relative flex items-center py-2.5 sm:py-3">
+                <div className="flex-grow border-t border-[#ECECEC]"></div>
+                <span className="flex-shrink-0 px-3 text-[11px] sm:text-xs text-[#737373]">atau</span>
+                <div className="flex-grow border-t border-[#ECECEC]"></div>
+              </div>
 
-            {/* Google Signup Button */}
-            <button
-              type="button"
-              onClick={() => setIsGoogleModalOpen(true)}
-              className="w-full h-[42px] sm:h-[44px] bg-white border border-[#ECECEC] text-[#2E2D2D] font-semibold rounded-[10px] hover:bg-[#FAFAFA] active:scale-[0.99] transition-all flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer shadow-none"
-            >
-              <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-                <path d="M1 1h22v22H1z" fill="none" />
-              </svg>
-              <span>Daftar dengan Akun Google</span>
-            </button>
-
-            {/* Login Link */}
-            <div className="mt-3 text-center text-xs text-[#737373]">
-              Sudah memiliki akun siswa?{' '}
-              <Link href="/login" className="font-bold text-[#2563EB] hover:underline">
-                Masuk di sini
-              </Link>
+              {/* Google Signup Button */}
+              <button
+                type="button"
+                onClick={() => setIsGoogleModalOpen(true)}
+                className="w-full h-[42px] sm:h-[44px] bg-white border border-[#ECECEC] text-[#2E2D2D] font-semibold rounded-[10px] hover:bg-[#FAFAFA] active:scale-[0.99] transition-all flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer shadow-none"
+              >
+                <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                  <path d="M1 1h22v22H1z" fill="none" />
+                </svg>
+                <span>Daftar dengan Akun Google</span>
+              </button>
             </div>
           </form>
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="px-6 py-4 border-t border-[#ECECEC] text-center text-[11px] sm:text-xs text-gray-400">
-        Copyright Lantip 7 SMKN 1 Semarang. 2026
-      </footer>
+      {/* Footer Replacement: Sign in copy layout matching sign in page */}
+      <div className="text-center text-xs text-[#737373] pb-6 pt-2 px-6">
+        Sudah memiliki akun siswa?{' '}
+        <Link href="/login" className="font-bold text-[#2563EB] hover:underline">
+          Masuk di sini
+        </Link>
+      </div>
 
       {/* Google Account Chooser Modal */}
       <GoogleAccountModal

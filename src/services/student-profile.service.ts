@@ -21,14 +21,14 @@ const STUDENT_SESSION_KEY = 'sintesa_student_session_v1';
 
 export const OFFICIAL_DUMMY_STUDENT: StudentProfile = {
   id: 'usr-student-1',
-  name: 'Budi Santoso',
-  email: 'siswa@belajar.id',
-  school: 'SMKN 1 Semarang',
-  nisn: '0071234567',
-  grade: 'XI PPLG 1',
-  avatar: 'https://i.pravatar.cc/300?img=12',
-  bio: 'Siswa Rekayasa Perangkat Lunak SMKN 1 Semarang. Antusias dalam pengembangan web dan inovasi digital.',
-  phone: '0812-3456-7890',
+  name: 'Siswa Sitemsa',
+  email: '',
+  school: 'SMK Negeri 1 Semarang',
+  nisn: '',
+  grade: 'X',
+  avatar: '',
+  bio: '',
+  phone: '',
 };
 
 // Aliases for compatibility

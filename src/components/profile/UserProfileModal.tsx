@@ -20,6 +20,7 @@ import {
   StudentProfile,
   DEFAULT_DUMMY_STUDENT,
 } from "@/services/student-profile.service";
+import { InitialsAvatar } from "@/components/ui/InitialsAvatar";
 
 export type ProfileTab = "profile" | "history" | "settings";
 
@@ -210,14 +211,12 @@ export function UserProfileModal({
 
               {/* Avatar Header Row */}
               <div className="flex items-center gap-4 p-4 bg-[#FAFAFA] border border-[#ECECEC] rounded-[12px]">
-                <div className="relative w-16 h-16 rounded-full overflow-hidden border border-[#ECECEC] shrink-0 bg-white">
-                  {/* eslint-disable-next-next/no-img-element */}
-                  <img
-                    src={avatar || "https://i.pravatar.cc/100?img=12"}
-                    alt={name}
-                    className="object-cover w-full h-full rounded-full"
-                  />
-                </div>
+                <InitialsAvatar
+                  name={name}
+                  avatar={avatar}
+                  sizeClass="w-16 h-16"
+                  textSizeClass="text-lg"
+                />
                 <div className="space-y-1">
                   <h3 className="text-sm font-bold text-[#2E2D2D]">{name}</h3>
                   <p className="text-xs text-[#737373]">{email}</p>

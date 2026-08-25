@@ -46,15 +46,15 @@ export function SubjectCatalog() {
       const student = ProgressService.getStudentById('std-1');
       const progressMap = student?.moduleProgress || {};
 
-      const mapped: SubjectDisplay[] = subs.map((sub, idx) => {
-        const total = sub.totalModules || 12;
-        const percent = progressMap[sub.name] || (idx === 0 ? 75 : idx === 1 ? 40 : idx === 4 ? 100 : 25);
+      const mapped: SubjectDisplay[] = subs.map((sub) => {
+        const total = sub.totalModules || 5;
+        const percent = progressMap[sub.name] || 0;
         const completed = Math.round((percent / 100) * total);
 
         return {
           id: sub.id,
           name: sub.name,
-          isLastStudied: idx === 0,
+          isLastStudied: percent > 0,
           modulesCount: total,
           completedMateri: completed,
           totalMateri: total,
@@ -71,56 +71,61 @@ export function SubjectCatalog() {
     {
       id: 1,
       name: "Informatika",
-      isLastStudied: true,
-      modulesCount: 12,
-      completedMateri: 9,
-      totalMateri: 12,
+      isLastStudied: false,
+      modulesCount: 5,
+      completedMateri: 0,
+      totalMateri: 5,
       description: "Pahami logika dan kuasai dunia digital.",
       icon: ComputerIcon,
     },
     {
       id: 2,
       name: "Elektronika",
-      modulesCount: 12,
-      completedMateri: 5,
-      totalMateri: 12,
+      isLastStudied: false,
+      modulesCount: 6,
+      completedMateri: 0,
+      totalMateri: 6,
       description: "Dari sirkuit sederhana hingga inovasi masa depan.",
       icon: CpuIcon,
     },
     {
       id: 3,
       name: "Bimbingan dan Konseling",
-      modulesCount: 12,
-      completedMateri: 3,
-      totalMateri: 12,
+      isLastStudied: false,
+      modulesCount: 6,
+      completedMateri: 0,
+      totalMateri: 6,
       description: "Kenali potensimu dan rancang masa depanmu.",
       icon: UserGroupIcon,
     },
     {
       id: 4,
       name: "Seni Tari",
-      modulesCount: 12,
-      completedMateri: 7,
-      totalMateri: 12,
+      isLastStudied: false,
+      modulesCount: 4,
+      completedMateri: 0,
+      totalMateri: 4,
       description: "Ekspresikan dirimu melalui harmoni gerak.",
       icon: MusicNote01Icon,
     },
     {
       id: 5,
       name: "Otomotif",
-      modulesCount: 12,
-      completedMateri: 12,
-      totalMateri: 12,
-      description: "Bedah mesin dan pahami cara kerjanya.",
+      isLastStudied: false,
+      modulesCount: 5,
+      completedMateri: 0,
+      totalMateri: 5,
+      description: "Eksplorasi teknologi mesin dan kendaraan.",
       icon: Car01Icon,
     },
     {
       id: 6,
-      name: "Keolahragaan",
-      modulesCount: 12,
+      name: "Olahraga & Kesehatan",
+      isLastStudied: false,
+      modulesCount: 4,
       completedMateri: 0,
-      totalMateri: 12,
-      description: "Kuatkan fisik dan asah sportivitasmu.",
+      totalMateri: 4,
+      description: "Jaga kebugaran dan kesehatan jasmani.",
       icon: Dumbbell01Icon,
     },
   ];

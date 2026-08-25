@@ -10,11 +10,11 @@ export interface WeeklyTargetState {
 const STORAGE_KEY = 'sintesa_weekly_target_v1';
 const DEFAULT_TARGET = 5;
 
-// Default initial completed for genuine progression feel
+// Clean production initial state (0 completed until student actually finishes materials)
 const INITIAL_STATE: WeeklyTargetState = {
   targetCount: DEFAULT_TARGET,
-  completedCount: 3,
-  completedModuleIds: ['mod-bk-1', 'mod-bk-2', 'mod-tari-1'],
+  completedCount: 0,
+  completedModuleIds: [],
   lastUpdated: new Date().toISOString().split('T')[0],
 };
 
@@ -30,11 +30,11 @@ export const getWeeklyTarget = (): {
 } => {
   if (typeof window === 'undefined') {
     return {
-      completed: 3,
+      completed: 0,
       target: 5,
-      percentage: 60,
+      percentage: 0,
       isCompleted: false,
-      message: 'Sedikit lagi, pertahankan rentetan belajarmu!',
+      message: 'Mulai langkah belajarmu minggu ini dengan 1 materi baru!',
     };
   }
 

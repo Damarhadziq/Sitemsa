@@ -25,6 +25,7 @@ import {
 import { UserProfileModal, ProfileTab } from "@/components/profile/UserProfileModal";
 import { NotificationModal } from "@/components/layout/NotificationModal";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
+import { InitialsAvatar } from "@/components/ui/InitialsAvatar";
 import { useAuth } from "@/lib/auth-context";
 import {
   getStoredNotifications,
@@ -312,16 +313,16 @@ export function Navbar() {
                 <button
                   type="button"
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className={`w-9 h-9 rounded-full border overflow-hidden transition-colors duration-200 flex items-center justify-center shrink-0 ${
-                    isProfileOpen ? "border-[#2563EB] bg-[#F4EFFF]" : "border-[#ECECEC] hover:border-[#2563EB]"
+                  className={`w-9 h-9 rounded-full transition-all duration-200 flex items-center justify-center shrink-0 p-[1px] ${
+                    isProfileOpen ? "ring-2 ring-[#2563EB]" : "hover:ring-2 hover:ring-[#2563EB]/50"
                   }`}
                   aria-label="Profil Pengguna"
                 >
-                  {/* eslint-disable-next-next/no-img-element */}
-                  <img
-                    src={studentProfile.avatar || "https://i.pravatar.cc/100?img=12"}
-                    alt={studentProfile.name}
-                    className="object-cover w-full h-full rounded-full"
+                  <InitialsAvatar
+                    name={studentProfile.name}
+                    avatar={studentProfile.avatar}
+                    sizeClass="w-full h-full"
+                    textSizeClass="text-[11px]"
                   />
                 </button>
 
@@ -329,14 +330,12 @@ export function Navbar() {
                 {isProfileOpen && (
                   <div className="absolute right-0 top-[calc(100%+8px)] w-64 bg-white border border-[#ECECEC] rounded-[12px] p-2 z-50 origin-top-right animate-in fade-in slide-in-from-top-1 duration-150 shadow-md">
                     <div className="p-3 bg-[#F9F9FF] rounded-[8px] mb-1.5 flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full overflow-hidden relative shrink-0 border border-[#ECECEC]">
-                        {/* eslint-disable-next-next/no-img-element */}
-                        <img
-                          src={studentProfile.avatar || "https://i.pravatar.cc/100?img=12"}
-                          alt={studentProfile.name}
-                          className="object-cover w-full h-full rounded-full"
-                        />
-                      </div>
+                      <InitialsAvatar
+                        name={studentProfile.name}
+                        avatar={studentProfile.avatar}
+                        sizeClass="w-10 h-10"
+                        textSizeClass="text-xs"
+                      />
                       <div className="overflow-hidden">
                         <p className="text-xs font-bold text-[#2E2D2D] truncate">{studentProfile.name}</p>
                         <p className="text-[11px] text-[#737373] truncate">{studentProfile.email}</p>

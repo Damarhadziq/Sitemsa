@@ -64,9 +64,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col justify-between relative overflow-hidden font-sans">
-      {/* Decorative squiggle - top left corner */}
-      <div className="absolute top-0 left-0 -translate-x-[10%] -translate-y-[20%] pointer-events-none opacity-40 sm:opacity-70">
+    <div className="min-h-[100dvh] h-[100dvh] lg:h-auto lg:min-h-screen bg-white flex flex-col justify-between relative overflow-hidden font-sans">
+      {/* Decorative squiggle - Desktop Only */}
+      <div className="hidden lg:block absolute top-0 left-0 -translate-x-[10%] -translate-y-[20%] pointer-events-none opacity-70">
         <svg width="320" height="240" viewBox="0 0 360 280" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M-40,80 C20,-20 60,160 120,60 C180,-40 220,180 300,80"
@@ -79,23 +79,23 @@ export default function LoginPage() {
       </div>
 
       {/* Main content area */}
-      <div className="flex-1 flex flex-col lg:flex-row items-center justify-center px-6 sm:px-12 lg:px-20 xl:px-28 pt-8 sm:pt-14 pb-8 max-w-7xl mx-auto w-full">
+      <div className="flex-1 flex flex-col lg:flex-row items-center justify-center px-6 sm:px-12 lg:px-20 xl:px-28 pt-6 sm:pt-10 lg:pt-14 pb-4 sm:pb-8 max-w-7xl mx-auto w-full">
         
-        {/* Mobile-Only Header: Big Centered Logo + Motto */}
-        <div className="lg:hidden flex flex-col items-center text-center mb-7 w-full animate-in fade-in duration-200">
-          <h1 className="text-3xl font-extrabold text-[#2563EB] tracking-tight mb-1.5">
+        {/* Mobile-Only Header: Big OG Dark Gray Logo + Motto (Centered) */}
+        <div className="lg:hidden flex flex-col items-center text-center mb-5 w-full animate-in fade-in duration-200">
+          <h1 className="text-4xl font-extrabold text-[#2E2D2D] tracking-tight mb-1.5">
             Sitemsa
           </h1>
-          <p className="text-xs text-[#737373] font-medium max-w-[300px] leading-relaxed">
+          <p className="text-xs text-[#737373] font-medium max-w-[310px] leading-relaxed">
             Platform Pembelajaran Digital Vokasi SMK Negeri 1 Semarang
           </p>
         </div>
 
-        {/* Desktop Left side - Info */}
+        {/* Desktop Left side - Info (Original Layout) */}
         <div className="hidden lg:flex w-full lg:w-1/2 flex-col justify-center lg:pr-12 xl:pr-20 mb-8 sm:mb-12 lg:mb-0">
-          <h2 className="text-xl font-bold text-gray-900 mb-6 tracking-tight">Sitemsa</h2>
+          <h2 className="text-xl font-bold text-[#2E2D2D] mb-6 tracking-tight">Sitemsa</h2>
 
-          <h1 className="text-[40px] font-bold text-gray-900 leading-[1.18] mb-4 tracking-tight">
+          <h1 className="text-[40px] font-bold text-[#2E2D2D] leading-[1.18] mb-4 tracking-tight">
             Kuasai Keahlian Baru<br />di Setiap Langkah
           </h1>
 
@@ -123,15 +123,15 @@ export default function LoginPage() {
           <div className="w-full max-w-[420px]">
             <form onSubmit={handleSubmit} className="flex flex-col">
               {errorMsg && (
-                <div className="bg-red-50 text-red-600 p-2.5 sm:p-3 rounded-[10px] text-xs sm:text-sm font-medium border border-red-200 mb-4 sm:mb-5 animate-in fade-in">
+                <div className="bg-red-50 text-red-600 p-2.5 rounded-[10px] text-xs font-medium border border-red-200 mb-3 sm:mb-4 animate-in fade-in">
                   {errorMsg}
                 </div>
               )}
 
               {/* Form fields */}
-              <div className="flex flex-col gap-4 sm:gap-5">
+              <div className="flex flex-col gap-3.5 sm:gap-4">
                 {/* Email */}
-                <div className="flex flex-col gap-1.5 sm:gap-2">
+                <div className="flex flex-col gap-1 sm:gap-1.5">
                   <label className="text-xs sm:text-sm font-medium text-[#292929]" htmlFor="email">
                     Email Siswa
                   </label>
@@ -143,12 +143,12 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="contoh: siswa@belajar.id"
                     required
-                    className="w-full h-[42px] sm:h-[46px] px-3.5 py-2.5 rounded-[10px] bg-[#f3f3f3] border border-transparent text-xs sm:text-sm text-[#292929] placeholder:text-[#aaaaaa] focus:bg-white focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 transition-all outline-none"
+                    className="w-full h-[40px] sm:h-[44px] px-3.5 py-2 rounded-[10px] bg-[#f3f3f3] border border-transparent text-xs sm:text-sm text-[#292929] placeholder:text-[#aaaaaa] focus:bg-white focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 transition-all outline-none"
                   />
                 </div>
 
                 {/* Kata Sandi */}
-                <div className="flex flex-col gap-1.5 sm:gap-2">
+                <div className="flex flex-col gap-1 sm:gap-1.5">
                   <label className="text-xs sm:text-sm font-medium text-[#292929]" htmlFor="password">
                     Kata Sandi
                   </label>
@@ -161,18 +161,18 @@ export default function LoginPage() {
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Masukkan kata sandi"
                       required
-                      className="w-full h-[42px] sm:h-[46px] px-3.5 py-2.5 rounded-[10px] bg-[#f3f3f3] border border-transparent text-xs sm:text-sm text-[#292929] placeholder:text-[#aaaaaa] focus:bg-white focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 transition-all outline-none pr-11"
+                      className="w-full h-[40px] sm:h-[44px] px-3.5 py-2 rounded-[10px] bg-[#f3f3f3] border border-transparent text-xs sm:text-sm text-[#292929] placeholder:text-[#aaaaaa] focus:bg-white focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 transition-all outline-none pr-11"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737373] hover:text-gray-900 focus:outline-none cursor-pointer"
                     >
-                      {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
                   <div className="flex justify-end items-center pt-0.5">
-                    <Link href="/lupa-password" className="text-xs font-medium text-[#2563EB] hover:opacity-80 transition-opacity">
+                    <Link href="/lupa-password" className="text-[11px] sm:text-xs font-medium text-[#2563EB] hover:opacity-80 transition-opacity">
                       Lupa kata sandi?
                     </Link>
                   </div>
@@ -180,20 +180,20 @@ export default function LoginPage() {
               </div>
 
               {/* Buttons area */}
-              <div className="flex flex-col mt-5 sm:mt-6">
+              <div className="flex flex-col mt-4 sm:mt-5">
                 {/* Submit */}
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="w-full h-[42px] sm:h-[46px] bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.99] text-white font-semibold rounded-[10px] transition-all disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center text-xs sm:text-sm cursor-pointer shadow-sm"
+                  className="w-full h-[40px] sm:h-[44px] bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.99] text-white font-semibold rounded-[10px] transition-all disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center text-xs sm:text-sm cursor-pointer shadow-sm"
                 >
                   {isPending ? 'Memproses Masuk...' : 'Masuk ke Sitemsa'}
                 </button>
 
                 {/* Divider */}
-                <div className="relative flex items-center py-2.5 sm:py-3">
+                <div className="relative flex items-center py-2 sm:py-2.5">
                   <div className="flex-grow border-t border-gray-200"></div>
-                  <span className="flex-shrink-0 px-3 text-xs sm:text-sm text-[#64748B]">atau</span>
+                  <span className="flex-shrink-0 px-3 text-[11px] sm:text-xs text-[#64748B]">atau</span>
                   <div className="flex-grow border-t border-gray-200"></div>
                 </div>
 
@@ -202,12 +202,12 @@ export default function LoginPage() {
                   type="button"
                   onClick={handleGoogleLogin}
                   disabled={isGoogleLoading}
-                  className="w-full h-[44px] sm:h-[48px] bg-white border border-gray-200 text-[#2E2D2D] font-semibold rounded-[10px] hover:bg-gray-50 active:scale-[0.99] transition-all flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer"
+                  className="w-full h-[40px] sm:h-[44px] bg-white border border-gray-200 text-[#2E2D2D] font-semibold rounded-[10px] hover:bg-gray-50 active:scale-[0.99] transition-all flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer"
                 >
                   {isGoogleLoading ? (
                     <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    <svg className="w-[18px] h-[18px] sm:w-[20px] sm:h-[20px]" viewBox="0 0 24 24">
+                    <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24">
                       <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
                       <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
                       <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
@@ -219,8 +219,8 @@ export default function LoginPage() {
                 </button>
               </div>
 
-              {/* Sign up Link */}
-              <div className="mt-5 text-center text-xs text-[#737373]">
+              {/* Desktop Sign up Link */}
+              <div className="hidden lg:block mt-4 text-center text-xs text-[#737373]">
                 Belum memiliki akun siswa?{' '}
                 <Link href="/signup" className="font-bold text-[#2563EB] hover:underline">
                   Daftar Sekarang
@@ -231,8 +231,16 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Footer - full width, spans both columns */}
-      <footer className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 sm:px-12 lg:px-20 xl:px-28 py-4 sm:py-5 border-t border-slate-100 max-w-7xl mx-auto w-full">
+      {/* Mobile-Only Bottom: Replace footer with signup text */}
+      <div className="lg:hidden text-center text-xs text-[#737373] pb-6 pt-1 px-6">
+        Belum memiliki akun siswa?{' '}
+        <Link href="/signup" className="font-bold text-[#2563EB] hover:underline">
+          Daftar Sekarang
+        </Link>
+      </div>
+
+      {/* Desktop Footer Only */}
+      <footer className="hidden lg:flex items-center justify-between gap-3 px-6 sm:px-12 lg:px-20 xl:px-28 py-4 sm:py-5 border-t border-slate-100 max-w-7xl mx-auto w-full">
         {/* Social icons - left */}
         <div className="flex items-center gap-4">
           <Link href="#" className="hover:opacity-60 transition-opacity">

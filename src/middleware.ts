@@ -57,12 +57,20 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 2. Handle Login Page (/login)
-  if (pathname === '/login') {
-    if (studentCookie) {
+  // 2. Handle Public Auth Pages (/login, /signup, /lupa-password, /verifikasi-otp, /lengkapi-profil)
+  const isAuthPage = 
+    pathname === '/login' || 
+    pathname === '/signup' || 
+    pathname === '/register' ||
+    pathname === '/lupa-password' || 
+    pathname === '/verifikasi-otp' || 
+    pathname === '/lengkapi-profil';
+
+  if (isAuthPage) {
+    if (studentCookie && (pathname === '/login' || pathname === '/signup' || pathname === '/register')) {
       return NextResponse.redirect(new URL('/', request.url));
     }
-    if (adminCookie && (adminCookie.value === 'superadmin' || adminCookie.value === 'guru')) {
+    if (adminCookie && (adminCookie.value === 'superadmin' || adminCookie.value === 'guru') && pathname === '/login') {
       if (adminCookie.value === 'superadmin') {
         return NextResponse.redirect(new URL('/admin/superadmin', request.url));
       }
@@ -72,7 +80,7 @@ export function middleware(request: NextRequest) {
   }
 
   // 3. Mandatory Student Auth Gate:
-  // All public web routes (/, /materi, /tips-belajar, /dokumentasi, /team, /profil, /notifikasi, /kuis)
+  // All other public web routes (/, /materi, /tips-belajar, /dokumentasi, /team, /profil, /notifikasi, /kuis)
   // require active login. If not logged in, redirect straight to /login!
   const hasValidSession = !!studentCookie || (adminCookie && (adminCookie.value === 'superadmin' || adminCookie.value === 'guru'));
 

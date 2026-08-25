@@ -12,9 +12,19 @@ export function StudentAuthGuard({ children }: { children: React.ReactNode }) {
   const [isChecking, setIsChecking] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
 
+  const isAuthFlowRoute = 
+    pathname.startsWith('/login') || 
+    pathname.startsWith('/signup') || 
+    pathname.startsWith('/register') || 
+    pathname.startsWith('/lupa-password') || 
+    pathname.startsWith('/verifikasi-otp') || 
+    pathname.startsWith('/lengkapi-profil') || 
+    pathname.startsWith('/admin') || 
+    pathname.startsWith('/api');
+
   useEffect(() => {
-    // 1. If accessing login or admin routes, don't block
-    if (pathname.startsWith('/login') || pathname.startsWith('/admin') || pathname.startsWith('/api')) {
+    // 1. If accessing login, auth flow or admin routes, don't block
+    if (isAuthFlowRoute) {
       setIsChecking(false);
       setIsAuthorized(true);
       return;
@@ -36,10 +46,10 @@ export function StudentAuthGuard({ children }: { children: React.ReactNode }) {
       setIsChecking(false);
       router.replace('/login');
     }
-  }, [pathname, user, isAuthLoading, router]);
+  }, [pathname, user, isAuthLoading, isAuthFlowRoute, router]);
 
   // Public/exempt routes
-  if (pathname.startsWith('/login') || pathname.startsWith('/admin') || pathname.startsWith('/api')) {
+  if (isAuthFlowRoute) {
     return <>{children}</>;
   }
 

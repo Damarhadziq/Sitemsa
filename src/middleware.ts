@@ -4,26 +4,21 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const adminCookie = request.cookies.get('auth_admin');
-  const studentCookie = request.cookies.get('auth');
+  const studentCookie = request.cookies.get('sintesa_student_auth') || request.cookies.get('auth');
 
-  // Log incoming access requests (Dev Tunnels / Remote Visitors)
-  // Ignore static assets & internal Next.js requests
+  // Ignore static assets, favicon, images, documents, and internal Next.js requests
   if (
-    !pathname.startsWith('/_next') &&
-    !pathname.startsWith('/api') &&
-    !pathname.includes('.')
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api') ||
+    pathname.startsWith('/images') ||
+    pathname.startsWith('/documents') ||
+    pathname.startsWith('/favicon') ||
+    pathname.includes('.')
   ) {
-    const rawIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'Localhost';
-    const clientIp = rawIp.split(',')[0].trim();
-    const userAgent = request.headers.get('user-agent') || '';
-    const isMobile = /mobile|android|iphone|ipad/i.test(userAgent);
-    const deviceType = isMobile ? 'Smartphone/Mobile' : 'PC/Laptop';
-    const timestamp = new Date().toLocaleTimeString('id-ID', { hour12: false });
-
-    console.log(`[AKSES MASUK WEB] ${timestamp} | Halaman: ${pathname} | Device: ${deviceType} | IP: ${clientIp}`);
+    return NextResponse.next();
   }
 
-  // Handle Admin Routes (/admin/...)
+  // 1. Handle Admin Routes (/admin/...)
   if (pathname.startsWith('/admin')) {
     const isValidAdmin = adminCookie && (adminCookie.value === 'superadmin' || adminCookie.value === 'guru');
 
@@ -49,7 +44,7 @@ export function middleware(request: NextRequest) {
       return NextResponse.next();
     }
 
-    // Unauthenticated or student access to protected admin pages -> redirect to /admin/login
+    // Unauthenticated access to protected admin pages -> redirect to /admin/login
     if (!isValidAdmin) {
       return NextResponse.redirect(new URL('/admin/login', request.url));
     }
@@ -58,11 +53,31 @@ export function middleware(request: NextRequest) {
     if (pathname.startsWith('/admin/superadmin') && adminCookie.value === 'guru') {
       return NextResponse.redirect(new URL('/admin/guru', request.url));
     }
+
+    return NextResponse.next();
   }
 
-  // Handle Student Login Redirect when already logged in
-  if (pathname === '/login' && studentCookie) {
-    return NextResponse.redirect(new URL('/', request.url));
+  // 2. Handle Login Page (/login)
+  if (pathname === '/login') {
+    if (studentCookie) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+    if (adminCookie && (adminCookie.value === 'superadmin' || adminCookie.value === 'guru')) {
+      if (adminCookie.value === 'superadmin') {
+        return NextResponse.redirect(new URL('/admin/superadmin', request.url));
+      }
+      return NextResponse.redirect(new URL('/admin/guru', request.url));
+    }
+    return NextResponse.next();
+  }
+
+  // 3. Mandatory Student Auth Gate:
+  // All public web routes (/, /materi, /tips-belajar, /dokumentasi, /team, /profil, /notifikasi, /kuis)
+  // require active login. If not logged in, redirect straight to /login!
+  const hasValidSession = !!studentCookie || (adminCookie && (adminCookie.value === 'superadmin' || adminCookie.value === 'guru'));
+
+  if (!hasValidSession) {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
   return NextResponse.next();
@@ -70,6 +85,13 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico, favicon.svg, robots.txt, etc.
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico|favicon.svg|images|documents).*)',
   ],
 };

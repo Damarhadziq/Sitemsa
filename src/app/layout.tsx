@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 
 import { AuthProvider } from "@/lib/auth-context";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { StudentAuthGuard } from "@/components/providers/StudentAuthGuard";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -27,7 +28,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body className="min-h-full flex flex-col">
         <QueryProvider>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <StudentAuthGuard>{children}</StudentAuthGuard>
+          </AuthProvider>
         </QueryProvider>
       </body>
     </html>

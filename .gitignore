@@ -44,3 +44,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# sensitive documents and credentials
+/public/documents/
+/scripts/generate_credentials_pdf.py
+*.pdf
+*.csv
+credentials*
+secret*
+

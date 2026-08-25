@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   Users,
@@ -32,6 +32,7 @@ export function AdminSidebar() {
   const { role, activeSubjectFilter, user, logout } = useAuth();
   const { modules, quizzes, subjects } = useAdminStore();
 
+  const router = useRouter();
   const isSuperadmin = role === 'superadmin';
   const assignedSubjects = user?.assignedSubjects || ['Informatika'];
   const currentSubject = activeSubjectFilter || assignedSubjects[0] || 'Informatika';
@@ -138,6 +139,10 @@ export function AdminSidebar() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    router.push(item.href);
+                  }}
                   className={`flex items-center gap-3 px-3.5 py-2.5 rounded-[8px] font-bold transition-all cursor-pointer group ${
                     isActive
                       ? 'bg-blue-50/50 text-[#2563EB]'
@@ -154,6 +159,10 @@ export function AdminSidebar() {
               {/* Dashboard Guru Link */}
               <Link
                 href="/admin/guru"
+                onClick={(e) => {
+                  e.preventDefault();
+                  router.push('/admin/guru');
+                }}
                 className={`flex items-center gap-3 px-3.5 py-2.5 rounded-[8px] font-bold transition-all cursor-pointer group ${
                   pathname === '/admin/guru'
                     ? 'bg-blue-50/50 text-[#2563EB]'

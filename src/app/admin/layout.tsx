@@ -25,6 +25,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       // Role enforcement
       if (user.role === 'guru' && pathname.startsWith('/admin/superadmin')) {
         router.replace('/admin/guru');
+      } else if (user.role === 'superadmin' && pathname === '/admin/guru') {
+        router.replace('/admin/superadmin');
       }
     }
   }, [user, isLoading, pathname, router]);

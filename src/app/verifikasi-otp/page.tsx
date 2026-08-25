@@ -110,6 +110,10 @@ function OtpVerificationContent() {
         <p className="text-xs sm:text-sm text-[#737373] leading-relaxed">
           Kode 4-digit telah dikirimkan ke <strong className="text-[#2563EB] font-semibold">{emailParam}</strong>. Masukkan kode untuk melanjutkan.
         </p>
+        <div className="mt-3 p-2.5 rounded-[8px] bg-blue-50 border border-blue-100/80 text-[11px] text-[#2563EB] flex items-center gap-2">
+          <span>💡</span>
+          <span><strong>Untuk Demo & Pengujian:</strong> Masukkan 4 angka bebas (misal: <strong>1 2 3 4</strong>) untuk verifikasi instan.</span>
+        </div>
       </div>
 
       {isSuccess ? (

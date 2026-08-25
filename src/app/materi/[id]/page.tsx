@@ -1711,39 +1711,67 @@ function SmartParagraph({ text }: { text: string }) {
   );
 }
 
+export const idToModuleKey: Record<number, string> = {
+  22: 'mod-pte-01',
+  21: 'mod-pte-02',
+  23: 'mod-pte-03',
+  24: 'mod-pte-04',
+  25: 'mod-pte-05',
+  26: 'mod-pte-06',
+  11: 'mod-oto-01',
+  12: 'mod-oto-02',
+  18: 'mod-pjok-01',
+  19: 'mod-pjok-02',
+  7: 'mod-bk-01',
+  8: 'mod-bk-1',
+  13: 'mod-bk-2',
+  14: 'mod-bk-3',
+  15: 'mod-bk-4',
+  16: 'mod-bk-5',
+  17: 'mod-bk-6',
+  1: 'mod-inf-1',
+  2: 'mod-inf-2',
+  3: 'mod-inf-3',
+  4: 'mod-inf-4',
+  9: 'mod-tari-1',
+  10: 'mod-tari-2',
+};
+
+export const moduleKeyToId: Record<string, number> = {
+  'mod-pte-01': 22,
+  'mod-pte-02': 21,
+  'mod-pte-03': 23,
+  'mod-pte-04': 24,
+  'mod-pte-05': 25,
+  'mod-pte-06': 26,
+  'mod-oto-01': 11,
+  'mod-oto-02': 12,
+  'mod-ot-01': 11,
+  'mod-ot-02': 12,
+  'mod-pjok-01': 18,
+  'mod-pjok-02': 19,
+  'mod-bk-01': 7,
+  'mod-bk-1': 8,
+  'mod-bk-2': 13,
+  'mod-bk-3': 14,
+  'mod-bk-4': 15,
+  'mod-bk-5': 16,
+  'mod-bk-6': 17,
+  'mod-inf-1': 1,
+  'mod-inf-2': 2,
+  'mod-inf-3': 3,
+  'mod-inf-4': 4,
+  'mod-tari-1': 9,
+  'mod-tari-2': 10,
+  'mod-str-1': 9,
+  'mod-str-2': 10,
+};
+
 export function getMaterialDetailForModule(moduleIdOrTitle?: string | number): MaterialDetail | undefined {
   if (!moduleIdOrTitle) return undefined;
 
   const str = String(moduleIdOrTitle).toLowerCase().trim();
-  const mapKey: Record<string, number> = {
-    'mod-pte-01': 22,
-    'mod-pte-02': 21,
-    'mod-pte-03': 23,
-    'mod-pte-04': 24,
-    'mod-pte-05': 25,
-    'mod-pte-06': 26,
-    'mod-oto-01': 11,
-    'mod-oto-02': 12,
-    'mod-ot-01': 11,
-    'mod-ot-02': 12,
-    'mod-pjok-01': 18,
-    'mod-pjok-02': 19,
-    'mod-bk-01': 7,
-    'mod-bk-1': 8,
-    'mod-bk-2': 13,
-    'mod-bk-3': 14,
-    'mod-bk-4': 15,
-    'mod-bk-5': 16,
-    'mod-bk-6': 17,
-    'mod-inf-1': 1,
-    'mod-inf-2': 2,
-    'mod-inf-3': 3,
-    'mod-inf-4': 4,
-    'mod-tari-1': 9,
-    'mod-tari-2': 10,
-    'mod-str-1': 9,
-    'mod-str-2': 10,
-  };
+  const mapKey = moduleKeyToId;
 
   if (mapKey[str] && MATERIAL_DATABASE[mapKey[str]]) {
     return MATERIAL_DATABASE[mapKey[str]];
@@ -1824,7 +1852,7 @@ export function getMaterialBlocksForModule(moduleIdOrTitle?: string | number): a
   return blocks;
 }
 
-export default function MaterialDetailPage({
+export default function MateriDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -1841,9 +1869,14 @@ export default function MaterialDetailPage({
 
   // Construct dynamic live material merging admin store changes
   const material = useMemo(() => {
+    const numId = parseInt(id, 10);
+    const targetKey = !isNaN(numId) ? idToModuleKey[numId] : id;
+
     const storeMod = modules.find(
       (m) =>
         m.id === id ||
+        (targetKey && m.id === targetKey) ||
+        (!isNaN(numId) && moduleKeyToId[m.id] === numId) ||
         String(m.id) === String(baseMaterial.id) ||
         m.title.toLowerCase().trim() === baseMaterial.title.toLowerCase().trim()
     );

@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { ChevronLeft, ChevronRight, BarChart2 } from "lucide-react";
 import { MateriSkeleton } from "@/components/materi/MateriSkeleton";
+import { useAdminStore } from "@/lib/admin-store";
+import { idToModuleKey, moduleKeyToId } from "@/app/materi/[id]/page";
 import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react";
 import {
   Search01Icon,
@@ -508,9 +510,32 @@ function MateriLandingContent() {
   };
 
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const { modules } = useAdminStore();
+
+  const liveModulData = useMemo(() => {
+    return MODUL_DATA.map((base) => {
+      const targetKey = idToModuleKey[base.id];
+      const storeMod = modules.find(
+        (m) =>
+          (targetKey && m.id === targetKey) ||
+          m.id === String(base.id) ||
+          moduleKeyToId[m.id] === base.id ||
+          m.title.toLowerCase().trim() === base.title.toLowerCase().trim()
+      );
+      if (!storeMod) return base;
+      return {
+        ...base,
+        title: storeMod.title || base.title,
+        description: storeMod.description || base.description,
+        level: (storeMod.level as any) || base.level,
+        duration: storeMod.duration || base.duration,
+        topics: storeMod.topics || base.topics,
+      };
+    });
+  }, [modules]);
 
   // Filter modules
-  const filteredModul = MODUL_DATA.filter((item) => {
+  const filteredModul = liveModulData.filter((item) => {
     const matchesCategory =
       selectedCategory === "Semua" ||
       normalizeCategory(item.subject).toLowerCase() === normalizeCategory(selectedCategory).toLowerCase();

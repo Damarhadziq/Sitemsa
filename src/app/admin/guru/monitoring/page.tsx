@@ -26,7 +26,12 @@ export default function AdminGuruMonitoringPage() {
   const subjectModules = modules.filter(
     (m) =>
       m.subject === currentSubject &&
-      (!user || user.role === 'superadmin' || m.teacherId === user.id || m.teacherName === user.name)
+      (!user ||
+        user.role === 'superadmin' ||
+        m.teacherId === user.id ||
+        m.teacherName?.toLowerCase() === user.name?.toLowerCase() ||
+        m.teacherName?.toLowerCase().includes(user.name?.toLowerCase()) ||
+        user.name?.toLowerCase().includes(m.teacherName?.toLowerCase()))
   );
   const totalSubjectModules = subjectModules.length || 3;
 

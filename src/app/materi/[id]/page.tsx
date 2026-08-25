@@ -30,6 +30,8 @@ import {
   Cancel01Icon,
   Calendar01Icon,
   CheckmarkCircle01Icon,
+  MusicNote01Icon,
+  Dumbbell01Icon,
 } from "@hugeicons/core-free-icons";
 import { recordModuleCompletion } from "@/services/weekly-target.service";
 import { addUserNotification } from "@/services/notification.service";
@@ -116,18 +118,13 @@ const MATERIAL_DATABASE: Record<number, MaterialDetail> = {
     title: "Variabel, Tipe Data & Operasi Logika",
     level: "Pemula",
     duration: "25 Menit",
-    author: "Pak Joko Supriyanto, S.Kom",
+    author: "Damar Hadziq H.",
     updatedAt: "14 Agustus 2026",
     icon: ComputerIcon,
     topics: ["Variabel", "Tipe Data Primitif", "Operator Logika"],
     description: "Pelajari konsep penyimpanan data dan eksekusi operasi logika dasar dalam pemrograman.",
     imageUrl: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80",
-    imageCaption: "Ilustrasi 1.1: Eksekusi Kode dan Penyimpanan Variabel dalam Memori Komputer.",
-    videoSection: {
-      title: "Video Simulasi: Visualisasi Variabel & Memori Komputer",
-      videoUrl: "https://www.youtube.com/embed/gQ34P57bH7M",
-      caption: "Video 1.1: Penjelasan visual bagaimana nilai variabel disimpan dan diubah di dalam RAM.",
-    },
+    imageCaption: "Materi Variabel dan Operasi Logika",
     contentSections: [
       {
         id: "pengantar",
@@ -136,1566 +133,872 @@ const MATERIAL_DATABASE: Record<number, MaterialDetail> = {
           "Dalam dunia pemrograman, variabel dapat dianalogikan sebagai sebuah wadah atau kotak berlabel di dalam memori komputer. Setiap wadah memiliki nama unik dan nilai yang disimpan di dalamnya dapat diakses maupun diubah selama program berjalan.",
           "Memahami cara kerja variabel sangat penting karena seluruh manipulasi data — mulai dari angka sederhana, teks nama pengguna, hingga kalkulasi kompleks — bergantung pada deklarasi variabel yang benar.",
         ],
-        callout: "Prinsip Utama: Deklarasikan variabel dengan nama yang deskriptif dan mencerminkan isi datanya agar kode mudah dibaca oleh tim pengembangan.",
       },
       {
         id: "tipe-data",
-        title: "Tipe Data Primitif Dasar",
+        title: "Tipe Data Primitif",
         paragraphs: [
-          "Tipe data menentukan jenis nilai yang dapat disimpan oleh sebuah variabel serta operasi apa saja yang dapat dilakukan terhadap variabel tersebut. Pada sebagian besar bahasa pemrograman modern, terdapat tipe data primitif utama:",
-          "Integer (bilangan bulat seperti 10, -5), Float/Double (bilangan desimal seperti 3.14), String (kumpulan karakter teks seperti 'Sitemsa'), serta Boolean (nilai kebenaran true atau false).",
+          "Tipe data menentukan jenis nilai apa yang dapat ditampung oleh variabel. Dalam bahasa pemrograman modern seperti TypeScript dan JavaScript, tipe data primitif mencakup string (teks), number (angka bulat maupun desimal), dan boolean (nilai kebenaran true atau false).",
         ],
-        codeSnippet: {
-          language: "JavaScript / TypeScript",
-          code: `// Deklarasi Variabel & Tipe Data Dasar
-let namaSiswa = "Budi Pratama"; // String
-let nilaiUjian = 95;             // Integer
-let ipk = 3.85;                  // Float
-let isLulus = true;              // Boolean
-
-console.log(\`Siswa \${namaSiswa} memperoleh nilai \${nilaiUjian}\`);`,
-        },
-      },
-      {
-        id: "operasi-logika",
-        title: "Operator Logika & Tabel Kebenaran",
-        paragraphs: [
-          "Operator logika digunakan untuk menghubungkan dua atau lebih ekspresi relasional sehingga menghasilkan satu nilai kebenaran Boolean. Tiga operator logika dasar yang wajib dikuasai adalah AND (&&), OR (||), dan NOT (!).",
-          "Operator AND hanya bernilai true jika kedua kondisi bernilai true. Operator OR bernilai true jika minimal salah satu kondisi true, sedangkan operator NOT membalikkan nilai kebenaran.",
-        ],
-        callout: "Tips Ujian: Pastikan Anda selalu mengevaluasi kondisi di dalam kurung terlebih dahulu sebelum menerapkan operator NOT.",
       },
     ],
-    stepByStepSection: {
-      title: "Langkah Praktik: Menulis & Mengeksekusi Kode Variabel",
-      description: "Ikuti 3 langkah praktis di bawah ini untuk menguji pemahaman deklarasi variabel secara mandiri:",
-      steps: [
-        {
-          stepNumber: 1,
-          title: "Langkah 1: Deklarasi Variabel & Inisialisasi Nilai",
-          text: "Buka penyunting kode (IDE) Anda, lalu buat file baru bernama main.ts. Tuliskan deklarasi variabel untuk menyimpan nama, nilai ujian, dan status kelulusan.",
-          mediaUrl: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80",
-        },
-        {
-          stepNumber: 2,
-          title: "Langkah 2: Menambahkan Pengujian Logika",
-          text: "Gunakan operator logika AND (&&) untuk memverifikasi apakah skor siswa di atas 75 DAN memiliki kehadiran di atas 80%.",
-          mediaUrl: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80",
-        },
-        {
-          stepNumber: 3,
-          title: "Langkah 3: Jalankan dan Verifikasi Output",
-          text: "Jalankan file kode melalui terminal dengan perintah tsc main.ts && node main.js, lalu amati hasil keluaran pada layar terminal.",
-          mediaUrl: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80",
-        },
-      ],
-    },
     attachment: {
-      fileName: "Modul_Variabel_dan_Tipe_Data_Informatika.pdf",
+      fileName: "Modul_Variabel_dan_Tipe_Data.pdf",
       fileSize: "2.4 MB",
     },
     quizSource: {
       type: "internal",
-      title: "Kuis Latihan Sitemsa",
-      description: "Kerjakan 5 soal interaktif langsung di platform Sitemsa untuk menguji pemahaman konsepmu.",
+      title: "Kuis Evaluasi Informatika",
+      description: "Uji pemahaman variabel dan logika pemrograman.",
       internalUrl: "/kuis/1",
     },
-    prevMaterial: { id: 5, title: "Manajemen Waktu & Teknik Pomodoro" },
-    nextMaterial: { id: 2, title: "Analisis Sirkuit Seri & Paralel Resistor" },
-  },
-  2: {
-    id: 2,
-    subject: "Elektronika",
-    title: "Analisis Sirkuit Seri & Paralel Resistor",
-    level: "Menengah",
-    duration: "35 Menit",
-    author: "Pak Herman Susilo, ST",
-    updatedAt: "13 Agustus 2026",
-    icon: CpuIcon,
-    topics: ["Hukum Ohm", "Resistor Seri", "Resistor Paralel", "Multimeter"],
-    description: "Hitung dan praktikkan arus serta tegangan pada rangkaian komponen pasif elektronika.",
-    imageUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80",
-    imageCaption: "Ilustrasi 2.1: Skema Pengukuran Arus dan Tegangan Sirkuit Resistor pada Breadboard.",
-    videoSection: {
-      title: "Video Praktik: Pengukuran Resistor Seri & Paralel dengan Multimeter Digital",
-      videoUrl: "https://www.youtube.com/embed/8rQy3J6Zz-g",
-      caption: "Video 2.1: Demonstrasi pengukuran resistansi total dan arus listrik menggunakan multimeter digital di laboratorium.",
-    },
-    contentSections: [
-      {
-        id: "pengantar-elektronika",
-        title: "Dasar Hukum Ohm & Komponen Resistor",
-        paragraphs: [
-          "Hukum Ohm menyatakan bahwa arus listrik (I) yang mengalir melalui sebuah penghantar sebanding dengan beda potensial atau tegangan (V) dan berbanding terbalik dengan hambatan (R). Persamaan dasarnya adalah V = I x R.",
-          "Resistor adalah komponen pasif yang berfungsi membatasi arus listrik dalam sirkuit. Nilai resistansinya ditandai dengan kode gelombang warna pada fisiknya.",
-        ],
-        callout: "Tips Praktik: Selalu matikan sumber daya (power supply) sebelum mengukur resistansi resistor dengan multimeter agar alat ukur tidak rusak.",
-      },
-      {
-        id: "rangkaian-seri-paralel",
-        title: "Perbedaan Rangkaian Seri vs Paralel",
-        paragraphs: [
-          "Pada rangkaian seri, resistor disusun secara berurutan sehingga arus yang mengalir pada setiap resistor adalah sama, namun tegangannya terbagi (R_total = R1 + R2 + R3).",
-          "Pada rangkaian paralel, resistor dihubungkan pada dua titik yang sama sehingga tegangannya sama, tetapi arusnya terbagi (1/R_total = 1/R1 + 1/R2 + 1/R3).",
-        ],
-      },
-    ],
-    stepByStepSection: {
-      title: "Langkah Kerja Praktik: Perakitan & Pengukuran di Breadboard",
-      description: "Panduan 3 langkah perakitan fisik sirkuit seri-paralel dan pengukuran dengan multimeter:",
-      steps: [
-        {
-          stepNumber: 1,
-          title: "Langkah 1: Membaca Gelang Warna & Memilih Resistor",
-          text: "Siapkan 3 buah resistor (misal: 100 Ohm, 220 Ohm, dan 470 Ohm). Baca gelang warna untuk memastikan nilai resistansi sesuai toleransi.",
-          mediaUrl: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
-        },
-        {
-          stepNumber: 2,
-          title: "Langkah 2: Menancapkan Komponen pada Breadboard",
-          text: "Tancapkan ketiga resistor secara sejajar pada baris breadboard untuk membuat sambungan paralel, atau secara sambung-menambung untuk sambungan seri.",
-          mediaUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80",
-        },
-        {
-          stepNumber: 3,
-          title: "Langkah 3: Pengukuran Tegangan & Catat Hasil pada Multimeter",
-          text: "Hubungkan probe multimeter merah (positif) dan hitam (COM) pada ujung-ujung resistor. Atur selektor ke jarum VDC 20V dan catat hasil pembacaan tegangan.",
-          mediaUrl: "https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80",
-        },
-      ],
-    },
-    attachment: {
-      fileName: "Panduan_Praktikum_Sirkuit_Resistor_Elektronika.pdf",
-      fileSize: "3.1 MB",
-    },
-    quizSource: {
-      type: "barcode",
-      title: "Kuis Pindai Barcode (Quizizz)",
-      description: "Pindai Barcode / QR Code dari pengajar untuk langsung bergabung ke kuis instrumen laboratorium.",
-      qrImageUrl: "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://quizizz.com/join?gc=882341",
-      externalUrl: "https://quizizz.com/join?gc=882341",
-      externalPlatformName: "Quizizz Lab Elektronika",
-    },
-    prevMaterial: { id: 1, title: "Variabel, Tipe Data & Operasi Logika" },
-    nextMaterial: { id: 3, title: "Prinsip Kerja & Pembongkaran Mesin 4-Langkah" },
-  },
-  3: {
-    id: 3,
-    subject: "Otomotif",
-    title: "Prinsip Kerja & Pembongkaran Mesin 4-Langkah",
-    level: "Menengah",
-    duration: "40 Menit",
-    author: "Pak Bambang Setyawan, S.Pd",
-    updatedAt: "10 Agustus 2026",
-    icon: Car01Icon,
-    topics: ["Siklus 4-Langkah", "Cylinder Head", "Piston", "Kunci Momen"],
-    description: "Pelajari siklus Hisap-Kompresi-Usaha-Buang dan prosedur standar pembongkaran mesin kendaraan.",
-    imageUrl: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&w=1200&q=80",
-    imageCaption: "Ilustrasi 3.1: Komponen Internal Mesin 4-Langkah dan Alur Pergerakan Piston.",
-    videoSection: {
-      title: "Video Animasi 3D: Simulasi Kerja & Langkah Pembongkaran Blok Silinder",
-      videoUrl: "https://www.youtube.com/embed/OGj8OneMjek",
-      caption: "Video 3.1: Visualisasi 3D empat langkah kerja piston dan teknik pembukaan kepala silinder sesuai SOP bengkel.",
-    },
-    contentSections: [
-      {
-        id: "prinsip-4-langkah",
-        title: "Empat Langkah Kerja Mesin (4-Stroke)",
-        paragraphs: [
-          "Mesin 4-langkah membutuhkan 4 kali gerakan piston (2 kali putaran poros engkol) untuk menghasilkan 1 kali tenaga. Empat langkah tersebut meliputi: Langkah Hisap (Intake), Kompresi (Compression), Usaha (Power), dan Buang (Exhaust).",
-          "Pada langkah kompresi, kedua katup (masuk dan buang) tertutup rapat sehingga campuran bahan bakar dan udara dimampatkan hingga mencapai tekanan tinggi sebelum dipercikkan busi.",
-        ],
-        callout: "Penting: Kerapatan katup dan ring piston sangat menentukan tekanan kompresi mesin. Kompresi yang bocor menyebabkan mesin kehilangan tenaga (loss power).",
-      },
-    ],
-    stepByStepSection: {
-      title: "Langkah Kerja SOP Pembongkaran Kepala Silinder (Cylinder Head)",
-      description: "Ikuti urutan keselamatan kerja pembongkaran komponen otomotif sesuai standar bengkel resmi:",
-      steps: [
-        {
-          stepNumber: 1,
-          title: "Langkah 1: Pengurasan Oli & Pelepasan Cover Mesin",
-          text: "Buka baut tap oli di bagian bawah karter untuk menguras oli mesin secara bersih. Lepaskan cover body dan karburator/injector.",
-          mediaUrl: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&w=800&q=80",
-        },
-        {
-          stepNumber: 2,
-          title: "Langkah 2: Pelepasan Baut Cylinder Head secara Silang",
-          text: "Gunakan kunci soket khusus untuk mengendurkan baut kepala silinder dengan urutan menyilang (diagonal) bertahap agar kepala silinder tidak melengkung.",
-          mediaUrl: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&w=800&q=80",
-        },
-        {
-          stepNumber: 3,
-          title: "Langkah 3: Pemeriksaan Kerataan Permukaan & Ring Piston",
-          text: "Gunakan straight edge dan feeler gauge untuk mengukur kerataan permukaan cylinder head. Periksa pula celah ujung (end gap) ring piston.",
-          mediaUrl: "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=800&q=80",
-        },
-      ],
-    },
-    attachment: {
-      fileName: "SOP_Pembongkaran_Mesin_4_Langkah_Otomotif.pdf",
-      fileSize: "4.5 MB",
-    },
-    quizSource: {
-      type: "external_link",
-      title: "Kuis Online Google Form",
-      description: "Akses lembar ujian online pembongkaran mesin 4-langkah pada platform eksternal.",
-      externalUrl: "https://forms.gle/vokasi-otomotif-mesin-4-langkah",
-      externalPlatformName: "Google Forms Otomotif",
-    },
-    prevMaterial: { id: 2, title: "Analisis Sirkuit Seri & Paralel Resistor" },
-    nextMaterial: { id: 4, title: "Wiraga, Wirama, & Wirasa dalam Tari Tradisional" },
-  },
-  4: {
-    id: 4,
-    subject: "Seni Tari",
-    title: "Wiraga, Wirama, & Wirasa dalam Tari Tradisional",
-    level: "Pemula",
-    duration: "20 Menit",
-    author: "Ibu Ni Wayan Sri, S.Sn",
-    updatedAt: "08 Agustus 2026",
-    icon: PaintBrushIcon,
-    topics: ["Wiraga", "Wirama", "Wirasa", "Agem & Seledet"],
-    description: "Pahami 3 pilar utama dalam seni tari tradisional untuk melatih raga, tempo irama, dan penjiwaan karakter.",
-    imageUrl: "https://images.unsplash.com/photo-1547153760-18fc86324498?auto=format&fit=crop&w=1200&q=80",
-    imageCaption: "Ilustrasi 4.1: Ekspresi Wirasa dan Pose Wiraga dalam Tari Tradisional.",
-    videoSection: {
-      title: "Video Peragaan Praktik: Olah Gerak Raga & Penjiwaan Irama Tari",
-      videoUrl: "https://www.youtube.com/embed/5qap5aO4i9A",
-      caption: "Video 4.1: Peragaan gerak olah tubuh (Wiraga), ketepatan tempo gamelan (Wirama), dan penjiwaan ekspresi mata (Wirasa).",
-    },
-    contentSections: [
-      {
-        id: "tiga-pilar-tari",
-        title: "Konsep Dasar Wiraga, Wirama, & Wirasa",
-        paragraphs: [
-          "Wiraga adalah keterampilan fisik dasar penari meliputi bentuk gerakan tubuh, keluwesan, dan ketahanan raga. Wirama adalah keselarasan gerak penari dengan ritme dan tempo iringan musik gamelan.",
-          "Wirasa adalah puncak penghayatan di mana penari mampu menyalurkan emosi dan karakter tarian melalui ekspresi wajah dan tatapan mata (seledet).",
-        ],
-        callout: "Kunci Sukses: Penari yang hebat tidak hanya hafal urutan gerakan (wiraga), tetapi mampu menyatukan detak nada irama (wirama) dengan rasa jiwa (wirasa).",
-      },
-    ],
-    stepByStepSection: {
-      title: "Langkah Praktik Olah Tubuh & Latihan Tempo Tari",
-      description: "Ikuti 3 tahapan olah raga dan rasa untuk membentuk kualitas penari tradisional yang berkarakter:",
-      steps: [
-        {
-          stepNumber: 1,
-          title: "Langkah 1: Latihan Posisi Kaki & Badan (Agem Kanan/Kiri)",
-          text: "Buka kedua kaki selebar bahu dengan lutut ditekuk (rendah). Angkat kedua siku sejajar dada dan tegakkan tulang belakang.",
-          mediaUrl: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=800&q=80",
-        },
-        {
-          stepNumber: 2,
-          title: "Langkah 2: Menyesuaikan Tempo Gerak Tangan dengan Ketukan Gendang",
-          text: "Dengarkan tempo pukulan gendang. Ayunkan jemari tangan secara bergelombang mengikuti tempo lambat, sedang, dan cepat.",
-          mediaUrl: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=80",
-        },
-        {
-          stepNumber: 3,
-          title: "Langkah 3: Latihan Gerakan Mata (Seledet) & Ekspresi Wajah",
-          text: "Gerakkan bola mata ke kanan atas dan kiri bawah secara tajam tanpa menundukkan kepala. Salurkan senyum dan penjiwaan sesuai watak tarian.",
-          mediaUrl: "https://images.unsplash.com/photo-1547153760-18fc86324498?auto=format&fit=crop&w=800&q=80",
-        },
-      ],
-    },
-    attachment: {
-      fileName: "Panduan_Olah_Raga_dan_Rasa_Seni_Tari.pdf",
-      fileSize: "1.9 MB",
-    },
-    quizSource: {
-      type: "barcode",
-      title: "Kuis Barcode Game (Kahoot)",
-      description: "Pindai Barcode dari pengajar untuk bergabung ke arena kuis tari tradisional Kahoot.",
-      qrImageUrl: "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://kahoot.it?pin=992813",
-      externalUrl: "https://kahoot.it?pin=992813",
-      externalPlatformName: "Kahoot Tari Tradisional",
-    },
-    prevMaterial: { id: 3, title: "Prinsip Kerja & Pembongkaran Mesin 4-Langkah" },
-    nextMaterial: { id: 5, title: "Manajemen Waktu & Teknik Pomodoro dalam Belajar" },
-  },
-  7: {
-    id: 7,
-    subject: "Bimbingan Konseling",
-    title: "Yuk, Lawan Rasa Malas: Self-Management untuk Konsisten Belajar!",
-    level: "Pemula",
-    duration: "30 Menit",
-    author: "Dinda Riestia",
-    updatedAt: "21 Agustus 2026",
-    icon: UserGroupIcon,
-    topics: ["Prokrastinasi", "Penyebab & Dampak", "Self-Management", "Dukungan Kelompok"],
-    description: "Memahami pengertian prokrastinasi, penyebab dan dampaknya, serta penerapan strategi self-management dan simulasi Buaya Gigitan untuk konsisten belajar.",
-    imageUrl: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1200&q=80",
-    imageCaption: "Ilustrasi 7.1: Pengelolaan Diri (Self-Management) dan Konsistensi Belajar Remaja.",
-    contentSections: [
-      {
-        id: "pengertian-prokrastinasi",
-        title: "Pengertian Prokrastinasi (Kebiasaan Menunda)",
-        paragraphs: [
-          "Prokrastinasi adalah kecenderungan menunda-nunda untuk memulai atau menyelesaikan suatu tugas, meskipun individu menyadari bahwa penundaan tersebut dapat menimbulkan konsekuensi yang kurang baik bagi dirinya. Prokrastinasi bukan sekadar malas, melainkan pola perilaku yang seringkali berkaitan dengan kesulitan mengelola waktu, prioritas, dan dorongan diri sendiri.",
-        ],
-        callout: "Prokrastinasi bukan sekadar malas, melainkan pola perilaku yang seringkali berkaitan dengan kesulitan mengelola waktu, prioritas, dan dorongan diri sendiri.",
-      },
-      {
-        id: "penyebab-umum-prokrastinasi",
-        title: "Penyebab Umum Prokrastinasi",
-        paragraphs: [
-          "Beberapa penyebab umum mengapa seseorang melakukan prokrastinasi antara lain:\n1. Kesulitan memulai karena tugas terasa berat atau membosankan.\n2. Mudah teralihkan oleh distraksi (gawai, media sosial, obrolan, dll).\n3. Belum terbiasa menyusun prioritas saat banyak tugas menumpuk.\n4. Merasa masih ada banyak waktu sehingga menunda hingga mendekati tenggat.\n5. Kurangnya dukungan atau pengingat dari lingkungan sekitar.",
-        ],
-      },
-      {
-        id: "dampak-prokrastinasi",
-        title: "Dampak Prokrastinasi",
-        paragraphs: [
-          "Menunda pekerjaan menimbulkan dampak nyata terhadap performa akademik dan psikologis:\n1. Kualitas hasil pekerjaan menurun karena dikerjakan terburu-buru.\n2. Menimbulkan stres dan tekanan menjelang tenggat waktu.\n3. Menurunkan kepercayaan orang lain (guru, teman kelompok) terhadap komitmen kita.\n4. Jika berulang, dapat menjadi kebiasaan yang menghambat performa belajar dan bekerja di masa depan.",
-        ],
-      },
-      {
-        id: "konsep-manfaat-self-management",
-        title: "Konsep dan Manfaat Self-Management",
-        paragraphs: [
-          "Self-management (manajemen diri) adalah kemampuan mengatur pikiran, perasaan, dan perilaku diri sendiri secara sadar untuk mencapai tujuan yang diinginkan, termasuk dalam hal disiplin belajar. Dengan self-management yang baik, seseorang lebih mampu menahan dorongan untuk menunda, menyusun prioritas, dan tetap konsisten menjalankan rencana yang telah dibuat.",
-        ],
-        callout: "Dengan self-management yang baik, seseorang lebih mampu menahan dorongan untuk menunda, menyusun prioritas, dan tetap konsisten menjalankan rencana yang telah dibuat.",
-      },
-      {
-        id: "strategi-mengatasi-distraksi",
-        title: "Strategi Mengatasi Distraksi dan Menyusun Prioritas",
-        paragraphs: [
-          "a. Kenali distraksi utamamu, sadari hal-hal yang paling sering mengalihkan perhatian.\nb. Batasi akses ke distraksi, misalnya menjauhkan gawai saat mengerjakan tugas penting.\nc. Susun prioritas, kerjakan tugas dengan tenggat terdekat atau tingkat kesulitan tertinggi lebih dulu.\nd. Pecah tugas besar jadi langkah kecil, supaya tidak terasa berat untuk dimulai.\ne. Beri jeda dan reward, istirahat sejenak dan hargai diri sendiri setelah menyelesaikan bagian tugas.",
-        ],
-      },
-      {
-        id: "pentingnya-dukungan-kelompok",
-        title: "Pentingnya Dukungan Kelompok",
-        paragraphs: [
-          "Diskusi dan dukungan dari teman sebaya dapat membantu seseorang lebih terbuka mengenali kebiasaan menundanya, saling mengingatkan, serta saling menguatkan komitmen untuk berubah. Suasana kelompok yang suportif dan tidak menghakimi membuat peserta didik lebih nyaman berbagi pengalaman personal terkait kebiasaan belajarnya.",
-        ],
-      },
-    ],
-    stepByStepSection: {
-      title: "Step by Step Bimbingan Kelompok: Praktik Buaya Gigitan",
-      description: "Tahapan alur bimbingan kelompok dan refleksi pemecahan masalah prokrastinasi:",
-      steps: [
-        {
-          stepNumber: 1,
-          title: "Memahami Orientasi Masalah (C2)",
-          text: "Peserta didik menyimak penjelasan Guru BK tentang pengertian prokrastinasi dan kaitannya dengan manajemen diri (self-management), serta memperhatikan contoh cara bermain Buaya Gigitan dan mekanisme amplop pertanyaan yang diperagakan Guru BK.",
-        },
-        {
-          stepNumber: 2,
-          title: "Mengaplikasi Permainan Buaya Gigitan (C3)",
-          text: "Kelompok duduk melingkar mengelilingi mainan Buaya Gigitan yang diletakkan di tengah. Peserta didik menekan salah satu gigi buaya secara bergiliran searah jarum jam.",
-        },
-        {
-          stepNumber: 3,
-          title: "Mekanisme Amplop Pertanyaan (C4)",
-          text: "Jika tekanan seorang peserta didik menyebabkan mulut buaya menutup (“tergigit”), peserta didik tersebut wajib mengambil 1 amplop dari tumpukan amplop pertanyaan dan menjawabnya di hadapan kelompok.",
-        },
-        {
-          stepNumber: 4,
-          title: "Feedback & Solusi Teman Sebaya (C6)",
-          text: "Setelah peserta didik selesai menjawab, seluruh anggota kelompok lain wajib secara bergiliran: (a) memberikan feedback/tanggapan atas jawaban yang disampaikan, (b) menceritakan pengalaman serupa yang pernah mereka alami terkait situasi yang sama, dan (c) memberikan saran atau cara untuk keluar dari situasi tersebut kepada anggota yang menjawab.",
-        },
-        {
-          stepNumber: 5,
-          title: "Pencatatan LKPD & Rotasi Giliran",
-          text: "Peserta didik yang menjawab maupun yang memberi tanggapan mencatat poin-poin penting dari sesi tersebut ke dalam LKPD pada baris giliran yang sesuai. Guru BK mereset mainan Buaya Gigitan dan permainan berlanjut hingga seluruh anggota kelompok mendapat giliran menjawab minimal 1 kali.",
-        },
-        {
-          stepNumber: 6,
-          title: "Fasilitasi & Pemerataan Diskusi",
-          text: "Jika hingga separuh waktu diskusi berjalan masih ada anggota yang belum pernah “tergigit”, Guru BK mengarahkan giliran khusus agar anggota tersebut tetap mendapat kesempatan mengambil amplop dan menjawab, memastikan tiap sesi tanya-jawab dan feedback berlangsung mendalam namun tetap suportif dan tidak menghakimi.",
-        },
-        {
-          stepNumber: 7,
-          title: "Kartu Komitmenku & Penguatan (A4, P3)",
-          text: "Peserta didik mengisi bagian “Kartu Komitmenku” pada LKPD: menuliskan 1 kebiasaan yang ingin diubah dan 1 langkah pertama yang akan dilakukan minggu ini dengan mempertimbangkan saran-saran yang diterima, membacakan secara sukarela, serta menerima penguatan komitmen dari Guru BK.",
-        },
-      ],
-    },
-    attachment: {
-      fileName: "RPL_Bimbingan_Kelompok_Self_Management.pdf",
-      fileSize: "1.8 MB",
-    },
-    quizSource: {
-      type: "internal",
-      title: "Evaluasi Bimbingan Konseling",
-      description: "Uji pemahaman materi self-management dan strategi mengatasi prokrastinasi.",
-      internalUrl: "/kuis/7",
-    },
-    prevMaterial: { id: 6, title: "Pemrograman Dasar Arduino & Sensor" },
-    nextMaterial: { id: 8, title: "Talent Quest: Temukan Potensimu, Kembangkan Dirimu!" },
-  },
-
-  8: {
-    id: 8,
-    subject: "Bimbingan Konseling",
-    title: "Talent Quest: Temukan Potensimu, Kembangkan Dirimu!",
-    level: "Pemula",
-    duration: "35 Menit",
-    author: "Dinda Riestia",
-    updatedAt: "22 Agustus 2026",
-    icon: UserGroupIcon,
-    topics: ["Potensi Diri", "Ragam Potensi", "Strength-Based", "Talent Quest Board"],
-    description: "Mengenal dan mengembangkan potensi diri melalui pendekatan strength-based, refleksi personal, dan simulasi permainan edukatif Talent Quest.",
-    imageUrl: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
-    imageCaption: "Ilustrasi 8.1: Eksplorasi Potensi Diri dan Pendekatan Strength-Based Peserta Didik.",
-    contentSections: [
-      {
-        id: "pengertian-potensi-diri",
-        title: "Pengertian Potensi Diri",
-        paragraphs: [
-          "Potensi diri adalah kemampuan, kekuatan, minat, dan karakter positif yang dimiliki seseorang, baik yang sudah terlihat maupun yang masih perlu ditemukan dan dikembangkan. Setiap individu memiliki potensi yang berbeda sehingga tidak perlu membandingkan kelebihan diri dengan orang lain.",
-          "Dalam pendekatan strength-based, individu diarahkan untuk mengenali dan menggunakan kekuatan yang dimilikinya sebagai modal untuk berkembang. Penelitian menunjukkan bahwa penggunaan kekuatan personal berkaitan dengan meningkatnya self-esteem, vitalitas, dan pengalaman positif (Govindji & Linley, 2011).",
-        ],
-        callout: "Dalam pendekatan strength-based, individu diarahkan untuk mengenali dan menggunakan kekuatan yang dimilikinya sebagai modal untuk berkembang.",
-      },
-      {
-        id: "ragam-potensi-diri",
-        title: "Ragam Potensi Diri",
-        paragraphs: [
-          "Potensi dapat muncul dalam berbagai bidang kehidupan, antara lain:\n• Akademik/Belajar: memahami materi, berpikir kritis, memecahkan masalah, dan belajar hal baru.\n• Sosial/Emosional: berkomunikasi, bekerja sama, memahami orang lain, dan mengelola emosi.\n• Kreatif/Fisik: membuat karya, menghasilkan ide, menggunakan keterampilan praktik, olahraga, atau aktivitas fisik lainnya.",
-        ],
-      },
-      {
-        id: "pentingnya-mengenali-potensi-diri",
-        title: "Pentingnya Mengenali Potensi Diri",
-        paragraphs: [
-          "Mengenali potensi membantu peserta didik:\n1. Meningkatkan kesadaran dan kepercayaan diri;\n2. Mengurangi kebiasaan membandingkan diri secara negatif dengan orang lain;\n3. Mengetahui kemampuan yang dapat dikembangkan; dan\n4. Membantu menentukan arah pengembangan diri serta masa depan.",
-        ],
-      },
-      {
-        id: "cara-mengenali-mengembangkan-potensi",
-        title: "Cara Mengenali dan Mengembangkan Potensi",
-        paragraphs: [
-          "Potensi dapat ditemukan melalui:\n• Refleksi: mengingat pengalaman atau kegiatan yang pernah dilakukan dengan baik.\n• Feedback: meminta pendapat positif dari teman, guru, atau orang terdekat.\n• Eksplorasi: mencoba kegiatan baru untuk menemukan minat dan kemampuan.\n• Latihan: mengembangkan kemampuan secara konsisten.\n• Tindak lanjut: menentukan satu langkah kecil untuk menggunakan dan mengembangkan potensi tersebut.",
-        ],
-        callout: 'Ingat: "Belum menemukan kelebihanmu bukan berarti kamu tidak punya potensi. Bisa jadi kamu belum cukup banyak mencoba."',
-      },
-    ],
-    stepByStepSection: {
-      title: "Step by Step Bimbingan Klasikal: Permainan Talent Quest",
-      description: "Alur simulasi permainan kelompok Talent Quest untuk mengenali potensi diri:",
-      steps: [
-        {
-          stepNumber: 1,
-          title: "Orientasi & Pembagian Kelompok",
-          text: "Peserta didik memperhatikan penjelasan Guru BK terkait topik potensi diri dan aturan permainan Talent Quest. Peserta didik dibagi ke dalam kelompok kecil (4–5 orang), tiap kelompok memilih 1 warna token dan menentukan urutan giliran anggota (nomor 1, 2, 3, dst).",
-        },
-        {
-          stepNumber: 2,
-          title: "Giliran Bermain & Melempar Dadu",
-          text: "Kelompok bermain secara bergiliran (kelompok 1, kelompok 2, dst): 1 wakil kelompok sesuai urutan maju ke depan, melempar dadu, dan menjalankan token kelompoknya di papan sesuai jumlah mata dadu.",
-        },
-        {
-          stepNumber: 3,
-          title: "Pengambilan Kartu Refleksi Sesuai Warna",
-          text: "Wakil kelompok melihat warna kotak yang didarati, lalu mengambil 1 kartu dari tumpukan yang sesuai warna tersebut (Abu-abu/Kuning/Hijau/Merah), kecuali kotak Diamond yang tidak memerlukan pengambilan kartu apa pun.",
-        },
-        {
-          stepNumber: 4,
-          title: "Menjawab Pertanyaan Reflektif (Abu-abu, Kuning, Hijau)",
-          text: "Jika kartu berwarna Abu-abu, Kuning, atau Hijau: wakil kelompok membacakan pertanyaan reflektif ke kelompoknya dan menjawabnya secara individu di Lembar Jawaban Pribadi (anggota lain boleh menambahkan masukan positif, namun yang menjawab & menulis tetap si wakil).",
-        },
-        {
-          stepNumber: 5,
-          title: "Tantangan Kelompok / Dare (Merah)",
-          text: "Jika kartu berwarna Merah: seluruh kelompok bersama-sama melaksanakan tantangan kelompok (dare) yang tertulis di kartu, dipimpin oleh wakil yang mengambil kartu tersebut.",
-        },
-        {
-          stepNumber: 6,
-          title: "Aturan Kotak Khusus (Diamond, Tangga, & Ular)",
-          text: "Jika mendarat di kotak Diamond: peserta didik tidak mendapat pertanyaan/tantangan apa pun, token tetap di tempat, dan giliran langsung berpindah. Jika kotak memiliki tanda tangga atau ular: peserta didik tetap menjawab/melaksanakan kartu sesuai warna kotak terlebih dahulu, baru setelah itu token naik (tangga) atau turun (ular) ke kotak tujuan.",
-        },
-        {
-          stepNumber: 7,
-          title: "Rotasi Ronde & Pengumuman Pemenang",
-          text: "Pada ronde berikutnya, giliran maju berpindah ke anggota bernomor urut selanjutnya. Permainan berhenti setelah jumlah ronde yang disepakati habis; Guru BK mengumumkan kelompok dengan token terjauh sebagai pemenang disertai apresiasi.",
-        },
-        {
-          stepNumber: 8,
-          title: "Lembar Refleksi Akhir & Penguatan",
-          text: "Peserta didik mengisi Lembar Refleksi Akhir secara individu: menuliskan potensi diri (dari domain apa pun) yang paling ia banggakan dari hasil bermain, serta 1 rencana sederhana untuk mengembangkannya. Guru BK mengarahkan peserta didik mengaitkan hasil permainan dengan pemahaman baru tentang potensi dirinya secara menyeluruh.",
-        },
-      ],
-    },
-    attachment: {
-      fileName: "Materi_Klasikal_Talent_Quest_BK.pdf",
-      fileSize: "2.3 MB",
-    },
-    quizSource: {
-      type: "internal",
-      title: "Evaluasi Potensi Diri",
-      description: "Kuis refleksi pemahaman potensi dan arah pengembangan diri.",
-      internalUrl: "/kuis/8",
-    },
-    prevMaterial: { id: 7, title: "Yuk, Lawan Rasa Malas: Self-Management untuk Konsisten Belajar!" },
-    nextMaterial: { id: 16, title: "Jati Diri Tanpa Kenakalan" },
-  },
-
-  16: {
-    id: 16,
-    subject: "Bimbingan Konseling",
-    title: "Jati Diri Tanpa Kenakalan",
-    level: "Menengah",
-    duration: "40 Menit",
-    author: "Dinda Riestia",
-    updatedAt: "23 Agustus 2026",
-    icon: UserGroupIcon,
-    topics: ["Jati Diri Remaja", "Bentuk Kenakalan", "Norma Pergaulan", "Peer Pressure", "Mind Mapping"],
-    description: "Memahami pembentukan jati diri remaja, menyelaraskan norma pergaulan teman sebaya, mengatasi peer pressure, dan studi kasus problem-based learning.",
-    imageUrl: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1200&q=80",
-    imageCaption: "Ilustrasi 16.1: Menjaga Jati Diri Positif dan Solidaritas Sehat dalam Pergaulan Remaja.",
-    contentSections: [
-      {
-        id: "pengertian-jati-diri",
-        title: "Pengertian Jati Diri",
-        paragraphs: [
-          "Jati diri adalah keseluruhan ciri khas, nilai, dan prinsip yang dipegang seseorang sehingga membedakannya dari orang lain, sekaligus menjadi pedoman dalam bersikap dan bertindak. Pada masa remaja, pencarian jati diri berlangsung sangat intens, salah satunya melalui interaksi dan pergaulan dengan teman sebaya.",
-          "Remaja yang memiliki jati diri kuat akan lebih mampu bertahan pada nilai-nilai yang diyakininya meskipun mendapat tekanan dari lingkungan pergaulan.",
-        ],
-        callout: "Remaja yang memiliki jati diri kuat akan lebih mampu bertahan pada nilai-nilai yang diyakininya meskipun mendapat tekanan dari lingkungan pergaulan.",
-      },
-      {
-        id: "pengertian-bentuk-kenakalan",
-        title: "Pengertian dan Bentuk-Bentuk Kenakalan Remaja",
-        paragraphs: [
-          "Kenakalan remaja adalah perilaku menyimpang yang dilakukan remaja dan melanggar norma sosial, norma sekolah, maupun norma hukum, seringkali dipicu oleh tekanan untuk diterima dalam kelompok pergaulan.",
-          "Bentuk-bentuk kenakalan remaja yang umum dijumpai antara lain:\n• Membolos atau menyontek secara masif karena ikut-ikutan teman.\n• Mengucilkan atau merundung (bullying) teman yang dianggap berbeda.\n• Terlibat tawuran atau perkelahian kelompok.\n• Merokok, konsumsi minuman keras, atau zat terlarang karena ajakan kelompok.\n• Melanggar tata tertib sekolah demi solidaritas semu dengan kelompok pergaulan.",
-        ],
-      },
-      {
-        id: "norma-pergaulan-teman-sebaya",
-        title: "Norma-Norma Pergaulan Teman Sebaya",
-        paragraphs: [
-          "Norma pergaulan adalah aturan tidak tertulis yang mengatur bagaimana seseorang seharusnya bersikap dalam suatu kelompok pertemanan. Norma ini dapat berbeda-beda antarkelompok, tergantung latar belakang budaya, ekonomi, kebiasaan, maupun nilai yang dipegang tiap anggota.",
-          "Perbedaan norma inilah yang sering menjadi sumber gesekan ketika seseorang bergaul dengan teman-teman dari latar belakang yang beragam.",
-        ],
-      },
-      {
-        id: "menyelaraskan-norma-diri",
-        title: "Menyelaraskan Norma Diri dengan Norma Pergaulan yang Beragam",
-        paragraphs: [
-          "• Kenali norma dan nilai yang kamu pegang sebagai bagian dari jati dirimu.\n• Kenali dan pahami norma yang dianut lingkungan pergaulan, meskipun berbeda dari norma pribadi.\n• Pilah mana perbedaan yang bisa ditoleransi dan mana yang bertentangan dengan nilai/prinsip diri.\n• Komunikasikan batasanmu secara jujur dan tegas, tanpa harus memutus hubungan pertemanan.\n• Cari titik temu, seperti kesamaan minat atau tujuan, untuk membangun kepercayaan dan solidaritas yang sehat.",
-        ],
-      },
-      {
-        id: "menyikapi-peer-pressure",
-        title: "Menyikapi Tekanan Teman Sebaya (Peer Pressure) Tanpa Kehilangan Jati Diri",
-        paragraphs: [
-          "• Sadari bahwa menolak ajakan yang merugikan bukan berarti tidak setia kawan.\n• Latih keberanian mengatakan “tidak” dengan cara yang tetap menghargai teman.\n• Cari dukungan dari teman atau orang dewasa yang memiliki nilai sejalan denganmu.\n• Ingat kembali tujuan dan cita-citamu setiap kali mendapat tekanan untuk melakukan hal yang bertentangan dengan nilai dirimu.\n• Bangun pertemanan yang saling menguatkan, bukan yang membuatmu harus mengorbankan jati diri demi diterima.",
-        ],
-        callout: "Bangun pertemanan yang saling menguatkan, bukan yang membuatmu harus mengorbankan jati diri demi diterima.",
-      },
-    ],
-    stepByStepSection: {
-      title: "Step by Step Bimbingan: Problem Based Learning & Mind Mapping",
-      description: "Alur studi kasus dan perumusan pemecahan masalah kenakalan remaja:",
-      steps: [
-        {
-          stepNumber: 1,
-          title: "Memahami Orientasi Masalah (C2)",
-          text: "Guru BK menayangkan/membagikan lembar studi kasus mengenai fenomena pergaulan teman sebaya yang mengarah pada kenakalan remaja. Peserta didik menyimak dan mengidentifikasi masalah utama, norma yang dilanggar, serta latar belakang perbedaan yang memicu konflik dalam kasus tersebut.",
-        },
-        {
-          stepNumber: 2,
-          title: "Organisasi Belajar & Pembagian Kelompok (C4, P3)",
-          text: "Peserta didik dibagi ke dalam kelompok kecil (4–5 orang). Tiap kelompok mendiskusikan studi kasus: mengidentifikasi norma yang dilanggar tokoh, latar belakang perbedaan yang memicu tekanan dari teman sebaya, serta dampaknya terhadap jati diri tokoh dalam kasus.",
-        },
-        {
-          stepNumber: 3,
-          title: "Perumusan Solusi Alternatif",
-          text: "Tiap kelompok merumuskan alternatif solusi/cara menyelaraskan norma pergaulan yang beragam tanpa harus terjerumus pada kenakalan, berdasarkan hasil diskusi kelompok.",
-        },
-        {
-          stepNumber: 4,
-          title: "Penuangan ke Dalam Mind Map",
-          text: "Tiap kelompok menuangkan hasil identifikasi masalah, analisis, dan solusi ke dalam Mind Map pada kertas plano/HVS yang telah disediakan, menggunakan LKPD sebagai panduan cabang utama, namun bebas menambahkan cabang, gambar, simbol, atau warna sesuai kreativitas kelompok.",
-        },
-        {
-          stepNumber: 5,
-          title: "Bimbingan & Scaffolding Guru BK",
-          text: "Guru BK berkeliling membimbing dan memberi scaffolding pada tiap kelompok selama proses diskusi maupun saat menyusun mind map.",
-        },
-        {
-          stepNumber: 6,
-          title: "Presentasi & Evaluasi Pemecahan Masalah (A4, P3)",
-          text: "Tiap kelompok mempresentasikan mind map yang telah dibuat secara singkat di depan kelas. Kelompok lain diberi kesempatan menanggapi, bertanya, atau menambahkan pendapat setelah presentasi.",
-        },
-        {
-          stepNumber: 7,
-          title: "Penguatan Konsep & Refleksi Individu",
-          text: "Guru BK memberikan penguatan dan meluruskan konsep pada tiap hasil presentasi kelompok. Peserta didik merefleksikan secara individu norma pergaulan sehat apa yang akan mereka terapkan mulai sekarang, dituliskan pada bagian refleksi di LKPD.",
-        },
-      ],
-    },
-    attachment: {
-      fileName: "RPL_Klasikal_Jati_Diri_Tanpa_Kenakalan.pdf",
-      fileSize: "2.0 MB",
-    },
-    quizSource: {
-      type: "internal",
-      title: "Evaluasi Jati Diri Remaja",
-      description: "Uji pemahaman menghadapi peer pressure dan menjaga prinsip diri.",
-      internalUrl: "/kuis/16",
-    },
-    prevMaterial: { id: 8, title: "Talent Quest: Temukan Potensimu, Kembangkan Dirimu!" },
-    nextMaterial: { id: 17, title: "Membangun Konsep Diri Positif" },
-  },
-
-  17: {
-    id: 17,
-    subject: "Bimbingan Konseling",
-    title: "Membangun Konsep Diri Positif",
-    level: "Pemula",
-    duration: "30 Menit",
-    author: "Erintan Tsuraya Rahadatul'Aisy",
-    updatedAt: "24 Agustus 2026",
-    icon: UserGroupIcon,
-    topics: ["Pengertian Konsep Diri", "Self-Image", "Self-Esteem", "Ideal Self", "Faktor Pembentuk"],
-    description: "Memahami konsep diri remaja, 3 komponen utama (self-image, self-esteem, ideal self), faktor lingkungan, serta aktivitas refleksi diri telapak tangan.",
-    imageUrl: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=1200&q=80",
-    imageCaption: "Ilustrasi 17.1: Pembentukan Konsep Diri Positif dan Eksplorasi Kepribadian Remaja.",
-    contentSections: [
-      {
-        id: "pengertian-konsep-diri",
-        title: "Pengertian Konsep Diri",
-        paragraphs: [
-          "Konsep diri adalah cara seseorang memandang, memahami, dan menilai dirinya sendiri. Konsep diri terbentuk dari pengalaman, interaksi sosial, serta bagaimana seseorang menafsirkan berbagai pengalaman tersebut. Hapsari et al. (2023) menjelaskan bahwa konsep diri merupakan persepsi seseorang terhadap dirinya yang terbentuk melalui pengalaman dan interpretasi terhadap lingkungan. Konsep diri juga dapat menjadi sumber motivasi dan membantu seseorang mengorganisasi pengalaman hidupnya.",
-          "Pada masa remaja, konsep diri menjadi semakin penting karena individu mengalami berbagai perubahan fisik, sosial, emosional, dan akademik. Crone et al. (2022) menjelaskan bahwa perkembangan konsep diri pada masa remaja mengalami perubahan yang berkaitan dengan evaluasi diri, pengambilan perspektif, dan perbandingan sosial. Perubahan tersebut dapat menjadi tantangan sekaligus kesempatan untuk mengembangkan pemahaman diri yang lebih positif.",
-        ],
-        callout: "Konsep diri merupakan persepsi seseorang terhadap dirinya yang terbentuk melalui pengalaman dan interpretasi terhadap lingkungan, sekaligus menjadi sumber motivasi hidup.",
-      },
-      {
-        id: "komponen-konsep-diri",
-        title: "Komponen Konsep Diri",
-        paragraphs: [
-          "Dalam materi ini, konsep diri terdiri dari tiga komponen utama:",
-          "a. Self-Image (Gambaran Diri)\nSelf-image adalah bagaimana seseorang memandang atau menggambarkan dirinya sendiri, termasuk pandangan terhadap karakteristik, kemampuan, penampilan, serta berbagai aspek yang dianggap melekat pada dirinya. McMullen (2020) menjelaskan bahwa self-image berkaitan dengan bagaimana individu melihat dirinya dan terdiri atas berbagai sikap, pendapat, serta ideal mengenai diri.\nHal ini dapat mencakup:\n• bagaimana seseorang melihat kondisi fisiknya;\n• kemampuan yang dimiliki;\n• sifat dan kepribadian;\n• kemampuan berinteraksi dengan orang lain;\n• peran yang dimiliki di keluarga, sekolah, maupun lingkungan sosial.\nContoh: \"Saya orang yang cukup ramah, tetapi saya masih gugup ketika berbicara di depan banyak orang.\"",
-          "b. Self-Esteem (Harga Diri)\nSelf-esteem adalah penilaian atau perasaan seseorang terhadap nilai dan keberhargaan dirinya. Jadi, jika self-image lebih berkaitan dengan bagaimana seseorang melihat dirinya, self-esteem berkaitan dengan bagaimana seseorang menilai dan menghargai dirinya berdasarkan gambaran tersebut. Calhoun (1977) membedakan self-esteem dari self-concept dengan menjelaskan self-esteem sebagai kepuasan individu terhadap konsep dirinya. Morin (2017) juga menempatkan self-esteem sebagai bagian dari self-views, yaitu aspek yang berkaitan dengan isi pandangan dan perasaan seseorang mengenai dirinya.\nContoh self-esteem yang sehat:\n• berani mencoba meskipun belum yakin hasilnya sempurna;\n• mampu menerima kritik;\n• tidak langsung menganggap kegagalan sebagai bukti bahwa dirinya tidak mampu;\n• menghargai usaha yang telah dilakukan.\nReview sistematis Hapsari et al. (2023) juga menunjukkan bahwa konsep diri merupakan konstruk yang multidimensional sehingga perlu dipahami secara menyeluruh.",
-          "c. Ideal Self (Diri Ideal)\nIdeal self adalah gambaran mengenai diri yang diinginkan atau ingin dicapai seseorang di masa depan. Ideal self berisi harapan, aspirasi, karakteristik, atau kualitas yang ingin dimiliki individu. Dalam kajian mengenai ideal self, Boyatzis dan kolega menjelaskan ideal self sebagai gambaran tentang versi diri masa depan yang paling diinginkan, yang berkaitan dengan nilai, tujuan, harapan, dan aspirasi seseorang. Sementara itu, Endo (1987) mendefinisikan ideal self sebagai struktur kognitif yang memuat representasi mengenai keadaan diri yang diinginkan dan tidak diinginkan.\nContohnya:\n• ingin menjadi lebih percaya diri;\n• ingin menjadi siswa yang disiplin;\n• ingin mampu berbicara di depan umum;\n• ingin memiliki hubungan sosial yang lebih baik;\n• ingin mengembangkan kemampuan tertentu.\nIdeal self dapat menjadi arah untuk berkembang. Namun, tujuan tersebut sebaiknya realistis dan dilakukan secara bertahap.\nContoh:\nKondisi sekarang: \"Saya masih takut presentasi.\"\nDiri ideal: \"Saya ingin mampu melakukan presentasi dengan percaya diri.\"\nLangkah: \"Saya akan berlatih berbicara selama 5–10 menit sebelum presentasi.\"",
-        ],
-        callout: "Ideal self dapat menjadi arah untuk berkembang secara realistis dan bertahap dari kondisi sekarang menuju versi diri terbaik.",
-      },
-      {
-        id: "faktor-mempengaruhi-konsep-diri",
-        title: "Faktor yang Mempengaruhi Konsep Diri",
-        paragraphs: [
-          "Konsep diri tidak terbentuk hanya dari dalam diri individu. Lingkungan sosial juga memiliki peran penting:",
-          "a. Keluarga: Keluarga menjadi tempat pertama seseorang belajar mengenal dirinya. Dukungan, perhatian, penerimaan, dan cara keluarga memberikan kritik dapat membentuk cara seseorang memandang dan menghargai dirinya.\n\nb. Teman Sebaya: Teman sebaya berpengaruh besar pada masa remaja. Dukungan dan penerimaan teman dapat meningkatkan kepercayaan diri, sedangkan penolakan atau ejekan dapat membuat seseorang merasa kurang percaya diri.\n\nc. Guru dan Lingkungan Sekolah: Guru dan lingkungan sekolah membantu siswa mengenali kemampuan, potensi, dan perannya sebagai seorang siswa. Lingkungan sekolah yang aman dan mendukung dapat membantu siswa memiliki pandangan positif terhadap dirinya.\n\nd. Pengalaman Hidup: Berbagai pengalaman, baik keberhasilan maupun kegagalan, dapat membentuk konsep diri. Keberhasilan dapat meningkatkan kepercayaan diri, sedangkan kegagalan dapat menjadi pembelajaran untuk berkembang.\n\ne. Media Sosial: Media sosial dapat memengaruhi cara remaja melihat dan menilai dirinya. Penggunaan yang positif dapat menjadi sumber inspirasi, tetapi terlalu sering membandingkan diri dengan orang lain dapat membuat seseorang merasa kurang percaya diri.",
-        ],
-      },
-    ],
-    stepByStepSection: {
-      title: "Aktivitas Refleksi & Diskusi Konsep Diri Positif",
-      description: "Langkah-langkah refleksi individu metode telapak tangan dan diskusi kelompok:",
-      steps: [
-        {
-          stepNumber: 1,
-          title: "Jiplak Telapak Tangan pada Kertas",
-          text: "Jiplak telapak tanganmu pada selembar kertas terpisah sebagai media pemetaan konsep diri.",
-        },
-        {
-          stepNumber: 2,
-          title: "Isi Jari Jempol (Kelebihan & Kebanggaan)",
-          text: "Tuliskan kelebihan atau hal yang paling kamu banggakan dari dalam dirimu.",
-        },
-        {
-          stepNumber: 3,
-          title: "Isi Jari Telunjuk (Cita-cita & Tujuan)",
-          text: "Tuliskan cita-cita atau tujuan utama yang ingin dan harus kamu capai di masa depan.",
-        },
-        {
-          stepNumber: 4,
-          title: "Isi Jari Tengah (Kekurangan yang Ingin Diubah)",
-          text: "Tuliskan kekurangan atau kebiasaan kurang baik yang ingin kamu hilangkan secara bertahap.",
-        },
-        {
-          stepNumber: 5,
-          title: "Isi Jari Manis (Rasa Syukur)",
-          text: "Tuliskan hal-hal berharga apa saja yang paling kamu syukuri dalam perjalanan hidupmu.",
-        },
-        {
-          stepNumber: 6,
-          title: "Isi Jari Kelingking (Kebiasaan Kecil Positif)",
-          text: "Tuliskan kebiasaan kecil positif yang sering dan konsisten kamu lakukan sehari-hari.",
-        },
-        {
-          stepNumber: 7,
-          title: "Diskusi Kelompok Suportif (5-6 Orang)",
-          text: "Bentuk kelompok kecil dan diskusikan: (1) momen ketika kamu merasa percaya diri, (2) cara bangkit saat kurang percaya diri, dan (3) satu langkah konkret minggu ini untuk lebih menghargai dirimu.",
-        },
-      ],
-    },
-    attachment: {
-      fileName: "Materi_Membangun_Konsep_Diri_Positif.pdf",
-      fileSize: "2.1 MB",
-    },
-    quizSource: {
-      type: "internal",
-      title: "Refleksi Konsep Diri",
-      description: "Uji pemahaman dan asesmen konsep diri positif peserta didik.",
-      internalUrl: "/kuis/17",
-    },
-    prevMaterial: { id: 16, title: "Jati Diri Tanpa Kenakalan" },
-    nextMaterial: { id: 18, title: "Personal Branding: Membangun Citra Diri Positif" },
-  },
-
-  18: {
-    id: 18,
-    subject: "Bimbingan Konseling",
-    title: "Personal Branding: Membangun Citra Diri Positif",
-    level: "Pemula",
-    duration: "35 Menit",
-    author: "Erintan Tsuraya Rahadatul'Aisy",
-    updatedAt: "24 Agustus 2026",
-    icon: UserGroupIcon,
-    topics: ["Personal Branding", "Potensi Diri", "Unsur Branding", "Kesiapan PKL & Kerja"],
-    description: "Mengenali keunikan dan potensi diri, membangun citra profesional positif, serta persiapan menghadapi PKL dan dunia kerja bagi siswa SMK.",
-    imageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1200&q=80",
-    imageCaption: "Ilustrasi 18.1: Membangun Identitas Profesional dan Citra Diri Positif Siswa SMK.",
-    contentSections: [
-      {
-        id: "pengertian-personal-branding",
-        title: "Pengertian Personal Branding",
-        paragraphs: [
-          "Personal branding adalah proses seseorang dalam mengenali, mengembangkan, dan menunjukkan kemampuan, karakter, nilai, serta keunikan dirinya sehingga terbentuk kesan tertentu dari orang lain. Personal branding berkaitan dengan bagaimana seseorang mengomunikasikan kompetensi dan karakter dirinya untuk membangun identitas profesional (Kushal & Nargundkar, 2021).",
-          "Personal branding tidak hanya berkaitan dengan bagaimana seseorang terlihat, tetapi juga bagaimana ia bersikap, berkomunikasi, bekerja, dan menunjukkan kemampuan secara konsisten. Pengembangan personal branding dapat membantu peserta didik memahami kekuatan dirinya dan menghubungkannya dengan kebutuhan dunia kerja (Alonso-García et al., 2018). Bagi siswa SMK, personal branding penting karena dapat membantu mempersiapkan diri menghadapi PKL, wawancara kerja, dunia kerja, maupun pengembangan karier. Personal branding yang baik dibangun berdasarkan potensi dan karakter diri yang sebenarnya, bukan dengan berpura-pura menjadi orang lain (Kushal & Nargundkar, 2021).",
-        ],
-        callout: "Personal branding yang baik dibangun berdasarkan potensi dan karakter diri yang sebenarnya secara autentik, bukan dengan berpura-pura menjadi orang lain.",
-      },
-      {
-        id: "tujuan-personal-branding",
-        title: "Tujuan Personal Branding",
-        paragraphs: [
-          "Personal branding bertujuan untuk:\n1. Membantu seseorang mengenali potensi dan keunikan dirinya.\n2. Meningkatkan kepercayaan diri.\n3. Membantu seseorang menunjukkan kemampuan secara positif.\n4. Membangun kesan positif di lingkungan sekolah maupun kerja.\n5. Meningkatkan kemampuan berkomunikasi dan berinteraksi.\n6. Mendukung kesiapan menghadapi PKL dan dunia kerja.\n7. Membantu menentukan arah pengembangan diri dan karier.",
-          "Pengembangan personal branding dalam pembelajaran dapat membantu peserta didik melakukan refleksi terhadap kemampuan dirinya, memahami kekuatan yang dimiliki, serta belajar mengkomunikasikan kompetensi kepada lingkungan profesional (Kushal & Nargundkar, 2021).",
-        ],
-      },
-      {
-        id: "mengenali-potensi-diri",
-        title: "Mengenali Potensi Diri",
-        paragraphs: [
-          "Potensi diri adalah kemampuan, kekuatan, minat, atau bakat yang dimiliki seseorang dan masih dapat dikembangkan melalui proses belajar dan pengalaman. Mengenali potensi diri merupakan bagian penting dalam membangun personal branding karena seseorang perlu mengetahui kemampuan, kelebihan, dan karakteristik dirinya sebelum menentukan hal yang ingin ditonjolkan (Building Your Brand, 2016).",
-          "Jenis-Jenis Potensi Diri:\n• Potensi intelektual: Kemampuan memahami informasi, berpikir kritis, memecahkan masalah, dan mengambil keputusan.\n• Potensi kreativitas: Kemampuan menghasilkan ide, karya, atau cara baru dalam menyelesaikan sesuatu.\n• Potensi komunikasi: Kemampuan menyampaikan pendapat dan informasi serta membangun hubungan dengan orang lain.\n• Potensi kepemimpinan: Kemampuan mengarahkan, mengorganisasi, mengambil keputusan, dan bertanggung jawab terhadap kelompok.\n• Potensi sosial: Kemampuan bekerja sama, berempati, menghargai orang lain, dan beradaptasi dengan lingkungan.\n• Potensi keterampilan: Kemampuan melakukan pekerjaan tertentu, seperti desain, pemrograman, editing, administrasi, teknik, tata boga, dan keterampilan sesuai bidang keahlian.",
-        ],
-      },
-      {
-        id: "cara-mengenali-potensi-diri",
-        title: "Cara Mengenali Potensi Diri",
-        paragraphs: [
-          "Untuk mengenali potensi diri, peserta didik dapat melakukan beberapa hal berikut:\n1. Mengenali hal yang disukai: Perhatikan kegiatan yang membuat diri merasa tertarik dan bersemangat.\n2. Mengidentifikasi kemampuan: Tuliskan hal-hal yang dapat dilakukan dengan baik.\n3. Mengingat pengalaman keberhasilan: Perhatikan kegiatan atau tugas yang pernah berhasil dilakukan.\n4. Meminta umpan balik: Tanyakan kepada guru, teman, atau keluarga mengenai kelebihan yang mereka lihat.\n5. Mencoba berbagai kegiatan: Pengalaman baru dapat membantu menemukan kemampuan yang sebelumnya belum diketahui.\n6. Mengevaluasi diri: Tentukan kemampuan yang sudah dimiliki dan kemampuan yang masih perlu dikembangkan.",
-        ],
-      },
-      {
-        id: "unsur-personal-branding",
-        title: "Unsur-Unsur Personal Branding",
-        paragraphs: [
-          "Personal branding dapat dibangun melalui beberapa unsur berikut:\n1. Kemampuan: Kemampuan menjadi salah satu dasar dalam menunjukkan keunikan diri. Kompetensi yang dimiliki perlu dikembangkan dan dikomunikasikan agar dapat diketahui oleh orang lain (Kushal & Nargundkar, 2021).\n2. Karakter: Karakter seperti jujur, disiplin, bertanggung jawab, dan dapat dipercaya akan mempengaruhi kesan orang lain terhadap diri seseorang.\n3. Komunikasi: Cara berbicara, mendengarkan, menyampaikan pendapat, dan berinteraksi menjadi bagian penting dalam membangun personal branding. Kemampuan mengkomunikasikan keterampilan juga menjadi bagian dari kesiapan menghadapi dunia kerja (Kushal & Nargundkar, 2021).\n4. Penampilan yang Sesuai: Penampilan yang bersih, rapi, dan sesuai dengan situasi dapat menunjukkan kesiapan dan profesionalitas.\n5. Sikap: Sikap sopan, menghargai orang lain, terbuka terhadap masukan, dan mampu bekerja sama dapat membantu membentuk kesan positif.\n6. Konsistensi: Personal branding tidak terbentuk hanya dalam satu kesempatan. Kesan terhadap seseorang dibangun melalui kemampuan, karakter, dan perilaku yang ditunjukkan secara konsisten (Alonso-García et al., 2018).",
-        ],
-        callout: "Kesan terhadap seseorang dibangun melalui kemampuan, karakter, komunikasi, dan perilaku yang ditunjukkan secara konsisten.",
-      },
-      {
-        id: "cara-membangun-personal-branding-positif",
-        title: "Cara Membangun Personal Branding Positif untuk Siswa SMK",
-        paragraphs: [
-          "1. Kenali diri sendiri: Ketahui minat, kemampuan, kelebihan, kekurangan, dan nilai yang dimiliki.\n2. Tentukan keunggulan yang ingin dikembangkan: Pilih kemampuan yang sesuai dengan minat dan bidang keahlian.\n3. Terus belajar dan berlatih: Potensi tidak akan berkembang tanpa latihan dan pengalaman.\n4. Tunjukkan kemampuan melalui tindakan: Ikuti kegiatan, proyek, organisasi, PKL, atau aktivitas lain yang dapat menjadi pengalaman.\n5. Bangun komunikasi yang baik: Berbicara dengan jelas, sopan, percaya diri, dan menghargai lawan bicara.\n6. Bangun sikap profesional: Biasakan disiplin, tepat waktu, bertanggung jawab, jujur, dan mampu bekerja sama.\n7. Terima kritik dan evaluasi diri: Evaluasi diri membantu individu mengetahui kekuatan dan aspek yang masih perlu dikembangkan.\n8. Konsisten: Pertahankan perilaku positif dalam berbagai situasi karena personal branding dibangun melalui proses yang berkelanjutan.",
-        ],
-      },
-    ],
-    stepByStepSection: {
-      title: "Panduan Analisis Kasus Personal Branding",
-      description: "Langkah analisis studi kasus persiapan PKL dan dunia industri:",
-      steps: [
-        {
-          stepNumber: 1,
-          title: "Identifikasi Potensi & Bakat Utama",
-          text: "Identifikasi keahlian teknis dan minat khusus yang kamu kuasai (misal: desain grafis, coding, editing, otomotif).",
-        },
-        {
-          stepNumber: 2,
-          title: "Dokumentasikan Portofolio Karya",
-          text: "Kumpulkan hasil tugas dan proyek nyata terbaik yang pernah dibuat ke dalam portofolio digital/fisik.",
-        },
-        {
-          stepNumber: 3,
-          title: "Latih Komunikasi Artikulatif",
-          text: "Latih cara menjelaskan hasil karya dan proses pengerjaannya dengan bahasa yang sopan, runtut, dan percaya diri.",
-        },
-        {
-          stepNumber: 4,
-          title: "Kembangkan Sikap Profesional",
-          text: "Terapkan disiplin waktu, etika berkomunikasi dengan pembimbing, serta keterbukaan menerima umpan balik.",
-        },
-      ],
-    },
-    attachment: {
-      fileName: "Materi_Personal_Branding_SMK.pdf",
-      fileSize: "2.4 MB",
-    },
-    quizSource: {
-      type: "internal",
-      title: "Studi Kasus Personal Branding",
-      description: "Analisis situasi Dimas dan uji pemahaman personal branding vokasi.",
-      internalUrl: "/kuis/18",
-    },
-    prevMaterial: { id: 17, title: "Membangun Konsep Diri Positif" },
-    nextMaterial: { id: 19, title: "Persiapan Magang dan Etika di Dunia Kerja" },
-  },
-
-  19: {
-    id: 19,
-    subject: "Bimbingan Konseling",
-    title: "Persiapan Magang dan Etika di Dunia Kerja",
-    level: "Menengah",
-    duration: "40 Menit",
-    author: "Erintan Tsuraya Rahadatul'Aisy",
-    updatedAt: "24 Agustus 2026",
-    icon: UserGroupIcon,
-    topics: ["Persiapan Magang", "Soft Skills Vokasi", "Etika Kerja", "Tips Profesional"],
-    description: "Panduan komprehensif persiapan administratif, keterampilan, mental, dan penampilan serta etika profesional saat magang di industri.",
-    imageUrl: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1200&q=80",
-    imageCaption: "Ilustrasi 19.1: Kesiapan Siswa SMK Mengikuti Magang dan Penerapan Etika Profesional Industri.",
-    contentSections: [
-      {
-        id: "pengertian-magang-dunia-kerja",
-        title: "Pengertian Magang dan Dunia Kerja",
-        paragraphs: [
-          "Magang merupakan kegiatan pembelajaran yang memberikan kesempatan kepada peserta didik untuk memperoleh pengalaman secara langsung di lingkungan kerja. Melalui magang, peserta didik dapat menerapkan pengetahuan dan keterampilan yang telah dipelajari di sekolah sekaligus mengenal budaya, aturan, dan tuntutan dunia kerja.",
-          "Memasuki dunia kerja tidak hanya membutuhkan kemampuan teknis sesuai bidang keahlian, tetapi juga membutuhkan sikap profesional, kemampuan berkomunikasi, tanggung jawab, kedisiplinan, dan kemampuan bekerja sama. Penelitian Brodsky et al. (2024) menunjukkan bahwa pengalaman magang dapat menjadi ruang pembelajaran informal yang membantu peserta memperoleh pengalaman kerja, keterampilan, dan jaringan profesional.",
-        ],
-        callout: "Magang adalah jembatan emas penerapan kompetensi kejuruan sekaligus pembentukan sikap profesional dan etika kerja nyata.",
-      },
-      {
-        id: "persiapan-sebelum-magang",
-        title: "Persiapan Sebelum Magang atau Bekerja",
-        paragraphs: [
-          "Persiapan sebelum memasuki dunia kerja tidak hanya berkaitan dengan kemampuan teknis, tetapi juga kesiapan diri, kemampuan beradaptasi, dan keterampilan interpersonal. Penelitian pada mahasiswa magang menunjukkan bahwa pengalaman magang dapat berkontribusi terhadap pengembangan self-regulation, self-awareness, dan self-direction (Downs et al., 2024).",
-          "Hal-hal yang perlu dipersiapkan antara lain:\n1. Persiapan Administrasi:\n• Menyiapkan dokumen yang diperlukan.\n• Mengetahui lokasi dan jadwal magang.\n• Memahami aturan yang berlaku di tempat magang.\n• Menyiapkan perlengkapan yang dibutuhkan.\n\n2. Persiapan Pengetahuan dan Keterampilan:\n• Memahami kompetensi dasar sesuai jurusan.\n• Mempelajari tugas yang kemungkinan akan diberikan.\n• Menguasai penggunaan alat atau teknologi yang berkaitan dengan pekerjaan.\n• Meningkatkan kemampuan komunikasi dan kerja sama.\n\n3. Persiapan Mental:\n• Memiliki kemauan untuk belajar.\n• Berani bertanya ketika belum memahami tugas.\n• Mampu menerima kritik dan saran.\n• Bersedia beradaptasi dengan lingkungan baru.\n• Tidak mudah menyerah ketika menghadapi kesulitan.\n\n4. Persiapan Penampilan:\n• Berpakaian sesuai ketentuan tempat kerja.\n• Menjaga kebersihan dan kerapian diri.\n• Menggunakan atribut atau perlengkapan kerja sesuai kebutuhan.",
-        ],
-      },
-      {
-        id: "soft-skills-dunia-kerja",
-        title: "Soft Skills yang Dibutuhkan di Dunia Kerja",
-        paragraphs: [
-          "Selain hard skills, peserta didik perlu mengembangkan soft skills, yaitu kemampuan yang berkaitan dengan sikap dan cara berinteraksi dengan orang lain:\n1. Komunikasi: mampu menyampaikan informasi dengan jelas dan sopan.\n2. Kerja sama: mampu bekerja bersama orang lain untuk mencapai tujuan.\n3. Manajemen waktu: mampu mengatur waktu dan menyelesaikan tugas sesuai batas waktu.\n4. Problem solving: mampu mencari solusi ketika menghadapi masalah.\n5. Adaptasi: mampu menyesuaikan diri dengan lingkungan dan situasi baru.\n6. Tanggung jawab: mampu menyelesaikan tugas dan menerima konsekuensi dari tindakan.\n7. Inisiatif: memiliki kemauan untuk bertindak dan belajar tanpa selalu menunggu perintah.",
-        ],
-      },
-      {
-        id: "etika-dunia-kerja",
-        title: "Etika di Dunia Kerja",
-        paragraphs: [
-          "Etika kerja adalah nilai dan aturan mengenai perilaku yang baik dan tepat ketika berada di lingkungan kerja agar tercipta lingkungan yang profesional, nyaman, dan saling menghargai:\n1. Disiplin: Datang tepat waktu, mengikuti jadwal, dan mematuhi peraturan yang berlaku.\n2. Bertanggung jawab: Menyelesaikan tugas dengan sungguh-sungguh dan tidak mengabaikan pekerjaan.\n3. Sopan dan menghargai orang lain: Menggunakan bahasa yang baik serta menghormati pembimbing, atasan, rekan kerja, dan pihak lainnya.\n4. Jujur: Menyampaikan informasi sesuai keadaan dan tidak mengambil sesuatu yang bukan haknya.\n5. Mau belajar dan menerima kritik: Tidak malu bertanya ketika belum memahami pekerjaan serta menerima masukan sebagai bagian dari proses belajar.\n6. Menjaga komunikasi: Menyampaikan informasi dengan jelas dan memberi tahu pembimbing apabila mengalami kendala.\n7. Menjaga kerahasiaan: Tidak menyebarkan informasi atau dokumen perusahaan yang bersifat rahasia.\n8. Menjaga fasilitas: Menggunakan peralatan kerja dengan baik dan bertanggung jawab.",
-        ],
-        callout: "Integritas, disiplin waktu, dan kerahasiaan perusahaan merupakan pilar utama etika profesional di dunia industri.",
-      },
-      {
-        id: "perilaku-dihindari",
-        title: "Perilaku yang Sebaiknya Dihindari",
-        paragraphs: [
-          "Beberapa perilaku yang dapat memberikan kesan kurang profesional antara lain:\n1. Datang terlambat tanpa alasan yang jelas.\n2. Bermain HP ketika sedang bekerja tanpa izin.\n3. Mengabaikan instruksi pembimbing.\n4. Menunda-nunda pekerjaan.\n5. Berbicara tidak sopan kepada orang lain.\n6. Menyalahkan orang lain ketika melakukan kesalahan.\n7. Menyebarkan informasi internal perusahaan.\n8. Menggunakan fasilitas tempat kerja secara sembarangan.\n9. Tidak menjaga kebersihan dan kerapian.\n10. Menolak kritik atau masukan.",
-        ],
-      },
-      {
-        id: "tips-peserta-magang-profesional",
-        title: "Tips Menjadi Peserta Magang yang Profesional",
-        paragraphs: [
-          "• Sebelum bekerja:\nDatang tepat waktu (10–15 menit lebih awal). Pastikan perlengkapan sudah siap. Ketahui tugas yang harus dilakukan.\n\n• Saat bekerja:\nDengarkan instruksi dengan seksama. Bertanya jika belum memahami tugas. Kerjakan tugas dengan teliti. Jaga komunikasi dan sopan santun. Gunakan HP sesuai aturan perusahaan.\n\n• Setelah bekerja:\nPeriksa kembali hasil pekerjaan. Rapikan peralatan dan tempat kerja. Evaluasi hal yang sudah dipelajari. Catat hal yang masih perlu diperbaiki.",
-        ],
-      },
-    ],
-    stepByStepSection: {
-      title: "Checklist Kesiapan Magang Harian Siswa SMK",
-      description: "Panduan alur harian menjadi peserta magang yang disiplin dan profesional:",
-      steps: [
-        {
-          stepNumber: 1,
-          title: "Persiapan Keberangkatan (H-30 Menit)",
-          text: "Pastikan seragam/pakaian rapi sesuai SOP industri, kartu identitas, buku jurnal magang, dan alat kerja telah siap.",
-        },
-        {
-          stepNumber: 2,
-          title: "Tiba Tepat Waktu (10–15 Menit Lebih Awal)",
-          text: "Hadir sebelum jam kerja dimulai, lakukan presensi, dan sapa pembimbing lapangan serta rekan kerja dengan sopan.",
-        },
-        {
-          stepNumber: 3,
-          title: "Briefing & Penerimaan Instruksi Kerja",
-          text: "Simak arahan tugas harian dengan fokus. Catat poin-poin penting dan jangan ragu bertanya jika ada bagian teknis yang belum dipahami.",
-        },
-        {
-          stepNumber: 4,
-          title: "Eksekusi Pekerjaan dengan Teliti & Tanggung Jawab",
-          text: "Kerjakan tugas sesuai standar keselamatan dan mutu perusahaan. Jauhkan penggunaan gawai pribadi selama jam operasional.",
-        },
-        {
-          stepNumber: 5,
-          title: "Pemeriksaan Akhir & Perapian Area Kerja",
-          text: "Cek kembali hasil pekerjaan, bersihkan dan kembalikan peralatan kerja ke tempat semula, serta lakukan evaluasi mandiri.",
-        },
-      ],
-    },
-    attachment: {
-      fileName: "Panduan_Etika_dan_Persiapan_Magang_SMK.pdf",
-      fileSize: "2.6 MB",
-    },
-    quizSource: {
-      type: "internal",
-      title: "Kuis Mitos & Fakta Dunia Kerja",
-      description: "Uji pemahaman 20 butir mitos vs fakta seputar dunia magang dan etika kerja.",
-      internalUrl: "/kuis/19",
-    },
-    prevMaterial: { id: 18, title: "Personal Branding: Membangun Citra Diri Positif" },
-    nextMaterial: { id: 9, title: "Konsep Koreografi dalam Seni Tari" },
   },
   9: {
     id: 9,
     subject: "Seni Tari",
-    title: "Konsep Koreografi dalam Seni Tari",
+    title: "Konsep Dasar Koreografi & Tata Gerak Tari Tradisional",
     level: "Pemula",
     duration: "30 Menit",
-    author: "Pak Ahmad Fauzi, S.Pd.",
-    updatedAt: "15 Agustus 2026",
-    icon: PaintBrushIcon,
-    topics: ["Koreografi", "Wirama", "Wiraga", "Wirasa"],
-    description: "Mempelajari pengertian koreografi, unsur pendukung tari (wirama, wiraga, wirasa), sumber rangsang ide, serta elemen utama ruang, waktu, dan tenaga.",
+    author: "Anita Dwi Ningtyas",
+    updatedAt: "18 Agustus 2026",
+    icon: MusicNote01Icon,
+    topics: ["Eksplorasi Gerak", "Pola Lantai", "Dinamika Wiraga"],
+    description: "Pengenalan elemen dasar wiraga, wirama, dan wirasa dalam menyusun komposisi tari tunggal maupun kelompok.",
     imageUrl: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=1200&q=80",
-    imageCaption: "Ilustrasi 9.1: Penataan Komposisi dan Gerak Koreografi Tari.",
+    imageCaption: "Materi Koreografi Tari Tradisional",
     contentSections: [
       {
-        id: "apa-itu-koreografi",
-        title: "Apa Itu Koreografi?",
+        id: "konsep-wiraga",
+        title: "Elemen Dasar Wiraga, Wirama, dan Wirasa",
         paragraphs: [
-          "Menurut M.Jazuli koreografi diartikan sebagai pengetahuan penyusunan tari dan untuk menyebutkan hasil susunan tari. Dalam pengertian yang lebih khusus pada saat ini, erat hubungannya dengan masalah bentuk dan gaya tari. Pencipta tari atau penata tarinya disebut koreografer.",
-          "Secara etimologis, koreografi berasal dari bahasa Yunani: choreia (tari/gerak berirama) dan graphia (tulisan/catatan). Jadi secara harfiah, koreografi berarti tulisan tari atau catatan gerak. Namun, dalam perkembangannya, koreografi tidak hanya sekadar mencatat gerak, melainkan proses kreatif dalam merancang, menyusun, dan mengorganisasikan gerak tubuh menjadi komposisi tari yang utuh, terstruktur, komunikatif, dan estetis.",
+          "Dalam seni tari tradisional nusantara, wiraga mengacu pada kemampuan fisik penari dalam membawakan ragam gerak secara terampil, lentur, dan presisi. Wirama adalah keselarasan gerak dengan tempo musik pengiring, sedangkan wirasa adalah penjiwaan karakter tari.",
         ],
-      },
-      {
-        id: "apa-itu-konsep-koreografi",
-        title: "Apa Itu Konsep Koreografi?",
-        paragraphs: [
-          "Secara sederhana, koreografi adalah proses kreatif dalam merancang, menyusun, dan mengorganisasikan gerak tubuh menjadi sebuah komposisi tari yang utuh, terstruktur, komunikatif, memiliki nilai estetis, dan makna tertentu. Koreografi juga melibatkan pengaturan ruang, waktu, tenaga, serta unsur pendukung seperti musik, tata busana, tata rias, dan properti.",
-        ],
-        callout: "Koreografi adalah jiwa atau fondasi dari sebuah karya tari, yang mencakup pengaturan ruang, waktu, tenaga, serta unsur pendukung seperti musik, tata busana, tata rias, dan properti.",
-      },
-      {
-        id: "unsur-unsur-pendukung-tari",
-        title: "Unsur-Unsur Pendukung Tari",
-        paragraphs: [
-          "1. Wirama\nadalah keselarasan dan ketepatan gerakan tubuh penari dengan irama musik atau lagu yang mengiringinya",
-          "2. Wiraga\nadalah gerak fisik atau keterampilan tubuh dalam menguasai serta mengeksekusi gerak-gerak tubuhnya dengan baik , tepat, dan indah.",
-          "3. Wirasa\nadalah kemampuan seorang penari dalam menghayati, mengekspresikan, dan menyampaikan perasaan, emosi, serta makna yang terkandung di balik sebuah tarian melalui gerak dan mimik wajah.",
-        ],
-      },
-      {
-        id: "sumber-ide-rangsang",
-        title: "Sumber Ide atau Rangsang Koreografi",
-        paragraphs: [
-          "Menurut Jacqueline Smith (dalam Suharto, 1985), rangsang adalah sesuatu yang membangkitkan pikiran, semangat, atau mendorong kegiatan. Dalam seni tari, rangsang yang paling umum menjadi awal lahirnya karya tari adalah rangsang visual dan auditif.",
-          "1. Rangsang Visual\nRangsang visual adalah segala sesuatu yang dapat ditangkap oleh panca indra penglihatan (mata), seperti alam sekitar, benda, fenomena social, dan karya seni lain.",
-          "2. Rangsang Auditif\nRangsang auditif berasal dari bunyi atau musik yang didengar. Musik dengan irama lembut dapat merangsang gerakan lambat dan tenang, sedangkan musik dengan ritme cepat cenderung mendorong gerakan dinamis. Namun, koreografer juga dapat menciptakan kontras, misalnya gerakan cepat diiringi musik lambat, untuk efek artistik tertentu.",
-        ],
-      },
-      {
-        id: "elemen-utama-koreografi",
-        title: "Elemen Utama Koreografi",
-        paragraphs: [
-          "1. Ruang (Space) – ruang berkaitan dengan area yang digunakan penari berupa ruang gerak dan juga ruang pementasan.",
-          "2. Waktu (Time) – Waktu berkaitan dengan durasi, tempo, dan ritme gerakan. Gerak tari dapat dilakukan dengan tempo cepat, sedang, atau lambat sesuai dengan karakter tarian yang ingin disampaikan.",
-          "3. Tenaga (Energy) – Tenaga berkaitan dengan intensitas dan kualitas gerak, misalnya gerakan yang kuat, lembut, tegas, atau mengalir. Penggunaan tenaga yang tepat akan menciptakan dinamika dan ekspresi dalam tarian",
-        ],
-        callout: "Ruang, waktu, dan tenaga perlu diatur dengan tepat agar gerak tari memiliki dinamika, ekspresi, dan karakter yang sesuai.",
       },
     ],
-    stepByStepSection: {
-      title: "Step by Step Menyusun Konsep Koreografi Tari",
-      description: "Tahapan menyusun konsep karya tari dari gagasan hingga peragaan panggung:",
-      steps: [
-        {
-          stepNumber: 1,
-          title: "Tentukan Tema",
-          text: "Menentukan tema atau gagasan tari, misalnya alam, kehidupan sosial, atau cerita rakyat.",
-        },
-        {
-          stepNumber: 2,
-          title: "Tentukan Judul",
-          text: "Menentukan judul yang tepat untuk tarian, pemilihan judul harus memiliki keterkaitan dengan tema yang dipilih.",
-        },
-        {
-          stepNumber: 3,
-          title: "Membuat Sinopsis",
-          text: "Menuliskan synopsis atau ringkasan cerita tentang tari yang akan dibuat atau dibawakan.",
-        },
-        {
-          stepNumber: 4,
-          title: "Membuat Urutan Tarian",
-          text: "Membuat urutan atau alur cerita tari yang akan dibuat, hal ini dilakukan supaya Ketika eksplorasi gerak sudah ada pegangan untuk ketentuan penggambaran geraknya.",
-        },
-        {
-          stepNumber: 5,
-          title: "Menuliskan Jumlah Penari",
-          text: "Menuliskan jumlah penari yang akan membawakan karya tari tersebut.",
-        },
-        {
-          stepNumber: 6,
-          title: "Tentukan Pola Lantai",
-          text: "Menentukan pola lantai yang akan dibuat, serta dibuat berdasarkan banyaknya alur atau urutan gerak yang telah dibuat.",
-        },
-        {
-          stepNumber: 7,
-          title: "Menentukan Iringan Musik",
-          text: "Mencari iringan music yang akan digunakan untuk bahan presentasi kelompok.",
-        },
-      ],
-    },
     attachment: {
-      fileName: "Modul_Konsep_Koreografi_Seni_Tari.pdf",
+      fileName: "Modul_Koreografi_Tari.pdf",
+      fileSize: "1.8 MB",
+    },
+    quizSource: {
+      type: "internal",
+      title: "Kuis Evaluasi Koreografi Tari",
+      description: "Uji pemahaman konsep wiraga, wirama, dan wirasa.",
+      internalUrl: "/kuis/9",
+    },
+  },
+  11: {
+    id: 11,
+    subject: "Otomotif",
+    title: "Sistem Pengisian Mobil Konvensional dan Elektronik/IC",
+    level: "Menengah",
+    duration: "45 Menit",
+    author: "Ardyan Santoso",
+    updatedAt: "25 Agustus 2026",
+    icon: Car01Icon,
+    topics: ["Pengertian Sistem Pengisian", "Komponen Alternator", "Prinsip Kerja", "Troubleshooting Pengisian"],
+    description: "Memahami fungsi, komponen utama alternator, prinsip kerja pembangkitan arus, dan langkah pemecahan masalah sistem pengisian mobil konvensional serta elektronik.",
+    imageUrl: "https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "Materi Pembelajaran Sistem Pengisian Mobil Konvensional dan Elektronik/IC",
+    contentSections: [
+      {
+        id: "sec-11-1",
+        title: "Pengertian Sistem Pengisian",
+        paragraphs: [
+            "Sistem pengisian adalah rangkaian komponen yang berfungsi untuk mengisi daya baterai saat mesin hidup dan menyuplai listrik untuk kebutuhan komponen kelistrikan lainnya di dalam kendaraan. Ketika mesin mati, seluruh beban listrik disuplai oleh baterai. Namun saat mesin hidup, alternator mengambil alih peran sebagai sumber listrik utama sekaligus mengisi ulang arus listrik pada baterai."
+          ],
+      },
+      {
+        id: "sec-11-2",
+        title: "Fungsi Komponen Sistem Pengisian",
+        paragraphs: [
+            "Sistem pengisian terdiri atas beberapa komponen vital yang bekerja secara terintegrasi:"
+          ],
+      },
+      {
+        id: "sec-11-3",
+        title: "Baterai",
+        paragraphs: [
+            "Berfungsi sebagai sumber arus listrik saat mesin belum hidup atau saat proses starting, serta menjadi penyimpan daya hasil pengisian alternator saat mesin beroperasi."
+          ],
+      },
+      {
+        id: "sec-11-4",
+        title: "Kunci Kontak",
+        paragraphs: [
+            "Berfungsi sebagai saklar utama yang menghubungkan dan memutuskan aliran arus listrik dari baterai menuju alternator dan rangkaian indikator pengisian."
+          ],
+      },
+      {
+        id: "sec-11-5",
+        title: "Alternator",
+        paragraphs: [
+            "Merupakan pembangkit tenaga listrik utama pada kendaraan. Mengubah energi mekanik putaran mesin menjadi energi listrik bolak-balik (AC) yang kemudian disearahkan menjadi arus searah (DC). Alternator tersusun atas:",
+            "• Pulley: Penghubung mekanis antara putaran poros engkol mesin dan alternator melalui tali kipas (V-belt).",
+            "• Rotor: Komponen berputar yang menghasilkan medan magnet ketika arus listrik mengalir melalui kumparannya.",
+            "• Stator: Kumparan diam yang menangkap perpotongan garis gaya medan magnet rotor untuk membangkitkan tegangan listrik induksi.",
+            "• Dioda Rectifier: Penyearah gelombang yang mengubah tegangan AC yang dihasilkan stator menjadi tegangan DC yang siap digunakan baterai dan kelistrikan mobil.",
+            "• Regulator: Pengatur tegangan yang menstabilkan voltase keluaran alternator agar selalu berada pada rentang aman (13.8V – 14.8V) meskipun putaran mesin berubah-ubah."
+          ],
+      },
+      {
+        id: "sec-11-6",
+        title: "Lampu Indikator Pengisian (CHG)",
+        paragraphs: [
+            "Berfungsi memberikan informasi visual kepada pengemudi mengenai status kerja sistem pengisian. Lampu akan menyala saat kunci kontak ON (mesin mati) dan harus padam saat mesin sudah menyala normal."
+          ],
+      },
+      {
+        id: "sec-11-7",
+        title: "Prinsip Kerja Sistem Pengisian",
+        paragraphs: [
+            "Prinsip dasar pengisian memanfaatkan hukum induksi elektromagnetik Faraday. Ketika rotor yang dialiri arus eksitasi berputar di dalam stator, kumparan stator memotong garis gaya magnet sehingga timbul Gaya Gerak Listrik (GGL) induksi bolak-balik. Dioda penyearah selanjutnya menyearahkan arus menjadi DC untuk mengisi baterai dan menghidupkan seluruh sensor serta aktuator mesin."
+          ],
+      },
+      {
+        id: "sec-11-8",
+        title: "Langkah Pemahaman & Analisis Gangguan",
+        paragraphs: [
+            "Dalam menganalisis sistem pengisian, lakukan tahapan berikut:",
+            "1. Pengecekan Tegangan Baterai: Ukur tegangan baterai sebelum mesin dihidupkan (kondisi normal 12.4V - 12.6V).",
+            "2. Pengecekan Output Pengisian: Nyalakan mesin pada putaran idle dan putaran 2000 RPM, ukur tegangan pada kutub baterai (kondisi normal 13.8V - 14.8V).",
+            "3. Deteksi Gejala Overcharging: Jika tegangan melebihi 15V, regulator mengalami kerusakan dan dapat merusak sel baterai.",
+            "4. Deteksi Gejala Undercharging: Jika tegangan tetap di bawah 13V saat mesin hidup, periksa ketegangan tali kipas, keausan sikat arang (carbon brush), atau kerusakan dioda."
+          ],
+      }
+    ],
+    attachment: {
+      fileName: "Modul_Sistem_Pengisian_Mobil_Konvensional_dan_Elektronik/IC.pdf",
       fileSize: "2.1 MB",
     },
     quizSource: {
       type: "internal",
-      title: "Evaluasi Konsep Koreografi",
-      description: "Uji pemahaman dasar konsep dan unsur-unsur koreografi tari.",
-      internalUrl: "/kuis/9",
+      title: "Kuis Evaluasi: Sistem Pengisian Mobil Konvensional dan Elektronik/IC",
+      description: "Uji pemahaman materi Sistem Pengisian Mobil Konvensional dan Elektronik/IC yang disusun oleh Ardyan Santoso.",
+      internalUrl: "/kuis/11",
     },
-    prevMaterial: { id: 5, title: "Manajemen Waktu & Teknik Pomodoro dalam Belajar" },
-    nextMaterial: { id: 10, title: "Koreografi: Eksplorasi Gerak Dalam Seni Tari" },
-  },
-  10: {
-    id: 10,
-    subject: "Seni Tari",
-    title: "Koreografi: Eksplorasi Gerak Dalam Seni Tari",
-    level: "Pemula",
-    duration: "35 Menit",
-    author: "Pak Ahmad Fauzi, S.Pd.",
-    updatedAt: "16 Agustus 2026",
-    icon: PaintBrushIcon,
-    topics: ["Eksplorasi Gerak", "Rangsang Kinestetik", "Transformasi Gerak", "Tempo & Level"],
-    description: "Memahami prinsip eksplorasi gerak tari, berbagai sumber rangsangan (visual, audio, kinestetik, gagasan), dan teknik pengembangan gerak dasar.",
-    imageUrl: "https://images.unsplash.com/photo-1547153760-18fc86324498?auto=format&fit=crop&w=1200&q=80",
-    imageCaption: "Ilustrasi 10.1: Proses Eksplorasi Gerak Tari Berdasarkan Rangsang Fisik dan Ruang.",
-    contentSections: [
-      {
-        id: "pengertian-eksplorasi",
-        title: "Pengertian & Pentingnya Eksplorasi Gerak",
-        paragraphs: [
-          "Eksplorasi gerak adalah kegiatan mencari, mencoba, mengembangkan, dan menemukan berbagai kemungkinan gerak tubuh untuk memperoleh gerak yang dapat digunakan sebagai bahan dalam membuat sebuah karya tari.",
-          "Dalam dunia koreografi, eksplorasi menjadi tahap awal yang sangat vital. Siswa tidak dituntut hanya meniru gerakan yang sudah ada, melainkan diajak untuk menciptakan dan merancang gerak baru berdasarkan ide, pengalaman, lingkungan, maupun berbagai rangsangan.",
-        ],
-      },
-      {
-        id: "prinsip-utama",
-        title: "Prinsip Utama",
-        paragraphs: [
-          "Dalam koreografi, eksplorasi bukan sekadar meniru gerak yang sudah ada, melainkan proses kreatif menciptakan dan menemukan kemungkinan gerak baru berdasarkan ide, pemikiran, atau rangsangan tertentu.",
-        ],
-      },
-      {
-        id: "tujuan-eksplorasi",
-        title: "Tujuan Melakukan Eksplorasi Gerak",
-        paragraphs: [
-          "Melakukan eksplorasi gerak memiliki beberapa tujuan utama bagi penari maupun koreografer muda, antara lain:",
-          "1. Mengembangkan kreativitas siswa dalam menciptakan gerakan tari baru.",
-          "2. Melatih keberanian untuk mencoba berbagai variasi dan kemungkinan gerak.",
-          "3. Menemukan gerak yang selaras dan sesuai dengan tema tari yang diusung.",
-          "4. Mengembangkan gerak dasar/sederhana menjadi gerak yang lebih kaya dan bervariasi.",
-          "5. Meningkatkan kemampuan siswa dalam menyusun gerak menjadi sebuah koreografi utuh.",
-          "6. Melatih kepekaan tubuh terhadap ruang, waktu, tenaga, dan ekspresi.",
-        ],
-      },
-      {
-        id: "sumber-rangsangan",
-        title: "Sumber Rangsangan atau Ide Eksplorasi",
-        paragraphs: [
-          "Gerakan tari dapat bersumber dan dikembangkan dari berbagai jenis rangsangan, di antaranya:",
-          "1. Rangsangan Visual: Gerak terinspirasi dari objek yang dilihat, seperti gerak tumbuhan, hewan, aktivitas manusia, atau fenomena alam.",
-          "2. Rangsangan Audio: Gerak dikembangkan berdasarkan suara, instrumen, atau musik yang didengar. Perubahan tempo, ritme, dan karakter musik sangat memengaruhi gerak.",
-          "3. Rangsangan Kinestetik: Gerak muncul dari pengalaman fisik tubuh saat melakukan suatu gerakan tertentu, yang kemudian dikembangkan lagi menjadi bentuk gerak baru.",
-          "4. Rangsangan Gagasan/Ide: Gerakan berasal dari konsep, cerita, perasaan, atau tema abstrak (misalnya: tema perjuangan, persahabatan, atau kehidupan remaja).",
-          "5. Rangsangan Lingkungan: Gerakan terinspirasi dari dinamika aktivitas sekitar, seperti suasana sekolah, pasar, sawah, atau fasilitas umum.",
-        ],
-      },
-      {
-        id: "unsur-eksplorasi",
-        title: "Unsur-Unsur Utama yang Dieksplorasi",
-        paragraphs: [
-          "Dalam proses eksplorasi, siswa mengolah dan memvariasikan gerak tubuh melalui elemen-elemen dasar seni tari berikut:",
-          "1. Ruang: Arah hadap, level (tinggi/sedang/rendah), pola lantai, jarak, dan posisi tubuh",
-          "2. Waktu: Tempo (cepat/lambat), ritme, durasi, dan aksentuasi",
-          "3. Tenaga: Kuat-lemah, berat-ringan, tegang-rileks",
-          "4. Tubuh: Gerak kepala, tangan, badan, kaki, serta kombinasi anggota tubuh",
-          "5. Ekspresi: Mimik wajah, gestur sikap tubuh, dan penghayatan makna",
-        ],
-        callout: "Tips Penting: Kombinasi perubahan elemen ruang, waktu, dan tenaga pada satu gerak dasar dapat memberikan makna, nuansa, serta emosi panggung yang sangat berbeda.",
-      },
-      {
-        id: "teknik-pengembangan",
-        title: "Teknik Mengembangkan Gerak Dasar",
-        paragraphs: [
-          "Satu gerak dasar yang sederhana dapat ditransformasikan menjadi beragam variasi gerak koreografi melalui teknik berikut:",
-          "1. Mengubah arah: Ke depan, belakang, samping kanan/kiri, atau diagonal.",
-          "2. Mengubah level: Level tinggi (melompat/jinjit), sedang (berdiri/membungkuk), rendah (duduk/jongkok).",
-          "3. Mengubah tempo: Dipercepat, diperlambat, atau dihentikan sejenak (freeze)",
-          "4. Mengubah tenaga: Gerak dilakukan dengan hentakan kuat atau ayunan lembut.",
-          "5. Mengubah ukuran gerak: Gerakan diperluas (jangkauan lebar) atau diperkecil.",
-          "6. Mengubah anggota tubuh: Mentransfer gerakan dari tangan ke kaki atau kombinasi keduanya.",
-          "7. Mengulang & Menggabungkan: Repetisi gerakan dengan modifikasi atau menggabungkan dua motif gerak berbeda",
-        ],
-      },
-    ],
-    stepByStepSection: {
-      title: "Panduan Langkah Praktik Eksplorasi Gerak",
-      description: "Berikut adalah Panduan Langkah Praktik Eksplorasi Gerak berdasarkan contoh tema \"Kehidupan di Lingkungan Sekolah\" dengan gerak dasar \"Berjalan\":",
-      steps: [
-        {
-          stepNumber: 1,
-          title: "Langkah 1: Eksplorasi Berdasarkan Unsur Waktu (Tempo)",
-          text: "Cobalah melakukan gerak dasar berjalan dengan variasi tempo lambat dan tempo cepat.\n• Berjalan Tempo Lambat: Melangkah perlahan untuk menggambarkan kesan tenang, ragu, atau khidmat.\n• Berjalan Tempo Cepat: Melangkah tergesa-gesa/setengah berlari untuk menggambarkan kesan terburu-buru atau bersemangat.",
-        },
-        {
-          stepNumber: 2,
-          title: "Langkah 2: Eksplorasi Berdasarkan Unsur Ruang (Arah & Level)",
-          text: "Ubah arah langkah kaki dan ketinggian tubuh (level) saat berjalan.\n• Arah Samping & Diagonal: Berjalan menyamping ke kanan/kiri atau mengambil garis diagonal.\n• Level Rendah: Berjalan dengan posisi lutut ditekuk/jongkok.\n• Perubahan Arah/Berputar: Berjalan lalu memutar badan ke arah belakang.",
-        },
-        {
-          stepNumber: 3,
-          title: "Langkah 3: Eksplorasi Berdasarkan Unsur Tubuh & Tenaga",
-          text: "Kombinasikan gerakan berjalan dengan dorongan tenaga dan gerakan anggota tubuh lain.\n• Kombinasi Tubuh: Berjalan sambil mengayunkan atau mengangkat tangan ke atas.\n• Tenaga Kuat: Berjalan dengan pijakan dan posisi tubuh tegap terikat (bertenaga).\n• Tenaga Lembut: Berjalan dengan ayunan tubuh yang rileks dan mengalir.",
-        },
-        {
-          stepNumber: 4,
-          title: "Langkah 4: Penambahan Pose Akhir dan Ekspresi",
-          text: "Lakukan gerak berjalan kemudian berhenti secara mendadak (pose) diiringi ekspresi wajah yang sesuai dengan tema.",
-        },
-        {
-          stepNumber: 5,
-          title: "Langkah 5: Merangkai Variasi Menjadi Koreografi",
-          text: "Pilih 3 hingga 5 variasi gerak berjalan yang telah dicoba di atas, lalu hubungkan gerak tersebut secara berurutan menjadi satu kesatuan motif gerak/koreografi singkat.",
-        },
-      ],
-    },
-    attachment: {
-      fileName: "Panduan_Eksplorasi_Gerak_Tari.pdf",
-      fileSize: "2.5 MB",
-    },
-    quizSource: {
-      type: "internal",
-      title: "Evaluasi Eksplorasi Gerak",
-      description: "Uji pemahaman tentang teknik eksplorasi dan transformasi gerak dasar tari.",
-      internalUrl: "/kuis/10",
-    },
-    prevMaterial: { id: 9, title: "Konsep Koreografi dalam Seni Tari" },
-    nextMaterial: { id: 12, title: "Koreografi: Pola Lantai dalam Penunjang Komposisi Tari" },
   },
   12: {
     id: 12,
-    subject: "Seni Tari",
-    title: "Koreografi: Pola Lantai dalam Penunjang Komposisi Tari",
+    subject: "Otomotif",
+    title: "Sistem Transmisi Manual",
     level: "Menengah",
     duration: "40 Menit",
-    author: "Pak Ahmad Fauzi, S.Pd.",
-    updatedAt: "17 Agustus 2026",
-    icon: PaintBrushIcon,
-    topics: ["Komposisi Tari", "Pola Lantai", "Level Vertikal", "Prinsip Unity Balance"],
-    description: "Mempelajari unsur utama komposisi tari, pola lantai, level, arah hadap, prinsip kesatuan & keseimbangan, serta ragam panggung pertunjukan.",
-    imageUrl: "https://images.unsplash.com/photo-1469488865564-c2de10f69f96?auto=format&fit=crop&w=1200&q=80",
-    imageCaption: "Ilustrasi 12.1: Dinamika Formasi Pola Lantai dan Tata Panggung Tari.",
+    author: "Satrio",
+    updatedAt: "25 Agustus 2026",
+    icon: Car01Icon,
+    topics: ["Pengertian Transmisi Manual", "Komponen Transmisi", "Aliran Tenaga Gigi", "Troubleshooting Transmisi"],
+    description: "Mempelajari prinsip kerja sistem transmisi manual kendaraan, fungsi kopling dan sinkromes, serta diagnosis gangguan transmisi.",
+    imageUrl: "https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "Materi Pembelajaran Sistem Transmisi Manual",
     contentSections: [
       {
-        id: "apa-itu-komposisi-tari",
-        title: "Apa itu Komposisi Tari?",
+        id: "sec-12-1",
+        title: "Pengertian Sistem Transmisi Manual",
         paragraphs: [
-          "Komposisi berasal dari kata comose yang berarti meletakkan, mengatur, dan menyusun bagian-bagian menjadi satu kesatuan yang utuh. Dalam seni tari, komposisi menjadi suatu bentuk untuk memberikan wujud estetik terhadap pertunjukan seni tari. Ruang menjadi hal penting dalam tari karena dapat dihidupkan melalui gerak dan perpindahan penari di atas panggung.",
-        ],
+            "Transmisi manual merupakan salah satu jenis sistem pemindah tenaga (power train) pada kendaraan bermotor yang berfungsi untuk mengatur perbandingan rasio putaran dan torsi antara mesin dengan roda penggerak sesuai dengan kondisi beban kendaraan dan kondisi jalan. Transmisi memungkinkan kendaraan dapat bergerak maju dengan torsi besar pada tanjakan, bergerak cepat di jalan tol, maupun bergerak mundur (reverse)."
+          ],
       },
       {
-        id: "unsur-utama-komposisi",
-        title: "Unsur Utama Komposisi Tari",
+        id: "sec-12-2",
+        title: "Fungsi Utama Transmisi Manual",
         paragraphs: [
-          "1. Pola Lantai (Floor Pattern)\nPola lantai merupakan garis-garis yang dilalui oleh penari dan menjadi alur visual dari sebuah tarian. Pola lantai berfungsi untuk mengisi ruang panggung, menggambarkan alur cerita, serta memberikan daya tarik kepada penonton.",
-          "2. Level (Dimensi Vertikal)\nLevel merupakan tinggi rendahnya posisi tubuh penari berkaitan dengan lantai. Variasi level memberikan kesan estetis dalam pertunjukan tari. Level tinggi dapat menggambarkan kekuatan dan kegembiraan, level sedang menggambarkan ketenangan atau kesetaraan, sedangkan level rendah dapat menggambarkan kerendahan hati atau kesedihan.",
-          "3. Arah Hadap (Direction)\nArah hadap adalah penyesuaian arah tubuh penari ketika melakukan gerak, seperti menghadap ke depan, belakang, samping kanan, samping kiri, atau bawah. Perubahan arah hadap dapat menciptakan dinamika estetis dan membantu mengarahkan fokus penonton.",
-        ],
+            "• Meneruskan tenaga putar mesin dari kopling ke poros propeller atau diferensial.",
+            "• Mengubah torsi dan kecepatan kendaraan sesuai kebutuhan pengendaraan melalui kombinasi roda gigi.",
+            "• Memungkinkan kendaraan berjalan mundur dengan membalikkan arah putaran poros output.",
+            "• Memungkinkan posisi netral saat mesin menyala tetapi kendaraan tidak bergerak."
+          ],
       },
       {
-        id: "jenis-pola-lantai-dan-maknanya",
-        title: "Jenis Pola Lantai dan Maknanya",
-        items: [
-          {
-            imageUrl: "/images/tari/pola-lantai-makna.png",
-          },
-        ],
-        callout: "Pemilihan pola lantai perlu disesuaikan dengan tema dan suasana yang ingin ditampilkan dalam karya tari.",
+        id: "sec-12-3",
+        title: "Komponen Utama Transmisi Manual",
+        paragraphs: [
+            "Input Shaft",
+            "Poros input yang menerima putaran langsung dari plat kopling mesin dan meneruskannya ke roda gigi counter (counter gear)."
+          ],
       },
       {
-        id: "prinsip-prinsip-komposisi-tari",
-        title: "Prinsip-Prinsip Komposisi Tari",
+        id: "sec-12-4",
+        title: "Counter Gear & Reverse Idler Gear",
         paragraphs: [
-          "Dalam koreografi, terdapat ide gerak yang utuh dan memiliki nilai estetik yang disusun melalui komposisi tari. Komposisi berfungsi untuk mengatur berbagai elemen tari sebagai pelengkap di atas panggung. Dalam koreografi, elemen-elemen tersebut menjadi penting dan disusun berdasarkan prinsip-prinsip fundamental yang diterapkan oleh penari.",
-          "1. Kesatuan (Unity atau Cohesion)\nKesatuan merupakan prinsip komposisi tari yang menunjukkan adanya hubungan antara berbagai elemen tari, seperti gerak, pola lantai, iringan musik, tata busana, dan tata cahaya sebagai pendukung tema tari.\nSetiap gerak yang awalnya terpisah kemudian disusun dan dihubungkan sehingga menjadi sebuah karya tari yang utuh dan harmonis. Penonton tidak melihat pertunjukan sebagai bagian-bagian yang terpisah, tetapi sebagai satu kesatuan pertunjukan yang memiliki keterkaitan dan menjaga integritas artistik karya tari.",
-          "2. Keseimbangan (Balance)\nberkaitan dengan pengaturan visual di atas panggung. Seorang koreografer perlu memperhatikan ruang dan posisi penari, terutama keseimbangan antara sisi kanan dan kiri panggung.\n• Keseimbangan simetris, yaitu posisi penari di sisi kanan dan kiri panggung dibuat sama atau seimbang.\n• Keseimbangan asimetris, yaitu posisi penari di sisi kanan dan kiri tidak sama, tetapi jumlah atau bentuknya tetap seimbang secara visual.",
-          "3. Kontras (Contrast)\nKontras (Contrast) merupakan prinsip komposisi tari yang menggunakan perbedaan untuk menciptakan dinamika dan membuat pertunjukan menjadi lebih hidup. Kontras dapat ditampilkan melalui perbedaan kecepatan gerak, level, formasi, dan arah hadap.",
-          "4. Komposisi kelompok\nmerupakan gerak yang dilakukan oleh beberapa penari dengan penari satu dengan yang lain memiliki hubungan secara timbal balik. Jumlah penari dapat dibedakan dengan kelompok kecil dengan jumlah dua, tiga, empat dan kelompok besar minimal bejumlah lima. Isi atau pola lantai yang digunakan dapat dibuat dengan seimbang serampak zig zag atau terpecah-pecah.",
-        ],
-        items: [
-          {
-            imageUrl: "/images/tari/komposisi-kelompok.png",
-          },
-        ],
+            "Roda gigi perantara yang berputar bersama poros input dan meneruskan putaran ke masing-masing roda gigi percepatan pada poros output."
+          ],
       },
       {
-        id: "panggung",
-        title: "Panggung & Jenis-Jenis Panggung",
+        id: "sec-12-5",
+        title: "Output Shaft",
         paragraphs: [
-          "Panggung merupakan ruang fisik tempat penari mengekspresikan karya seni di hadapan penonton. Jenis panggung dapat memengaruhi koreografi, tata ruang gerak, hubungan penari dengan penonton, serta kesan estetis pertunjukan.",
-          "Jenis-jenis panggung:",
-        ],
-        items: [
-          {
-            text: "1. Panggung Proscenium\nPanggung proscenium adalah panggung yang dibatasi oleh bingkai (frame) atau lengkungan (arch) di bagian depan. Penonton menyaksikan pertunjukan dari satu arah, yaitu dari depan, sehingga pertunjukan terlihat seperti berada di dalam sebuah bingkai gambar.\nContoh: Gedung Kesenian Jakarta dan Teater Besar Taman Ismail Marzuki.",
-            imageUrl: "/images/tari/panggung-proscenium.png",
-          },
-          {
-            text: "2. Panggung Thrust\nPanggung thrust adalah panggung yang menjorok ke arah penonton, sehingga penonton dapat menyaksikan pertunjukan dari tiga sisi panggung, yaitu sisi kiri, kanan, dan depan.\nPanggung jenis ini dapat ditemukan pada beberapa festival tari tradisional, seperti pertunjukan Sendratari Ramayana.",
-            imageUrl: "/images/tari/panggung-thrust.jpg",
-          },
-          {
-            text: "3. Panggung arena\nPanggung arena adalah panggung yang berada di tengah-tengah dan dikelilingi penonton dari keempat sisi (360°). Pada panggung ini, tidak terdapat satu sisi depan yang dominan sehingga penari perlu memperhatikan gerakan dan posisi tubuh dari berbagai arah.\nContoh: pertunjukan tari di pendopo, arena pertunjukan rakyat, dan beberapa karya tari kontemporer eksperimental.",
-            imageUrl: "/images/tari/panggung-arena.jpg",
-          },
-          {
-            text: "4. Panggung Terbuka (Open Air Stage)\nPanggung terbuka (Open Air Stage) adalah panggung yang berada di ruang terbuka tanpa atap, biasanya memanfaatkan lingkungan alam atau bangunan di sekitarnya sebagai latar pertunjukan.\nPanggung ini dapat digunakan untuk pertunjukan tari dengan jumlah penonton yang besar, seperti Sendratari Ramayana di Candi Prambanan, panggung terbuka Taman Budaya, dan amphitheater",
-            imageUrl: "/images/tari/panggung-open-air.png",
-          },
-        ],
+            "Poros keluaran transmisi yang menyalurkan putaran dengan rasio gigi yang telah dipilih menuju poros penggerak roda."
+          ],
       },
+      {
+        id: "sec-12-6",
+        title: "Mekanisme Synchromesh",
+        paragraphs: [
+            "Komponen penyinkron putaran yang menyamakan kecepatan putar antara roda gigi percepatan dengan poros output sebelum gigi terkait terkunci, sehingga perpindahan gigi dapat terjadi dengan halus tanpa timbul bunyi benturan roda gigi."
+          ],
+      },
+      {
+        id: "sec-12-7",
+        title: "Shift Fork & Shift Linkage",
+        paragraphs: [
+            "Garpu pemindah dan tuas penghubung yang digerakkan oleh pengemudi melalui tuas transmisi (gear lever) untuk menggeser synchromesh hub sleeve."
+          ],
+      },
+      {
+        id: "sec-12-8",
+        title: "Aliran Tenaga pada Berbagai Posisi Gigi",
+        paragraphs: [
+            "Posisi Netral: Putaran mesin hanya memutar poros input dan counter gear, roda gigi percepatan berputar bebas di atas poros output tanpa mengunci poros.",
+            "Gigi 1 (Torsi Maksimal): Hub sleeve mengunci roda gigi 1. Roda gigi kecil memutar roda gigi besar menghasilkan reduksi putaran besar dan torsi tertinggi untuk start awal.",
+            "Gigi Tertinggi (Overdrive): Perbandingan gigi menghasilkan putaran poros output lebih cepat dari poros input untuk efisiensi bahan bakar di kecepatan tinggi.",
+            "Gigi Mundur: Roda gigi perantara mundur (reverse idler gear) disisipkan di antara counter gear dan output gear untuk membalikkan arah putaran."
+          ],
+      }
     ],
-    stepByStepSection: {
-      title: "Langkah-langkah Praktik Komposisi Tari/Pola Lantai",
-      description: "Tahapan sistematis penyusunan komposisi pola lantai kelompok tari:",
-      steps: [
-        { stepNumber: 1, title: "Membentuk kelompok", text: "Peserta didik membentuk kelompok sesuai arahan guru." },
-        { stepNumber: 2, title: "Menentukan pola lantai", text: "Kelompok memilih beberapa pola lantai, seperti horizontal, vertikal, diagonal, lengkung, atau zig-zag." },
-        { stepNumber: 3, title: "Menentukan level", text: "Peserta didik menentukan penggunaan level tinggi, sedang, dan rendah pada setiap formasi." },
-        { stepNumber: 4, title: "Menentukan arah hadap", text: "Peserta didik menentukan arah hadap penari agar komposisi terlihat lebih dinamis." },
-        { stepNumber: 5, title: "Menyusun perpindahan formasi", text: "Peserta didik menentukan urutan perpindahan dari satu pola lantai ke pola lantai berikutnya." },
-        { stepNumber: 6, title: "Melakukan latihan", text: "Kelompok mempraktikkan gerak dan perpindahan pola lantai dengan memperhatikan jarak serta posisi setiap penari." },
-        { stepNumber: 7, title: "Mengevaluasi komposisi", text: "Peserta didik mengamati keseimbangan, kesatuan, dan kontras dalam komposisi yang telah dibuat." },
-        { stepNumber: 8, title: "Menampilkan hasil", text: "Kelompok menampilkan hasil komposisi tari di depan kelas." },
-      ],
-    },
     attachment: {
-      fileName: "Panduan_Pola_Lantai_dan_Komposisi_Tari.pdf",
-      fileSize: "2.8 MB",
+      fileName: "Modul_Sistem_Transmisi_Manual.pdf",
+      fileSize: "2.1 MB",
     },
     quizSource: {
       type: "internal",
-      title: "Evaluasi Komposisi Tari",
-      description: "Uji pemahaman pola lantai dan prinsip tata panggung.",
+      title: "Kuis Evaluasi: Sistem Transmisi Manual",
+      description: "Uji pemahaman materi Sistem Transmisi Manual yang disusun oleh Satrio.",
       internalUrl: "/kuis/12",
     },
-    prevMaterial: { id: 10, title: "Koreografi: Eksplorasi Gerak Dalam Seni Tari" },
-    nextMaterial: { id: 13, title: "Tata Rias dalam Seni Tari" },
   },
-  13: {
-    id: 13,
-    subject: "Seni Tari",
-    title: "Tata Rias dalam Seni Tari",
+  18: {
+    id: 18,
+    subject: "Keolahragaan",
+    title: "Keterampilan Gerak & Taktik Permainan Bola Basket",
+    level: "Pemula",
+    duration: "40 Menit",
+    author: "Brilian Anugraheni",
+    updatedAt: "25 Agustus 2026",
+    icon: Dumbbell01Icon,
+    topics: ["Pendahuluan Bola Basket", "Pola Penyerangan", "Pola Pertahanan", "Keterampilan Gerak"],
+    description: "Menguasai keterampilan teknik dasar, pola penyerangan cepat (fast break), pola pertahanan man-to-man dan zone defense pada bola basket.",
+    imageUrl: "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "Materi Pembelajaran Keterampilan Gerak & Taktik Permainan Bola Basket",
+    contentSections: [
+      {
+        id: "sec-18-1",
+        title: "Pendahuluan & Pemahaman Permainan",
+        paragraphs: [
+            "Permainan bola basket merupakan invasion game yang membutuhkan penguasaan gerak kompleks seperti melangkah, berlari, melompat, serta keterpaduan unsur fisik seperti kecepatan, kelincahan, dan daya tahan. Pemain dituntut memiliki kemampuan mengambil keputusan secara taktis dalam situasi dinamis di lapangan."
+          ],
+      },
+      {
+        id: "sec-18-2",
+        title: "Keterampilan Teknik Dasar Bola Basket",
+        paragraphs: [
+            "Dribbling (Menggiring Bola)",
+            "Teknik memantulkan bola ke lantai menggunakan satu tangan secara bergantian atau berlanjut sambil bergerak. Dribble rendah digunakan untuk melindungi bola dari rebutan lawan, sedangkan dribble tinggi digunakan untuk melakukan serangan cepat."
+          ],
+      },
+      {
+        id: "sec-18-3",
+        title: "Passing & Catching (Mengoper & Menangkap)",
+        paragraphs: [
+            "• Chest Pass: Operan setinggi dada untuk kecepatan dan akurasi jarak pendek-menengah.",
+            "• Bounce Pass: Operan pantulan lantai untuk melewati pemain bertahan yang memiliki postur tinggi.",
+            "• Overhead Pass: Operan dari atas kepala untuk melancarkan serangan balik atau mengumpan ke area dalam."
+          ],
+      },
+      {
+        id: "sec-18-4",
+        title: "Shooting (Menembak ke Ring)",
+        paragraphs: [
+            "Upaya memasukkan bola ke keranjang lawan dengan teknik set shoot, jump shoot, atau lay-up shoot yang memadukan awalan langkah dan lonjakan mendekati papan pantul."
+          ],
+      },
+      {
+        id: "sec-18-5",
+        title: "Pola Penyerangan (Offensive Strategy)",
+        paragraphs: [
+            "Penyerangan Cepat (Fast Break)",
+            "Strategi menyerang secara kilat sebelum tim lawan sempat menyusun barisan pertahanan. Mengandalkan umpan panjang terukur dan kecepatan sprint penyerang sayap."
+          ],
+      },
+      {
+        id: "sec-18-6",
+        title: "Penyerangan Berpola (Set Play)",
+        paragraphs: [
+            "Penyerangan terencana menggunakan screen/pick and roll untuk membuka ruang tembak bagi penembak utama atau umpan terobosan ke area paint."
+          ],
+      },
+      {
+        id: "sec-18-7",
+        title: "Pola Pertahanan (Defensive Strategy)",
+        paragraphs: [
+            "Pertahanan Satu Lawan Satu (Man-to-Man Defense)",
+            "Setiap pemain bertahan memiliki tanggung jawab mengawal ketat satu pemain lawan ke mana pun ia bergerak di area pertahanan."
+          ],
+      },
+      {
+        id: "sec-18-8",
+        title: "Pertahanan Wilayah (Zone Defense)",
+        paragraphs: [
+            "Pemain bertahan menjaga daerah tertentu (formasi 2-3 atau 3-2) untuk menutup akses penetrasi ke area keranjang."
+          ],
+      }
+    ],
+    attachment: {
+      fileName: "Modul_Keterampilan_Gerak_&_Taktik_Permainan_Bola_Basket.pdf",
+      fileSize: "2.1 MB",
+    },
+    quizSource: {
+      type: "internal",
+      title: "Kuis Evaluasi: Keterampilan Gerak & Taktik Permainan Bola Basket",
+      description: "Uji pemahaman materi Keterampilan Gerak & Taktik Permainan Bola Basket yang disusun oleh Brilian Anugraheni.",
+      internalUrl: "/kuis/18",
+    },
+  },
+  19: {
+    id: 19,
+    subject: "Keolahragaan",
+    title: "Keterampilan Gerak Permainan Bola Voli",
+    level: "Pemula",
+    duration: "35 Menit",
+    author: "Brilian Anugraheni",
+    updatedAt: "25 Agustus 2026",
+    icon: Dumbbell01Icon,
+    topics: ["Pengertian Bola Voli", "Passing Bawah & Atas", "Servis Bawah & Atas", "Smash & Block"],
+    description: "Mempelajari teknik dasar passing, servis, smash tajam, dan teknik bendungan (blocking) beregu dalam permainan bola voli.",
+    imageUrl: "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "Materi Pembelajaran Keterampilan Gerak Permainan Bola Voli",
+    contentSections: [
+      {
+        id: "sec-19-1",
+        title: "Pengertian Permainan Bola Voli",
+        paragraphs: [
+            "Bola voli adalah permainan beregu yang dimainkan oleh dua tim dengan masing-masing 6 pemain di lapangan. Setiap tim berusaha menjatuhkan bola di daerah permainan lawan dengan melewatkan bola di atas net serta membatasi sentuhan bola maksimal tiga kali sebelum diseberangkan."
+          ],
+      },
+      {
+        id: "sec-19-2",
+        title: "Teknik Dasar Passing",
+        paragraphs: [
+            "Passing Bawah",
+            "Merupakan teknik menerima bola yang datang dari servis lawan atau serangan smash dengan menyatukan kedua lengan lurus ke depan bawah dan perkenaan bola pada bidang datar antara pergelangan tangan hingga siku."
+          ],
+      },
+      {
+        id: "sec-19-3",
+        title: "Passing Atas",
+        paragraphs: [
+            "Teknik mengoper bola yang berada di atas kepala menggunakan bantalan ujung jari-jari kedua tangan yang membentuk mangkuk terbuka, sangat penting dalam menyusun umpan (set-up) sebelum melakukan smash."
+          ],
+      },
+      {
+        id: "sec-19-4",
+        title: "Teknik Servis",
+        paragraphs: [
+            "Servis Bawah",
+            "Pukulan awal pembuka permainan dengan memegang bola di depan pinggang dan mengayunkan tangan pemukul dari belakang bawah."
+          ],
+      },
+      {
+        id: "sec-19-5",
+        title: "Servis Atas",
+        paragraphs: [
+            "Pukulan servis dengan melambungkan bola di atas kepala kemudian memukul bola dengan telapak tangan terbuka dan pergelangan tangan yang lentur untuk menghasilkan bola menukik atau mengapung (floating serve)."
+          ],
+      },
+      {
+        id: "sec-19-6",
+        title: "Teknik Smash dan Bendungan (Block)",
+        paragraphs: [
+            "Smash (Spike)",
+            "Pukulan keras menukik ke bidang permainan lawan dengan lompatan vertikal maksimal untuk meraih poin."
+          ],
+      },
+      {
+        id: "sec-19-7",
+        title: "Bendungan (Block)",
+        paragraphs: [
+            "Upaya membendung bola smash lawan di dekat net dengan melompat dan menjulurkan kedua tangan ke atas melintasi bibir net agar bola memantul kembali ke lapangan lawan."
+          ],
+      }
+    ],
+    attachment: {
+      fileName: "Modul_Keterampilan_Gerak_Permainan_Bola_Voli.pdf",
+      fileSize: "2.1 MB",
+    },
+    quizSource: {
+      type: "internal",
+      title: "Kuis Evaluasi: Keterampilan Gerak Permainan Bola Voli",
+      description: "Uji pemahaman materi Keterampilan Gerak Permainan Bola Voli yang disusun oleh Brilian Anugraheni.",
+      internalUrl: "/kuis/19",
+    },
+  },
+  7: {
+    id: 7,
+    subject: "Bimbingan Konseling",
+    title: "Membangun Kepercayaan Diri untuk Mengembangkan Potensi Diri",
     level: "Pemula",
     duration: "30 Menit",
-    author: "Pak Ahmad Fauzi, S.Pd.",
-    updatedAt: "18 Agustus 2026",
-    icon: PaintBrushIcon,
-    topics: ["Tata Rias Tari", "Rias Korektif", "Rias Karakter", "Rias Fantasi"],
-    description: "Mempelajari fungsi tata rias panggung, jenis rias (korektif, karakter, fantasi), dan langkah-langkah aplikasi riasan korektif.",
-    imageUrl: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=1200&q=80",
-    imageCaption: "Ilustrasi 13.1: Tata Rias Wajah Penari untuk Memperjelas Watak dan Karakter Tokoh.",
+    author: "Innova Riskianugrah R.",
+    updatedAt: "25 Agustus 2026",
+    icon: UserGroupIcon,
+    topics: ["Hakikat Percaya Diri", "Ciri Percaya Diri", "Faktor Pembentuk", "Strategi Pengembangan Diri"],
+    description: "Memahami konsep kepercayaan diri remaja, mengenali potensi personal, mengatasi rasa rendah diri, serta strategi membangun konsep diri yang optimis.",
+    imageUrl: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "Materi Pembelajaran Membangun Kepercayaan Diri untuk Mengembangkan Potensi Diri",
     contentSections: [
       {
-        id: "apa-itu-tata-rias-tari",
-        title: "Apa itu Tata Rias Tari?",
+        id: "sec-7-1",
+        title: "Hakikat Kepercayaan Diri",
         paragraphs: [
-          "Tata rias adalah kegiatan menata atau merias wajah penari dengan menggunakan bahan kosmetik tertentu yang disesuaikan dengan kebutuhan pertunjukan. Tata rias tidak hanya bertujuan untuk mempercantik wajah, tetapi juga membantu memperjelas karakter, watak, tokoh, dan ekspresi penari di atas panggung.",
-          "Menurut Harymawan, tata rias merupakan seni menggunakan kosmetik untuk mewujudkan wajah sesuai dengan peranan yang dimainkan di atas panggung. Tata rias juga perlu mempertimbangkan kondisi pementasan, termsuk pencahayaan dan jarak penonton.",
-        ],
+            "Percaya diri adalah keyakinan terhadap kemampuan dan penilaian diri sendiri dalam menjalankan tugas, mengambil keputusan, serta menghadapi lingkungan dan tantangan baru. Rasa percaya diri bukanlah sifat bawaan mutlak, melainkan sikap mental yang dapat dilatih dan ditumbuhkan melalui pengalaman positif dan refleksi diri yang sehat."
+          ],
       },
       {
-        id: "fungsi-tata-rias",
-        title: "Fungsi Tata Rias",
-        elements: [
-          {
-            type: "image",
-            imageUrl: "/images/tari/tata-rias-karakter.jpg",
-          },
-          {
-            type: "paragraph",
-            text: "1. Mendukung Tema Tari\nTata rias harus disesuaikan dengan tema yang diangkat dalam karya tari. Tema tari dapat berupa kehidupan masyarakat, kepahlawanan, percintaan, alam, cerita rakyat, kehidupan kerajaan, maupun tema-tema lainnya.\nSumber: Doc. Ujian koreografi Unnes 2026\nTarian diatas salah satu contoh fungsi tata rias sebagai pendukung tema tarian.",
-          },
-          {
-            type: "paragraph",
-            text: "2. Memperjelas Karakter dan Tokoh Penari\nTata rias berfungsi untuk memperkuat karakter dan memperjelas tokoh yang dibawakan oleh penari. Karakter dapat berupa lembut, gagah, tegas, lucu, tua, muda, atau anggun, sedangkan tokoh dapat dibedakan berdasarkan sifat, usia, kedudukan, dan perannya dalam cerita. Perbedaan tersebut dapat ditampilkan melalui bentuk alis, mata, garis wajah, dan warna riasan.",
-          },
-          {
-            type: "paragraph",
-            text: "3. Memperjelas Ekspresi Wajah\nEkspresi wajah merupakan salah satu bagian penting dalam penyajian tari, terutama pada tari yang menekankan penghayatan dan karakter",
-          },
-          {
-            type: "paragraph",
-            text: "4. Menunjang Keindahan Penampilan\nTata rias juga berfungsi untuk meningkatkan nilai estetis atau keindahan penampilan penari. Keindahan tersebut bukan hanya berkaitan dengan wajah penari, tetapi juga dengan keserasian antara tata rias, tata busana, gerak, musik, tata cahaya, dan konsep tari.",
-          },
-          {
-            type: "paragraph",
-            text: "5. Memperkuat Identitas Budaya\nPada tari tradisional, tata rias dapat menjadi salah satu bagian yang menunjukkan identitas budaya suatu daerah. Bentuk rias, penggunaan warna, hiasan kepala, serta aksesori tertentu dapat memiliki ciri khas yang membedakan suatu tari dengan tari dari daerah lainnya.",
-          },
-        ],
+        id: "sec-7-2",
+        title: "Ciri-Ciri Individu yang Memiliki Kepercayaan Diri Sehat",
+        paragraphs: [
+            "• Bersikap optimis dan memandang kegagalan sebagai peluang belajar, bukan akhir dari kemampuan diri.",
+            "• Berani mengemukakan pendapat dan ide dengan santun tanpa merasa takut dihakimi secara berlebihan.",
+            "• Mampu menerima kelebihan dan keterbatasan diri secara objektif tanpa terjebak dalam rasa minder (inferiority complex).",
+            "• Memiliki kemandirian dalam mengambil keputusan penting tanpa selalu bergantung pada persetujuan orang lain."
+          ],
       },
       {
-        id: "jenis-jenis-tata-rias-tari",
-        title: "Jenis-Jenis Tata Rias Tari",
+        id: "sec-7-3",
+        title: "Faktor-Faktor yang Membentuk Kepercayaan Diri",
         paragraphs: [
-          "1. Tata Rias Korektif\nTata rias korektif merupakan tata rias yang bertujuan untuk memperbaiki, mempertegas, dan menonjolkan bentuk wajah sehingga penampilan penari terlihat lebih jelas dan menarik. Riasan ini pada dasarnya tidak mengubah wajah penari secara drastis, tetapi lebih menekankan pada bagian-bagian tertentu seperti alis, mata, hidung, pipi, dan bibir",
-          "2. Tata Rias Karakter\nTata rias karakter adalah tata rias yang digunakan untuk menciptakan atau memperkuat karakter tertentu yang dibawakan oleh penari. Riasan ini dapat membuat wajah penari terlihat memiliki sifat atau watak tertentu, seperti gagah, tegas, tua, keras, lembut, lucu, atau memiliki karakter antagonis.",
-          "3. Tata Rias Fantasi\nTata rias fantasi merupakan tata rias yang digunakan untuk menciptakan tampilan yang bersifat imajinatif, unik, dan tidak selalu mengikuti bentuk wajah manusia dalam kehidupan sehari-hari. Riasan ini memberikan kebebasan kepada penata rias untuk mengembangkan bentuk, warna, dan ornamen sesuai dengan konsep pertunjukan.\nTata rias fantasi biasanya menggunakan kombinasi warna dan bentuk yang lebih berani. Riasan dapat disesuaikan dengan tema yang berkaitan dengan dunia imajinasi, alam, binatang, tumbuhan, atau tokoh-tokoh tertentu.",
-        ],
-        callout: "Riasan yang digunakan oleh penari perlu disesuaikan dengan konsep tari, karakter tokoh, jenis pertunjukan, tata cahaya, serta jarak antara penari dengan penonton. Dengan tata rias yang tepat, penampilan penari menjadi lebih jelas dan mendukung penyampaian karya secara keseluruhan.",
+            "Konsep Diri Positif",
+            "Cara pandang seseorang terhadap dirinya sendiri. Seseorang yang memandang dirinya berharga akan memiliki fondasi keyakinan yang kokoh."
+          ],
       },
+      {
+        id: "sec-7-4",
+        title: "Pengalaman dan Pencapaian",
+        paragraphs: [
+            "Keberhasilan kecil yang diraih secara bertahap memberikan bukti nyata bahwa usaha yang dilakukan membuahkan hasil."
+          ],
+      },
+      {
+        id: "sec-7-5",
+        title: "Dukungan Lingkungan Sosial",
+        paragraphs: [
+            "Penerimaan yang suportif dari keluarga, guru, dan teman sebaya memperkuat rasa aman dalam mengekspresikan bakat dan minat."
+          ],
+      },
+      {
+        id: "sec-7-6",
+        title: "Strategi Menumbuhkan Kepercayaan Diri",
+        paragraphs: [
+            "1. Kenali Potensi dan Keunikan Diri: Setiap siswa memiliki kecerdasan dan talenta yang berbeda, baik di bidang akademis, teknologi, seni, maupun kepemimpinan.",
+            "2. Ubah Dialog Batin Negatif (Self-Talk): Gantikan kalimat 'Saya pasti gagal' menjadi 'Saya akan berusaha semaksimal mungkin dan belajar dari prosesnya'.",
+            "3. Berani Melangkah Keluar dari Zona Nyaman: Ambil peran aktif dalam diskusi kelas, presentasi proyek kelompok, atau kegiatan organisasi sekolah."
+          ],
+      }
     ],
-    stepByStepSection: {
-      title: "Step by Step Tata Rias Korektif",
-      description: "Tahapan aplikasi tata rias korektif penari panggung:",
-      steps: [
-        {
-          stepNumber: 1,
-          title: "Membersihkan Wajah",
-          text: "Bersihkan wajah terlebih dahulu agar wajah bebas dari kotoran dan minyak.\nCara aplikasi:\n1) Tuangkan atau gunakan pembersih wajah secukupnya.\n2) Usapkan secara lembut ke seluruh wajah.\n3) Bersihkan menggunakan kapas atau bilas sesuai jenis produknya.",
-        },
-        {
-          stepNumber: 2,
-          title: "Menggunakan Skincare",
-          text: "Skincare digunakan untuk mempersiapkan kondisi kulit sebelum menggunakan makeup.\nCara aplikasi:\n1) Aplikasikan toner secara merata pada wajah.\n2) Gunakan pelembap secukupnya, lalu ratakan dengan lembut.\n3) Pada riasan untuk pertunjukan di luar ruangan, gunakan sunscreen sesuai petunjuk produk.\n4) Tunggu hingga produk meresap sebelum melanjutkan ke makeup.",
-        },
-        {
-          stepNumber: 3,
-          title: "Menggunakan Alas Bedak",
-          text: "Foundation digunakan untuk meratakan warna kulit dan menjadi dasar riasan.\nCara aplikasi:\n1) Ambil foundation secukupnya.\n2) Letakkan pada beberapa bagian wajah seperti dahi, pipi, hidung, dan dagu.\n3) Ratakan menggunakan spons atau alat aplikasi makeup hingga merata.",
-        },
-        {
-          stepNumber: 4,
-          title: "Melakukan Koreksi Bentuk Wajah",
-          text: "Koreksi dilakukan untuk membantu mempertegas atau menyempurnakan bentuk wajah.\nCara aplikasi:\n1) Aplikasikan produk koreksi pada bagian wajah yang ingin ditegaskan.\n2) Ratakan secara perlahan agar tidak terlihat belang.\n3) Sesuaikan dengan bentuk wajah dan kebutuhan riasan.",
-        },
-        {
-          stepNumber: 5,
-          title: "Menggunakan Bedak",
-          text: "Bedak berfungsi membantu mengunci dasar riasan agar lebih rapi.\nCara aplikasi:\n1) Ambil bedak menggunakan spons atau kuas.\n2) Tepuk-tepukkan secara perlahan pada wajah.\n3) Pastikan seluruh bagian wajah tertutup secara merata.",
-        },
-        {
-          stepNumber: 6,
-          title: "Membentuk Alis",
-          text: "Alis diperjelas agar ekspresi wajah penari lebih terlihat.\nCara aplikasi:\n1) Rapikan bentuk alis.\n2) Isi bagian alis yang terlihat kurang tebal menggunakan produk alis.\n3) Bentuk mengikuti garis alis secara alami.",
-        },
-        {
-          stepNumber: 7,
-          title: "Merias Bagian Mata",
-          text: "Riasan mata membantu memperjelas mata dan ekspresi penari di atas panggung.\nCara aplikasi:\n1) Aplikasikan eyeshadow sesuai konsep riasan.\n2) Gunakan eyeliner untuk mempertegas garis mata.\n3) Pastikan riasan kanan dan kiri terlihat seimbang.",
-        },
-        {
-          stepNumber: 8,
-          title: "Menggunakan Perona Pipi",
-          text: "Perona pipi memberikan kesan segar sekaligus membantu mempertegas bentuk wajah.\nCara aplikasi:\n1) Ambil perona pipi menggunakan kuas.\n2) Aplikasikan pada bagian pipi secara perlahan.\n3) Ratakan agar warna terlihat menyatu dengan riasan.",
-        },
-        {
-          stepNumber: 9,
-          title: "Memberikan Warna pada Bibir",
-          text: "Lipstik digunakan untuk memperjelas bentuk dan warna bibir.\nCara aplikasi:\n1) Rapikan bagian bibir terlebih dahulu.\n2) Aplikasikan lipstik secara merata.\n3) Sesuaikan warna dengan konsep tari dan kostum.",
-        },
-        {
-          stepNumber: 10,
-          title: "Mengecek dan Merapikan Hasil Riasan",
-          text: "Tahap terakhir dilakukan untuk memastikan seluruh riasan sudah sesuai.\nCara aplikasi:\n1) Periksa keseimbangan riasan kanan dan kiri.\n2) Rapikan bagian yang kurang rata.\n3) Pastikan riasan terlihat rapi, jelas, dan sesuai dengan kebutuhan pertunjukan.",
-        },
-      ],
-    },
     attachment: {
-      fileName: "Panduan_Tata_Rias_Seni_Tari.pdf",
-      fileSize: "2.3 MB",
+      fileName: "Modul_Membangun_Kepercayaan_Diri_untuk_Mengembangkan_Potensi_Diri.pdf",
+      fileSize: "2.1 MB",
     },
     quizSource: {
       type: "internal",
-      title: "Evaluasi Tata Rias Tari",
-      description: "Uji pemahaman fungsi dan tahapan tata rias tari.",
-      internalUrl: "/kuis/13",
+      title: "Kuis Evaluasi: Membangun Kepercayaan Diri untuk Mengembangkan Potensi Diri",
+      description: "Uji pemahaman materi Membangun Kepercayaan Diri untuk Mengembangkan Potensi Diri yang disusun oleh Innova Riskianugrah R..",
+      internalUrl: "/kuis/7",
     },
-    prevMaterial: { id: 12, title: "Koreografi: Pola Lantai dalam Penunjang Komposisi Tari" },
-    nextMaterial: { id: 14, title: "Tata Kostum dan Busana dalam Seni Tari" },
   },
-  14: {
-    id: 14,
-    subject: "Seni Tari",
-    title: "Tata Kostum dan Busana dalam Seni Tari",
+  21: {
+    id: 21,
+    subject: "Elektronika",
+    title: "Keselamatan dan Kesehatan Kerja serta Lingkungan Hidup (K3LH) dan Budaya Kerja Industri",
     level: "Pemula",
-    duration: "30 Menit",
-    author: "Pak Ahmad Fauzi, S.Pd.",
-    updatedAt: "19 Agustus 2026",
-    icon: PaintBrushIcon,
-    topics: ["Tata Busana", "Pakaian Tubuh & Kepala", "Aksesori Tari", "Sapit Urang"],
-    description: "Mempelajari peranan tata busana dalam mendukung karakter tari, unsur busana, serta praktik memakai kain jarit model sapit urang.",
-    imageUrl: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=1200&q=80",
-    imageCaption: "Ilustrasi 14.1: Kelengkapan Kostum dan Busana Tari Tradisional Nusantara.",
+    duration: "35 Menit",
+    author: "Fahrul Adiyansa",
+    updatedAt: "25 Agustus 2026",
+    icon: CpuIcon,
+    topics: ["Pengertian K3LH", "Budaya Kerja 5R/5S", "Potensi Bahaya Kelistrikan", "Alat Pelindung Diri (APD)"],
+    description: "Penerapan prinsip K3LH di bengkel elektronika, pencegahan kecelakaan kerja, budaya kerja industri (Ringkas, Rapi, Resik, Rawat, Rajin), serta penggunaan APD.",
+    imageUrl: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "Materi Pembelajaran Keselamatan dan Kesehatan Kerja serta Lingkungan Hidup (K3LH) dan Budaya Kerja Industri",
     contentSections: [
       {
-        id: "apa-itu-tata-kostum-busana",
-        title: "Apa Itu Tata Kostum/Busana dalam Seni Tari?",
+        id: "sec-21-1",
+        title: "Pengertian K3LH dan Budaya Kerja Industri",
         paragraphs: [
-          "Tata kostum atau tata busana dalam seni tari adalah segala sesuatu yang berkaitan dengan pakaian, perlengkapan, dan aksesori yang dikenakan oleh penari saat pertunjukan. Tata busana membantu memperjelas tema, karakter, tokoh, suasana, identitas budaya, dan nilai estetis dalam karya tari.",
-        ],
+            "Keselamatan dan Kesehatan Kerja serta Lingkungan Hidup (K3LH) merupakan upaya terpadu untuk menciptakan lingkungan kerja yang aman, sehat, nyaman, dan meminimalkan risiko kecelakaan maupun gangguan kesehatan akibat pekerjaan. Dalam bidang teknik elektronika, penerapan K3LH sangat krusial karena aktivitas praktikum berhubungan langsung dengan tegangan listrik, komponen rapuh, solder panas, bahan kimia pelarut PCB, serta instrumen presisi."
+          ],
       },
       {
-        id: "hubungan-kostum-dengan-gerak-tari",
-        title: "Hubungan Kostum dengan Gerak Tari",
+        id: "sec-21-2",
+        title: "Budaya Kerja 5R (5S) di Lingkungan Bengkel",
         paragraphs: [
-          "Busana harus memungkinkan penari bergerak secara leluasa dan nyaman. Kostum yang terlalu berat, terlalu ketat, terlalu longgar, atau memiliki aksesori yang tidak sesuai dapat menghambat gerakan dan mengganggu keamanan pertunjukan.",
-        ],
+            "Budaya kerja 5R (Ringkas, Rapi, Resik, Rawat, Rajin) diadopsi dari standar industri manufaktur untuk menjamin efisiensi dan keamanan kerja:",
+            "• Ringkas (Seiri): Memilah dan menyingkirkan barang yang tidak diperlukan dari meja kerja praktik.",
+            "• Rapi (Seiton): Menata peralatan kerja dan komponen sesuai tempatnya dengan pelabelan jelas agar mudah diambil dan dikembalikan.",
+            "• Resik (Seiso): Membersihkan area kerja, lantai bengkel, dan instrumen dari debu, sisa potongan kawat, dan timah solder.",
+            "• Rawat (Seiketsu): Memelihara standar kebersihan dan kerapian meja praktikum secara konsisten setiap selesai jam pelajaran.",
+            "• Rajin (Shitsuke): Membiasakan diri mematuhi peraturan keselamatan kerja tanpa harus selalu diawasi guru instruktur."
+          ],
       },
       {
-        id: "unsur-unsur-tata-busana-tari",
-        title: "Unsur-Unsur Tata Busana Tari",
+        id: "sec-21-3",
+        title: "Identifikasi Bahaya dan Penggunaan Alat Pelindung Diri (APD)",
         paragraphs: [
-          "1. Pakaian Dasar\nPakaian yang digunakan sebagai lapisan dasar sebelum mengenakan kostum utama. Pakaian ini membantu menyiapkan tubuh sebelum menggunakan busana tari.",
-          "2. Pakaian Tubuh\nMerupakan pakaian utama yang dikenakan pada tubuh penari dan menjadi bagian utama dari kostum tari. Bentuk dan warnanya disesuaikan dengan tema serta karakter tari.",
-          "3. Pakaian Kepala\nMerupakan perlengkapan yang dikenakan pada bagian kepala, seperti mahkota, gelungan, ikat kepala, siger, atau hiasan kepala lainnya. Pakaian kepala dapat membantu memperkuat karakter dan identitas tari.",
-          "4. Pakaian Kaki\nMerupakan perlengkapan yang digunakan pada bagian kaki, seperti kaus kaki, gelang kaki, atau perlengkapan lainnya yang mendukung penampilan penari.",
-          "5. Aksesori\nMerupakan perlengkapan tambahan yang digunakan untuk memperindah dan melengkapi kostum, seperti kalung, gelang, anting, ikat pinggang, dan selendang.",
-          "6. Properti Pelengkap\nMerupakan perlengkapan yang dikenakan atau digunakan penari untuk mendukung karakter dan kebutuhan pertunjukan, sehingga penampilan tari menjadi lebih sesuai dengan tema dan konsepnya.",
-        ],
-        callout: "Tata busana tari terdiri dari berbagai unsur yang saling melengkapi. Pemilihannya perlu disesuaikan dengan tema, karakter, gerak, dan kebutuhan pertunjukan agar kostum tidak hanya indah, tetapi juga mendukung penampilan penari.",
-      },
-      {
-        id: "visualisasi-karakter-tata-busana",
-        title: "Visualisasi Karakter Melalui Tata Busana",
-        paragraphs: [
-          "Sumber: Doc. Ujian koreografi Unnes 2026",
-          "Pada Tari Merak, tata busana dirancang dengan bentuk, warna, dan hiasan yang terinspirasi dari burung merak. Penggunaan kostum tersebut membantu memperkuat karakter burung merak yang menjadi sumber inspirasi tari sekaligus mendukung visualisasi gerak, terutama pada gerakan yang menggambarkan keindahan dan keluwesan burung merak.",
-        ],
-        items: [
-          {
-            imageUrl: "/images/tari/tata-busana-merak.png",
-          },
-        ],
-        callout: "pada tari tradisional Jawa, penggunaan kain, kebaya, jarik, sampur, serta berbagai aksesori disesuaikan dengan jenis dan karakter tari. Tata busana tersebut tidak hanya berfungsi untuk memperindah penampilan penari, tetapi juga memperkuat karakter, suasana, dan identitas budaya Jawa yang terdapat dalam karya tari.",
-      },
+            "Potensi bahaya di bengkel elektronika meliputi sengatan listrik (electric shock), luka bakar akibat ujung solder panas, iritasi uap asap timah, serta letupan komponen akibat polaritas terbalik. Untuk mencegah cedera, setiap teknisi wajib menggunakan APD yang sesuai: kacamata pelindung (safety glasses), gelang antistatis (ESD wrist strap), masker asap solder, dan alas kaki berisolasi karet."
+          ],
+      }
     ],
-    stepByStepSection: {
-      title: "Cara Menggunakan Kain Jarit Bentuk Sapit Urang",
-      description: "Sapit urang merupakan salah satu cara memakai kain jarit dalam busana tari Jawa. Bentuk kain dibuat rapi dan kuat pada bagian depan, sehingga mendukung penampilan penari serta tetap memungkinkan gerak kaki dengan leluasa. Langkah-langkah:",
-      steps: [
-        { stepNumber: 1, title: "Siapkan kain jarit", text: "Bentangkan kain jarit dan pastikan bagian motif serta arah kain sudah sesuai." },
-        { stepNumber: 2, title: "Posisikan kain pada tubuh", text: "Letakkan kain melingkari tubuh dari arah belakang ke depan dengan posisi kain sejajar dan rapi." },
-        { stepNumber: 3, title: "Atur bagian depan kain", text: "Tarik dan rapikan bagian depan kain sehingga membentuk sapit urang, yaitu lipatan atau bentuk kain yang mengarah dan merapat di bagian depan." },
-        { stepNumber: 4, title: "Buat lipatan kain", text: "Lipat bagian kain secara teratur dan pastikan lipatannya rapi serta tidak terlalu longgar." },
-        { stepNumber: 5, title: "Kencangkan kain", text: "Rapikan dan kuatkan ikatan pada bagian pinggang agar kain tidak mudah bergeser ketika penari bergerak." },
-        { stepNumber: 6, title: "Periksa panjang kain", text: "Pastikan panjang kain sesuai dengan kebutuhan tari dan tidak menghambat langkah atau gerakan kaki." },
-        { stepNumber: 7, title: "Rapikan keseluruhan", text: "Periksa kembali posisi motif, lipatan, dan bagian pinggang agar rapi, nyaman, dan siap digunakan untuk menari." },
-      ],
-    },
     attachment: {
-      fileName: "Panduan_Tata_Kostum_Seni_Tari.pdf",
-      fileSize: "2.6 MB",
+      fileName: "Modul_Keselamatan_dan_Kesehatan_Kerja_serta_Lingkungan_Hidup_(K3LH)_dan_Budaya_Kerja_Industri.pdf",
+      fileSize: "2.1 MB",
     },
     quizSource: {
       type: "internal",
-      title: "Evaluasi Tata Busana Tari",
-      description: "Uji pemahaman tentang unsur busana dan teknik pemakaian kostum tari.",
-      internalUrl: "/kuis/14",
+      title: "Kuis Evaluasi: Keselamatan dan Kesehatan Kerja serta Lingkungan Hidup (K3LH) dan Budaya Kerja Industri",
+      description: "Uji pemahaman materi Keselamatan dan Kesehatan Kerja serta Lingkungan Hidup (K3LH) dan Budaya Kerja Industri yang disusun oleh Fahrul Adiyansa.",
+      internalUrl: "/kuis/21",
     },
-    prevMaterial: { id: 13, title: "Tata Rias dalam Seni Tari" },
-    nextMaterial: { id: 15, title: "Properti dalam Seni Tari" },
   },
-  15: {
-    id: 15,
-    subject: "Seni Tari",
-    title: "Properti dalam Seni Tari",
+  22: {
+    id: 22,
+    subject: "Elektronika",
+    title: "Penggunaan Perkakas Kerja Tangan Listrik dan Non Listrik",
     level: "Pemula",
-    duration: "25 Menit",
-    author: "Pak Ahmad Fauzi, S.Pd.",
-    updatedAt: "20 Agustus 2026",
-    icon: PaintBrushIcon,
-    topics: ["Properti Tari", "Stimulus Gerak", "Fungsi Properti", "Eksplorasi Properti"],
-    description: "Memahami pemanfaatan properti sebagai pendukung dan stimulus koreografi gerak, serta ragam fungsi properti dalam karya tari.",
-    imageUrl: "https://images.unsplash.com/photo-1547153760-18fc86324498?auto=format&fit=crop&w=1200&q=80",
-    imageCaption: "Ilustrasi 15.1: Penggunaan Properti Topeng dan Selendang dalam Eksplorasi Gerak Tari.",
+    duration: "40 Menit",
+    author: "Anisa Susilawati",
+    updatedAt: "25 Agustus 2026",
+    icon: CpuIcon,
+    topics: ["Perkakas Tangan Manual", "Ragam Tang & Obeng", "Power Tools Listrik", "Prosedur K3 & Perawatan"],
+    description: "Mengenal dan mengoperasikan ragam perkakas tangan manual (tang kombinasi, rivet, cucut) dan perkakas tangan bertenaga listrik (bor, gerinda, jigsaw) secara aman.",
+    imageUrl: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "Materi Pembelajaran Penggunaan Perkakas Kerja Tangan Listrik dan Non Listrik",
     contentSections: [
       {
-        id: "apa-itu-properti-tari",
-        title: "Apa itu Property Tari?",
+        id: "sec-22-1",
+        title: "Perkakas Tangan Non Listrik (Manual Hand Tools)",
         paragraphs: [
-          "Properti tari adalah segala benda atau perlengkapan yang digunakan penari dalam pertunjukan untuk mendukung tema, karakter, suasana, dan gagasan tari. Properti dapat berupa benda khusus untuk pertunjukan maupun benda sederhana yang ada di sekitar.",
-          "Pemilihan properti tidak boleh sembarangan. Properti harus disesuaikan dengan tema, konsep, karakter, dan gerak tari agar dapat mendukung koreografi.",
-        ],
-        callout: "Properti tidak harus mahal atau rumit. Benda sederhana dapat menjadi properti tari apabila dimanfaatkan secara kreatif untuk mendukung penciptaan gerak.",
+            "Perkakas tangan non listrik merupakan alat-alat kerja yang dioperasikan sepenuhnya menggunakan tenaga manual manusia. Perkakas ini menjadi alat dasar perakitan perangkat elektronika:",
+            "• Tang Kombinasi: Berfungsi memegang, memotong kawat tembaga, dan membengkokkan kaki komponen.",
+            "• Tang Potong (Diagonal Plier): Memiliki mata pisau miring khusus memotong kabel dan memotong sisa kaki komponen pada papan PCB.",
+            "• Tang Cucut (Long Nose Plier): Memiliki ujung lancip untuk menjangkau ruang sempit dan memegang komponen kecil saat penyolderan.",
+            "• Tang Pengupas Kabel (Wire Stripper): Mengupas isolator kabel tanpa melukai inti serat tembaga di dalamnya.",
+            "• Obeng (Screwdriver): Obeng plus (Phillips) dan obeng minus (Slotted) dengan ukuran presisi untuk membuka dan mengencangkan baut sasis casing."
+          ],
       },
       {
-        id: "properti-sebagai-pendukung-koreografi",
-        title: "Properti sebagai Pendukung Koreografi",
+        id: "sec-22-2",
+        title: "Perkakas Tangan Listrik (Power Tools)",
         paragraphs: [
-          "Properti tidak hanya berfungsi sebagai pelengkap atau hiasan, tetapi juga dapat menjadi stimulus untuk menciptakan dan mengembangkan gerak tari.",
-          "Contohnya, kain dapat digunakan dengan berbagai gerakan seperti mengayun, menarik, memutar, mengembangkan, atau mengibaskan. Topeng dapat digunakan untuk memperkuat karakter atau tokoh, sedangkan kain dapat membantu membangun suasana dan visualisasi tema.",
-          "Sumber: Doc. Ujian koreografi Unnes 2026",
-        ],
-        items: [
-          {
-            imageUrl: "/images/tari/properti-tari.png",
-          },
-        ],
+            "Perkakas listrik memanfaatkan sumber energi listrik untuk menyelesaikan pekerjaan mekanik secara cepat dan presisi:",
+            "• Mesin Bor Tangan (Electric Drill): Digunakan untuk melubangi PCB, plat casing aluminium, dan panel box kontrol.",
+            "• Mesin Gerinda Tangan (Angle Grinder): Digunakan untuk memotong sasis logam dan meratakan permukaan material kasar.",
+            "• Gergaji Listrik (Jigsaw): Digunakan untuk memotong lembaran akrilik atau plat sasis dengan pola kurva atau sudut tertentu."
+          ],
       },
       {
-        id: "hubungan-properti-dengan-koreografi",
-        title: "Hubungan Properti dengan Koreografi",
+        id: "sec-22-3",
+        title: "Prosedur Keselamatan Kerja dan Perawatan",
         paragraphs: [
-          "Tema → Ide/Gagasan → Properti → Eksplorasi Gerak → Koreografi",
-          "Artinya, properti yang digunakan sebaiknya berasal dari kebutuhan konsep tari dan kemudian dikembangkan menjadi bagian dari koreografi.",
-        ],
-      },
-      {
-        id: "fungsi-properti-tari",
-        title: "Fungsi Properti Tari",
-        paragraphs: [
-          "1. Memperkuat Tema\nProperti membantu memperjelas tema yang diangkat. Misalnya, tari bertema kehidupan petani dapat menggunakan benda yang berkaitan dengan aktivitas pertanian.",
-          "2. Memperkuat Karakter\nCara penari memegang, membawa, atau menggerakkan properti dapat membantu menunjukkan karakter yang dibawakan.",
-          "3. Mengembangkan Gerak\nProperti dapat menjadi sumber inspirasi untuk menciptakan berbagai variasi gerak.",
-          "4. Memperjelas Cerita atau Gagasan\nProperti membantu penonton memahami cerita, aktivitas, atau gagasan yang disampaikan melalui tari.",
-          "5. Menambah Nilai Estetis\nBentuk, warna, ukuran, dan gerakan properti dapat memperkaya tampilan visual koreografi.",
-          "6. Mengembangkan Kreativitas\nPenggunaan properti mendorong peserta didik untuk menemukan berbagai kemungkinan gerak dan melatih imajinasi serta kreativitas.",
-        ],
-        callout: "Properti tari bukan sekadar pelengkap pertunjukan, tetapi dapat menjadi bagian dari proses penciptaan, eksplorasi, dan pengembangan gerak dalam koreografi.",
-      },
+            "1. Pastikan kabel daya power tool tidak terkelupas sebelum dihubungkan ke stopkontak.",
+            "2. Gunakan mata bor dan mata pisau yang tajam dan terkunci kuat pada chuck.",
+            "3. Bersihkan debu dan gram sisa pengeboran setelah digunakan, dan lumasi bagian mekanik bergerak secara berkala."
+          ],
+      }
     ],
-    stepByStepSection: {
-      title: "Eksplorasi Gerak Menggunakan Properti",
-      description: "Langkah-langkah eksplorasi gerak menggunakan properti:",
-      steps: [
-        { stepNumber: 1, title: "Tentukan Tema atau Ide Tari", text: "Tentukan tema atau ide tari." },
-        { stepNumber: 2, title: "Pilih Properti yang Sesuai", text: "Pilih properti yang sesuai dengan tema." },
-        { stepNumber: 3, title: "Amati Bentuk dan Karakteristik Properti", text: "Amati bentuk, ukuran, dan karakteristik properti." },
-        { stepNumber: 4, title: "Coba Berbagai Cara Menggunakan Properti", text: "Coba berbagai cara menggunakan properti, seperti mengayun, menarik, memutar, membawa, atau mengibaskan." },
-        { stepNumber: 5, title: "Kembangkan Gerakan Menjadi Beberapa Variasi", text: "Kembangkan gerakan menjadi beberapa variasi." },
-        { stepNumber: 6, title: "Pilih Gerakan yang Paling Sesuai", text: "Pilih gerakan yang paling sesuai dengan tema dan karakter." },
-        { stepNumber: 7, title: "Susun Gerakan Menjadi Bagian Koreografi", text: "Susun gerakan menjadi bagian dari koreografi." },
-      ],
-    },
     attachment: {
-      fileName: "Panduan_Properti_Seni_Tari.pdf",
-      fileSize: "2.2 MB",
+      fileName: "Modul_Penggunaan_Perkakas_Kerja_Tangan_Listrik_dan_Non_Listrik.pdf",
+      fileSize: "2.1 MB",
     },
     quizSource: {
       type: "internal",
-      title: "Evaluasi Properti Seni Tari",
-      description: "Uji pemahaman tentang jenis dan fungsi properti tari.",
-      internalUrl: "/kuis/15",
+      title: "Kuis Evaluasi: Penggunaan Perkakas Kerja Tangan Listrik dan Non Listrik",
+      description: "Uji pemahaman materi Penggunaan Perkakas Kerja Tangan Listrik dan Non Listrik yang disusun oleh Anisa Susilawati.",
+      internalUrl: "/kuis/22",
     },
-    prevMaterial: { id: 14, title: "Tata Kostum dan Busana dalam Seni Tari" },
-    nextMaterial: { id: 1, title: "Variabel, Tipe Data & Operasi Logika" },
+  },
+  23: {
+    id: 23,
+    subject: "Elektronika",
+    title: "Gambar Teknik Listrik, Elektronika, dan Instrumentasi",
+    level: "Pemula",
+    duration: "45 Menit",
+    author: "Banu Mahmuda H.",
+    updatedAt: "25 Agustus 2026",
+    icon: CpuIcon,
+    topics: ["Pengertian Gamtek", "Standarisasi Gambar", "Simbol Komponen Elektronika", "Diagram Skematik & Wiring"],
+    description: "Memahami bahasa visual gambar teknik, standarisasi ISO, pembacaan simbol komponen elektronika dan instrumentasi, serta perancangan diagram skematik.",
+    imageUrl: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "Materi Pembelajaran Gambar Teknik Listrik, Elektronika, dan Instrumentasi",
+    contentSections: [
+      {
+        id: "sec-23-1",
+        title: "Pengertian dan Fungsi Gambar Teknik",
+        paragraphs: [
+            "Gambar teknik (gamtek) adalah bahasa visual baku berupa garis, simbol, dan ukuran terstandar untuk menyampaikan ide perancangan sistem atau perangkat secara universal. Dalam bidang elektronika, gambar teknik menjadi panduan pasti dalam fabrikasi papan PCB, perakitan panel kontrol, penelusuran jalur kelistrikan, serta pemeliharaan sistem industri."
+          ],
+      },
+      {
+        id: "sec-23-2",
+        title: "Standarisasi Gambar Teknik Elektronika",
+        paragraphs: [
+            "Agar gambar teknik dapat dipahami oleh teknisi dan insinyur di seluruh dunia, gambar harus mengacu pada standar internasional seperti ISO (International Organization for Standardization) dan IEC (International Electrotechnical Commission). Standar ini mengatur ukuran kertas gambar (A4, A3), jenis garis (garis tebal kontur, garis putus-putus tersembunyi, garis strip-titik sumbu), serta etiket gambar (kepala gambar/title block)."
+          ],
+      },
+      {
+        id: "sec-23-3",
+        title: "Simbol Komponen Elektronika dan Instrumentasi",
+        paragraphs: [
+            "Gambar skematik menggunakan simbol grafis baku untuk merepresentasikan komponen fisik:",
+            "• Komponen Pasif: Simbol resistor (gerigi/persegi panjang), kapasitor (garis sejajar kutub), dan induktor (lilitan spiral).",
+            "• Semikonduktor: Simbol dioda (segitiga dengan garis katoda), transistor BJT (tanda panah emitor NPN/PNP), dan transistor MOSFET.",
+            "• Sumber Daya & Proteksi: Simbol ground, sumber tegangan DC/AC, fuse/sekring, dan transformator."
+          ],
+      },
+      {
+        id: "sec-23-4",
+        title: "Jenis-Jenis Diagram Kelistrikan",
+        paragraphs: [
+            "Diagram Blok (Block Diagram): Menunjukkan fungsi keseluruhan sistem dalam bentuk kotak-kotak fungsional beserta alur sinyal utama.",
+            "Diagram Skematik (Schematic Diagram): Menampilkan detail koneksi kelistrikan seluruh pin komponen secara logis.",
+            "Diagram Tata Letak (Wiring & Layout Diagram): Menunjukkan posisi fisik komponen sesungguhnya pada papan PCB atau panel rak."
+          ],
+      }
+    ],
+    attachment: {
+      fileName: "Modul_Gambar_Teknik_Listrik,_Elektronika,_dan_Instrumentasi.pdf",
+      fileSize: "2.1 MB",
+    },
+    quizSource: {
+      type: "internal",
+      title: "Kuis Evaluasi: Gambar Teknik Listrik, Elektronika, dan Instrumentasi",
+      description: "Uji pemahaman materi Gambar Teknik Listrik, Elektronika, dan Instrumentasi yang disusun oleh Banu Mahmuda H..",
+      internalUrl: "/kuis/23",
+    },
+  },
+  24: {
+    id: 24,
+    subject: "Elektronika",
+    title: "Alat Ukur Listrik, Elektronika, dan Instrumentasi",
+    level: "Pemula",
+    duration: "40 Menit",
+    author: "Tubagus Fauzan A.",
+    updatedAt: "25 Agustus 2026",
+    icon: CpuIcon,
+    topics: ["Voltmeter & Amperemeter", "Multimeter Analog & Digital", "Osiloskop", "Prosedur Pengukuran Aman"],
+    description: "Pengenalan fungsi dan cara pengoperasian alat ukur kelistrikan dan instrumentasi (Multitester, Osciloscope, Signal Generator) secara presisi.",
+    imageUrl: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "Materi Pembelajaran Alat Ukur Listrik, Elektronika, dan Instrumentasi",
+    contentSections: [
+      {
+        id: "sec-24-1",
+        title: "Klasifikasi Alat Ukur Kelistrikan",
+        paragraphs: [
+            "Alat ukur adalah instrumen yang digunakan untuk mengukur dan membandingkan besaran fisis listrik terhadap satuan standar yang telah ditetapkan. Pemilihan alat ukur yang tepat menjamin keakuratan analisis rangkaian."
+          ],
+      },
+      {
+        id: "sec-24-2",
+        title: "Jenis-Jenis Alat Ukur Utama",
+        paragraphs: [
+            "Voltmeter",
+            "Alat yang digunakan untuk mengukur beda potensial atau tegangan listrik antara dua titik. Voltmeter dipasang secara PARALEL dengan komponen yang diukur."
+          ],
+      },
+      {
+        id: "sec-24-3",
+        title: "Amperemeter",
+        paragraphs: [
+            "Alat untuk mengukur kuat arus listrik yang mengalir dalam suatu rangkaian tertutup. Amperemeter harus dipasang secara SERI dengan beban listrik."
+          ],
+      },
+      {
+        id: "sec-24-4",
+        title: "Ohmmeter",
+        paragraphs: [
+            "Alat untuk mengukur nilai resistansi hambatan komponen resistor atau memeriksa kontinuitas jalur kawat tembaga. Pengukuran resistansi wajib dilakukan saat rangkaian BEBAS TEGANGAN (daya mati)."
+          ],
+      },
+      {
+        id: "sec-24-5",
+        title: "Multimeter (Multitester / AVO Meter)",
+        paragraphs: [
+            "Instrumen serbaguna yang menggabungkan fungsi pengukuran Ampere, Volt, dan Ohm dalam satu unit. Tersedia dalam tipe Analog (dengan jarum penunjuk kalibrasi) dan Digital (dengan tampilan angka LCD berakurasi tinggi)."
+          ],
+      },
+      {
+        id: "sec-24-6",
+        title: "Osiloskop (Oscilloscope)",
+        paragraphs: [
+            "Instrumen canggih yang menampilkan bentuk visual gelombang sinyal listrik terhadap waktu. Digunakan untuk mengukur frekuensi, amplitude puncak-ke-puncak (Vpp), serta mendeteksi distorsi sinyal audio atau PWM."
+          ],
+      },
+      {
+        id: "sec-24-7",
+        title: "Prosedur Pengukuran yang Benar",
+        paragraphs: [
+            "1. Atur batas ukur (range selector) pada posisi lebih tinggi dari estimasi tegangan yang akan diukur guna mencegah kerusakan meter.",
+            "2. Perhatikan polaritas colok ukur (probe merah untuk positif, probe hitam untuk negatif/ground)."
+          ],
+      }
+    ],
+    attachment: {
+      fileName: "Modul_Alat_Ukur_Listrik,_Elektronika,_dan_Instrumentasi.pdf",
+      fileSize: "2.1 MB",
+    },
+    quizSource: {
+      type: "internal",
+      title: "Kuis Evaluasi: Alat Ukur Listrik, Elektronika, dan Instrumentasi",
+      description: "Uji pemahaman materi Alat Ukur Listrik, Elektronika, dan Instrumentasi yang disusun oleh Tubagus Fauzan A..",
+      internalUrl: "/kuis/24",
+    },
+  },
+  25: {
+    id: 25,
+    subject: "Elektronika",
+    title: "Komponen Elektronika Pasif dan Aktif",
+    level: "Pemula",
+    duration: "35 Menit",
+    author: "Vella Pratika I. N.",
+    updatedAt: "25 Agustus 2026",
+    icon: CpuIcon,
+    topics: ["Resistor & Kapasitor", "Induktor", "Dioda & Transistor", "IC (Integrated Circuit)"],
+    description: "Membedah karakteristik dan prinsip kerja komponen pasif (resistor, kapasitor, induktor) dan komponen aktif (dioda, transistor, IC) dalam rangkaian elektronika.",
+    imageUrl: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "Materi Pembelajaran Komponen Elektronika Pasif dan Aktif",
+    contentSections: [
+      {
+        id: "sec-25-1",
+        title: "Komponen Elektronika Pasif",
+        paragraphs: [
+            "Komponen pasif adalah jenis komponen elektronika yang dalam pengoperasiannya tidak memerlukan sumber daya arus listrik eksternal dan tidak dapat memperkuat sinyal listrik:"
+          ],
+      },
+      {
+        id: "sec-25-2",
+        title: "Resistor",
+        paragraphs: [
+            "Komponen yang berfungsi menghambat dan mengatur aliran arus listrik serta membagi tegangan. Nilai hambatan resistor dinyatakan dalam satuan Ohm (Ω) dan dapat dibaca melalui kode gelang warna atau kode angka SMD."
+          ],
+      },
+      {
+        id: "sec-25-3",
+        title: "Kapasitor (Kondensator)",
+        paragraphs: [
+            "Komponen yang berfungsi menyimpan muatan listrik sementara dalam medan elektrostatik. Digunakan sebagai penyaring riak tegangan (filter power supply), kopling sinyal AC, dan pembangkit osilasi. Dinyatakan dalam satuan Farad (F)."
+          ],
+      },
+      {
+        id: "sec-25-4",
+        title: "Induktor (Kumparan)",
+        paragraphs: [
+            "Komponen lilitan kawat tembaga yang menyimpan energi dalam bentuk medan magnet ketika dialiri arus listrik. Berfungsi menahan arus bolak-balik frekuensi tinggi dan menjadi bagian utama transformator serta filter frekuensi."
+          ],
+      },
+      {
+        id: "sec-25-5",
+        title: "Komponen Elektronika Aktif",
+        paragraphs: [
+            "Komponen aktif adalah komponen elektronika yang membutuhkan arus atau tegangan eksternal agar dapat bekerja, serta mampu mengalirkan, mengontrol, dan memperkuat daya sinyal listrik:"
+          ],
+      },
+      {
+        id: "sec-25-6",
+        title: "Dioda Semikonduktor",
+        paragraphs: [
+            "Komponen sambungan P-N yang berfungsi mengalirkan arus listrik hanya ke satu arah (bias maju) dan memblokir arah sebaliknya (bias mundur). Digunakan sebagai penyearah arus, penstabil tegangan (Dioda Zener), dan pemancar cahaya (LED)."
+          ],
+      },
+      {
+        id: "sec-25-7",
+        title: "Transistor",
+        paragraphs: [
+            "Komponen semikonduktor dengan 3 kaki elektroda (Basis, Kolektor, Emitor untuk BJT atau Gate, Drain, Source untuk FET). Berfungsi sebagai penguat sinyal (amplifier) dan saklar elektronik berkecepatan tinggi (switching)."
+          ],
+      },
+      {
+        id: "sec-25-8",
+        title: "Integrated Circuit (IC)",
+        paragraphs: [
+            "Komponen mikroelektronika yang mengintegrasikan ribuan hingga jutaan transistor, dioda, dan resistor dalam satu kemasan chip silikon kecil."
+          ],
+      }
+    ],
+    attachment: {
+      fileName: "Modul_Komponen_Elektronika_Pasif_dan_Aktif.pdf",
+      fileSize: "2.1 MB",
+    },
+    quizSource: {
+      type: "internal",
+      title: "Kuis Evaluasi: Komponen Elektronika Pasif dan Aktif",
+      description: "Uji pemahaman materi Komponen Elektronika Pasif dan Aktif yang disusun oleh Vella Pratika I. N..",
+      internalUrl: "/kuis/25",
+    },
+  },
+  26: {
+    id: 26,
+    subject: "Elektronika",
+    title: "Dasar Kelistrikan dan Hukum-Hukum Kelistrikan",
+    level: "Pemula",
+    duration: "40 Menit",
+    author: "Nova Milyard",
+    updatedAt: "25 Agustus 2026",
+    icon: CpuIcon,
+    topics: ["Arus, Tegangan & Hambatan", "Hukum Ohm", "Hukum Kirchhoff I & II", "Daya dan Energi Listrik"],
+    description: "Konsep dasar besaran listrik, aplikasi perhitungan Hukum Ohm, analisis percabangan Hukum Kirchhoff, dan efisiensi konsumsi daya listrik.",
+    imageUrl: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80",
+    imageCaption: "Materi Pembelajaran Dasar Kelistrikan dan Hukum-Hukum Kelistrikan",
+    contentSections: [
+      {
+        id: "sec-26-1",
+        title: "Besaran Dasar Kelistrikan",
+        paragraphs: [
+            "Kelistrikan bertumpu pada aliran muatan partikel elektron dalam bahan konduktor:",
+            "• Tegangan Listrik (Volt / V): Beda potensial listrik yang mendorong muatan elektron bergerak melalui rangkaian.",
+            "• Kuat Arus Listrik (Ampere / A): Jumlah muatan listrik yang mengalir melalui suatu penampang kawat per satuan detik.",
+            "• Hambatan Listrik (Ohm / Ω): Derajat perlawanan suatu material terhadap aliran arus listrik."
+          ],
+      },
+      {
+        id: "sec-26-2",
+        title: "Hukum Ohm",
+        paragraphs: [
+            "Hukum Ohm dirumuskan oleh George Simon Ohm, menyatakan bahwa kuat arus listrik (I) yang mengalir melalui suatu penghantar berbanding lurus dengan beda potensial atau tegangan (V) dan berbanding terbalik dengan nilai hambatan (R).",
+            "Persamaan matematis: V = I × R, I = V / R, R = V / I."
+          ],
+      },
+      {
+        id: "sec-26-3",
+        title: "Hukum Kirchhoff",
+        paragraphs: [
+            "Hukum Kirchhoff I (Hukum Titik Cabang / KCL)",
+            "Jumlah kuat arus listrik yang masuk ke suatu titik percabangan sama dengan jumlah kuat arus listrik yang keluar dari titik percabangan tersebut (Σ I_masuk = Σ I_keluar)."
+          ],
+      },
+      {
+        id: "sec-26-4",
+        title: "Hukum Kirchhoff II (Hukum Loop Tegangan / KVL)",
+        paragraphs: [
+            "Dalam suatu rangkaian tertutup (loop), jumlah aljabar gaya gerak listrik (GGL) dan penurunan tegangan sama dengan nol (Σ E + Σ (I × R) = 0)."
+          ],
+      },
+      {
+        id: "sec-26-5",
+        title: "Daya dan Energi Listrik",
+        paragraphs: [
+            "Daya listrik (P) adalah laju konsumsi energi listrik per satuan waktu, dinyatakan dalam satuan Watt (W).",
+            "Persamaan daya listrik: P = V × I = I² × R = V² / R.",
+            "Memahami perhitungan daya sangat penting untuk menentukan batas aman kapasitas sekring dan pembebanan rangkaian perangkat elektronik industri."
+          ],
+      }
+    ],
+    attachment: {
+      fileName: "Modul_Dasar_Kelistrikan_dan_Hukum-Hukum_Kelistrikan.pdf",
+      fileSize: "2.1 MB",
+    },
+    quizSource: {
+      type: "internal",
+      title: "Kuis Evaluasi: Dasar Kelistrikan dan Hukum-Hukum Kelistrikan",
+      description: "Uji pemahaman materi Dasar Kelistrikan dan Hukum-Hukum Kelistrikan yang disusun oleh Nova Milyard.",
+      internalUrl: "/kuis/26",
+    },
   },
 };
 

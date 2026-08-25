@@ -1031,12 +1031,9 @@ export function ModuleBlockBuilder({
 
           <div
             onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center gap-2 min-w-0 shrink-0"
+            className="flex items-center gap-2 min-w-0 max-w-[200px] sm:max-w-[260px] md:max-w-[340px] lg:max-w-[420px] shrink"
           >
-            <div className="inline-grid items-center font-bold text-lg sm:text-xl text-[#2E2D2D] border-b-2 border-dotted border-slate-300 focus-within:border-[#2563EB] hover:border-slate-400 transition-colors pb-0.5 max-w-md">
-              <span className="col-start-1 row-start-1 invisible whitespace-pre font-bold text-lg sm:text-xl px-0 pointer-events-none select-none">
-                {moduleTitle || 'Give me a name'}
-              </span>
+            <div className="w-full font-bold text-base sm:text-lg text-[#2E2D2D] border-b-2 border-dotted border-slate-300 focus-within:border-[#2563EB] hover:border-slate-400 transition-colors pb-0.5 truncate">
               <input
                 type="text"
                 value={moduleTitle}
@@ -1044,11 +1041,12 @@ export function ModuleBlockBuilder({
                   setModuleTitle(e.target.value);
                   setIsDirty(true);
                 }}
+                title={moduleTitle}
                 placeholder="Give me a name"
-                className="col-start-1 row-start-1 w-full font-bold text-lg sm:text-xl text-[#2E2D2D] placeholder:text-[#AAAAAA] border-none focus:ring-0 outline-none bg-transparent p-0 m-0"
+                className="w-full font-bold text-base sm:text-lg text-[#2E2D2D] placeholder:text-[#AAAAAA] border-none focus:ring-0 outline-none bg-transparent p-0 m-0 truncate"
               />
             </div>
-            <Pencil className="w-4 h-4 text-[#737373] shrink-0" />
+            <Pencil className="w-3.5 h-3.5 text-[#737373] shrink-0" />
           </div>
 
           {/* HEADER TOOLBAR (only when editing published module) */}

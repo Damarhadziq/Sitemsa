@@ -337,125 +337,57 @@ export function UserProfileModal({
               {/* SUBVIEW 1: OVERVIEW SUMMARY (Default Ringkas) */}
               {historySubView === "overview" && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-200">
-                  {/* 1. Riwayat Pembelajaran Modul (Top 3) */}
+                  {/* 1. Riwayat Pembelajaran Modul */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-xs font-bold text-[#2E2D2D] flex items-center gap-2">
                         <HugeiconsIcon icon={Award01Icon} size={15} className="text-[#2563EB]" />
                         Materi yang Telah Dipelajari
                       </h3>
-
-                      <button
-                        type="button"
-                        onClick={() => setHistorySubView("all-materials")}
-                        className="text-xs font-semibold text-[#2563EB] hover:underline cursor-pointer flex items-center gap-1"
-                      >
-                        Lihat semua (6)
-                      </button>
                     </div>
 
-                    <div className="border border-[#ECECEC] rounded-[8px] bg-white overflow-hidden">
-                      <ul className="divide-y divide-[#ECECEC]">
-                        {[
-                          {
-                            title: "Variabel, Tipe Data & Operasi Logika",
-                            subject: "Informatika",
-                            progress: 100,
-                            status: "Selesai",
-                          },
-                          {
-                            title: "Komponen Pasif (Resistor, Kapasitor, Induktor)",
-                            subject: "Elektronika",
-                            progress: 65,
-                            status: "Dalam proses",
-                          },
-                          {
-                            title: "Manajemen Waktu & Teknik Pomodoro",
-                            subject: "Bimbingan & Konseling",
-                            progress: 100,
-                            status: "Selesai",
-                          },
-                        ].map((item, idx) => (
-                          <li
-                            key={idx}
-                            className="p-3 px-4 hover:bg-[#F6F5FF] transition-colors flex items-center justify-between gap-4 text-xs"
-                          >
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <span className="font-semibold text-[#2E2D2D] truncate">{item.title}</span>
-                              <span className="bg-[#E8E7FF] text-[#2563EB] px-2 py-0.5 rounded-[4px] text-[10px] font-semibold shrink-0">
-                                {item.subject}
-                              </span>
-                            </div>
-
-                            <div className="flex items-center gap-3 shrink-0 text-[11px]">
-                              <span
-                                className={`font-semibold ${
-                                  item.progress === 100 ? "text-emerald-600" : "text-[#2563EB]"
-                                }`}
-                              >
-                                {item.progress}% ({item.status})
-                              </span>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
+                    <div className="border border-[#ECECEC] rounded-[8px] bg-white overflow-hidden p-6 text-center">
+                      <div className="w-10 h-10 rounded-full bg-blue-50 text-[#2563EB] flex items-center justify-center mx-auto mb-2.5">
+                        <HugeiconsIcon icon={Award01Icon} size={20} />
+                      </div>
+                      <p className="text-xs font-bold text-[#2E2D2D] mb-1">
+                        Belum Ada Riwayat Materi
+                      </p>
+                      <p className="text-[11px] text-[#737373] max-w-xs mx-auto mb-3">
+                        Kamu belum menyelesaikan materi pembelajaran. Buka katalog materi untuk mulai belajar!
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onClose();
+                          router.push('/materi');
+                        }}
+                        className="px-3.5 py-1.5 rounded-[6px] bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        Jelajahi Materi
+                      </button>
                     </div>
                   </div>
 
-                  {/* 2. Riwayat Nilai Kuis (Top 2) */}
+                  {/* 2. Riwayat Nilai Kuis */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-xs font-bold text-[#2E2D2D] flex items-center gap-2">
                         <HugeiconsIcon icon={Award01Icon} size={15} className="text-[#2563EB]" />
                         Hasil &amp; Nilai Uji Pemahaman (Kuis)
                       </h3>
-
-                      <button
-                        type="button"
-                        onClick={() => setHistorySubView("all-quizzes")}
-                        className="text-xs font-semibold text-[#2563EB] hover:underline cursor-pointer flex items-center gap-1"
-                      >
-                        Lihat semua (6)
-                      </button>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {[
-                        {
-                          title: "Kuis Variabel & Tipe Data",
-                          score: "95/100",
-                          correct: "5/5 Benar",
-                          grade: "Sangat Baik",
-                          date: "14 Agt 2026",
-                        },
-                        {
-                          title: "Kuis Komponen Pasif",
-                          score: "90/100",
-                          correct: "9/10 Benar",
-                          grade: "Sangat Baik",
-                          date: "13 Agt 2026",
-                        },
-                      ].map((quiz, idx) => (
-                        <div
-                          key={idx}
-                          className="p-4 bg-white border border-[#ECECEC] rounded-[8px] space-y-2 hover:bg-[#F6F5FF] transition-colors"
-                        >
-                          <div className="flex items-start justify-between gap-2">
-                            <p className="text-xs font-semibold text-[#2E2D2D]">{quiz.title}</p>
-                            <span className="text-[10px] text-[#737373] shrink-0">{quiz.date}</span>
-                          </div>
-
-                          <div className="flex items-baseline justify-between pt-2 border-t border-[#ECECEC]">
-                            <div>
-                              <span className="text-lg font-bold text-[#2563EB]">{quiz.score}</span>
-                              <span className="text-[11px] text-[#737373] ml-2">({quiz.correct})</span>
-                            </div>
-                            <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-semibold rounded-[4px]">
-                              {quiz.grade}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
+                    <div className="border border-[#ECECEC] rounded-[8px] bg-white overflow-hidden p-6 text-center">
+                      <div className="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center mx-auto mb-2.5">
+                        <HugeiconsIcon icon={Award01Icon} size={20} />
+                      </div>
+                      <p className="text-xs font-bold text-[#2E2D2D] mb-1">
+                        Belum Ada Riwayat Kuis
+                      </p>
+                      <p className="text-[11px] text-[#737373] max-w-xs mx-auto">
+                        Hasil skor evaluasi dan kelulusan kuis akan otomatis tercatat di sini setelah kamu menyelesaikan kuis pengajar.
+                      </p>
                     </div>
                   </div>
                 </div>

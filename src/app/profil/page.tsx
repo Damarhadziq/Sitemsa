@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Navbar } from "@/components/layout/Navbar";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -13,18 +12,41 @@ import {
   Mail01Icon,
   Building01Icon,
   Calendar01Icon,
+  Book01Icon,
 } from "@hugeicons/core-free-icons";
 
 import { UserProfileModal, ProfileTab } from "@/components/profile/UserProfileModal";
+import { InitialsAvatar } from "@/components/ui/InitialsAvatar";
+import { getStudentProfile, StudentProfile } from "@/services/student-profile.service";
 
 export default function ProfilePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTab, setModalTab] = useState<ProfileTab>("profile");
+  const [profile, setProfile] = useState<StudentProfile | null>(null);
+
+  useEffect(() => {
+    const updateProfile = () => {
+      setProfile(getStudentProfile());
+    };
+    updateProfile();
+    window.addEventListener('sintesa-student-profile-updated', updateProfile);
+    window.addEventListener('storage', updateProfile);
+    return () => {
+      window.removeEventListener('sintesa-student-profile-updated', updateProfile);
+      window.removeEventListener('storage', updateProfile);
+    };
+  }, []);
 
   const openModal = (tab: ProfileTab) => {
     setModalTab(tab);
     setIsModalOpen(true);
   };
+
+  const studentName = profile?.name || 'Siswa Sitemsa';
+  const studentEmail = profile?.email || 'Belum diatur';
+  const studentSchool = profile?.school || 'SMK Negeri 1 Semarang';
+  const studentGrade = profile?.grade || 'X';
+  const studentNisn = profile?.nisn || '-';
 
   return (
     <div className="min-h-screen bg-white flex flex-col font-sans">
@@ -34,31 +56,29 @@ export default function ProfilePage() {
         {/* Profile Banner & Overview Card */}
         <section className="mb-8 p-6 md:p-8 bg-[#FAFAFA] border border-[#ECECEC] rounded-[12px] flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex items-center gap-5">
-            <div className="w-20 h-20 rounded-full overflow-hidden relative shrink-0 border border-[#ECECEC] bg-white">
-              <Image
-                src="https://i.pravatar.cc/100?img=12"
-                alt="Budi Santoso"
-                fill
-                className="object-cover rounded-full"
-              />
-            </div>
+            <InitialsAvatar
+              name={studentName}
+              avatar={profile?.avatar}
+              sizeClass="w-20 h-20"
+              textSizeClass="text-2xl"
+            />
             <div className="space-y-1">
               <h1 className="text-xl md:text-2xl font-bold text-[#2E2D2D] tracking-tight">
-                Budi Santoso
+                {studentName}
               </h1>
 
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#737373]">
                 <span className="flex items-center gap-1.5">
                   <HugeiconsIcon icon={Mail01Icon} size={14} />
-                  budi@siswa.belajar.id
+                  {studentEmail}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <HugeiconsIcon icon={Building01Icon} size={14} />
-                  SMKN 1 Semarang
+                  {studentSchool}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <HugeiconsIcon icon={Calendar01Icon} size={14} />
-                  Bergabung Jan 2026
+                  Akun Aktif
                 </span>
               </div>
             </div>
@@ -68,7 +88,7 @@ export default function ProfilePage() {
             <button
               type="button"
               onClick={() => openModal("profile")}
-              className="w-full md:w-auto px-4 py-2 bg-white border border-[#ECECEC] hover:bg-gray-50 text-[#2E2D2D] text-xs font-semibold rounded-[6px] transition-colors flex items-center justify-center gap-2"
+              className="w-full md:w-auto px-4 py-2 bg-white border border-[#ECECEC] hover:bg-gray-50 text-[#2E2D2D] text-xs font-semibold rounded-[6px] transition-colors flex items-center justify-center gap-2 cursor-pointer"
             >
               <HugeiconsIcon icon={Settings02Icon} size={14} />
               Edit Data Diri
@@ -77,7 +97,7 @@ export default function ProfilePage() {
             <button
               type="button"
               onClick={() => openModal("history")}
-              className="w-full md:w-auto px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-semibold rounded-[6px] transition-colors flex items-center justify-center gap-2"
+              className="w-full md:w-auto px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-semibold rounded-[6px] transition-colors flex items-center justify-center gap-2 cursor-pointer"
             >
               <HugeiconsIcon icon={Clock01Icon} size={14} />
               Riwayat &amp; Nilai Kuis
@@ -93,7 +113,7 @@ export default function ProfilePage() {
             </div>
             <div>
               <p className="text-[11px] text-[#737373] font-medium">Modul Diselesaikan</p>
-              <p className="text-lg font-bold text-[#2E2D2D]">12 Modul</p>
+              <p className="text-lg font-bold text-[#2E2D2D]">0 Modul</p>
             </div>
           </div>
 
@@ -102,8 +122,8 @@ export default function ProfilePage() {
               <HugeiconsIcon icon={Clock01Icon} size={20} />
             </div>
             <div>
-              <p className="text-[11px] text-[#737373] font-medium">Total Waktu Belajar</p>
-              <p className="text-lg font-bold text-[#2E2D2D]">18.5 Jam</p>
+              <p className="text-[11px] text-[#737373] font-medium">Status Pembelajaran</p>
+              <p className="text-lg font-bold text-[#2E2D2D]">Baru Memulai</p>
             </div>
           </div>
 
@@ -113,7 +133,7 @@ export default function ProfilePage() {
             </div>
             <div>
               <p className="text-[11px] text-[#737373] font-medium">Nilai Kuis Rata-rata</p>
-              <p className="text-lg font-bold text-[#2E2D2D]">94.8%</p>
+              <p className="text-lg font-bold text-[#2E2D2D]">-</p>
             </div>
           </div>
 
@@ -122,8 +142,8 @@ export default function ProfilePage() {
               <HugeiconsIcon icon={Award01Icon} size={20} />
             </div>
             <div>
-              <p className="text-[11px] text-[#737373] font-medium">Sertifikat Kelulusan</p>
-              <p className="text-lg font-bold text-[#2E2D2D]">3 Sertifikat</p>
+              <p className="text-[11px] text-[#737373] font-medium">Target Mingguan</p>
+              <p className="text-lg font-bold text-[#2E2D2D]">0 / 5</p>
             </div>
           </div>
         </section>
@@ -137,64 +157,22 @@ export default function ProfilePage() {
                 Progres Materi Aktif
               </h2>
 
-              <div className="space-y-3">
-                {[
-                  {
-                    id: 1,
-                    title: "Variabel, Tipe Data & Operasi Logika",
-                    subject: "Informatika",
-                    progress: 80,
-                    lastRead: "10 menit yang lalu",
-                  },
-                  {
-                    id: 4,
-                    title: "Komponen Pasif (Resistor, Kapasitor, Induktor)",
-                    subject: "Elektronika",
-                    progress: 45,
-                    lastRead: "Kemarin",
-                  },
-                  {
-                    id: 6,
-                    title: "Manajemen Waktu & Teknik Pomodoro",
-                    subject: "Bimbingan & Konseling",
-                    progress: 90,
-                    lastRead: "2 hari yang lalu",
-                  },
-                ].map((item) => (
-                  <div
-                    key={item.id}
-                    className="p-4 bg-white border border-[#ECECEC] rounded-[8px] hover:bg-[#F6F5FF] hover:border-[#2563EB]/30 transition-all duration-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group"
+              <div className="p-8 bg-[#FAFAFA] border border-[#ECECEC] rounded-[10px] text-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-blue-50 text-[#2563EB] flex items-center justify-center mx-auto">
+                  <HugeiconsIcon icon={Book01Icon} size={24} />
+                </div>
+                <h3 className="text-sm font-bold text-[#2E2D2D]">Belum Ada Materi yang Sedang Dipelajari</h3>
+                <p className="text-xs text-[#737373] max-w-sm mx-auto">
+                  Pilih salah satu materi dari 6 bidang keahlian vokasi untuk mulai membaca dan menguji pemahamanmu.
+                </p>
+                <div className="pt-2">
+                  <Link
+                    href="/materi"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-semibold rounded-[8px] transition-colors"
                   >
-                    <div className="space-y-1 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 text-[10px] font-semibold bg-[#E8E7FF] text-[#2563EB] rounded-[4px]">
-                          {item.subject}
-                        </span>
-                        <span className="text-[11px] text-[#737373]">
-                          Terakhir dibaca: {item.lastRead}
-                        </span>
-                      </div>
-                      <h3 className="text-sm font-semibold text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors">
-                        {item.title}
-                      </h3>
-                      <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden mt-2">
-                        <div
-                          className="bg-[#2563EB] h-full rounded-full transition-all duration-500"
-                          style={{ width: `${item.progress}%` }}
-                        />
-                      </div>
-                    </div>
-
-                    <Link href={`/materi/${item.id}`} className="shrink-0">
-                      <button
-                        type="button"
-                        className="px-3.5 py-1.5 bg-[#FAFAFA] border border-[#ECECEC] hover:bg-[#2563EB] hover:text-white text-xs font-medium text-[#2E2D2D] rounded-[6px] transition-all"
-                      >
-                        Lanjutkan
-                      </button>
-                    </Link>
-                  </div>
-                ))}
+                    Buka Katalog Materi
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
@@ -207,26 +185,26 @@ export default function ProfilePage() {
               <div className="space-y-3 text-xs">
                 <div className="flex items-center justify-between py-1.5 border-b border-[#ECECEC]">
                   <span className="text-[#737373]">Nama Lengkap</span>
-                  <span className="font-semibold text-[#2E2D2D]">Budi Santoso</span>
+                  <span className="font-semibold text-[#2E2D2D]">{studentName}</span>
                 </div>
                 <div className="flex items-center justify-between py-1.5 border-b border-[#ECECEC]">
                   <span className="text-[#737373]">Status Akun</span>
-                  <span className="font-semibold text-emerald-600">Aktif (Terverifikasi)</span>
+                  <span className="font-semibold text-emerald-600">Aktif (Siswa)</span>
                 </div>
                 <div className="flex items-center justify-between py-1.5 border-b border-[#ECECEC]">
                   <span className="text-[#737373]">NISN / ID</span>
-                  <span className="font-mono text-[#2E2D2D]">0084920194</span>
+                  <span className="font-mono text-[#2E2D2D]">{studentNisn}</span>
                 </div>
                 <div className="flex items-center justify-between py-1.5 border-b border-[#ECECEC]">
                   <span className="text-[#737373]">Kelas / Jurusan</span>
-                  <span className="font-semibold text-[#2E2D2D]">XI PPLG 1</span>
+                  <span className="font-semibold text-[#2E2D2D]">{studentGrade}</span>
                 </div>
               </div>
 
               <button
                 type="button"
                 onClick={() => openModal("profile")}
-                className="w-full py-2 px-3 bg-white border border-[#ECECEC] hover:bg-gray-50 text-xs font-medium text-[#2E2D2D] rounded-[6px] transition-colors flex items-center justify-center gap-2"
+                className="w-full py-2 px-3 bg-white border border-[#ECECEC] hover:bg-gray-50 text-xs font-medium text-[#2E2D2D] rounded-[6px] transition-colors flex items-center justify-center gap-2 cursor-pointer"
               >
                 <HugeiconsIcon icon={Settings02Icon} size={14} />
                 Edit Pengaturan Akun

@@ -82,11 +82,11 @@ export default function LoginPage() {
       <div className="flex-1 flex flex-col lg:flex-row items-center justify-center px-6 sm:px-12 lg:px-20 xl:px-28 pt-6 sm:pt-10 lg:pt-14 pb-4 sm:pb-8 max-w-7xl mx-auto w-full">
         
         {/* Mobile-Only Header: Big OG Dark Gray Logo + Motto (Centered) */}
-        <div className="lg:hidden flex flex-col items-center text-center mb-5 w-full animate-in fade-in duration-200">
-          <h1 className="text-4xl font-extrabold text-[#2E2D2D] tracking-tight mb-1.5">
+        <div className="lg:hidden flex flex-col items-center text-center mb-8 sm:mb-10 w-full animate-in fade-in duration-200">
+          <h1 className="text-[46px] sm:text-5xl font-extrabold text-[#2E2D2D] tracking-tight mb-2.5 leading-none">
             Sitemsa
           </h1>
-          <p className="text-xs text-[#737373] font-medium max-w-[310px] leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#737373] font-medium max-w-[320px] leading-relaxed">
             Platform Pembelajaran Digital Vokasi SMK Negeri 1 Semarang
           </p>
         </div>

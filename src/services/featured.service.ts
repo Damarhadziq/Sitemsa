@@ -37,40 +37,16 @@ export interface FeaturedModuleCard {
 
 export const FEATURED_CARDS_DATA: FeaturedModuleCard[] = [
   {
-    id: 1,
-    moduleId: 'mod-info-1',
-    subject: 'Informatika',
-    title: 'Variabel, Tipe Data & Operasi Logika',
-    linkUrl: '/materi/1',
-    indicatorType: 'social_proof',
-    metadata: {
-      completedCount: 125,
-      avatarIds: [12, 15, 23],
-      socialCopy: '125 siswa baru saja menyelesaikan ini.',
-    },
-  },
-  {
     id: 7,
     moduleId: 'mod-bk-1',
     subject: 'Bimbingan Konseling',
     title: 'Yuk, Lawan Rasa Malas: Self-Management untuk Konsisten Belajar!',
     linkUrl: '/materi/7',
-    indicatorType: 'rating_duration',
+    indicatorType: 'social_proof',
     metadata: {
-      rating: 4.9,
-      readTime: '10 Menit baca.',
-    },
-  },
-  {
-    id: 4,
-    moduleId: 'mod-el-1',
-    subject: 'Elektronika',
-    title: 'Analisis Sirkuit Seri & Paralel Resistor',
-    linkUrl: '/materi/4',
-    indicatorType: 'trending',
-    metadata: {
-      trendingText: 'Sedang tren di kelas 10',
-      targetGrade: 'Kelas 10',
+      completedCount: 142,
+      avatarIds: [12, 15, 23],
+      socialCopy: '142 siswa baru saja menyelesaikan ini.',
     },
   },
   {
@@ -79,11 +55,10 @@ export const FEATURED_CARDS_DATA: FeaturedModuleCard[] = [
     subject: 'Bimbingan Konseling',
     title: 'Talent Quest: Temukan Potensimu, Kembangkan Dirimu!',
     linkUrl: '/materi/8',
-    indicatorType: 'quiz_certified',
+    indicatorType: 'rating_duration',
     metadata: {
-      quizScoreAvg: 95,
-      quizQuestionsCount: 10,
-      quizCopy: 'Tersedia Kuis Interaktif • Skor Rata-rata 95%',
+      rating: 4.9,
+      readTime: '35 Menit baca.',
     },
   },
   {
@@ -94,8 +69,33 @@ export const FEATURED_CARDS_DATA: FeaturedModuleCard[] = [
     linkUrl: '/materi/9',
     indicatorType: 'teacher_pick',
     metadata: {
-      teacherName: 'Ibu Ni Wayan Sri, S.Sn.',
+      teacherName: 'Ibu Vivi Riska Wardani',
       recommendationNote: 'Rekomendasi Guru Pengampu',
+    },
+  },
+  {
+    id: 17,
+    moduleId: 'mod-bk-4',
+    subject: 'Bimbingan Konseling',
+    title: 'Membangun Konsep Diri Positif',
+    linkUrl: '/materi/17',
+    indicatorType: 'trending',
+    metadata: {
+      trendingText: 'Sedang tren di kelas 11',
+      targetGrade: 'Kelas 11',
+    },
+  },
+  {
+    id: 10,
+    moduleId: 'mod-tari-2',
+    subject: 'Seni Tari',
+    title: 'Koreografi: Eksplorasi Gerak Dalam Seni Tari',
+    linkUrl: '/materi/10',
+    indicatorType: 'quiz_certified',
+    metadata: {
+      quizScoreAvg: 96,
+      quizQuestionsCount: 10,
+      quizCopy: 'Tersedia Kuis Interaktif • Skor Rata-rata 96%',
     },
   },
 ];

@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import AnimatedList from "@/components/ui/AnimatedList";
 import { Sparkles, ArrowRight, X, GraduationCap, Building2, Briefcase } from "lucide-react";
+import { useAdminStore } from "@/lib/admin-store";
 
 export interface TeamMember {
+  id?: string;
   image: string;
   title: string;
   subtitle: string;
@@ -15,8 +17,8 @@ export interface TeamMember {
   division: string;
 }
 
-// Data 24 anggota PPL Lantip SMK Negeri 1 Semarang (Resmi & Diurutkan berdasarkan 6 Prodi)
-const teamMembers: TeamMember[] = [
+// Data fallback 24 anggota PPL Lantip SMK Negeri 1 Semarang
+const fallbackTeamMembers: TeamMember[] = [
   // 1. Pend. Informatika (4 orang: 1 Developer, 3 Sub-Developer)
   { image: "https://i.pravatar.cc/300?img=11", title: "Damar Hadziq H.", subtitle: "Developer", handle: "@damarhadziq", borderColor: "#4F46E5", division: "Pend. Informatika" },
   { image: "https://i.pravatar.cc/300?img=13", title: "Mochammad Rizal D. D.", subtitle: "Sub-Developer", handle: "@rizaldaffa", borderColor: "#3B82F6", division: "Pend. Informatika" },
@@ -95,12 +97,10 @@ const getMemberDetails = (division: string) => {
   }
 };
 
-import { useAdminStore } from "@/lib/admin-store";
-
 export default function TeamPage() {
   const { teamMembers: storeTeamMembers } = useAdminStore();
-  const allTeamMembers = React.useMemo(() => {
-    return storeTeamMembers && storeTeamMembers.length > 0 ? storeTeamMembers : teamMembers;
+  const allTeamMembers = useMemo(() => {
+    return storeTeamMembers && storeTeamMembers.length > 0 ? storeTeamMembers : fallbackTeamMembers;
   }, [storeTeamMembers]);
 
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);

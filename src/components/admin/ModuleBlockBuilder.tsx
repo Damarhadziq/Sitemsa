@@ -110,6 +110,8 @@ function TiptapTextEditor({
 }) {
   const formatContentForTiptap = (val: string) => {
     if (!val) return '';
+    const stripped = val.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+    if (!stripped) return '';
     if (val.trim().startsWith('<') && val.trim().endsWith('>')) {
       return val;
     }
@@ -200,7 +202,9 @@ function TiptapTextEditor({
     },
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      const isEmpty = editor.isEmpty || !editor.getText().trim();
+      const html = isEmpty ? '' : editor.getHTML();
+      onChange(html);
     },
   });
 

@@ -1659,8 +1659,14 @@ const getLevelBadgeClass = (level: string) => {
 function SmartParagraph({ text }: { text: string }) {
   if (!text) return null;
 
-  // If text is HTML from Tiptap (contains tags like <ol>, <ul>, <p>, <li>, etc.)
-  if (text.includes('<p>') || text.includes('<ol>') || text.includes('<ul>') || text.includes('<li>')) {
+  // 1. Check if the string is pure empty HTML (e.g. <p></p>, <p><br></p>, or <p class="..."></p>)
+  const strippedText = text.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+  if (!strippedText && (text.includes('<') || text.trim().length === 0)) {
+    return null;
+  }
+
+  // 2. If text contains HTML tags (e.g. <p class="...">, <ol>, <ul>, <li>, <strong>, etc.)
+  if (/<[a-z][\s\S]*>/i.test(text)) {
     return (
       <div
         className="prose-content text-xs md:text-sm font-medium text-[#4A4A4A] leading-relaxed text-justify [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:my-1.5 [&_ol]:space-y-1 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-1.5 [&_ul]:space-y-1 [&_li]:pl-1 [&_li]:text-justify [&_p]:mb-2 last:[&_p]:mb-0"

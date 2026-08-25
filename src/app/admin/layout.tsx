@@ -1,11 +1,31 @@
 'use client';
 
-import React from 'react';
-import { usePathname } from 'next/navigation';
+import React, { useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import { useAuth } from '@/lib/auth-context';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, isLoading } = useAuth();
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    const isPublicAdminRoute = pathname === '/admin' || pathname === '/admin/login';
+    if (!user && !isPublicAdminRoute) {
+      router.replace('/admin/login');
+      return;
+    }
+
+    if (user) {
+      // Role enforcement
+      if (user.role === 'guru' && pathname.startsWith('/admin/superadmin')) {
+        router.replace('/admin/guru');
+      }
+    }
+  }, [user, isLoading, pathname, router]);
 
   // For /admin, /admin/login or dedicated builder pages (e.g. /buat-kuis), render clean full-screen layout without sidebar/admin header
   if (pathname === '/admin' || pathname === '/admin/login' || pathname.startsWith('/admin/guru/pelajaran/buat-kuis')) {

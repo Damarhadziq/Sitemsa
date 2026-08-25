@@ -31,10 +31,10 @@ def generate_pdf():
     doc = SimpleDocTemplate(
         target_path,
         pagesize=A4,
-        rightMargin=1.5*cm,
-        leftMargin=1.5*cm,
-        topMargin=1.5*cm,
-        bottomMargin=1.5*cm
+        rightMargin=1.2*cm,
+        leftMargin=1.2*cm,
+        topMargin=1.2*cm,
+        bottomMargin=1.2*cm
     )
 
     styles = getSampleStyleSheet()
@@ -47,12 +47,13 @@ def generate_pdf():
     light_bg = colors.HexColor("#F8FAFC")
     border_color = colors.HexColor("#E2E8F0")
     prodi_header_bg = colors.HexColor("#EFF6FF")
+    student_header_bg = colors.HexColor("#ECFDF5")
 
     title_style = ParagraphStyle(
         'DocTitle',
         fontName='Helvetica-Bold',
-        fontSize=15,
-        leading=19,
+        fontSize=14,
+        leading=17,
         textColor=primary_color,
         alignment=TA_CENTER
     )
@@ -60,59 +61,57 @@ def generate_pdf():
     subtitle_style = ParagraphStyle(
         'DocSubTitle',
         fontName='Helvetica',
-        fontSize=9,
-        leading=13,
+        fontSize=8.5,
+        leading=12,
         textColor=muted_text,
         alignment=TA_CENTER
-    )
-
-    h2_style = ParagraphStyle(
-        'H2Style',
-        fontName='Helvetica-Bold',
-        fontSize=11,
-        leading=14,
-        textColor=primary_color,
-        spaceBefore=10,
-        spaceAfter=4
     )
 
     prodi_title_style = ParagraphStyle(
         'ProdiTitle',
         fontName='Helvetica-Bold',
-        fontSize=10,
-        leading=13,
+        fontSize=9.5,
+        leading=12,
         textColor=colors.HexColor("#1D4ED8")
+    )
+
+    student_title_style = ParagraphStyle(
+        'StudentTitle',
+        fontName='Helvetica-Bold',
+        fontSize=9.5,
+        leading=12,
+        textColor=colors.HexColor("#047857")
     )
 
     cell_bold = ParagraphStyle(
         'CellBold',
         fontName='Helvetica-Bold',
-        fontSize=8,
-        leading=10,
+        fontSize=7.5,
+        leading=9.5,
         textColor=dark_text
     )
 
     cell_regular = ParagraphStyle(
         'CellRegular',
         fontName='Helvetica',
-        fontSize=7.5,
-        leading=9.5,
+        fontSize=7,
+        leading=9,
         textColor=dark_text
     )
 
     cell_mono = ParagraphStyle(
         'CellMono',
         fontName='Courier-Bold',
-        fontSize=7.5,
-        leading=9.5,
+        fontSize=7,
+        leading=9,
         textColor=colors.HexColor("#0F766E")
     )
 
     cell_badge = ParagraphStyle(
         'CellBadge',
         fontName='Helvetica-Bold',
-        fontSize=7,
-        leading=9,
+        fontSize=6.5,
+        leading=8.5,
         textColor=colors.HexColor("#4338CA")
     )
 
@@ -120,30 +119,29 @@ def generate_pdf():
 
     # Header / Kop Dokumen
     elements.append(Paragraph("<b>SITEMSA — SISTEM PEMBELAJARAN DIGITAL VOKASI</b>", title_style))
-    elements.append(Paragraph("Daftar Kredensial Akun Resmi Tim Pengembang PPL Lantip SMK Negeri 1 Semarang", subtitle_style))
-    elements.append(Paragraph("Tahun Ajaran 2025/2026 • Portal Administrasi: <u>https://sitemsa.vercel.app/admin/login</u>", subtitle_style))
-    elements.append(Spacer(1, 8))
-    elements.append(HRFlowable(width="100%", thickness=1.5, color=primary_color, spaceBefore=2, spaceAfter=10))
+    elements.append(Paragraph("Daftar Kredensial Akun Resmi Tim Pengembang PPL Lantip SMK Negeri 1 Semarang & Akun Uji Coba Siswa", subtitle_style))
+    elements.append(Paragraph("Tahun Ajaran 2025/2026 • Portal Login Utama: <u>https://sitemsa.vercel.app/login</u>", subtitle_style))
+    elements.append(Spacer(1, 6))
+    elements.append(HRFlowable(width="100%", thickness=1.5, color=primary_color, spaceBefore=2, spaceAfter=8))
 
     # Info Banner Box
     info_data = [
-        [Paragraph("<b>PANDUAN MASUK (LOGIN) & KEAMANAN AKUN:</b><br/>"
-                   "1. Buka halaman <b>/admin/login</b> atau <b>/admin/guru</b>.<br/>"
-                   "2. Masukkan <b>Email Resmi</b> dan <b>Password Default</b> yang tertera pada tabel di bawah sesuai program studi masing-masing.<br/>"
-                   "3. Setiap anggota otomatis memiliki hak akses manajemen materi, kuis, dan pemantauan siswa sesuai bidang yang telah dialokasikan.<br/>"
-                   "4. Super Administrator (Damar Hadziq H.) memiliki hak akses penuh terhadap seluruh bidang studi dan manajemen konten utama.", cell_regular)]
+        [Paragraph("<b>PANDUAN MASUK (LOGIN) & KEAMANAN SESSION:</b><br/>"
+                   "• <b>Siswa</b>: Masuk melalui <b>/login</b> menggunakan email <code>siswa@belajar.id</code> dan password <code>SiswaSitemsa#2026</code>.<br/>"
+                   "• <b>Guru & Tim Pengembang</b>: Masuk melalui <b>/admin/login</b> atau <b>/admin/guru</b> menggunakan kredensial per program studi.<br/>"
+                   "• <b>Super Administrator (Damar Hadziq H.)</b>: Mengelola seluruh mata pelajaran, konten web, dan akun pengembang.", cell_regular)]
     ]
-    info_table = Table(info_data, colWidths=[18*cm])
+    info_table = Table(info_data, colWidths=[18.6*cm])
     info_table.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,-1), light_bg),
         ('BOX', (0,0), (-1,-1), 1, border_color),
-        ('TOPPADDING', (0,0), (-1,-1), 6),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
-        ('LEFTPADDING', (0,0), (-1,-1), 8),
-        ('RIGHTPADDING', (0,0), (-1,-1), 8),
+        ('TOPPADDING', (0,0), (-1,-1), 5),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+        ('LEFTPADDING', (0,0), (-1,-1), 7),
+        ('RIGHTPADDING', (0,0), (-1,-1), 7),
     ]))
     elements.append(info_table)
-    elements.append(Spacer(1, 10))
+    elements.append(Spacer(1, 8))
 
     # Data 24 Anggota per Prodi
     divisions_data = [
@@ -206,7 +204,7 @@ def generate_pdf():
     for div in divisions_data:
         # Heading per Prodi
         elements.append(Paragraph(f"<b>{div['name']}</b>", prodi_title_style))
-        elements.append(Spacer(1, 3))
+        elements.append(Spacer(1, 2))
 
         # Table data
         table_rows = [
@@ -230,24 +228,59 @@ def generate_pdf():
                 Paragraph(m['subject'], cell_regular)
             ])
 
-        t = Table(table_rows, colWidths=[0.8*cm, 4.2*cm, 3.4*cm, 4.4*cm, 3.0*cm, 2.2*cm])
+        t = Table(table_rows, colWidths=[0.7*cm, 4.4*cm, 3.6*cm, 4.6*cm, 3.1*cm, 2.2*cm])
         t.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,0), prodi_header_bg),
             ('GRID', (0,0), (-1,-1), 0.5, border_color),
             ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-            ('TOPPADDING', (0,0), (-1,-1), 3.5),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 3.5),
-            ('LEFTPADDING', (0,0), (-1,-1), 4),
-            ('RIGHTPADDING', (0,0), (-1,-1), 4),
+            ('TOPPADDING', (0,0), (-1,-1), 2.8),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 2.8),
+            ('LEFTPADDING', (0,0), (-1,-1), 3.5),
+            ('RIGHTPADDING', (0,0), (-1,-1), 3.5),
         ]))
 
         elements.append(t)
-        elements.append(Spacer(1, 8))
+        elements.append(Spacer(1, 6))
+
+    # Section 7: Akun Resmi Siswa untuk Uji Coba
+    elements.append(Spacer(1, 2))
+    elements.append(Paragraph("<b>7. Akun Pengguna Siswa Resmi (Uji Coba Web Siswa)</b>", student_title_style))
+    elements.append(Spacer(1, 2))
+
+    student_rows = [
+        [
+            Paragraph("<b>No</b>", cell_bold),
+            Paragraph("<b>Nama Lengkap Siswa</b>", cell_bold),
+            Paragraph("<b>NISN / Kelas</b>", cell_bold),
+            Paragraph("<b>Email Login Siswa</b>", cell_bold),
+            Paragraph("<b>Password Default</b>", cell_bold),
+            Paragraph("<b>Hak Akses</b>", cell_bold)
+        ],
+        [
+            Paragraph("1", cell_regular),
+            Paragraph("<b>Budi Santoso</b>", cell_regular),
+            Paragraph("0071234567 • XI PPLG 1", cell_regular),
+            Paragraph("siswa@belajar.id", cell_mono),
+            Paragraph("SiswaSitemsa#2026", cell_mono),
+            Paragraph("Materi, Kuis, Nilai", cell_badge)
+        ]
+    ]
+    st = Table(student_rows, colWidths=[0.7*cm, 4.4*cm, 3.6*cm, 4.6*cm, 3.1*cm, 2.2*cm])
+    st.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), student_header_bg),
+        ('GRID', (0,0), (-1,-1), 0.5, border_color),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('TOPPADDING', (0,0), (-1,-1), 3),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 3),
+        ('LEFTPADDING', (0,0), (-1,-1), 3.5),
+        ('RIGHTPADDING', (0,0), (-1,-1), 3.5),
+    ]))
+    elements.append(st)
 
     # Footer note
     elements.append(Spacer(1, 4))
-    elements.append(HRFlowable(width="100%", thickness=0.8, color=border_color, spaceBefore=2, spaceAfter=6))
-    elements.append(Paragraph("<i>*Catatan: Dokumen ini bersifat resmi dan rahasia. Dikeluarkan untuk keperluan operasional pembelajaran digital Sitemsa SMKN 1 Semarang.</i>", subtitle_style))
+    elements.append(HRFlowable(width="100%", thickness=0.8, color=border_color, spaceBefore=2, spaceAfter=4))
+    elements.append(Paragraph("<i>*Catatan: Dokumen ini bersifat resmi dan rahasia. Dikeluarkan untuk operasional pembelajaran digital Sitemsa SMKN 1 Semarang.</i>", subtitle_style))
 
     doc.build(elements)
 

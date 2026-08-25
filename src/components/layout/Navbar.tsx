@@ -35,6 +35,8 @@ import {
   getStudentProfile,
   DEFAULT_DUMMY_STUDENT,
   StudentProfile,
+  isStudentAuthenticated,
+  logoutStudent,
 } from "@/services/student-profile.service";
 
 interface QuickSearchResult {
@@ -65,6 +67,13 @@ export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [modalQuery, setModalQuery] = useState("");
 
+  const pathname = usePathname();
+  const router = useRouter();
+  const { user, logout } = useAuth();
+  const modalInputRef = useRef<HTMLInputElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [profileModalTab, setProfileModalTab] = useState<ProfileTab>("profile");
   const [isNotifModalOpen, setIsNotifModalOpen] = useState(false);
@@ -72,6 +81,7 @@ export function Navbar() {
   const [studentProfile, setStudentProfile] = useState<StudentProfile>(DEFAULT_DUMMY_STUDENT);
 
   useEffect(() => {
+    setIsLoggedIn(isStudentAuthenticated() || !!user);
     setNotifications(getStoredNotifications());
     setStudentProfile(getStudentProfile());
 
@@ -83,16 +93,23 @@ export function Navbar() {
       setStudentProfile(getStudentProfile());
     };
 
+    const handleAuthCheck = () => {
+      setIsLoggedIn(isStudentAuthenticated() || !!user);
+      setStudentProfile(getStudentProfile());
+    };
+
     window.addEventListener("sintesa-notifications-updated", handleNotifUpdate);
     window.addEventListener("sintesa-student-profile-updated", handleProfileUpdate);
+    window.addEventListener("sintesa-student-auth-changed", handleAuthCheck);
     window.addEventListener("storage", handleNotifUpdate);
 
     return () => {
       window.removeEventListener("sintesa-notifications-updated", handleNotifUpdate);
       window.removeEventListener("sintesa-student-profile-updated", handleProfileUpdate);
+      window.removeEventListener("sintesa-student-auth-changed", handleAuthCheck);
       window.removeEventListener("storage", handleNotifUpdate);
     };
-  }, []);
+  }, [user]);
 
   const handleMarkAllRead = () => {
     const updated = markAllNotificationsRead();
@@ -104,11 +121,6 @@ export function Navbar() {
     setIsProfileModalOpen(true);
     setIsProfileOpen(false);
   };
-  const pathname = usePathname();
-  const router = useRouter();
-  const { logout } = useAuth();
-  const modalInputRef = useRef<HTMLInputElement>(null);
-  const profileRef = useRef<HTMLDivElement>(null);
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -294,78 +306,90 @@ export function Navbar() {
               )}
             </button>
 
-            {/* 3. User Profile Avatar */}
-            <div className="relative" ref={profileRef}>
-              <button
-                type="button"
-                onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className={`w-9 h-9 rounded-full border overflow-hidden transition-colors duration-200 flex items-center justify-center shrink-0 ${
-                  isProfileOpen ? "border-[#2563EB] bg-[#F4EFFF]" : "border-[#ECECEC] hover:border-[#2563EB]"
-                }`}
-                aria-label="Profil Pengguna"
+            {/* 3. User Profile Avatar or Login Button */}
+            {isLoggedIn ? (
+              <div className="relative" ref={profileRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className={`w-9 h-9 rounded-full border overflow-hidden transition-colors duration-200 flex items-center justify-center shrink-0 ${
+                    isProfileOpen ? "border-[#2563EB] bg-[#F4EFFF]" : "border-[#ECECEC] hover:border-[#2563EB]"
+                  }`}
+                  aria-label="Profil Pengguna"
+                >
+                  {/* eslint-disable-next-next/no-img-element */}
+                  <img
+                    src={studentProfile.avatar || "https://i.pravatar.cc/100?img=12"}
+                    alt={studentProfile.name}
+                    className="object-cover w-full h-full rounded-full"
+                  />
+                </button>
+
+                {/* Profile Dropdown Menu */}
+                {isProfileOpen && (
+                  <div className="absolute right-0 top-[calc(100%+8px)] w-64 bg-white border border-[#ECECEC] rounded-[12px] p-2 z-50 origin-top-right animate-in fade-in slide-in-from-top-1 duration-150 shadow-md">
+                    <div className="p-3 bg-[#F9F9FF] rounded-[8px] mb-1.5 flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full overflow-hidden relative shrink-0 border border-[#ECECEC]">
+                        {/* eslint-disable-next-next/no-img-element */}
+                        <img
+                          src={studentProfile.avatar || "https://i.pravatar.cc/100?img=12"}
+                          alt={studentProfile.name}
+                          className="object-cover w-full h-full rounded-full"
+                        />
+                      </div>
+                      <div className="overflow-hidden">
+                        <p className="text-xs font-bold text-[#2E2D2D] truncate">{studentProfile.name}</p>
+                        <p className="text-[11px] text-[#737373] truncate">{studentProfile.email}</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-0.5">
+                      <button
+                        type="button"
+                        onClick={() => openProfileModalTab("profile")}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#2E2D2D] hover:bg-[#F6F5FF] hover:text-[#2563EB] rounded-[6px] transition-colors text-left cursor-pointer"
+                      >
+                        <HugeiconsIcon icon={UserIcon} size={16} />
+                        Profil Saya
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => openProfileModalTab("history")}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#2E2D2D] hover:bg-[#F6F5FF] hover:text-[#2563EB] rounded-[6px] transition-colors text-left cursor-pointer"
+                      >
+                        <HugeiconsIcon icon={Clock01Icon} size={16} />
+                        Riwayat Belajar
+                      </button>
+                    </div>
+
+                    <div className="my-1 border-t border-[#ECECEC]" />
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        logoutStudent();
+                        logout();
+                        router.push('/login');
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 rounded-[6px] transition-colors cursor-pointer"
+                    >
+                      <HugeiconsIcon icon={Logout01Icon} size={16} />
+                      Keluar dari Akun
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="h-9 px-4 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 active:scale-95 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-2xs"
               >
-                {/* eslint-disable-next-next/no-img-element */}
-                <img
-                  src={studentProfile.avatar || "https://i.pravatar.cc/100?img=12"}
-                  alt={studentProfile.name}
-                  className="object-cover w-full h-full rounded-full"
-                />
-              </button>
-
-              {/* Profile Dropdown Menu */}
-              {isProfileOpen && (
-                <div className="absolute right-0 top-[calc(100%+8px)] w-64 bg-white border border-[#ECECEC] rounded-[12px] p-2 z-50 origin-top-right animate-in fade-in slide-in-from-top-1 duration-150">
-                  <div className="p-3 bg-[#F9F9FF] rounded-[8px] mb-1.5 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full overflow-hidden relative shrink-0 border border-[#ECECEC]">
-                      {/* eslint-disable-next-next/no-img-element */}
-                      <img
-                        src={studentProfile.avatar || "https://i.pravatar.cc/100?img=12"}
-                        alt={studentProfile.name}
-                        className="object-cover w-full h-full rounded-full"
-                      />
-                    </div>
-                    <div className="overflow-hidden">
-                      <p className="text-xs font-bold text-[#2E2D2D] truncate">{studentProfile.name}</p>
-                      <p className="text-[11px] text-[#737373] truncate">{studentProfile.email}</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-0.5">
-                    <button
-                      type="button"
-                      onClick={() => openProfileModalTab("profile")}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#2E2D2D] hover:bg-[#F6F5FF] hover:text-[#2563EB] rounded-[6px] transition-colors text-left cursor-pointer"
-                    >
-                      <HugeiconsIcon icon={UserIcon} size={16} />
-                      Profil Saya
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => openProfileModalTab("history")}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#2E2D2D] hover:bg-[#F6F5FF] hover:text-[#2563EB] rounded-[6px] transition-colors text-left cursor-pointer"
-                    >
-                      <HugeiconsIcon icon={Clock01Icon} size={16} />
-                      Riwayat Belajar
-                    </button>
-                  </div>
-
-                  <div className="my-1 border-t border-[#ECECEC]" />
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsProfileOpen(false);
-                      logout();
-                    }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 rounded-[6px] transition-colors cursor-pointer"
-                  >
-                    <HugeiconsIcon icon={Logout01Icon} size={16} />
-                    Keluar dari Akun
-                  </button>
-                </div>
-              )}
-            </div>
+                <HugeiconsIcon icon={UserIcon} size={15} />
+                <span>Masuk</span>
+              </Link>
+            )}
 
           </div>
         </div>

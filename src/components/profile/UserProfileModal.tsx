@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Cancel01Icon,
@@ -10,10 +11,12 @@ import {
   FloppyDiskIcon,
   Camera01Icon,
   ArrowLeft01Icon,
+  Logout01Icon,
 } from "@hugeicons/core-free-icons";
 import {
   getStudentProfile,
   saveStudentProfile,
+  logoutStudent,
   StudentProfile,
   DEFAULT_DUMMY_STUDENT,
 } from "@/services/student-profile.service";
@@ -31,9 +34,16 @@ export function UserProfileModal({
   onClose,
   initialTab = "profile",
 }: UserProfileModalProps) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<ProfileTab>(initialTab);
   const [prevInitialTab, setPrevInitialTab] = useState(initialTab);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleLogout = () => {
+    logoutStudent();
+    onClose();
+    router.push('/login');
+  };
 
   // Baseline initial profile state
   const [savedProfile, setSavedProfile] = useState<StudentProfile>(DEFAULT_DUMMY_STUDENT);
@@ -291,33 +301,44 @@ export function UserProfileModal({
               </div>
 
               {/* Action Buttons: Simpan Perubahan active ONLY if modified */}
-              <div className="pt-2 flex items-center justify-end gap-2.5">
+              <div className="pt-2 flex items-center justify-between gap-2.5">
                 <button
                   type="button"
-                  onClick={() => {
-                    setName(savedProfile.name);
-                    setEmail(savedProfile.email);
-                    setSchool(savedProfile.school);
-                    setNisn(savedProfile.nisn);
-                    setGrade(savedProfile.grade);
-                    onClose();
-                  }}
-                  className="px-4 py-2.5 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-[#2E2D2D] text-xs font-semibold cursor-pointer transition-colors"
+                  onClick={handleLogout}
+                  className="px-3.5 py-2 rounded-[8px] border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold cursor-pointer transition-colors inline-flex items-center gap-1.5"
                 >
-                  Batal
+                  <HugeiconsIcon icon={Logout01Icon} size={14} />
+                  <span>Keluar Akun</span>
                 </button>
 
-                <button
-                  type="submit"
-                  disabled={!hasChanges}
-                  className={`px-5 py-2.5 rounded-[8px] text-xs font-bold transition-all ${
-                    hasChanges
-                      ? 'bg-[#2563EB] hover:bg-blue-700 text-white cursor-pointer active:scale-98'
-                      : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
-                  }`}
-                >
-                  Simpan Perubahan
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setName(savedProfile.name);
+                      setEmail(savedProfile.email);
+                      setSchool(savedProfile.school);
+                      setNisn(savedProfile.nisn);
+                      setGrade(savedProfile.grade);
+                      onClose();
+                    }}
+                    className="px-4 py-2.5 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-[#2E2D2D] text-xs font-semibold cursor-pointer transition-colors"
+                  >
+                    Batal
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={!hasChanges}
+                    className={`px-5 py-2.5 rounded-[8px] text-xs font-bold transition-all ${
+                      hasChanges
+                        ? 'bg-[#2563EB] hover:bg-blue-700 text-white cursor-pointer active:scale-98'
+                        : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+                    }`}
+                  >
+                    Simpan Perubahan
+                  </button>
+                </div>
               </div>
             </form>
           )}

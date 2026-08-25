@@ -31,34 +31,26 @@ interface AuthContextType {
 
 const SUPERADMIN_USER: AuthUser = {
   id: 'sa-1',
-  name: 'Damar Hadziq H.',
-  email: 'damar.guru@sitemsa.sch.id',
+  name: 'Superadmin Sitemsa',
+  email: 'admin@sitemsa.sch.id',
   role: 'superadmin',
-  nip: '19980101 202401 1 001',
-  avatar: 'https://i.pravatar.cc/150?img=11',
-  assignedSubjects: ['Informatika', 'Elektronika', 'Bimbingan Konseling', 'Seni Tari', 'Otomotif', 'Olahraga & Kesehatan'],
+  nip: '19850101 201001 1 001',
+  avatar: '',
+  assignedSubjects: ['Informatika', 'Elektronika', 'Bimbingan Konseling', 'Seni Tari', 'Otomotif', 'Keolahragaan'],
 };
 
 const TEACHER_USERS: Record<string, AuthUser> = {
   // --- 1. Pend. Informatika ---
   'damar.guru@sitemsa.sch.id': {
-    id: 'sa-1',
+    id: 't-inf-1',
     name: 'Damar Hadziq H.',
     email: 'damar.guru@sitemsa.sch.id',
-    role: 'superadmin',
+    role: 'guru',
     nip: '19980101 202401 1 001',
-    avatar: 'https://i.pravatar.cc/150?img=11',
-    assignedSubjects: ['Informatika', 'Elektronika', 'Bimbingan Konseling', 'Seni Tari', 'Otomotif', 'Olahraga & Kesehatan'],
+    avatar: '',
+    assignedSubjects: ['Informatika'],
   },
-  'admin@sitemsa.sch.id': {
-    id: 'sa-1',
-    name: 'Damar Hadziq H.',
-    email: 'damar.guru@sitemsa.sch.id',
-    role: 'superadmin',
-    nip: '19980101 202401 1 001',
-    avatar: 'https://i.pravatar.cc/150?img=11',
-    assignedSubjects: ['Informatika', 'Elektronika', 'Bimbingan Konseling', 'Seni Tari', 'Otomotif', 'Olahraga & Kesehatan'],
-  },
+  'admin@sitemsa.sch.id': SUPERADMIN_USER,
   'rizal.guru@sitemsa.sch.id': {
     id: 't-inf-2',
     name: 'Mochammad Rizal D. D.',
@@ -450,32 +442,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // 1. Superadmin match
     if (
-      cleanEmail === 'damar.guru@sitemsa.sch.id' ||
       cleanEmail === 'admin@sitemsa.sch.id' ||
-      cleanEmail.includes('admin') ||
-      cleanEmail.startsWith('damar')
+      cleanEmail === 'admin@sintesa.id' ||
+      cleanEmail === 'admin' ||
+      cleanEmail.includes('superadmin')
     ) {
       saveSession(SUPERADMIN_USER);
       router.push('/admin/superadmin');
       return true;
     }
 
-    // 2. Specific Teacher Match
+    // 2. Specific Teacher Match (e.g. damar.guru@sitemsa.sch.id, rizal.guru@..., etc.)
     if (TEACHER_USERS[cleanEmail]) {
-      saveSession(TEACHER_USERS[cleanEmail]);
-      router.push('/admin/guru');
+      const teacher = TEACHER_USERS[cleanEmail];
+      saveSession(teacher);
+      if (teacher.role === 'superadmin') {
+        router.push('/admin/superadmin');
+      } else {
+        router.push('/admin/guru');
+      }
       return true;
     }
 
-    // 3. Any Teacher keyword
+    // 3. Any Teacher keyword fallback
     if (cleanEmail.includes('guru') || cleanEmail.includes('teacher')) {
-      const fallbackTeacher = Object.values(TEACHER_USERS)[0] || SUPERADMIN_USER;
+      const fallbackTeacher = TEACHER_USERS['damar.guru@sitemsa.sch.id'] || Object.values(TEACHER_USERS)[0];
       saveSession(fallbackTeacher);
       router.push('/admin/guru');
       return true;
     }
 
-    // 4. Student
+    // 4. Student fallback
     if (cleanEmail.includes('siswa') || cleanEmail.includes('student')) {
       loginAsStudent();
       return true;

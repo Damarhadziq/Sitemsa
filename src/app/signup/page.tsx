@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { saveStudentProfile } from '@/services/student-profile.service';
 import { GoogleAccountModal, GoogleAccountOption } from '@/components/auth/GoogleAccountModal';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -45,6 +46,27 @@ export default function SignupPage() {
       // Redirect to OTP verification
       router.push(`/verifikasi-otp?from=signup&email=${encodeURIComponent(email.trim())}&name=${encodeURIComponent(name.trim())}`);
     }, 400);
+  };
+
+  const handleGoogleSignup = async () => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback?next=/lengkapi-profil`,
+          },
+        });
+        if (error) {
+          console.warn('OAuth fallback:', error.message);
+          setIsGoogleModalOpen(true);
+        }
+      } catch {
+        setIsGoogleModalOpen(true);
+      }
+    } else {
+      setIsGoogleModalOpen(true);
+    }
   };
 
   const handleSelectGoogleAccount = (acc: GoogleAccountOption) => {
@@ -205,7 +227,7 @@ export default function SignupPage() {
               {/* Google Signup Button */}
               <button
                 type="button"
-                onClick={() => setIsGoogleModalOpen(true)}
+                onClick={handleGoogleSignup}
                 className="w-full h-[42px] sm:h-[44px] bg-white border border-[#ECECEC] text-[#2E2D2D] font-semibold rounded-[10px] hover:bg-[#FAFAFA] active:scale-[0.99] transition-all flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer shadow-none"
               >
                 <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24">

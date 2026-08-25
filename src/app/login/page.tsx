@@ -8,6 +8,7 @@ import { Avatar, AvatarImage, AvatarFallback, AvatarGroup } from '@/components/u
 import { authenticateStudent, saveStudentProfile } from '@/services/student-profile.service';
 import { useAuth } from '@/lib/auth-context';
 import { GoogleAccountModal, GoogleAccountOption } from '@/components/auth/GoogleAccountModal';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,6 +20,27 @@ export default function LoginPage() {
   const [errorMsg, setErrorMsg] = useState('');
   const [isPending, setIsPending] = useState(false);
   const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
+
+  const handleGoogleLogin = async () => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback?next=/`,
+          },
+        });
+        if (error) {
+          console.warn('OAuth fallback:', error.message);
+          setIsGoogleModalOpen(true);
+        }
+      } catch {
+        setIsGoogleModalOpen(true);
+      }
+    } else {
+      setIsGoogleModalOpen(true);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -215,7 +237,7 @@ export default function LoginPage() {
                 {/* Google Sign In Button */}
                 <button
                   type="button"
-                  onClick={() => setIsGoogleModalOpen(true)}
+                  onClick={handleGoogleLogin}
                   className="w-full h-[42px] sm:h-[44px] bg-white border border-[#ECECEC] text-[#2E2D2D] font-semibold rounded-[10px] hover:bg-[#FAFAFA] active:scale-[0.99] transition-all flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer shadow-none"
                 >
                   <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24">

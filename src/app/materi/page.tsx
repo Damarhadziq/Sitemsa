@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { ChevronLeft, ChevronRight, BarChart2 } from "lucide-react";
-import { MateriSkeleton } from "./loading";
+import { MateriSkeleton } from "@/components/materi/MateriSkeleton";
 import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react";
 import {
   Search01Icon,

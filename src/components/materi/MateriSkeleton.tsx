@@ -81,7 +81,3 @@ export function MateriSkeleton() {
     </div>
   );
 }
-
-export default function Loading() {
-  return <MateriSkeleton />;
-}

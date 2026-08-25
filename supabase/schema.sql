@@ -172,8 +172,15 @@ VALUES
 ('usr-21', 'vivi.guru@sitemsa.sch.id', 'Vivi Riska Wardani', 'guru', '19981919 202401 2 019', 'https://i.pravatar.cc/300?img=12', ARRAY['Seni Tari']),
 ('usr-22', 'anita.guru@sitemsa.sch.id', 'Anita Dwi Ningtyas', 'guru', '19982020 202401 2 020', 'https://i.pravatar.cc/300?img=20', ARRAY['Seni Tari']),
 ('usr-23', 'meliana.guru@sitemsa.sch.id', 'Meliana Dwi Yanti', 'guru', '19982121 202401 2 021', '/images/meliana.jpg', ARRAY['Seni Tari']),
-('usr-24', 'ivangka.guru@sitemsa.sch.id', 'Hasnita Ivangka', 'guru', '19982222 202401 2 022', 'https://i.pravatar.cc/300?img=28', ARRAY['Seni Tari'])
-ON CONFLICT (email) DO NOTHING;
+('usr-24', 'ivangka.guru@sitemsa.sch.id', 'Hasnita Ivangka', 'guru', '19982222 202401 2 022', 'https://i.pravatar.cc/300?img=28', ARRAY['Seni Tari']),
+
+-- 7. Akun Pengguna Siswa
+('usr-student-1', 'siswa@belajar.id', 'Budi Santoso', 'siswa', '0071234567', 'https://i.pravatar.cc/300?img=12', ARRAY[]::TEXT[])
+ON CONFLICT (email) DO UPDATE SET 
+    name = EXCLUDED.name,
+    role = EXCLUDED.role,
+    nip = EXCLUDED.nip,
+    avatar = EXCLUDED.avatar;
 
 -- 12. Initial Seed Data (Learning Modules BK & Seni Tari)
 INSERT INTO public.modules (id, subject, teacher_id, teacher_name, title, level, duration, topics, description, is_ai_recommended, is_published)

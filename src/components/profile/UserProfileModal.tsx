@@ -301,44 +301,33 @@ export function UserProfileModal({
               </div>
 
               {/* Action Buttons: Simpan Perubahan active ONLY if modified */}
-              <div className="pt-2 flex items-center justify-between gap-2.5">
+              <div className="pt-2 flex items-center justify-end gap-2.5">
                 <button
                   type="button"
-                  onClick={handleLogout}
-                  className="px-3.5 py-2 rounded-[8px] border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold cursor-pointer transition-colors inline-flex items-center gap-1.5"
+                  onClick={() => {
+                    setName(savedProfile.name);
+                    setEmail(savedProfile.email);
+                    setSchool(savedProfile.school);
+                    setNisn(savedProfile.nisn);
+                    setGrade(savedProfile.grade);
+                    onClose();
+                  }}
+                  className="px-4 py-2.5 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-[#2E2D2D] text-xs font-semibold cursor-pointer transition-colors"
                 >
-                  <HugeiconsIcon icon={Logout01Icon} size={14} />
-                  <span>Keluar Akun</span>
+                  Batal
                 </button>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setName(savedProfile.name);
-                      setEmail(savedProfile.email);
-                      setSchool(savedProfile.school);
-                      setNisn(savedProfile.nisn);
-                      setGrade(savedProfile.grade);
-                      onClose();
-                    }}
-                    className="px-4 py-2.5 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-[#2E2D2D] text-xs font-semibold cursor-pointer transition-colors"
-                  >
-                    Batal
-                  </button>
-
-                  <button
-                    type="submit"
-                    disabled={!hasChanges}
-                    className={`px-5 py-2.5 rounded-[8px] text-xs font-bold transition-all ${
-                      hasChanges
-                        ? 'bg-[#2563EB] hover:bg-blue-700 text-white cursor-pointer active:scale-98'
-                        : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
-                    }`}
-                  >
-                    Simpan Perubahan
-                  </button>
-                </div>
+                <button
+                  type="submit"
+                  disabled={!hasChanges}
+                  className={`px-5 py-2.5 rounded-[8px] text-xs font-bold transition-all ${
+                    hasChanges
+                      ? 'bg-[#2563EB] hover:bg-blue-700 text-white cursor-pointer active:scale-98'
+                      : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+                  }`}
+                >
+                  Simpan Perubahan
+                </button>
               </div>
             </form>
           )}

@@ -62,11 +62,22 @@ export const isStudentAuthenticated = (): boolean => {
   if (typeof window === 'undefined') return false;
   try {
     const session = localStorage.getItem(STUDENT_SESSION_KEY);
-    if (!session) return false;
-    const data = JSON.parse(session);
-    // Session valid for 7 days
-    const isExpired = Date.now() - (data.loggedInAt || 0) > 7 * 24 * 60 * 60 * 1000;
-    return !isExpired && !!data.email;
+    if (session) {
+      const data = JSON.parse(session);
+      const isExpired = data.loggedInAt ? (Date.now() - data.loggedInAt > 7 * 24 * 60 * 60 * 1000) : false;
+      if (!isExpired && (data.email || data.name)) return true;
+    }
+    const profile = localStorage.getItem(STUDENT_PROFILE_STORAGE_KEY);
+    if (profile) {
+      const data = JSON.parse(profile);
+      if (data.email || data.name) return true;
+    }
+    if (typeof document !== 'undefined') {
+      if (document.cookie.includes('sintesa_student_auth=true') || document.cookie.includes('auth_student=')) {
+        return true;
+      }
+    }
+    return false;
   } catch {
     return false;
   }

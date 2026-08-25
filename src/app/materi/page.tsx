@@ -371,13 +371,20 @@ function MateriLandingContent() {
   const searchParams = useSearchParams();
   const kategoriParam = searchParams.get('kategori') || searchParams.get('bidang') || searchParams.get('subject');
 
-  const [selectedCategory, setSelectedCategory] = useState<string>("Semua");
+  const [selectedCategory, setSelectedCategory] = useState<string>(() => {
+    if (!kategoriParam) return "Semua";
+    const normalizedParam = normalizeCategory(kategoriParam);
+    const matchedCategory = CATEGORIES.find(
+      (c) => normalizeCategory(c).toLowerCase() === normalizedParam.toLowerCase()
+    );
+    return matchedCategory || "Semua";
+  });
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [aiRecommendedModules, setAiRecommendedModules] = useState<ModulItem[]>([]);
 
-  // Set category only if explicitly specified in URL query (e.g. from home page card click), otherwise default to "Semua"
+  // Sync category when URL query changes
   useEffect(() => {
     setCurrentPage(1);
     if (!kategoriParam) {

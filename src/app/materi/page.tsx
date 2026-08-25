@@ -231,8 +231,7 @@ const MODUL_DATA: ModulItem[] = [
     isAiRecommended: true,
     aiReason: "Teknik Bola Voli (Brilian Anugraheni)",
   },
-
-  // --- BIMBINGAN KONSELING (Dokumen Resmi) ---
+  // --- BIMBINGAN KONSELING (Lengkap 7 Modul) ---
   {
     id: 7,
     subject: "Bimbingan Konseling",
@@ -257,6 +256,65 @@ const MODUL_DATA: ModulItem[] = [
     isAiRecommended: true,
     aiReason: "Fondasi Self-Management (Dinda Riestia)",
   },
+  {
+    id: 13,
+    subject: "Bimbingan Konseling",
+    title: "Talent Quest: Temukan Potensimu, Kembangkan Dirimu!",
+    level: "Pemula",
+    duration: "35 Menit",
+    topics: ["Potensi Diri", "Ragam Potensi", "Strength-Based", "Talent Quest Board"],
+    description: "Mengenal dan mengembangkan potensi diri melalui pendekatan strength-based, refleksi personal, dan simulasi permainan edukatif Talent Quest.",
+    icon: UserGroupIcon,
+    isAiRecommended: true,
+    aiReason: "Eksplorasi Minat & Bakat (Dinda Riestia)",
+  },
+  {
+    id: 14,
+    subject: "Bimbingan Konseling",
+    title: "Jati Diri Tanpa Kenakalan",
+    level: "Menengah",
+    duration: "40 Menit",
+    topics: ["Jati Diri Remaja", "Bentuk Kenakalan", "Norma Pergaulan", "Peer Pressure", "Mind Mapping"],
+    description: "Memahami pembentukan jati diri remaja, menyelaraskan norma pergaulan teman sebaya, mengatasi peer pressure, dan studi kasus problem-based learning.",
+    icon: UserGroupIcon,
+    aiReason: "Karakter & Jati Diri (Dinda Riestia)",
+  },
+  {
+    id: 15,
+    subject: "Bimbingan Konseling",
+    title: "Membangun Konsep Diri Positif",
+    level: "Pemula",
+    duration: "30 Menit",
+    topics: ["Pengertian Konsep Diri", "Self-Image", "Self-Esteem", "Ideal Self", "Faktor Lingkungan"],
+    description: "Memahami konsep diri remaja, 3 komponen utama (self-image, self-esteem, ideal self), faktor lingkungan, serta aktivitas refleksi diri telapak tangan.",
+    icon: UserGroupIcon,
+    isAiRecommended: true,
+    aiReason: "Pengembangan Konsep Diri (Erintan Tsuraya R.)",
+  },
+  {
+    id: 16,
+    subject: "Bimbingan Konseling",
+    title: "Personal Branding: Membangun Citra Diri Positif",
+    level: "Pemula",
+    duration: "35 Menit",
+    topics: ["Personal Branding", "Potensi Diri", "Unsur Branding", "Kesiapan PKL & Kerja"],
+    description: "Mengenali keunikan dan potensi diri, membangun citra profesional positif, serta persiapan menghadapi PKL dan dunia kerja bagi siswa SMK.",
+    icon: UserGroupIcon,
+    isAiRecommended: true,
+    aiReason: "Kesiapan Karir & Vokasi (Erintan Tsuraya R.)",
+  },
+  {
+    id: 17,
+    subject: "Bimbingan Konseling",
+    title: "Persiapan Magang dan Etika di Dunia Kerja",
+    level: "Menengah",
+    duration: "40 Menit",
+    topics: ["Persiapan Magang", "Soft Skills Vokasi", "Etika Kerja", "Tips Profesional"],
+    description: "Panduan komprehensif persiapan administratif, keterampilan, mental, dan penampilan serta etika profesional saat magang di industri.",
+    icon: UserGroupIcon,
+    aiReason: "Etika Magang & PKL (Erintan Tsuraya R.)",
+  },
+
 
   // --- SENI TARI ---
   {

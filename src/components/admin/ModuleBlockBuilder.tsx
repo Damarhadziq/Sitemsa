@@ -35,6 +35,10 @@ import { ModuleItem } from '@/lib/admin-store';
 import { getMaterialBlocksForModule, getMaterialDetailForModule } from '@/app/materi/[id]/page';
 import { Tooltip } from '@/components/ui/tooltip';
 
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Placeholder from '@tiptap/extension-placeholder';
+
 export type BlockType = 'text' | 'image' | 'video' | 'attachment' | 'steps' | 'callout' | 'code';
 export type TestType = 'link_eksternal' | 'qr_code' | 'kuis_sitemsa';
 
@@ -89,12 +93,8 @@ interface ModuleBlockBuilderProps {
   onSave: (moduleData: Partial<ModuleItem>, blocks: CanvasBlock[]) => void;
 }
 
-const isListLine = (text: string) => {
-  return /^(\s*)(\d+[\.\)]|[a-zA-Z][\.\)]|[•\-\*])\s+/.test(text);
-};
-
-// Auto-resizing ContentEditable Text Component with Smart List Shortcuts, Number Progression & Word-Style Hanging Indents
-function AutoResizeTextarea({
+// Professional Tiptap Rich Text Editor with Perfect Word-Style Lists
+function TiptapTextEditor({
   value,
   onChange,
   placeholder,
@@ -108,211 +108,154 @@ function AutoResizeTextarea({
   style?: React.CSSProperties;
   rows?: number;
 }) {
-  const divRef = useRef<HTMLDivElement | null>(null);
+  const formatContentForTiptap = (val: string) => {
+    if (!val) return '';
+    if (val.trim().startsWith('<') && val.trim().endsWith('>')) {
+      return val;
+    }
+    const lines = val.split('\n');
+    let html = '';
+    let inOrderedList = false;
+    let inBulletList = false;
 
-  const applyLineStyles = () => {
-    if (!divRef.current) return;
-    const childNodes = Array.from(divRef.current.childNodes);
-    childNodes.forEach((node) => {
-      if (node.nodeType === Node.ELEMENT_NODE) {
-        const el = node as HTMLElement;
-        const text = el.innerText || '';
-        if (isListLine(text)) {
-          el.style.paddingLeft = '1.5rem';
-          el.style.textIndent = '-1.5rem';
-        } else {
-          el.style.paddingLeft = '0';
-          el.style.textIndent = '0';
+    lines.forEach((line) => {
+      const trimmed = line.trim();
+      const numMatch = trimmed.match(/^(\d+)[\.\)]\s+(.*)$/);
+      const bulletMatch = trimmed.match(/^[•\-\*]\s+(.*)$/);
+
+      if (numMatch) {
+        if (inBulletList) {
+          html += '</ul>';
+          inBulletList = false;
+        }
+        if (!inOrderedList) {
+          html += '<ol>';
+          inOrderedList = true;
+        }
+        html += `<li><p>${numMatch[2]}</p></li>`;
+      } else if (bulletMatch) {
+        if (inOrderedList) {
+          html += '</ol>';
+          inOrderedList = false;
+        }
+        if (!inBulletList) {
+          html += '<ul>';
+          inBulletList = true;
+        }
+        html += `<li><p>${bulletMatch[1]}</p></li>`;
+      } else {
+        if (inOrderedList) {
+          html += '</ol>';
+          inOrderedList = false;
+        }
+        if (inBulletList) {
+          html += '</ul>';
+          inBulletList = false;
+        }
+        if (trimmed) {
+          html += `<p>${trimmed}</p>`;
         }
       }
     });
+
+    if (inOrderedList) html += '</ol>';
+    if (inBulletList) html += '</ul>';
+    return html || `<p>${val}</p>`;
   };
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        bulletList: {
+          HTMLAttributes: {
+            class: 'list-disc pl-6 my-1 space-y-1',
+          },
+        },
+        orderedList: {
+          HTMLAttributes: {
+            class: 'list-decimal pl-6 my-1 space-y-1',
+          },
+        },
+        listItem: {
+          HTMLAttributes: {
+            class: 'pl-1 leading-relaxed text-justify',
+          },
+        },
+        paragraph: {
+          HTMLAttributes: {
+            class: 'leading-relaxed text-justify mb-2',
+          },
+        },
+      }),
+      Placeholder.configure({
+        placeholder: placeholder || 'Tuliskan teks paragraf di sini...',
+        emptyEditorClass: 'is-editor-empty',
+      }),
+    ],
+    content: formatContentForTiptap(value || ''),
+    editorProps: {
+      attributes: {
+        class: `outline-none min-h-[1.5rem] break-words text-justify ${className || ''}`,
+      },
+    },
+    immediatelyRender: false,
+    onUpdate: ({ editor }) => {
+      onChange(editor.getHTML());
+    },
+  });
 
   useEffect(() => {
-    if (!divRef.current) return;
-    if (divRef.current.innerText !== (value || '')) {
-      if (!value) {
-        divRef.current.innerHTML = '';
-      } else {
-        const lines = value.split('\n');
-        divRef.current.innerHTML = lines
-          .map((line) => {
-            const isList = isListLine(line);
-            const indentStyle = isList
-              ? 'padding-left: 1.5rem; text-indent: -1.5rem;'
-              : 'padding-left: 0; text-indent: 0;';
-            const escaped = line
-              .replace(/&/g, '&amp;')
-              .replace(/</g, '&lt;')
-              .replace(/>/g, '&gt;');
-            return `<div style="${indentStyle}">${escaped || '<br>'}</div>`;
-          })
-          .join('');
+    if (editor && value !== undefined) {
+      const currentHtml = editor.getHTML();
+      const newFormatted = formatContentForTiptap(value);
+      if (currentHtml !== newFormatted && editor.getText().trim() !== value.trim()) {
+        editor.commands.setContent(newFormatted, { emitUpdate: false });
       }
     }
-  }, [value]);
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === 'Enter') {
-      const selection = window.getSelection();
-      if (!selection || selection.rangeCount === 0) return;
-
-      const range = selection.getRangeAt(0);
-      const fullText = divRef.current?.innerText || '';
-
-      // Calculate cursor position in plain text
-      const preCaretRange = range.cloneRange();
-      if (divRef.current) {
-        preCaretRange.selectNodeContents(divRef.current);
-        preCaretRange.setEnd(range.endContainer, range.endOffset);
-      }
-      const caretOffset = preCaretRange.toString().length;
-      const textBeforeCaret = fullText.slice(0, caretOffset);
-      const lines = textBeforeCaret.split('\n');
-      const currentLine = lines[lines.length - 1] || '';
-
-      // 1. If user hit Enter on empty list item (e.g. "2. " or "• ") -> cancel list & break out
-      const emptyListMatch = currentLine.match(/^(\s*)(\d+[\.\)]|[a-zA-Z][\.\)]|[•\-\*])\s*$/);
-      if (emptyListMatch) {
-        e.preventDefault();
-        const startOfLineOffset = caretOffset - currentLine.length;
-        const newFullText = fullText.slice(0, startOfLineOffset) + fullText.slice(caretOffset);
-        if (divRef.current) {
-          const newLines = newFullText.split('\n');
-          divRef.current.innerHTML = newLines
-            .map((line) => {
-              const isList = isListLine(line);
-              const indentStyle = isList
-                ? 'padding-left: 1.5rem; text-indent: -1.5rem;'
-                : 'padding-left: 0; text-indent: 0;';
-              const escaped = line
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;');
-              return `<div style="${indentStyle}">${escaped || '<br>'}</div>`;
-            })
-            .join('');
-          onChange(newFullText);
-        }
-        return;
-      }
-
-      // 2. Numbered list: "1. Text" -> "2. "
-      const numMatch = currentLine.match(/^(\s*)(\d+)\.\s+(.*)$/);
-      if (numMatch) {
-        e.preventDefault();
-        const indent = numMatch[1];
-        const nextNum = parseInt(numMatch[2], 10) + 1;
-        document.execCommand('insertText', false, `\n${indent}${nextNum}. `);
-        applyLineStyles();
-        onChange(divRef.current?.innerText || '');
-        return;
-      }
-
-      // 3. Parenthesis Numbered list: "1) Text" -> "2) "
-      const numParenMatch = currentLine.match(/^(\s*)(\d+)\)\s+(.*)$/);
-      if (numParenMatch) {
-        e.preventDefault();
-        const indent = numParenMatch[1];
-        const nextNum = parseInt(numParenMatch[2], 10) + 1;
-        document.execCommand('insertText', false, `\n${indent}${nextNum}) `);
-        applyLineStyles();
-        onChange(divRef.current?.innerText || '');
-        return;
-      }
-
-      // 4. Alphabetical list: "a. Text" -> "b. "
-      const alphaMatch = currentLine.match(/^(\s*)([a-zA-Z])\.\s+(.*)$/);
-      if (alphaMatch) {
-        e.preventDefault();
-        const indent = alphaMatch[1];
-        const nextChar = String.fromCharCode(alphaMatch[2].charCodeAt(0) + 1);
-        document.execCommand('insertText', false, `\n${indent}${nextChar}. `);
-        applyLineStyles();
-        onChange(divRef.current?.innerText || '');
-        return;
-      }
-
-      // 5. Alphabetical paren list: "a) Text" -> "b) "
-      const alphaParenMatch = currentLine.match(/^(\s*)([a-zA-Z])\)\s+(.*)$/);
-      if (alphaParenMatch) {
-        e.preventDefault();
-        const indent = alphaParenMatch[1];
-        const nextChar = String.fromCharCode(alphaParenMatch[2].charCodeAt(0) + 1);
-        document.execCommand('insertText', false, `\n${indent}${nextChar}) `);
-        applyLineStyles();
-        onChange(divRef.current?.innerText || '');
-        return;
-      }
-
-      // 6. Bullet list: "• Text" or "- Text" -> "• "
-      const bulletMatch = currentLine.match(/^(\s*)([•\-\*])\s+(.*)$/);
-      if (bulletMatch) {
-        e.preventDefault();
-        const indent = bulletMatch[1];
-        document.execCommand('insertText', false, `\n${indent}• `);
-        applyLineStyles();
-        onChange(divRef.current?.innerText || '');
-        return;
-      }
-    }
-  };
-
-  const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
-    let text = e.currentTarget.innerText;
-
-    // Auto convert "- " or "* " at beginning of line or after newline to bullet "• "
-    const convertedText = text.replace(/(^|\n)([\-\*])\s/g, '$1• ');
-    if (convertedText !== text) {
-      const sel = window.getSelection();
-      let offset = 0;
-      if (sel && sel.rangeCount > 0 && divRef.current) {
-        const range = sel.getRangeAt(0);
-        const preRange = range.cloneRange();
-        preRange.selectNodeContents(divRef.current);
-        preRange.setEnd(range.endContainer, range.endOffset);
-        offset = preRange.toString().length;
-      }
-
-      divRef.current!.innerText = convertedText;
-      text = convertedText;
-
-      try {
-        if (divRef.current?.firstChild && sel) {
-          const newRange = document.createRange();
-          newRange.setStart(divRef.current.firstChild, Math.min(offset, divRef.current.innerText.length));
-          newRange.collapse(true);
-          sel.removeAllRanges();
-          sel.addRange(newRange);
-        }
-      } catch (err) {
-        // ignore
-      }
-    }
-
-    applyLineStyles();
-    onChange(text);
-  };
+  }, [value, editor]);
 
   return (
     <div
-      ref={divRef}
-      contentEditable
-      suppressContentEditableWarning
-      onKeyDown={handleKeyDown}
-      onInput={handleInput}
-      data-placeholder={placeholder}
-      className={`outline-none min-h-[1.5rem] whitespace-pre-wrap text-justify break-words [tab-size:4] ${
-        !value ? 'empty:before:content-[attr(data-placeholder)] empty:before:text-[#AAAAAA] empty:before:pointer-events-none' : ''
-      } ${className || ''}`}
-      style={{
-        textAlign: 'justify',
-        textAlignLast: 'left',
-        ...style,
-      }}
-    />
+      className="tiptap-editor-container w-full cursor-text"
+      style={style}
+      onClick={() => editor?.commands.focus()}
+    >
+      <style jsx global>{`
+        .tiptap-editor-container .ProseMirror p.is-editor-empty:first-child::before {
+          content: attr(data-placeholder);
+          color: #AAAAAA;
+          float: left;
+          height: 0;
+          pointer-events: none;
+        }
+        .tiptap-editor-container .ProseMirror ol {
+          list-style-type: decimal;
+          padding-left: 1.5rem;
+          margin-top: 0.25rem;
+          margin-bottom: 0.25rem;
+        }
+        .tiptap-editor-container .ProseMirror ul {
+          list-style-type: disc;
+          padding-left: 1.5rem;
+          margin-top: 0.25rem;
+          margin-bottom: 0.25rem;
+        }
+        .tiptap-editor-container .ProseMirror li {
+          padding-left: 0.25rem;
+          margin-bottom: 0.25rem;
+          text-align: justify;
+        }
+        .tiptap-editor-container .ProseMirror li p {
+          margin-bottom: 0;
+          display: inline;
+        }
+      `}</style>
+      <EditorContent editor={editor} />
+    </div>
   );
 }
+
+const AutoResizeTextarea = TiptapTextEditor;
 
 export function ModuleBlockBuilder({
   initialModule,

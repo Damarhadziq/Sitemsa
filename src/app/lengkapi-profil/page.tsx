@@ -21,13 +21,13 @@ function OnboardingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const initialName = searchParams.get('name') || 'Muhammad Rizky Pratama';
-  const initialEmail = searchParams.get('email') || 'siswa@belajar.id';
+  const initialName = searchParams.get('name') || '';
+  const initialEmail = searchParams.get('email') || '';
 
   const [name, setName] = useState(initialName);
   const [selectedGrade, setSelectedGrade] = useState('X');
   const [selectedMajor, setSelectedMajor] = useState(JURUSAN_LIST[0]);
-  const [nisn, setNisn] = useState('0082918239');
+  const [nisn, setNisn] = useState('');
   const [school, setSchool] = useState('SMK Negeri 1 Semarang');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);

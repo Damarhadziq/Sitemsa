@@ -90,17 +90,21 @@ function OtpVerificationContent() {
 
   return (
     <div className="w-full max-w-[420px] animate-in fade-in duration-200">
-      {/* Back button */}
-      <Link
-        href={fromAction === 'reset' ? '/lupa-password' : '/signup'}
-        className="inline-flex items-center gap-2 text-xs font-semibold text-[#737373] hover:text-[#2E2D2D] mb-6 transition-colors"
-      >
-        <ArrowLeft size={16} />
-        <span>Kembali</span>
-      </Link>
+      {/* Back button (Web Utama Signature Style) */}
+      <div className="flex items-center gap-3 mb-6">
+        <button
+          type="button"
+          onClick={() => router.push(fromAction === 'reset' ? '/lupa-password' : '/signup')}
+          className="w-9 h-9 rounded-full bg-white border border-[#ECECEC] text-[#2E2D2D] hover:bg-[#F6F5FF] hover:border-[#2563EB] hover:text-[#2563EB] flex items-center justify-center transition-all cursor-pointer shadow-none shrink-0"
+          aria-label="Kembali"
+        >
+          <ArrowLeft size={16} />
+        </button>
+        <span className="text-xs font-semibold text-[#737373]">Kembali</span>
+      </div>
 
       {/* Header */}
-      <div className="text-center sm:text-left mb-6">
+      <div className="mb-6">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-[#2E2D2D] tracking-tight mb-2">
           Verifikasi Kode OTP
         </h1>
@@ -122,12 +126,12 @@ function OtpVerificationContent() {
       ) : (
         <form onSubmit={handleVerify} className="space-y-6">
           {errorMsg && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-[10px] text-xs font-medium border border-red-200 animate-in fade-in">
+            <div className="bg-red-50 text-red-600 p-2.5 rounded-[10px] text-xs font-medium border border-red-200 animate-in fade-in">
               {errorMsg}
             </div>
           )}
 
-          {/* 4 Digit OTP Box Input */}
+          {/* 4 Digit OTP Box Input (Clean Web Utama Style) */}
           <div className="flex justify-center gap-3 sm:gap-4 my-2">
             {[0, 1, 2, 3].map((idx) => (
               <input
@@ -142,7 +146,7 @@ function OtpVerificationContent() {
                 value={otp[idx]}
                 onChange={(e) => handleOtpChange(idx, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(idx, e)}
-                className="w-13 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-bold text-[#2E2D2D] bg-[#F4EFFF]/50 border-2 border-[#ECECEC] rounded-[12px] focus:border-[#2563EB] focus:bg-white focus:ring-4 focus:ring-blue-100 transition-all outline-none"
+                className="w-13 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-bold text-[#2E2D2D] bg-[#FAFAFA] border border-[#ECECEC] rounded-[12px] focus:border-[#2563EB] focus:bg-white focus:outline-none transition-all shadow-none"
                 autoFocus={idx === 0}
               />
             ))}
@@ -152,13 +156,13 @@ function OtpVerificationContent() {
           <button
             type="submit"
             disabled={isVerifying}
-            className="w-full h-[44px] sm:h-[46px] bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.99] text-white font-semibold rounded-[10px] transition-all disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center text-xs sm:text-sm cursor-pointer shadow-sm"
+            className="w-full h-[42px] sm:h-[44px] bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.99] text-white font-semibold rounded-[10px] transition-all disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center text-xs sm:text-sm cursor-pointer shadow-none"
           >
             {isVerifying ? 'Memverifikasi Kode...' : 'Konfirmasi & Lanjutkan'}
           </button>
 
           {/* Resend OTP area */}
-          <div className="text-center pt-2">
+          <div className="text-center pt-1">
             <p className="text-xs text-[#737373]">
               Tidak menerima kode?{' '}
               {canResend ? (
@@ -184,9 +188,9 @@ function OtpVerificationContent() {
 
 export default function OtpPage() {
   return (
-    <div className="min-h-screen bg-white flex flex-col justify-between relative overflow-hidden font-sans">
-      {/* Decorative squiggle */}
-      <div className="absolute top-0 left-0 -translate-x-[10%] -translate-y-[20%] pointer-events-none opacity-40 sm:opacity-70">
+    <div className="min-h-[100dvh] bg-white flex flex-col justify-between relative overflow-hidden font-sans">
+      {/* Decorative squiggle - Desktop Only */}
+      <div className="hidden lg:block absolute top-0 left-0 -translate-x-[10%] -translate-y-[20%] pointer-events-none opacity-70">
         <svg width="320" height="240" viewBox="0 0 360 280" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M-40,80 C20,-20 60,160 120,60 C180,-40 220,180 300,80"
@@ -206,7 +210,7 @@ export default function OtpPage() {
       </div>
 
       {/* Footer */}
-      <footer className="px-6 py-4 border-t border-slate-100 text-center text-[11px] sm:text-xs text-gray-400">
+      <footer className="px-6 py-4 border-t border-[#ECECEC] text-center text-[11px] sm:text-xs text-gray-400">
         Copyright Lantip 7 SMKN 1 Semarang. 2026
       </footer>
     </div>

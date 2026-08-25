@@ -5,8 +5,9 @@ import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarImage, AvatarFallback, AvatarGroup } from '@/components/ui/avatar';
-import { authenticateStudent } from '@/services/student-profile.service';
+import { authenticateStudent, saveStudentProfile } from '@/services/student-profile.service';
 import { useAuth } from '@/lib/auth-context';
+import { GoogleAccountModal, GoogleAccountOption } from '@/components/auth/GoogleAccountModal';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,7 +18,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isPending, setIsPending] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,16 +52,30 @@ export default function LoginPage() {
     }, 250);
   };
 
-  const handleGoogleLogin = () => {
-    setIsGoogleLoading(true);
-    setTimeout(() => {
-      const studentAuth = authenticateStudent('siswa@belajar.id', 'SiswaSitemsa#2026');
-      if (studentAuth.success) {
-        router.push('/');
-      } else {
-        setIsGoogleLoading(false);
-      }
-    }, 400);
+  const handleSelectGoogleAccount = (acc: GoogleAccountOption) => {
+    setIsGoogleModalOpen(false);
+    // Save student profile with chosen account
+    saveStudentProfile({
+      name: acc.name,
+      email: acc.email,
+      avatar: acc.avatar,
+    });
+
+    if (typeof document !== 'undefined') {
+      document.cookie = 'sintesa_student_auth=true; path=/; max-age=2592000; SameSite=Lax';
+      localStorage.setItem(
+        'sintesa_student_session_v1',
+        JSON.stringify({
+          email: acc.email,
+          name: acc.name,
+          role: 'siswa',
+          avatar: acc.avatar,
+          loginTime: new Date().toISOString(),
+        })
+      );
+    }
+
+    router.push('/');
   };
 
   return (
@@ -99,7 +114,7 @@ export default function LoginPage() {
             Kuasai Keahlian Baru<br />di Setiap Langkah
           </h1>
 
-          <p className="text-base text-gray-500 mb-8 max-w-md leading-relaxed">
+          <p className="text-base text-[#737373] mb-8 max-w-md leading-relaxed">
             Dari logika hingga seni, pelajari semua materi favoritmu dalam satu platform yang dirancang khusus untukmu.
           </p>
 
@@ -118,7 +133,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Right side - Login Form */}
+        {/* Right side - Login Form (Web Utama Signature Style) */}
         <div className="w-full lg:w-1/2 flex justify-center lg:justify-end">
           <div className="w-full max-w-[420px]">
             <form onSubmit={handleSubmit} className="flex flex-col">
@@ -131,8 +146,8 @@ export default function LoginPage() {
               {/* Form fields */}
               <div className="flex flex-col gap-3.5 sm:gap-4">
                 {/* Email */}
-                <div className="flex flex-col gap-1 sm:gap-1.5">
-                  <label className="text-xs sm:text-sm font-medium text-[#292929]" htmlFor="email">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-[#2E2D2D]" htmlFor="email">
                     Email Siswa
                   </label>
                   <input
@@ -143,13 +158,13 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="contoh: siswa@belajar.id"
                     required
-                    className="w-full h-[40px] sm:h-[44px] px-3.5 py-2 rounded-[10px] bg-[#f3f3f3] border border-transparent text-xs sm:text-sm text-[#292929] placeholder:text-[#aaaaaa] focus:bg-white focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 transition-all outline-none"
+                    className="w-full h-[42px] sm:h-[44px] px-3.5 py-2.5 rounded-[10px] bg-[#FAFAFA] border border-[#ECECEC] text-xs sm:text-sm text-[#2E2D2D] placeholder-[#737373] focus:outline-none focus:border-[#2563EB] focus:bg-white transition-all shadow-none"
                   />
                 </div>
 
                 {/* Kata Sandi */}
-                <div className="flex flex-col gap-1 sm:gap-1.5">
-                  <label className="text-xs sm:text-sm font-medium text-[#292929]" htmlFor="password">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-[#2E2D2D]" htmlFor="password">
                     Kata Sandi
                   </label>
                   <div className="relative">
@@ -161,18 +176,18 @@ export default function LoginPage() {
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Masukkan kata sandi"
                       required
-                      className="w-full h-[40px] sm:h-[44px] px-3.5 py-2 rounded-[10px] bg-[#f3f3f3] border border-transparent text-xs sm:text-sm text-[#292929] placeholder:text-[#aaaaaa] focus:bg-white focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 transition-all outline-none pr-11"
+                      className="w-full h-[42px] sm:h-[44px] px-3.5 py-2.5 rounded-[10px] bg-[#FAFAFA] border border-[#ECECEC] text-xs sm:text-sm text-[#2E2D2D] placeholder-[#737373] focus:outline-none focus:border-[#2563EB] focus:bg-white transition-all shadow-none pr-11"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737373] hover:text-gray-900 focus:outline-none cursor-pointer"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#2E2D2D] focus:outline-none cursor-pointer"
                     >
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
                   <div className="flex justify-end items-center pt-0.5">
-                    <Link href="/lupa-password" className="text-[11px] sm:text-xs font-medium text-[#2563EB] hover:opacity-80 transition-opacity">
+                    <Link href="/lupa-password" className="text-[11px] sm:text-xs font-semibold text-[#2563EB] hover:underline transition-colors">
                       Lupa kata sandi?
                     </Link>
                   </div>
@@ -185,37 +200,32 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="w-full h-[40px] sm:h-[44px] bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.99] text-white font-semibold rounded-[10px] transition-all disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center text-xs sm:text-sm cursor-pointer shadow-sm"
+                  className="w-full h-[42px] sm:h-[44px] bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.99] text-white font-semibold rounded-[10px] transition-all disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center text-xs sm:text-sm cursor-pointer shadow-none"
                 >
                   {isPending ? 'Memproses Masuk...' : 'Masuk ke Sitemsa'}
                 </button>
 
                 {/* Divider */}
                 <div className="relative flex items-center py-2 sm:py-2.5">
-                  <div className="flex-grow border-t border-gray-200"></div>
-                  <span className="flex-shrink-0 px-3 text-[11px] sm:text-xs text-[#64748B]">atau</span>
-                  <div className="flex-grow border-t border-gray-200"></div>
+                  <div className="flex-grow border-t border-[#ECECEC]"></div>
+                  <span className="flex-shrink-0 px-3 text-[11px] sm:text-xs text-[#737373]">atau</span>
+                  <div className="flex-grow border-t border-[#ECECEC]"></div>
                 </div>
 
                 {/* Google Sign In Button */}
                 <button
                   type="button"
-                  onClick={handleGoogleLogin}
-                  disabled={isGoogleLoading}
-                  className="w-full h-[40px] sm:h-[44px] bg-white border border-gray-200 text-[#2E2D2D] font-semibold rounded-[10px] hover:bg-gray-50 active:scale-[0.99] transition-all flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer"
+                  onClick={() => setIsGoogleModalOpen(true)}
+                  className="w-full h-[42px] sm:h-[44px] bg-white border border-[#ECECEC] text-[#2E2D2D] font-semibold rounded-[10px] hover:bg-[#FAFAFA] active:scale-[0.99] transition-all flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer shadow-none"
                 >
-                  {isGoogleLoading ? (
-                    <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24">
-                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-                      <path d="M1 1h22v22H1z" fill="none" />
-                    </svg>
-                  )}
-                  <span>{isGoogleLoading ? 'Menghubungkan Akun Google...' : 'Masuk dengan Google'}</span>
+                  <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                    <path d="M1 1h22v22H1z" fill="none" />
+                  </svg>
+                  <span>Masuk dengan Google</span>
                 </button>
               </div>
 
@@ -240,7 +250,7 @@ export default function LoginPage() {
       </div>
 
       {/* Desktop Footer Only */}
-      <footer className="hidden lg:flex items-center justify-between gap-3 px-6 sm:px-12 lg:px-20 xl:px-28 py-4 sm:py-5 border-t border-slate-100 max-w-7xl mx-auto w-full">
+      <footer className="hidden lg:flex items-center justify-between gap-3 px-6 sm:px-12 lg:px-20 xl:px-28 py-4 sm:py-5 border-t border-[#ECECEC] max-w-7xl mx-auto w-full">
         {/* Social icons - left */}
         <div className="flex items-center gap-4">
           <Link href="#" className="hover:opacity-60 transition-opacity">
@@ -275,6 +285,14 @@ export default function LoginPage() {
           Copyright Lantip 7 SMKN 1 Semarang. 2026
         </span>
       </footer>
+
+      {/* Google Account Chooser Modal */}
+      <GoogleAccountModal
+        isOpen={isGoogleModalOpen}
+        onClose={() => setIsGoogleModalOpen(false)}
+        onSelectAccount={handleSelectGoogleAccount}
+        title="Pilih Akun Google untuk Masuk"
+      />
     </div>
   );
 }

@@ -1641,186 +1641,7 @@ const MATERIAL_DATABASE: Record<number, MaterialDetail> = {
 
 export { MATERIAL_DATABASE };
 
-export function getMaterialDetailForModule(moduleTitleOrId: string | number): MaterialDetail | undefined {
-  const idMap: Record<string, number> = {
-    'mod-tari-1': 9,
-    'mod-tari-2': 10,
-    'mod-tari-3': 12,
-    'mod-tari-4': 13,
-    'mod-tari-5': 14,
-    'mod-tari-6': 15,
-    'mod-bk-1': 7,
-    'mod-bk-2': 8,
-    'mod-bk-3': 16,
-    'mod-bk-4': 17,
-    'mod-bk-5': 18,
-    'mod-bk-6': 19,
-    'mod-1': 1,
-    'mod-2': 2,
-    'mod-3': 3,
-    'mod-4': 4,
-    'mod-5': 7,
-    'mod-6': 6,
-    'mod-7': 7,
-    'mod-8': 8,
-    'mod-oto-1': 20,
-    'mod-oto-2': 21,
-    'mod-or-1': 22,
-    'mod-or-2': 23,
-  };
 
-  const keyStr = String(moduleTitleOrId).toLowerCase().trim();
-
-  if (typeof moduleTitleOrId === 'number' || (!isNaN(Number(moduleTitleOrId)) && MATERIAL_DATABASE[Number(moduleTitleOrId)])) {
-    return MATERIAL_DATABASE[Number(moduleTitleOrId)];
-  } else if (idMap[keyStr]) {
-    return MATERIAL_DATABASE[idMap[keyStr]];
-  } else {
-    return Object.values(MATERIAL_DATABASE).find(
-      (m) =>
-        m.title.toLowerCase().trim() === keyStr ||
-        keyStr.includes(m.title.toLowerCase().trim()) ||
-        m.title.toLowerCase().trim().includes(keyStr)
-    );
-  }
-}
-
-export function getMaterialBlocksForModule(moduleTitleOrId: string | number): any[] {
-  const material = getMaterialDetailForModule(moduleTitleOrId);
-
-  if (!material) return [];
-
-  const generatedBlocks: any[] = [];
-  let blockCounter = 1;
-
-  // 1. Convert content sections with multi-element paragraphs and images support
-  if (material.contentSections && material.contentSections.length > 0) {
-    material.contentSections.forEach((section) => {
-      const elements: any[] = [];
-      let elCounter = 1;
-
-      if (section.elements && section.elements.length > 0) {
-        section.elements.forEach((el) => {
-          elements.push({
-            id: `el-${Date.now()}-${elCounter++}`,
-            type: el.type,
-            text: el.text || '',
-            imageUrl: el.imageUrl || '',
-            imageCaption: el.imageCaption || '',
-          });
-        });
-      } else {
-        // Add paragraphs if present
-        if (section.paragraphs && section.paragraphs.length > 0) {
-          section.paragraphs.forEach((p) => {
-            if (p && p.trim()) {
-              elements.push({
-                id: `el-${Date.now()}-${elCounter++}`,
-                type: 'paragraph',
-                text: p,
-              });
-            }
-          });
-        }
-
-        // Add items (text and/or image) if present
-        if (section.items && section.items.length > 0) {
-          section.items.forEach((item) => {
-            if (item.imageUrl) {
-              elements.push({
-                id: `el-${Date.now()}-${elCounter++}`,
-                type: 'image',
-                imageUrl: item.imageUrl,
-                imageCaption: '',
-              });
-            }
-            if (item.text && item.text.trim()) {
-              elements.push({
-                id: `el-${Date.now()}-${elCounter++}`,
-                type: 'paragraph',
-                text: item.text,
-              });
-            }
-          });
-        }
-      }
-
-      // If both were empty, add 1 default paragraph
-      if (elements.length === 0) {
-        elements.push({
-          id: `el-${Date.now()}-${elCounter++}`,
-          type: 'paragraph',
-          text: '',
-        });
-      }
-
-      const firstImage = elements.find((el) => el.type === 'image')?.imageUrl;
-      const allTexts = elements.filter((el) => el.type === 'paragraph').map((el) => el.text).join('\n\n');
-
-      generatedBlocks.push({
-        id: `blk-${blockCounter++}`,
-        type: 'text',
-        sectionTitle: section.title,
-        textValue: allTexts,
-        elements: elements,
-        calloutText: section.callout,
-        alignment: 'left',
-        mediaUrl: firstImage,
-      });
-
-      if (section.codeSnippet && section.codeSnippet.code) {
-        generatedBlocks.push({
-          id: `blk-${blockCounter++}`,
-          type: 'code',
-          codeSnippet: section.codeSnippet,
-        });
-      }
-    });
-  }
-
-  // 2. Convert Video section if present
-  if (material.videoSection && material.videoSection.videoUrl) {
-    generatedBlocks.push({
-      id: `blk-${blockCounter++}`,
-      type: 'video',
-      sectionTitle: material.videoSection.title,
-      mediaUrl: material.videoSection.videoUrl,
-      imageCaption: material.videoSection.caption,
-    });
-  }
-
-  // 3. Convert Step by step section
-  if (material.stepByStepSection && material.stepByStepSection.steps?.length > 0) {
-    generatedBlocks.push({
-      id: `blk-${blockCounter++}`,
-      type: 'steps',
-      stepSectionTitle: material.stepByStepSection.title,
-      stepSectionSubtitle: material.stepByStepSection.description,
-      steps: material.stepByStepSection.steps.map((s) => ({
-        title: s.title,
-        desc: s.text,
-      })),
-    });
-  }
-
-  // 4. Convert Attachment if present
-  if (material.attachment) {
-    generatedBlocks.push({
-      id: `blk-${blockCounter++}`,
-      type: 'attachment',
-      attachments: [
-        {
-          id: 'att-init-1',
-          fileName: material.attachment.fileName,
-          fileSize: material.attachment.fileSize,
-          fileUrl: '#',
-        },
-      ],
-    });
-  }
-
-  return generatedBlocks;
-}
 
 const getLevelBadgeClass = (level: string) => {
   switch (level) {
@@ -1853,6 +1674,115 @@ function SmartParagraph({ text }: { text: string }) {
       {text}
     </p>
   );
+}
+
+export function getMaterialDetailForModule(moduleIdOrTitle?: string | number): MaterialDetail | undefined {
+  if (!moduleIdOrTitle) return undefined;
+
+  const str = String(moduleIdOrTitle).toLowerCase().trim();
+  const mapKey: Record<string, number> = {
+    'mod-pte-01': 22,
+    'mod-pte-02': 21,
+    'mod-pte-03': 23,
+    'mod-pte-04': 24,
+    'mod-pte-05': 25,
+    'mod-pte-06': 26,
+    'mod-oto-01': 11,
+    'mod-oto-02': 12,
+    'mod-pjok-01': 18,
+    'mod-pjok-02': 19,
+    'mod-bk-01': 7,
+    'mod-bk-1': 8,
+    'mod-bk-2': 13,
+    'mod-bk-3': 14,
+    'mod-bk-4': 15,
+    'mod-bk-5': 16,
+    'mod-bk-6': 17,
+    'mod-inf-1': 1,
+    'mod-inf-2': 2,
+    'mod-inf-3': 3,
+    'mod-inf-4': 4,
+    'mod-tari-1': 9,
+    'mod-tari-2': 10,
+  };
+
+  if (mapKey[str] && MATERIAL_DATABASE[mapKey[str]]) {
+    return MATERIAL_DATABASE[mapKey[str]];
+  }
+
+  const numId = Number(moduleIdOrTitle);
+  if (!isNaN(numId) && MATERIAL_DATABASE[numId]) {
+    return MATERIAL_DATABASE[numId];
+  }
+
+  const allEntries = Object.values(MATERIAL_DATABASE);
+  const foundByTitle = allEntries.find((m) => {
+    const t = m.title.toLowerCase().trim();
+    return t === str || t.includes(str) || str.includes(t);
+  });
+
+  return foundByTitle;
+}
+
+export function getMaterialBlocksForModule(moduleIdOrTitle?: string | number): any[] {
+  const detail = getMaterialDetailForModule(moduleIdOrTitle);
+  if (!detail) return [];
+
+  const blocks: any[] = [];
+  let blockCounter = 1;
+
+  if (detail.videoSection && detail.videoSection.videoUrl) {
+    blocks.push({
+      id: `blk-${blockCounter++}`,
+      type: 'video',
+      sectionTitle: detail.videoSection.caption || 'Video Simulasi & Pembelajaran',
+      mediaUrl: detail.videoSection.videoUrl,
+      imageCaption: detail.videoSection.caption || '',
+    });
+  }
+
+  if (detail.contentSections && detail.contentSections.length > 0) {
+    detail.contentSections.forEach((sec: ContentSection) => {
+      blocks.push({
+        id: `blk-${blockCounter++}`,
+        type: sec.codeSnippet ? 'code' : 'text',
+        sectionTitle: sec.title || '',
+        textValue: sec.paragraphs ? sec.paragraphs.join('\n\n') : '',
+        alignment: 'left',
+        codeSnippet: sec.codeSnippet,
+      });
+    });
+  }
+
+  if (detail.stepByStepSection && detail.stepByStepSection.steps && detail.stepByStepSection.steps.length > 0) {
+    blocks.push({
+      id: `blk-${blockCounter++}`,
+      type: 'steps',
+      stepSectionTitle: (detail.stepByStepSection as any).title || (detail.stepByStepSection as any).sectionTitle || 'Langkah-langkah Praktik',
+      stepSectionSubtitle: (detail.stepByStepSection as any).description || (detail.stepByStepSection as any).sectionSubtitle || '',
+      steps: detail.stepByStepSection.steps.map((s: any) => ({
+        title: s.title || '',
+        desc: s.description || s.text || '',
+      })),
+    });
+  }
+
+  if (detail.attachment && detail.attachment.fileName) {
+    blocks.push({
+      id: `blk-${blockCounter++}`,
+      type: 'attachment',
+      attachments: [
+        {
+          id: `att-${blockCounter}`,
+          fileName: detail.attachment.fileName,
+          fileSize: detail.attachment.fileSize || '2.0 MB',
+          fileUrl: (detail.attachment as any).fileUrl || '#',
+        },
+      ],
+    });
+  }
+
+  return blocks;
 }
 
 export default function MaterialDetailPage({
@@ -2119,7 +2049,7 @@ export default function MaterialDetailPage({
 
     const observeIds = [
       ...(material.videoSection ? ["video-tutorial"] : []),
-      ...material.contentSections.map((s) => s.id),
+      ...material.contentSections.map((s: ContentSection) => s.id),
       ...(material.stepByStepSection ? ["langkah-praktik"] : []),
     ];
 
@@ -2282,7 +2212,7 @@ export default function MaterialDetailPage({
 
               {/* Structured Content Sections */}
               <div className="space-y-8">
-                {material.contentSections.map((section) => (
+                {material.contentSections.map((section: ContentSection) => (
                   <section
                     key={section.id}
                     id={section.id}
@@ -2324,7 +2254,7 @@ export default function MaterialDetailPage({
                       <>
                         {section.paragraphs && section.paragraphs.length > 0 && (
                           <div className="space-y-2.5">
-                            {section.paragraphs.map((p, pIdx) => (
+                            {section.paragraphs.map((p: string, pIdx: number) => (
                               <SmartParagraph key={pIdx} text={p} />
                             ))}
                           </div>
@@ -2333,7 +2263,7 @@ export default function MaterialDetailPage({
                         {/* Integrated Per-Point Media Block (Clean Direct Text Layout, Natural Image Resolution, No Captions) */}
                         {section.items && section.items.length > 0 && (
                           <div className="space-y-4 my-3">
-                            {section.items.map((item, i) => (
+                            {section.items.map((item: SectionItem, i: number) => (
                               <div key={i} className="space-y-2.5">
                                 {item.imageUrl && (
                                   <div className="my-3 w-full">

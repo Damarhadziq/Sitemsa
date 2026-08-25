@@ -89,7 +89,11 @@ interface ModuleBlockBuilderProps {
   onSave: (moduleData: Partial<ModuleItem>, blocks: CanvasBlock[]) => void;
 }
 
-// Auto-resizing ContentEditable Text Component with Smart List Shortcuts, Number Progression & Hanging Indents
+const isListLine = (text: string) => {
+  return /^(\s*)(\d+[\.\)]|[a-zA-Z][\.\)]|[•\-\*])\s+/.test(text);
+};
+
+// Auto-resizing ContentEditable Text Component with Smart List Shortcuts, Number Progression & Word-Style Hanging Indents
 function AutoResizeTextarea({
   value,
   onChange,
@@ -106,9 +110,45 @@ function AutoResizeTextarea({
 }) {
   const divRef = useRef<HTMLDivElement | null>(null);
 
+  const applyLineStyles = () => {
+    if (!divRef.current) return;
+    const childNodes = Array.from(divRef.current.childNodes);
+    childNodes.forEach((node) => {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const el = node as HTMLElement;
+        const text = el.innerText || '';
+        if (isListLine(text)) {
+          el.style.paddingLeft = '1.5rem';
+          el.style.textIndent = '-1.5rem';
+        } else {
+          el.style.paddingLeft = '0';
+          el.style.textIndent = '0';
+        }
+      }
+    });
+  };
+
   useEffect(() => {
-    if (divRef.current && divRef.current.innerText !== (value || '')) {
-      divRef.current.innerText = value || '';
+    if (!divRef.current) return;
+    if (divRef.current.innerText !== (value || '')) {
+      if (!value) {
+        divRef.current.innerHTML = '';
+      } else {
+        const lines = value.split('\n');
+        divRef.current.innerHTML = lines
+          .map((line) => {
+            const isList = isListLine(line);
+            const indentStyle = isList
+              ? 'padding-left: 1.5rem; text-indent: -1.5rem;'
+              : 'padding-left: 0; text-indent: 0;';
+            const escaped = line
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;');
+            return `<div style="${indentStyle}">${escaped || '<br>'}</div>`;
+          })
+          .join('');
+      }
     }
   }, [value]);
 
@@ -138,22 +178,21 @@ function AutoResizeTextarea({
         const startOfLineOffset = caretOffset - currentLine.length;
         const newFullText = fullText.slice(0, startOfLineOffset) + fullText.slice(caretOffset);
         if (divRef.current) {
-          divRef.current.innerText = newFullText;
+          const newLines = newFullText.split('\n');
+          divRef.current.innerHTML = newLines
+            .map((line) => {
+              const isList = isListLine(line);
+              const indentStyle = isList
+                ? 'padding-left: 1.5rem; text-indent: -1.5rem;'
+                : 'padding-left: 0; text-indent: 0;';
+              const escaped = line
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+              return `<div style="${indentStyle}">${escaped || '<br>'}</div>`;
+            })
+            .join('');
           onChange(newFullText);
-
-          // Position cursor at start of line
-          try {
-            const newRange = document.createRange();
-            const sel = window.getSelection();
-            if (divRef.current.firstChild && sel) {
-              newRange.setStart(divRef.current.firstChild, Math.min(startOfLineOffset, divRef.current.innerText.length));
-              newRange.collapse(true);
-              sel.removeAllRanges();
-              sel.addRange(newRange);
-            }
-          } catch (err) {
-            // ignore
-          }
         }
         return;
       }
@@ -165,6 +204,7 @@ function AutoResizeTextarea({
         const indent = numMatch[1];
         const nextNum = parseInt(numMatch[2], 10) + 1;
         document.execCommand('insertText', false, `\n${indent}${nextNum}. `);
+        applyLineStyles();
         onChange(divRef.current?.innerText || '');
         return;
       }
@@ -176,6 +216,7 @@ function AutoResizeTextarea({
         const indent = numParenMatch[1];
         const nextNum = parseInt(numParenMatch[2], 10) + 1;
         document.execCommand('insertText', false, `\n${indent}${nextNum}) `);
+        applyLineStyles();
         onChange(divRef.current?.innerText || '');
         return;
       }
@@ -187,6 +228,7 @@ function AutoResizeTextarea({
         const indent = alphaMatch[1];
         const nextChar = String.fromCharCode(alphaMatch[2].charCodeAt(0) + 1);
         document.execCommand('insertText', false, `\n${indent}${nextChar}. `);
+        applyLineStyles();
         onChange(divRef.current?.innerText || '');
         return;
       }
@@ -198,6 +240,7 @@ function AutoResizeTextarea({
         const indent = alphaParenMatch[1];
         const nextChar = String.fromCharCode(alphaParenMatch[2].charCodeAt(0) + 1);
         document.execCommand('insertText', false, `\n${indent}${nextChar}) `);
+        applyLineStyles();
         onChange(divRef.current?.innerText || '');
         return;
       }
@@ -208,6 +251,7 @@ function AutoResizeTextarea({
         e.preventDefault();
         const indent = bulletMatch[1];
         document.execCommand('insertText', false, `\n${indent}• `);
+        applyLineStyles();
         onChange(divRef.current?.innerText || '');
         return;
       }
@@ -246,6 +290,7 @@ function AutoResizeTextarea({
       }
     }
 
+    applyLineStyles();
     onChange(text);
   };
 

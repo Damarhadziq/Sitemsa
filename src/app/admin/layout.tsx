@@ -5,6 +5,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { useAuth } from '@/lib/auth-context';
 
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -39,10 +41,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="max-w-xs space-y-5 animate-in fade-in zoom-in-95 duration-200">
           {/* Lottie Animation */}
           <div className="w-56 h-56 mx-auto relative flex items-center justify-center overflow-hidden">
-            <iframe
-              src="https://lottie.host/embed/0d0a0157-8644-49c4-8cea-c7ca68c0bc54/fapm5CmjTx.lottie"
-              className="w-full h-full border-0 pointer-events-none"
-              title="Desktop Only Lottie Animation"
+            <DotLottieReact
+              src="https://lottie.host/0d0a0157-8644-49c4-8cea-c7ca68c0bc54/fapm5CmjTx.lottie"
+              loop
+              autoplay
+              className="w-full h-full"
             />
           </div>
 

@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
-import { Eye, EyeOff, Laptop, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
@@ -35,51 +35,27 @@ export default function AdminLoginPage() {
 
   return (
     <>
-      {/* MOBILE SCREEN GUARD (< 1024px): Desktop-Only Notification */}
-      <div className="lg:hidden min-h-[100dvh] w-full bg-white flex flex-col justify-between p-6 sm:p-8 font-sans text-center">
-        {/* Top Brand */}
-        <div className="flex justify-center pt-2">
-          <span className="text-2xl font-extrabold text-[#2E2D2D] tracking-tight">Sitemsa</span>
-        </div>
-
-        {/* Center Card Content */}
-        <div className="max-w-sm mx-auto my-auto space-y-5 animate-in fade-in zoom-in-95 duration-200">
-          {/* Lottie / Desktop Animation Box */}
-          <div className="w-48 h-48 sm:w-56 sm:h-56 mx-auto relative flex items-center justify-center overflow-hidden">
-            <iframe
-              src="https://lottie.host/embed/0d0a0157-8644-49c4-8cea-c7ca68c0bc54/fapm5CmjTx.lottie"
-              className="w-full h-full border-0 pointer-events-none"
-              title="Desktop Only Lottie Animation"
+      {/* Mobile / Tablet Screen Guard (< 1024px): Desktop Only Overlay with Lottie Animation */}
+      <div className="lg:hidden fixed inset-0 z-50 bg-white flex flex-col items-center justify-center p-6 text-center font-sans">
+        <div className="max-w-xs space-y-5 animate-in fade-in zoom-in-95 duration-200">
+          {/* Lottie Animation */}
+          <div className="w-56 h-56 mx-auto relative flex items-center justify-center overflow-hidden">
+            <DotLottieReact
+              src="https://lottie.host/0d0a0157-8644-49c4-8cea-c7ca68c0bc54/fapm5CmjTx.lottie"
+              loop
+              autoplay
+              className="w-full h-full"
             />
           </div>
 
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E8E7FF] text-[#2563EB] text-xs font-semibold">
-              <Laptop size={14} />
-              <span>Khusus Layar Komputer / Laptop</span>
-            </div>
-            <h2 className="text-xl font-bold text-[#2E2D2D] leading-tight pt-1">
-              Portal Admin &amp; Guru Hanya Tersedia di Desktop
+            <h2 className="text-lg font-bold text-[#2E2D2D] leading-tight">
+              Portal Admin Hanya Dapat Diakses di Perangkat Desktop
             </h2>
-            <p className="text-xs text-[#737373] leading-relaxed max-w-[320px] mx-auto">
-              Silakan buka portal admin ini menggunakan laptop atau komputer desktop Anda untuk pengalaman pengelolaan materi, kurikulum, dan rekap nilai yang optimal.
+            <p className="text-xs text-[#737373] leading-relaxed">
+              Silakan buka portal admin ini menggunakan laptop atau komputer Anda.
             </p>
           </div>
-
-          <div className="pt-2">
-            <Link
-              href="/login"
-              className="inline-flex items-center justify-center gap-2 w-full h-[42px] bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-semibold rounded-[10px] transition-colors"
-            >
-              <span>Buka Halaman Masuk Siswa</span>
-              <ArrowRight size={14} />
-            </Link>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="text-[11px] text-[#94a3b8]">
-          Copyright Lantip 7 SMKN 1 Semarang. 2026
         </div>
       </div>
 

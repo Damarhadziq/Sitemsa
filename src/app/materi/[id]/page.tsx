@@ -4,7 +4,7 @@ import { useState, useEffect, use, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Sprout, Zap, Trophy } from "lucide-react";
+import { ArrowLeft, BarChart2 } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { useAdminStore } from "@/lib/admin-store";
 import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react";
@@ -1574,19 +1574,19 @@ export default function MaterialDetailPage({
                   </span>
                   {material.level === "Pemula" && (
                     <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200/80 px-2.5 py-1 rounded-[4px] text-xs font-semibold">
-                      <Sprout className="w-3.5 h-3.5 text-emerald-600" />
+                      <BarChart2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                       <span>Pemula</span>
                     </span>
                   )}
                   {material.level === "Menengah" && (
                     <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200/80 px-2.5 py-1 rounded-[4px] text-xs font-semibold">
-                      <Zap className="w-3.5 h-3.5 text-amber-600" />
+                      <BarChart2 className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                       <span>Menengah</span>
                     </span>
                   )}
                   {material.level !== "Pemula" && material.level !== "Menengah" && (
                     <span className="inline-flex items-center gap-1 bg-purple-50 text-purple-700 border border-purple-200/80 px-2.5 py-1 rounded-[4px] text-xs font-semibold">
-                      <Trophy className="w-3.5 h-3.5 text-purple-600" />
+                      <BarChart2 className="w-3.5 h-3.5 text-purple-600 shrink-0" />
                       <span>{material.level || "Mahir"}</span>
                     </span>
                   )}

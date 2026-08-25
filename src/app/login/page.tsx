@@ -54,10 +54,10 @@ export default function LoginPage() {
       if (cleanEmail.includes('guru') || cleanEmail.includes('admin')) {
         const adminSuccess = loginWithCredentials(cleanEmail, password);
         if (adminSuccess) {
-          if (cleanEmail.includes('admin') || cleanEmail === 'damar.guru@sitemsa.sch.id') {
-            router.push('/admin/superadmin');
+          if (cleanEmail.includes('admin') || cleanEmail.includes('superadmin')) {
+            window.location.href = '/admin/superadmin';
           } else {
-            router.push('/admin/guru');
+            window.location.href = '/admin/guru';
           }
           return;
         }
@@ -66,7 +66,7 @@ export default function LoginPage() {
       // Authenticate student
       const studentAuth = authenticateStudent(cleanEmail, password);
       if (studentAuth.success) {
-        router.push('/');
+        window.location.href = '/';
       } else {
         setErrorMsg(studentAuth.message || 'Email atau kata sandi salah. Silakan periksa kembali.');
         setIsPending(false);
@@ -97,7 +97,7 @@ export default function LoginPage() {
       );
     }
 
-    router.push('/');
+    window.location.href = '/';
   };
 
   return (

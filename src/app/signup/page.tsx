@@ -73,7 +73,7 @@ export default function SignupPage() {
       </div>
 
       {/* Main Form Area */}
-      <div className="flex-1 flex items-center justify-center px-6 sm:px-12 py-8 sm:py-10 max-w-xl mx-auto w-full">
+      <div className="flex-1 flex flex-col justify-start items-center px-6 sm:px-12 pt-[64px] pb-8 max-w-xl mx-auto w-full">
         <div className="w-full max-w-[420px] animate-in fade-in duration-200">
           
           {/* Back button (Icon Only - without copy) */}

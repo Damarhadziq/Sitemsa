@@ -46,12 +46,22 @@ export default function AdminGuruDashboard() {
   const subjectModules = modules.filter(
     (m) =>
       m.subject === currentSubject &&
-      (!user || user.role === 'superadmin' || m.teacherId === user.id || m.teacherName === user.name)
+      (!user ||
+        user.role === 'superadmin' ||
+        m.teacherId === user.id ||
+        m.teacherName?.toLowerCase() === user.name?.toLowerCase() ||
+        m.teacherName?.toLowerCase().includes(user.name?.toLowerCase()) ||
+        user.name?.toLowerCase().includes(m.teacherName?.toLowerCase()))
   );
   const subjectQuizzes = quizzes.filter(
     (q) =>
       q.subject === currentSubject &&
-      (!user || user.role === 'superadmin' || q.teacherId === user.id || q.teacherName === user.name)
+      (!user ||
+        user.role === 'superadmin' ||
+        q.teacherId === user.id ||
+        q.teacherName?.toLowerCase() === user.name?.toLowerCase() ||
+        q.teacherName?.toLowerCase().includes(user.name?.toLowerCase()) ||
+        user.name?.toLowerCase().includes(q.teacherName?.toLowerCase()))
   );
   const subjectStudents = students.filter((s) => s.enrolledSubjects.includes(currentSubject));
 

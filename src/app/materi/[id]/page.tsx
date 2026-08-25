@@ -1689,6 +1689,8 @@ export function getMaterialDetailForModule(moduleIdOrTitle?: string | number): M
     'mod-pte-06': 26,
     'mod-oto-01': 11,
     'mod-oto-02': 12,
+    'mod-ot-01': 11,
+    'mod-ot-02': 12,
     'mod-pjok-01': 18,
     'mod-pjok-02': 19,
     'mod-bk-01': 7,
@@ -1704,6 +1706,8 @@ export function getMaterialDetailForModule(moduleIdOrTitle?: string | number): M
     'mod-inf-4': 4,
     'mod-tari-1': 9,
     'mod-tari-2': 10,
+    'mod-str-1': 9,
+    'mod-str-2': 10,
   };
 
   if (mapKey[str] && MATERIAL_DATABASE[mapKey[str]]) {

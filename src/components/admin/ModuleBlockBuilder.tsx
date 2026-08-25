@@ -313,6 +313,14 @@ export function ModuleBlockBuilder({
   const [showFinalPublishConfirmModal, setShowFinalPublishConfirmModal] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
+  // General Delete Action Confirmation Modal State
+  const [deleteConfirmTarget, setDeleteConfirmTarget] = useState<{
+    type: 'block' | 'element' | 'step' | 'attachment' | 'highlight' | 'evaluasi';
+    title: string;
+    description: string;
+    onConfirm: () => void;
+  } | null>(null);
+
   // Header toolbar mini-modal states (only for editing published modules)
   const [showThumbnailModal, setShowThumbnailModal] = useState(false);
   const [showTopicsModal, setShowTopicsModal] = useState(false);
@@ -1278,7 +1286,13 @@ export function ModuleBlockBuilder({
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleDeleteBlock(block.id);
+                              const blockName = block.sectionTitle || (block.type === 'video' ? 'Video Pembelajaran' : block.type === 'steps' ? 'Langkah-langkah Praktik' : block.type === 'attachment' ? 'Lampiran File' : block.type === 'code' ? 'Blok Kode' : 'Bagian Teks');
+                              setDeleteConfirmTarget({
+                                type: 'block',
+                                title: 'Konfirmasi Hapus Blok',
+                                description: `Apakah Anda yakin ingin menghapus blok "${blockName}"? Tindakan ini akan menghapus seluruh isi di dalam blok ini.`,
+                                onConfirm: () => handleDeleteBlock(block.id),
+                              });
                             }}
                             title="Hapus Blok"
                             className="p-1.5 hover:bg-rose-50 rounded-[4px] text-[#2E2D2D] hover:text-rose-600 cursor-pointer"
@@ -1370,7 +1384,12 @@ export function ModuleBlockBuilder({
                                               type="button"
                                               onClick={(e) => {
                                                 e.stopPropagation();
-                                                handleDeleteSectionElement(block.id, elIdx);
+                                                setDeleteConfirmTarget({
+                                                  type: 'element',
+                                                  title: 'Konfirmasi Hapus Paragraf',
+                                                  description: 'Apakah Anda yakin ingin menghapus paragraf ini dari bagian materi?',
+                                                  onConfirm: () => handleDeleteSectionElement(block.id, elIdx),
+                                                });
                                               }}
                                               title="Hapus Paragraf"
                                               className="p-1 hover:bg-rose-50 rounded text-[#2E2D2D] hover:text-rose-600 cursor-pointer"
@@ -1448,7 +1467,12 @@ export function ModuleBlockBuilder({
                                                 type="button"
                                                 onClick={(e) => {
                                                   e.stopPropagation();
-                                                  handleDeleteSectionElement(block.id, elIdx);
+                                                  setDeleteConfirmTarget({
+                                                    type: 'element',
+                                                    title: 'Konfirmasi Hapus Gambar',
+                                                    description: 'Apakah Anda yakin ingin menghapus gambar ini dari bagian materi?',
+                                                    onConfirm: () => handleDeleteSectionElement(block.id, elIdx),
+                                                  });
                                                 }}
                                                 className="p-1 rounded text-[#2E2D2D] hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
                                                 title="Hapus Gambar"
@@ -1506,7 +1530,12 @@ export function ModuleBlockBuilder({
                                     type="button"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      updateBlockById(block.id, { calloutText: undefined });
+                                      setDeleteConfirmTarget({
+                                        type: 'highlight',
+                                        title: 'Konfirmasi Hapus Highlight',
+                                        description: 'Apakah Anda yakin ingin menghapus kotak sorotan (highlight) teks ini?',
+                                        onConfirm: () => updateBlockById(block.id, { calloutText: undefined }),
+                                      });
                                     }}
                                     title="Hapus Highlight"
                                     className="text-slate-400 hover:text-rose-500 p-1 opacity-0 group-hover/callout:opacity-100 transition-opacity cursor-pointer shrink-0"
@@ -1772,7 +1801,12 @@ export function ModuleBlockBuilder({
                                       <button
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          handleDeleteStepItem(block.id, sIdx);
+                                          setDeleteConfirmTarget({
+                                            type: 'step',
+                                            title: 'Konfirmasi Hapus Langkah Praktik',
+                                            description: `Apakah Anda yakin ingin menghapus "${step.title || 'Langkah ini'}" dari daftar langkah praktik?`,
+                                            onConfirm: () => handleDeleteStepItem(block.id, sIdx),
+                                          });
                                         }}
                                         title="Hapus Langkah Ini"
                                         className="text-slate-400 hover:text-rose-600 p-1 rounded-[4px] cursor-pointer transition-colors"
@@ -2004,7 +2038,14 @@ export function ModuleBlockBuilder({
                               </button>
 
                               <button
-                                onClick={() => handleDeleteAttachmentFile(selectedBlock.id, fileItem.id)}
+                                onClick={() => {
+                                  setDeleteConfirmTarget({
+                                    type: 'attachment',
+                                    title: 'Konfirmasi Hapus File Lampiran',
+                                    description: `Apakah Anda yakin ingin menghapus berkas lampiran "${fileItem.fileName}"?`,
+                                    onConfirm: () => handleDeleteAttachmentFile(selectedBlock.id, fileItem.id),
+                                  });
+                                }}
                                 title="Hapus File"
                                 className="p-1.5 rounded-[6px] hover:bg-white text-slate-400 hover:text-rose-600 border border-transparent hover:border-[#ECECEC] cursor-pointer transition-colors"
                               >
@@ -2569,7 +2610,14 @@ export function ModuleBlockBuilder({
                       </span>
                       <button
                         type="button"
-                        onClick={() => handleSwitchEvaluationType(null)}
+                        onClick={() => {
+                          setDeleteConfirmTarget({
+                            type: 'evaluasi',
+                            title: 'Konfirmasi Hapus Evaluasi',
+                            description: 'Apakah Anda yakin ingin menghapus pengaturan evaluasi/kuis yang terhubung dengan materi ini?',
+                            onConfirm: () => handleSwitchEvaluationType(null),
+                          });
+                        }}
                         className="text-xs text-rose-600 font-semibold hover:underline cursor-pointer flex items-center gap-1"
                       >
                         <Trash2 className="w-3.5 h-3.5" /> Hapus Evaluasi
@@ -3354,6 +3402,65 @@ export function ModuleBlockBuilder({
                 className="px-4 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-[#2E2D2D] transition-colors cursor-pointer"
               >
                 Selesai
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE CONFIRMATION MODAL WITH MATCHING STYLE */}
+      {deleteConfirmTarget && (
+        <div
+          onClick={() => setDeleteConfirmTarget(null)}
+          className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md text-left space-y-4 animate-in fade-in zoom-in-95 duration-200 relative shadow-xl"
+          >
+            {/* Top-Right X Button */}
+            <button
+              type="button"
+              onClick={() => setDeleteConfirmTarget(null)}
+              className="absolute right-4 top-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#737373] hover:text-[#2E2D2D] flex items-center justify-center transition-colors cursor-pointer"
+              aria-label="Tutup Modal"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Danger Icon Badge */}
+            <div className="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100 shrink-0">
+              <AlertCircle className="w-5 h-5 text-rose-600" />
+            </div>
+
+            {/* Modal Title & Description */}
+            <div className="space-y-1">
+              <h3 className="font-bold text-base text-[#2E2D2D]">
+                {deleteConfirmTarget.title}
+              </h3>
+              <p className="text-xs text-[#737373] leading-relaxed bg-slate-50 p-3 rounded-[8px] border border-[#ECECEC] mt-2">
+                {deleteConfirmTarget.description}
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmTarget(null)}
+                className="px-4 py-2 rounded-[8px] text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-[#2E2D2D] transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  deleteConfirmTarget.onConfirm();
+                  setDeleteConfirmTarget(null);
+                }}
+                className="px-4 py-2 rounded-[8px] text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white transition-colors cursor-pointer shadow-xs"
+              >
+                Hapus
               </button>
             </div>
           </div>

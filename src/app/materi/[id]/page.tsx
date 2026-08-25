@@ -1658,17 +1658,40 @@ const getLevelBadgeClass = (level: string) => {
 
 function SmartParagraph({ text }: { text: string }) {
   const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
-  if (lines.length > 1) {
+
+  const renderLine = (line: string, idx: number) => {
+    // Check list markers: 1. , 1) , a. , a) , A. , A) , • , - , *
+    const listMatch = line.match(/^(\d+[\.\)]|[a-zA-Z][\.\)]|[•\-\*])\s+(.*)$/);
+    if (listMatch) {
+      const marker = listMatch[1];
+      const body = listMatch[2];
+      return (
+        <div key={idx} className="flex items-start gap-2.5 pl-1 my-1">
+          <span className="font-semibold text-[#2E2D2D] shrink-0 min-w-[1.25rem] select-none text-xs md:text-sm">
+            {marker === '-' || marker === '*' ? '•' : marker}
+          </span>
+          <span className="flex-1 text-xs md:text-sm font-medium text-[#4A4A4A] leading-relaxed text-justify">
+            {body}
+          </span>
+        </div>
+      );
+    }
+
     return (
-      <div className="space-y-1.5">
-        {lines.map((line, idx) => (
-          <p key={idx} className="text-xs md:text-sm font-medium text-[#4A4A4A] leading-relaxed text-justify">
-            {line}
-          </p>
-        ))}
-      </div>
+      <p key={idx} className="text-xs md:text-sm font-medium text-[#4A4A4A] leading-relaxed text-justify">
+        {line}
+      </p>
     );
+  };
+
+  if (lines.length > 1) {
+    return <div className="space-y-2">{lines.map(renderLine)}</div>;
   }
+
+  if (lines.length === 1) {
+    return renderLine(lines[0], 0);
+  }
+
   return (
     <p className="text-xs md:text-sm font-medium text-[#4A4A4A] leading-relaxed whitespace-pre-line text-justify">
       {text}

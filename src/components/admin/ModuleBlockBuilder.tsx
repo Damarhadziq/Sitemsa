@@ -89,7 +89,7 @@ interface ModuleBlockBuilderProps {
   onSave: (moduleData: Partial<ModuleItem>, blocks: CanvasBlock[]) => void;
 }
 
-// Auto-resizing ContentEditable Text Component with genuine Justify Alignment & Zero Scrollbars
+// Auto-resizing ContentEditable Text Component with Smart List Shortcuts, Number Progression & Hanging Indents
 function AutoResizeTextarea({
   value,
   onChange,
@@ -112,21 +112,159 @@ function AutoResizeTextarea({
     }
   }, [value]);
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter') {
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return;
+
+      const range = selection.getRangeAt(0);
+      const fullText = divRef.current?.innerText || '';
+
+      // Calculate cursor position in plain text
+      const preCaretRange = range.cloneRange();
+      if (divRef.current) {
+        preCaretRange.selectNodeContents(divRef.current);
+        preCaretRange.setEnd(range.endContainer, range.endOffset);
+      }
+      const caretOffset = preCaretRange.toString().length;
+      const textBeforeCaret = fullText.slice(0, caretOffset);
+      const lines = textBeforeCaret.split('\n');
+      const currentLine = lines[lines.length - 1] || '';
+
+      // 1. If user hit Enter on empty list item (e.g. "2. " or "• ") -> cancel list & break out
+      const emptyListMatch = currentLine.match(/^(\s*)(\d+[\.\)]|[a-zA-Z][\.\)]|[•\-\*])\s*$/);
+      if (emptyListMatch) {
+        e.preventDefault();
+        const startOfLineOffset = caretOffset - currentLine.length;
+        const newFullText = fullText.slice(0, startOfLineOffset) + fullText.slice(caretOffset);
+        if (divRef.current) {
+          divRef.current.innerText = newFullText;
+          onChange(newFullText);
+
+          // Position cursor at start of line
+          try {
+            const newRange = document.createRange();
+            const sel = window.getSelection();
+            if (divRef.current.firstChild && sel) {
+              newRange.setStart(divRef.current.firstChild, Math.min(startOfLineOffset, divRef.current.innerText.length));
+              newRange.collapse(true);
+              sel.removeAllRanges();
+              sel.addRange(newRange);
+            }
+          } catch (err) {
+            // ignore
+          }
+        }
+        return;
+      }
+
+      // 2. Numbered list: "1. Text" -> "2. "
+      const numMatch = currentLine.match(/^(\s*)(\d+)\.\s+(.*)$/);
+      if (numMatch) {
+        e.preventDefault();
+        const indent = numMatch[1];
+        const nextNum = parseInt(numMatch[2], 10) + 1;
+        document.execCommand('insertText', false, `\n${indent}${nextNum}. `);
+        onChange(divRef.current?.innerText || '');
+        return;
+      }
+
+      // 3. Parenthesis Numbered list: "1) Text" -> "2) "
+      const numParenMatch = currentLine.match(/^(\s*)(\d+)\)\s+(.*)$/);
+      if (numParenMatch) {
+        e.preventDefault();
+        const indent = numParenMatch[1];
+        const nextNum = parseInt(numParenMatch[2], 10) + 1;
+        document.execCommand('insertText', false, `\n${indent}${nextNum}) `);
+        onChange(divRef.current?.innerText || '');
+        return;
+      }
+
+      // 4. Alphabetical list: "a. Text" -> "b. "
+      const alphaMatch = currentLine.match(/^(\s*)([a-zA-Z])\.\s+(.*)$/);
+      if (alphaMatch) {
+        e.preventDefault();
+        const indent = alphaMatch[1];
+        const nextChar = String.fromCharCode(alphaMatch[2].charCodeAt(0) + 1);
+        document.execCommand('insertText', false, `\n${indent}${nextChar}. `);
+        onChange(divRef.current?.innerText || '');
+        return;
+      }
+
+      // 5. Alphabetical paren list: "a) Text" -> "b) "
+      const alphaParenMatch = currentLine.match(/^(\s*)([a-zA-Z])\)\s+(.*)$/);
+      if (alphaParenMatch) {
+        e.preventDefault();
+        const indent = alphaParenMatch[1];
+        const nextChar = String.fromCharCode(alphaParenMatch[2].charCodeAt(0) + 1);
+        document.execCommand('insertText', false, `\n${indent}${nextChar}) `);
+        onChange(divRef.current?.innerText || '');
+        return;
+      }
+
+      // 6. Bullet list: "• Text" or "- Text" -> "• "
+      const bulletMatch = currentLine.match(/^(\s*)([•\-\*])\s+(.*)$/);
+      if (bulletMatch) {
+        e.preventDefault();
+        const indent = bulletMatch[1];
+        document.execCommand('insertText', false, `\n${indent}• `);
+        onChange(divRef.current?.innerText || '');
+        return;
+      }
+    }
+  };
+
+  const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
+    let text = e.currentTarget.innerText;
+
+    // Auto convert "- " or "* " at beginning of line or after newline to bullet "• "
+    const convertedText = text.replace(/(^|\n)([\-\*])\s/g, '$1• ');
+    if (convertedText !== text) {
+      const sel = window.getSelection();
+      let offset = 0;
+      if (sel && sel.rangeCount > 0 && divRef.current) {
+        const range = sel.getRangeAt(0);
+        const preRange = range.cloneRange();
+        preRange.selectNodeContents(divRef.current);
+        preRange.setEnd(range.endContainer, range.endOffset);
+        offset = preRange.toString().length;
+      }
+
+      divRef.current!.innerText = convertedText;
+      text = convertedText;
+
+      try {
+        if (divRef.current?.firstChild && sel) {
+          const newRange = document.createRange();
+          newRange.setStart(divRef.current.firstChild, Math.min(offset, divRef.current.innerText.length));
+          newRange.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(newRange);
+        }
+      } catch (err) {
+        // ignore
+      }
+    }
+
+    onChange(text);
+  };
+
   return (
     <div
       ref={divRef}
       contentEditable
       suppressContentEditableWarning
-      onInput={(e) => {
-        onChange(e.currentTarget.innerText);
-      }}
+      onKeyDown={handleKeyDown}
+      onInput={handleInput}
       data-placeholder={placeholder}
-      className={`outline-none min-h-[1.5rem] whitespace-pre-wrap text-justify break-words ${
+      className={`outline-none min-h-[1.5rem] whitespace-pre-wrap text-justify break-words [tab-size:4] ${
         !value ? 'empty:before:content-[attr(data-placeholder)] empty:before:text-[#AAAAAA] empty:before:pointer-events-none' : ''
       } ${className || ''}`}
       style={{
         textAlign: 'justify',
         textAlignLast: 'left',
+        paddingLeft: '1.25rem',
+        textIndent: '-1.25rem',
         ...style,
       }}
     />

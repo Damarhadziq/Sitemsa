@@ -18,6 +18,7 @@ export interface DayStudyStat {
   fullDate: string;
   minutes: number;
   activeStudents: number;
+  views: number;
 }
 
 export interface ModuleStudyStat {
@@ -29,44 +30,7 @@ export interface ModuleStudyStat {
   completionRate: number;
 }
 
-const STORAGE_KEY = 'sintesa_student_reading_analytics_v1';
-
-// Seed realistic activity data for previous days of the week
-const generateDefaultWeeklyData = (subject: string): ReadingSession[] => {
-  const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
-  const now = new Date();
-  const sessions: ReadingSession[] = [];
-
-  // Generate for past 7 days
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    const dateStr = d.toISOString().split('T')[0];
-
-    const baseMin = subject.toLowerCase().includes('otomotif')
-      ? 22 + (i % 3) * 6
-      : subject.toLowerCase().includes('elektronika')
-      ? 26 + (i % 4) * 5
-      : subject.toLowerCase().includes('olahraga')
-      ? 18 + (i % 3) * 4
-      : 20 + (i % 4) * 5;
-
-    sessions.push({
-      id: `rs-seed-${subject}-${i}`,
-      moduleId: `mod-${subject}-1`,
-      moduleTitle: `Materi Inti ${subject}`,
-      subject,
-      studentId: 'std-1',
-      studentName: 'Muhammad Rizky Pratama',
-      durationSeconds: baseMin * 60,
-      durationMinutes: baseMin,
-      timestamp: d.getTime(),
-      date: dateStr,
-    });
-  }
-
-  return sessions;
-};
+const STORAGE_KEY = 'sintesa_student_reading_analytics_v2';
 
 export class StudyAnalyticsService {
   private static getStoredSessions(): ReadingSession[] {
@@ -75,7 +39,7 @@ export class StudyAnalyticsService {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch (e) {
       console.error('Error reading study analytics:', e);
@@ -104,7 +68,7 @@ export class StudyAnalyticsService {
     studentId?: string;
     studentName?: string;
   }) {
-    if (data.durationSeconds < 5) return; // Skip trivial clicks under 5 seconds
+    if (data.durationSeconds < 5) return; // Skip clicks under 5 seconds
 
     const durationMinutes = Math.max(1, Math.round(data.durationSeconds / 60));
     const now = new Date();
@@ -116,7 +80,7 @@ export class StudyAnalyticsService {
       moduleTitle: data.moduleTitle,
       subject: data.subject,
       studentId: data.studentId || 'std-1',
-      studentName: data.studentName || 'Siswa Sitemsa',
+      studentName: data.studentName || 'Budi Santoso',
       durationSeconds: data.durationSeconds,
       durationMinutes,
       timestamp: now.getTime(),
@@ -140,31 +104,27 @@ export class StudyAnalyticsService {
         duration_minutes: durationMinutes,
       }).then(({ error }) => {
         if (error) {
-          // Silent fallback if table not yet created
+          // Table fallback
         }
       });
     }
   }
 
   /**
-   * Get realtime analytics and daily breakdown for teacher dashboard
+   * Get realtime analytics and daily breakdown for teacher dashboard and module analysis
    */
   static getSubjectAnalytics(subject: string) {
-    let allSessions = this.getStoredSessions();
-    let subjectSessions = allSessions.filter(
+    const allSessions = this.getStoredSessions();
+    const subjectSessions = allSessions.filter(
       (s) => s.subject.toLowerCase() === subject.toLowerCase()
     );
 
-    if (subjectSessions.length === 0) {
-      subjectSessions = generateDefaultWeeklyData(subject);
-      allSessions = [...allSessions, ...subjectSessions];
-      this.saveSessions(allSessions);
-    }
-
     const totalMinutes = subjectSessions.reduce((acc, curr) => acc + curr.durationMinutes, 0);
-    const avgMinutes = subjectSessions.length > 0 ? Math.round((totalMinutes / subjectSessions.length) * 10) / 10 : 18;
+    const avgMinutes = subjectSessions.length > 0
+      ? Math.round((totalMinutes / subjectSessions.length) * 10) / 10
+      : 0;
 
-    // Past 7 days calculation
+    // Past 7 days calculation (clean 0 if no sessions)
     const daysLabel = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
     const now = new Date();
     const weeklyChart: DayStudyStat[] = [];
@@ -177,12 +137,13 @@ export class StudyAnalyticsService {
 
       const daySessions = subjectSessions.filter((s) => s.date === dateString);
       const dayTotalMinutes = daySessions.reduce((acc, curr) => acc + curr.durationMinutes, 0);
-      const activeCount = Math.max(daySessions.length > 0 ? daySessions.length : 1, 1);
+      const activeCount = daySessions.length;
 
       weeklyChart.push({
         day: dayName,
         fullDate: dateString,
-        minutes: dayTotalMinutes > 0 ? dayTotalMinutes : Math.floor(15 + ((i * 7) % 25)),
+        minutes: dayTotalMinutes,
+        views: activeCount,
         activeStudents: activeCount,
       });
     }
@@ -204,7 +165,7 @@ export class StudyAnalyticsService {
       subject,
       avgMinutes: Math.round(val.totalMin / val.count),
       totalReads: val.count,
-      completionRate: Math.min(100, 65 + (val.count * 8)),
+      completionRate: Math.min(100, val.count > 0 ? 80 : 0),
     }));
 
     return {
@@ -213,6 +174,55 @@ export class StudyAnalyticsService {
       weeklyChart,
       moduleStats,
       totalSessionsCount: subjectSessions.length,
+      recentSessions: subjectSessions.slice(-10).reverse(),
+    };
+  }
+
+  /**
+   * Get analytics specifically for a single module
+   */
+  static getModuleAnalytics(moduleId: string | number, subject: string) {
+    const allSessions = this.getStoredSessions();
+    const modSessions = allSessions.filter(
+      (s) => String(s.moduleId) === String(moduleId)
+    );
+
+    const totalViews = modSessions.length;
+    const totalMinutes = modSessions.reduce((acc, curr) => acc + curr.durationMinutes, 0);
+    const avgMinutes = totalViews > 0 ? Math.round((totalMinutes / totalViews) * 10) / 10 : 0;
+
+    const daysLabel = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+    const now = new Date();
+    const weeklyChart: DayStudyStat[] = [];
+
+    for (let i = 6; i >= 0; i--) {
+      const targetDate = new Date(now);
+      targetDate.setDate(targetDate.getDate() - i);
+      const dateString = targetDate.toISOString().split('T')[0];
+      const dayName = daysLabel[targetDate.getDay()];
+
+      const daySessions = modSessions.filter((s) => s.date === dateString);
+      const dayTotalMinutes = daySessions.reduce((acc, curr) => acc + curr.durationMinutes, 0);
+
+      weeklyChart.push({
+        day: dayName,
+        fullDate: dateString,
+        minutes: dayTotalMinutes,
+        views: daySessions.length,
+        activeStudents: daySessions.length,
+      });
+    }
+
+    return {
+      totalViews,
+      totalMinutes,
+      avgMinutes,
+      weeklyChart,
+      recentReaders: modSessions.slice(-5).reverse().map((s) => ({
+        name: s.studentName,
+        time: new Date(s.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+        status: s.durationMinutes >= 15 ? 'Selesai (100%)' : `Membaca (${Math.min(95, s.durationMinutes * 5)}%)`,
+      })),
     };
   }
 }

@@ -542,18 +542,32 @@ export default function AdminGuruPelajaranPage() {
     showToast(`Berkas template (${fileName}) berhasil terverifikasi!`, 'info');
   };
 
-  // Dynamic Realtime Module Analytics Data
+  // Dynamic Realtime Module Analytics Data (starts cleanly from 0)
   const targetSubject = selectedModule?.subject || currentSubject;
-  const moduleAnalytics = StudyAnalyticsService.getSubjectAnalytics(targetSubject);
+  const modSpecificAnalytics = selectedModule
+    ? StudyAnalyticsService.getModuleAnalytics(selectedModule.id, targetSubject)
+    : null;
 
-  // Access frequency data for Line Chart 1
+  // Access frequency data for Line Chart 1 (0-based)
   const xPositions = [40, 125, 210, 295, 380, 465, 550];
-  const weeklyAccessData = moduleAnalytics.weeklyChart.map((d, i) => {
-    const rawViews = Math.round(d.minutes * 1.4) + (i % 3) * 5;
-    const yPos = Math.max(30, Math.min(135, 140 - Math.round((rawViews / 80) * 105)));
+  const chartDays = modSpecificAnalytics
+    ? modSpecificAnalytics.weeklyChart
+    : [
+        { day: 'Sen', views: 0, minutes: 0 },
+        { day: 'Sel', views: 0, minutes: 0 },
+        { day: 'Rab', views: 0, minutes: 0 },
+        { day: 'Kam', views: 0, minutes: 0 },
+        { day: 'Jum', views: 0, minutes: 0 },
+        { day: 'Sab', views: 0, minutes: 0 },
+        { day: 'Min', views: 0, minutes: 0 },
+      ];
+
+  const maxViews = Math.max(...chartDays.map((d) => d.views), 10);
+  const weeklyAccessData = chartDays.map((d, i) => {
+    const yPos = d.views === 0 ? 145 : Math.max(30, Math.min(135, 145 - Math.round((d.views / maxViews) * 110)));
     return {
       day: d.day,
-      views: rawViews,
+      views: d.views,
       x: xPositions[i] || 40 + i * 85,
       y: yPos,
     };
@@ -562,9 +576,10 @@ export default function AdminGuruPelajaranPage() {
   const svgPathPoints = weeklyAccessData.map((d) => `${d.x},${d.y}`).join(' L ');
   const svgAreaPoints = `M 40,145 L ${svgPathPoints} L 550,145 Z`;
 
-  // Reading duration data for Line Chart 2
-  const weeklyDurationData = moduleAnalytics.weeklyChart.map((d, i) => {
-    const yPos = Math.max(30, Math.min(135, 140 - Math.round((d.minutes / 50) * 105)));
+  // Reading duration data for Line Chart 2 (0-based)
+  const maxMins = Math.max(...chartDays.map((d) => d.minutes), 20);
+  const weeklyDurationData = chartDays.map((d, i) => {
+    const yPos = d.minutes === 0 ? 145 : Math.max(30, Math.min(135, 145 - Math.round((d.minutes / maxMins) * 110)));
     return {
       day: d.day,
       duration: `${d.minutes} Min`,
@@ -577,12 +592,7 @@ export default function AdminGuruPelajaranPage() {
   const svgDurationPath = weeklyDurationData.map((d) => `${d.x},${d.y}`).join(' L ');
   const svgDurationArea = `M 40,145 L ${svgDurationPath} L 550,145 Z`;
 
-  const recentReaders = [
-    { name: 'Ahmad Fauzi', time: '10 menit lalu', status: 'Selesai (100%)' },
-    { name: 'Bintang Permata', time: '25 menit lalu', status: 'Membaca (75%)' },
-    { name: 'Citra Dewi', time: '1 jam lalu', status: 'Selesai (100%)' },
-    { name: 'Dian Sastro', time: '3 jam lalu', status: 'Membaca (40%)' },
-  ];
+  const recentReaders = modSpecificAnalytics ? modSpecificAnalytics.recentReaders : [];
 
   return (
     <div className="font-sans text-[#2E2D2D] bg-white space-y-8 pb-6">
@@ -1276,13 +1286,15 @@ export default function AdminGuruPelajaranPage() {
                       <Eye className="w-4 h-4 text-[#2563EB]" />
                     </div>
                     <p className="text-2xl font-bold text-[#2E2D2D]">
-                      {weeklyAccessData.reduce((acc, curr) => acc + curr.views, 0)}{' '}
-                      <span className="text-xs font-normal text-emerald-600 inline-flex items-center gap-0.5">
-                        <TrendingUp className="w-3 h-3" /> 18%
+                      {modSpecificAnalytics ? modSpecificAnalytics.totalViews : 0}{' '}
+                      <span className="text-xs font-normal text-slate-500 inline-flex items-center gap-0.5">
+                        Akses
                       </span>
                     </p>
                     <p className="text-[11px] text-[#AAAAAA]">
-                      Dibaca {weeklyAccessData.reduce((acc, curr) => acc + curr.views, 0)} kali minggu ini
+                      {modSpecificAnalytics && modSpecificAnalytics.totalViews > 0
+                        ? `Dibaca ${modSpecificAnalytics.totalViews} kali`
+                        : 'Belum ada aktivitas membaca'}
                     </p>
                   </div>
 
@@ -1292,7 +1304,7 @@ export default function AdminGuruPelajaranPage() {
                       <Clock className="w-4 h-4 text-purple-600" />
                     </div>
                     <p className="text-2xl font-bold text-[#2E2D2D]">
-                      {moduleAnalytics.averageMinutesPerSession}{' '}
+                      {modSpecificAnalytics ? modSpecificAnalytics.avgMinutes : 0}{' '}
                       <span className="text-xs font-normal text-[#737373]">Menit</span>
                     </p>
                     <p className="text-[11px] text-[#AAAAAA]">Estimasi membaca {selectedModule.duration || '25 menit'}</p>
@@ -1303,8 +1315,14 @@ export default function AdminGuruPelajaranPage() {
                       <span className="text-xs font-semibold text-[#737373]">Tingkat Penyelesaian</span>
                       <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                     </div>
-                    <p className="text-2xl font-bold text-emerald-600">94.2%</p>
-                    <p className="text-[11px] text-[#AAAAAA]">34 dari 36 siswa lulus</p>
+                    <p className="text-2xl font-bold text-emerald-600">
+                      {modSpecificAnalytics && modSpecificAnalytics.totalViews > 0 ? '100%' : '0%'}
+                    </p>
+                    <p className="text-[11px] text-[#AAAAAA]">
+                      {modSpecificAnalytics && modSpecificAnalytics.totalViews > 0
+                        ? `${modSpecificAnalytics.totalViews} siswa selesai`
+                        : 'Belum ada siswa selesai'}
+                    </p>
                   </div>
 
                   <div className="bg-white p-5 rounded-[12px] border border-[#ECECEC] space-y-2 shadow-2xs">
@@ -1312,8 +1330,8 @@ export default function AdminGuruPelajaranPage() {
                       <span className="text-xs font-semibold text-[#737373]">Perlu Perhatian</span>
                       <AlertCircle className="w-4 h-4 text-amber-500" />
                     </div>
-                    <p className="text-2xl font-bold text-amber-600">2 <span className="text-xs font-normal text-[#737373]">Siswa</span></p>
-                    <p className="text-[11px] text-[#AAAAAA]">Belum tuntas membaca</p>
+                    <p className="text-2xl font-bold text-amber-600">0 <span className="text-xs font-normal text-[#737373]">Siswa</span></p>
+                    <p className="text-[11px] text-[#AAAAAA]">Tidak ada siswa tertinggal</p>
                   </div>
                 </div>
 
@@ -1683,6 +1701,12 @@ export default function AdminGuruPelajaranPage() {
                             </span>
                           </div>
                         ))}
+
+                        {recentReaders.length === 0 && (
+                          <div className="py-6 text-center text-xs text-[#737373]">
+                            Belum ada siswa yang membaca materi ini.
+                          </div>
+                        )}
                       </div>
                     </div>
 

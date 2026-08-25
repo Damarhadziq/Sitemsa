@@ -13,17 +13,22 @@ export function StudentAuthGuard({ children }: { children: React.ReactNode }) {
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   const isAuthFlowRoute = 
+    pathname === '/' ||
     pathname.startsWith('/login') || 
     pathname.startsWith('/signup') || 
     pathname.startsWith('/register') || 
     pathname.startsWith('/lupa-password') || 
     pathname.startsWith('/verifikasi-otp') || 
     pathname.startsWith('/lengkapi-profil') || 
+    pathname.startsWith('/auth') || 
+    pathname.startsWith('/tips-belajar') || 
+    pathname.startsWith('/dokumentasi') || 
+    pathname.startsWith('/team') || 
     pathname.startsWith('/admin') || 
     pathname.startsWith('/api');
 
   useEffect(() => {
-    // 1. If accessing login, auth flow or admin routes, don't block
+    // 1. If accessing public/auth flow or admin routes, don't block
     if (isAuthFlowRoute) {
       setIsChecking(false);
       setIsAuthorized(true);

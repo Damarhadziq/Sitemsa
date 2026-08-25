@@ -162,14 +162,15 @@ export const saveStudentProfile = (profile: Partial<StudentProfile>): StudentPro
   const updated: StudentProfile = {
     ...current,
     ...profile,
+    loggedInAt: Date.now(),
   };
 
   try {
     localStorage.setItem(STUDENT_PROFILE_STORAGE_KEY, JSON.stringify(updated));
-    if (localStorage.getItem(STUDENT_SESSION_KEY)) {
-      localStorage.setItem(STUDENT_SESSION_KEY, JSON.stringify(updated));
-    }
+    localStorage.setItem(STUDENT_SESSION_KEY, JSON.stringify(updated));
+    document.cookie = `sintesa_student_auth=true; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
     window.dispatchEvent(new CustomEvent('sintesa-student-profile-updated', { detail: updated }));
+    window.dispatchEvent(new CustomEvent('sintesa-student-auth-changed', { detail: { isAuthenticated: true, user: updated } }));
 
     // Sync updates directly to Supabase database public.users
     if (supabase) {

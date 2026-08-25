@@ -428,8 +428,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push('/admin/superadmin');
   };
 
-  const loginAsTeacher = (email = 'budi.guru@sintesa.id') => {
-    const selected = TEACHER_USERS[email] || TEACHER_USERS['budi.guru@sintesa.id'];
+  const loginAsTeacher = (email = 'rizal.guru@sitemsa.sch.id') => {
+    const clean = email.replace(/\s+/g, '').toLowerCase();
+    const selected = TEACHER_USERS[clean] || Object.values(TEACHER_USERS)[0] || SUPERADMIN_USER;
     saveSession(selected);
     router.push('/admin/guru');
   };
@@ -440,39 +441,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const loginWithCredentials = (email: string, password?: string): boolean => {
-    const cleanEmail = email.trim().toLowerCase();
+    const cleanEmail = email.replace(/\s+/g, '').toLowerCase();
     
     // Asynchronously sync with backend endpoint
     authClientService.login({ email: cleanEmail, password }).catch((err) => {
       console.warn('Backend login sync warning:', err);
     });
 
-    if (cleanEmail === 'admin@sitemsa.sch.id' || cleanEmail === 'admin@sintesa.id' || cleanEmail === 'admin') {
-      loginAsSuperadmin();
+    // 1. Superadmin match
+    if (
+      cleanEmail === 'damar.guru@sitemsa.sch.id' ||
+      cleanEmail === 'admin@sitemsa.sch.id' ||
+      cleanEmail.includes('admin') ||
+      cleanEmail.startsWith('damar')
+    ) {
+      saveSession(SUPERADMIN_USER);
+      router.push('/admin/superadmin');
       return true;
     }
 
+    // 2. Specific Teacher Match
     if (TEACHER_USERS[cleanEmail]) {
-      loginAsTeacher(cleanEmail);
+      saveSession(TEACHER_USERS[cleanEmail]);
+      router.push('/admin/guru');
       return true;
     }
 
-    if (cleanEmail.includes('tari')) {
-      loginAsTeacher('tari.guru@sintesa.id');
+    // 3. Any Teacher keyword
+    if (cleanEmail.includes('guru') || cleanEmail.includes('teacher')) {
+      const fallbackTeacher = Object.values(TEACHER_USERS)[0] || SUPERADMIN_USER;
+      saveSession(fallbackTeacher);
+      router.push('/admin/guru');
       return true;
     }
 
-    if (cleanEmail.includes('guru')) {
-      loginAsTeacher('budi.guru@sitemsa.sch.id');
-      return true;
-    }
-
-    if (cleanEmail.includes('siswa')) {
+    // 4. Student
+    if (cleanEmail.includes('siswa') || cleanEmail.includes('student')) {
       loginAsStudent();
       return true;
     }
 
-    loginAsSuperadmin();
+    // 5. Default fallback to Superadmin
+    saveSession(SUPERADMIN_USER);
+    router.push('/admin/superadmin');
     return true;
   };
 

@@ -20,17 +20,18 @@ export default function AdminLoginPage() {
     setIsLoading(true);
 
     setTimeout(() => {
-      if (!email.trim()) {
+      const cleanEmail = email.replace(/\s+/g, '').toLowerCase();
+      if (!cleanEmail) {
         setErrorMsg('Silakan masukkan email pengelola atau guru.');
         setIsLoading(false);
         return;
       }
-      const success = loginWithCredentials(email, password);
+      const success = loginWithCredentials(cleanEmail, password);
       if (!success) {
         setErrorMsg('Email atau kata sandi tidak valid.');
         setIsLoading(false);
       }
-    }, 300);
+    }, 250);
   };
 
   return (
@@ -153,9 +154,16 @@ export default function AdminLoginPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full h-10 bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-[8px] transition-colors disabled:opacity-70 flex items-center justify-center text-xs sm:text-sm cursor-pointer shadow-xs active:scale-[0.99] select-none"
+                  className="w-full h-10 bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-[8px] transition-colors disabled:opacity-70 flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer shadow-xs active:scale-[0.99] select-none"
                 >
-                  {isLoading ? 'Memverifikasi...' : 'Masuk ke Dashboard'}
+                  {isLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Memverifikasi...</span>
+                    </>
+                  ) : (
+                    <span>Masuk ke Dashboard</span>
+                  )}
                 </button>
               </div>
             </form>

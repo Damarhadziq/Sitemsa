@@ -238,27 +238,39 @@ function TipsBelajarSkeleton() {
 }
 
 import { useAdminStore } from "@/lib/admin-store";
+import { ArticleService } from "@/services/article.service";
 
 function TipsBelajarContent() {
   const searchParams = useSearchParams();
   const queryIdStr = searchParams.get("id");
-  const { articles } = useAdminStore();
+  const { articles: storeArticles } = useAdminStore();
+  const [liveArticles, setLiveArticles] = useState<any[]>([]);
+
+  useEffect(() => {
+    ArticleService.fetchFromSupabase().then((data) => {
+      if (data && data.length > 0) {
+        setLiveArticles(data);
+      }
+    });
+  }, []);
 
   const allArticles: ArticleItem[] = useMemo(() => {
-    if (!articles || articles.length === 0) return TIPS_ARTICLES;
-    return articles.map((art, idx) => {
+    const sourceList = liveArticles.length > 0 ? liveArticles : storeArticles;
+    if (!sourceList || sourceList.length === 0) return TIPS_ARTICLES;
+
+    return sourceList.map((art: any, idx: number) => {
       const sections = art.content
         ? art.content
             .split('\n\n')
             .filter(Boolean)
-            .map((para, pIdx) => ({
+            .map((para: string, pIdx: number) => ({
               title: pIdx === 0 ? 'Poin Utama Pembahasan' : `Langkah ${pIdx + 1}`,
               description: para,
             }))
         : [];
 
       return {
-        id: parseInt(art.id.replace(/\D/g, ''), 10) || idx + 1,
+        id: parseInt(String(art.id).replace(/\D/g, ''), 10) || idx + 1,
         title: art.title,
         author: art.author || 'Tim Sitemsa',
         summary: art.excerpt || art.title,
@@ -273,7 +285,7 @@ function TipsBelajarContent() {
               ],
       };
     });
-  }, [articles]);
+  }, [liveArticles, storeArticles]);
 
   const initialId = useMemo(() => {
     if (queryIdStr) {

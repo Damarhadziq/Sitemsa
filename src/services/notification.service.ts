@@ -8,6 +8,7 @@ import {
   Settings02Icon,
   BellIcon,
 } from '@hugeicons/core-free-icons';
+import { supabase } from '@/lib/supabase';
 
 export type NotificationConditionType =
   | 'materi'
@@ -120,6 +121,46 @@ export const getStoredNotifications = (): AppNotification[] => {
   }
 };
 
+export const syncNotificationsFromSupabase = async (userId?: string): Promise<AppNotification[]> => {
+  if (!supabase) return getStoredNotifications();
+
+  try {
+    let query = supabase.from('notifications').select('*').order('created_at', { ascending: false });
+    if (userId) {
+      query = query.or(`user_id.eq.${userId},user_id.is.null`);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      console.warn('Supabase notifications fetch warning:', error.message);
+      return getStoredNotifications();
+    }
+
+    if (data && Array.isArray(data) && data.length > 0) {
+      const mapped: AppNotification[] = data.map((item: any) => ({
+        id: String(item.id),
+        type: item.type || 'materi',
+        title: item.title,
+        message: item.message,
+        time: item.time || (item.created_at ? new Date(item.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : 'Baru saja'),
+        isRead: Boolean(item.is_read),
+        linkUrl: item.link_url || undefined,
+        userId: item.user_id || undefined,
+      }));
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(mapped));
+        window.dispatchEvent(new CustomEvent('sintesa-notifications-updated'));
+      }
+      return mapped;
+    }
+  } catch (e) {
+    console.warn('Supabase notifications sync error:', e);
+  }
+
+  return getStoredNotifications();
+};
+
 export const addUserNotification = (
   notif: Omit<AppNotification, 'id' | 'time' | 'isRead'> & { time?: string }
 ): AppNotification => {
@@ -144,6 +185,23 @@ export const addUserNotification = (
       console.error(e);
     }
   }
+
+  // Async sync to Supabase
+  if (supabase) {
+    supabase.from('notifications').insert({
+      id: newNotif.id,
+      user_id: notif.userId || null,
+      type: notif.type || 'materi',
+      title: notif.title,
+      message: notif.message,
+      time: newNotif.time,
+      is_read: false,
+      link_url: notif.linkUrl || null,
+    }).then(({ error }) => {
+      if (error) console.warn('Supabase insert notification warning:', error.message);
+    });
+  }
+
   return newNotif;
 };
 
@@ -157,6 +215,11 @@ export const markAllNotificationsRead = (): AppNotification[] => {
   } catch (e) {
     console.error(e);
   }
+
+  if (supabase) {
+    supabase.from('notifications').update({ is_read: true }).neq('id', 'non-existent').then(() => {});
+  }
+
   return updated;
 };
 
@@ -170,48 +233,40 @@ export const markNotificationAsRead = (id: string): AppNotification[] => {
   } catch (e) {
     console.error(e);
   }
+
+  if (supabase) {
+    supabase.from('notifications').update({ is_read: true }).eq('id', id).then(() => {});
+  }
+
   return updated;
 };
 
-let serverInMemoryNotifications: AppNotification[] = [...INITIAL_NOTIFICATIONS];
-
 export class NotificationService {
   static getNotifications(userId?: string): AppNotification[] {
+    const list = getStoredNotifications();
     if (userId) {
-      return serverInMemoryNotifications.filter((n) => !n.userId || n.userId === userId);
+      return list.filter((n) => !n.userId || n.userId === userId);
     }
-    return serverInMemoryNotifications;
+    return list;
   }
 
   static createNotification(data: Partial<AppNotification>): AppNotification {
-    const newNotif: AppNotification = {
-      id: `n-${Date.now()}`,
+    return addUserNotification({
       type: data.type || 'materi',
       title: data.title || 'Pemberitahuan Baru',
       message: data.message || '',
-      time: 'Baru saja',
-      isRead: false,
       linkUrl: data.linkUrl,
       userId: data.userId,
-    };
-    serverInMemoryNotifications.unshift(newNotif);
-    return newNotif;
+    });
   }
 
   static markAsRead(id: string): boolean {
-    const item = serverInMemoryNotifications.find((n) => n.id === id);
-    if (!item) return false;
-    item.isRead = true;
+    markNotificationAsRead(id);
     return true;
   }
 
-  static markAllAsRead(userId?: string): boolean {
-    serverInMemoryNotifications = serverInMemoryNotifications.map((n) => {
-      if (!userId || n.userId === userId) {
-        return { ...n, isRead: true };
-      }
-      return n;
-    });
+  static markAllAsRead(): boolean {
+    markAllNotificationsRead();
     return true;
   }
 }

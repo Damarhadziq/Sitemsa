@@ -1,3 +1,6 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
 import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react";
 import {
   Layers01Icon,
@@ -7,11 +10,14 @@ import {
   MusicNote01Icon,
   Car01Icon,
   Dumbbell01Icon,
+  Book01Icon,
 } from "@hugeicons/core-free-icons";
 import Link from "next/link";
+import { SubjectService } from '@/services/subject.service';
+import { ProgressService } from '@/services/progress.service';
 
-interface Subject {
-  id: number;
+interface SubjectDisplay {
+  id: string | number;
   name: string;
   isLastStudied?: boolean;
   modulesCount: number;
@@ -21,65 +27,104 @@ interface Subject {
   icon: IconSvgElement;
 }
 
-const SUBJECTS: Subject[] = [
-  {
-    id: 1,
-    name: "Informatika",
-    isLastStudied: true,
-    modulesCount: 12,
-    completedMateri: 9,
-    totalMateri: 12,
-    description: "Pahami logika dan kuasai dunia digital.",
-    icon: ComputerIcon,
-  },
-  {
-    id: 2,
-    name: "Elektronika",
-    modulesCount: 12,
-    completedMateri: 5,
-    totalMateri: 12,
-    description: "Dari sirkuit sederhana hingga inovasi masa depan.",
-    icon: CpuIcon,
-  },
-  {
-    id: 3,
-    name: "Bimbingan dan Konseling",
-    modulesCount: 12,
-    completedMateri: 3,
-    totalMateri: 12,
-    description: "Kenali potensimu dan rancang masa depanmu.",
-    icon: UserGroupIcon,
-  },
-  {
-    id: 4,
-    name: "Seni Tari",
-    modulesCount: 12,
-    completedMateri: 7,
-    totalMateri: 12,
-    description: "Ekspresikan dirimu melalui harmoni gerak.",
-    icon: MusicNote01Icon,
-  },
-  {
-    id: 5,
-    name: "Otomotif",
-    modulesCount: 12,
-    completedMateri: 12,
-    totalMateri: 12,
-    description: "Bedah mesin dan pahami cara kerjanya.",
-    icon: Car01Icon,
-  },
-  {
-    id: 6,
-    name: "Keolahragaan",
-    modulesCount: 12,
-    completedMateri: 0,
-    totalMateri: 12,
-    description: "Kuatkan fisik dan asah sportivitasmu.",
-    icon: Dumbbell01Icon,
-  },
-];
+const getSubjectIcon = (name: string): IconSvgElement => {
+  const n = name.toLowerCase();
+  if (n.includes('informatika') || n.includes('komputer') || n.includes('pplg')) return ComputerIcon;
+  if (n.includes('elektronika')) return CpuIcon;
+  if (n.includes('konseling') || n.includes('bk')) return UserGroupIcon;
+  if (n.includes('tari') || n.includes('seni')) return MusicNote01Icon;
+  if (n.includes('otomotif') || n.includes('mesin')) return Car01Icon;
+  if (n.includes('olahraga') || n.includes('keolahragaan')) return Dumbbell01Icon;
+  return Book01Icon;
+};
 
 export function SubjectCatalog() {
+  const [subjectsList, setSubjectsList] = useState<SubjectDisplay[]>([]);
+
+  useEffect(() => {
+    SubjectService.fetchFromSupabase().then((subs) => {
+      const student = ProgressService.getStudentById('std-1');
+      const progressMap = student?.moduleProgress || {};
+
+      const mapped: SubjectDisplay[] = subs.map((sub, idx) => {
+        const total = sub.totalModules || 12;
+        const percent = progressMap[sub.name] || (idx === 0 ? 75 : idx === 1 ? 40 : idx === 4 ? 100 : 25);
+        const completed = Math.round((percent / 100) * total);
+
+        return {
+          id: sub.id,
+          name: sub.name,
+          isLastStudied: idx === 0,
+          modulesCount: total,
+          completedMateri: completed,
+          totalMateri: total,
+          description: sub.description || `Kuasai materi dan kompetensi keahlian ${sub.name}.`,
+          icon: getSubjectIcon(sub.name),
+        };
+      });
+
+      setSubjectsList(mapped);
+    });
+  }, []);
+
+  const displayList = subjectsList.length > 0 ? subjectsList : [
+    {
+      id: 1,
+      name: "Informatika",
+      isLastStudied: true,
+      modulesCount: 12,
+      completedMateri: 9,
+      totalMateri: 12,
+      description: "Pahami logika dan kuasai dunia digital.",
+      icon: ComputerIcon,
+    },
+    {
+      id: 2,
+      name: "Elektronika",
+      modulesCount: 12,
+      completedMateri: 5,
+      totalMateri: 12,
+      description: "Dari sirkuit sederhana hingga inovasi masa depan.",
+      icon: CpuIcon,
+    },
+    {
+      id: 3,
+      name: "Bimbingan dan Konseling",
+      modulesCount: 12,
+      completedMateri: 3,
+      totalMateri: 12,
+      description: "Kenali potensimu dan rancang masa depanmu.",
+      icon: UserGroupIcon,
+    },
+    {
+      id: 4,
+      name: "Seni Tari",
+      modulesCount: 12,
+      completedMateri: 7,
+      totalMateri: 12,
+      description: "Ekspresikan dirimu melalui harmoni gerak.",
+      icon: MusicNote01Icon,
+    },
+    {
+      id: 5,
+      name: "Otomotif",
+      modulesCount: 12,
+      completedMateri: 12,
+      totalMateri: 12,
+      description: "Bedah mesin dan pahami cara kerjanya.",
+      icon: Car01Icon,
+    },
+    {
+      id: 6,
+      name: "Keolahragaan",
+      modulesCount: 12,
+      completedMateri: 0,
+      totalMateri: 12,
+      description: "Kuatkan fisik dan asah sportivitasmu.",
+      icon: Dumbbell01Icon,
+    },
+  ];
+
   return (
     <section className="mb-10">
       <div className="flex items-center justify-between mb-6">
@@ -95,7 +140,7 @@ export function SubjectCatalog() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {SUBJECTS.map((subject) => {
+        {displayList.map((subject) => {
           const progressPercent = (subject.completedMateri / subject.totalMateri) * 100;
 
           return (

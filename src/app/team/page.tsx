@@ -97,11 +97,24 @@ const getMemberDetails = (division: string) => {
   }
 };
 
+import { TeamService, FALLBACK_TEAM_MEMBERS } from "@/services/team.service";
+
 export default function TeamPage() {
   const { teamMembers: storeTeamMembers } = useAdminStore();
+  const [liveMembers, setLiveMembers] = useState<TeamMember[]>([]);
+
+  useEffect(() => {
+    TeamService.getTeamMembers().then((data) => {
+      if (data && data.length > 0) {
+        setLiveMembers(data);
+      }
+    });
+  }, []);
+
   const allTeamMembers = useMemo(() => {
-    return storeTeamMembers && storeTeamMembers.length > 0 ? storeTeamMembers : fallbackTeamMembers;
-  }, [storeTeamMembers]);
+    if (liveMembers.length > 0) return liveMembers;
+    return storeTeamMembers && storeTeamMembers.length > 0 ? storeTeamMembers : FALLBACK_TEAM_MEMBERS;
+  }, [liveMembers, storeTeamMembers]);
 
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
 

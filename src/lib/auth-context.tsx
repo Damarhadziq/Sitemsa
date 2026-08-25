@@ -417,19 +417,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loginAsSuperadmin = () => {
     saveSession(SUPERADMIN_USER);
-    router.push('/admin/superadmin');
+    if (typeof window !== 'undefined') {
+      window.location.href = '/admin/superadmin';
+    } else {
+      router.push('/admin/superadmin');
+    }
   };
 
-  const loginAsTeacher = (email = 'rizal.guru@sitemsa.sch.id') => {
+  const loginAsTeacher = (email = 'damar.guru@sitemsa.sch.id') => {
     const clean = email.replace(/\s+/g, '').toLowerCase();
-    const selected = TEACHER_USERS[clean] || Object.values(TEACHER_USERS)[0] || SUPERADMIN_USER;
+    const selected = TEACHER_USERS[clean] || TEACHER_USERS['damar.guru@sitemsa.sch.id'] || Object.values(TEACHER_USERS)[0] || SUPERADMIN_USER;
     saveSession(selected);
-    router.push('/admin/guru');
+    if (typeof window !== 'undefined') {
+      window.location.href = '/admin/guru';
+    } else {
+      router.push('/admin/guru');
+    }
   };
 
   const loginAsStudent = () => {
     saveSession(STUDENT_USER);
-    router.push('/');
+    if (typeof window !== 'undefined') {
+      window.location.href = '/';
+    } else {
+      router.push('/');
+    }
   };
 
   const loginWithCredentials = (email: string, password?: string): boolean => {
@@ -448,7 +460,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       cleanEmail.includes('superadmin')
     ) {
       saveSession(SUPERADMIN_USER);
-      router.push('/admin/superadmin');
+      if (typeof window !== 'undefined') {
+        window.location.href = '/admin/superadmin';
+      } else {
+        router.push('/admin/superadmin');
+      }
       return true;
     }
 
@@ -456,10 +472,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (TEACHER_USERS[cleanEmail]) {
       const teacher = TEACHER_USERS[cleanEmail];
       saveSession(teacher);
-      if (teacher.role === 'superadmin') {
-        router.push('/admin/superadmin');
+      const targetUrl = teacher.role === 'superadmin' ? '/admin/superadmin' : '/admin/guru';
+      if (typeof window !== 'undefined') {
+        window.location.href = targetUrl;
       } else {
-        router.push('/admin/guru');
+        router.push(targetUrl);
       }
       return true;
     }
@@ -468,7 +485,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (cleanEmail.includes('guru') || cleanEmail.includes('teacher')) {
       const fallbackTeacher = TEACHER_USERS['damar.guru@sitemsa.sch.id'] || Object.values(TEACHER_USERS)[0];
       saveSession(fallbackTeacher);
-      router.push('/admin/guru');
+      if (typeof window !== 'undefined') {
+        window.location.href = '/admin/guru';
+      } else {
+        router.push('/admin/guru');
+      }
       return true;
     }
 
@@ -480,7 +501,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // 5. Default fallback to Superadmin
     saveSession(SUPERADMIN_USER);
-    router.push('/admin/superadmin');
+    if (typeof window !== 'undefined') {
+      window.location.href = '/admin/superadmin';
+    } else {
+      router.push('/admin/superadmin');
+    }
     return true;
   };
 

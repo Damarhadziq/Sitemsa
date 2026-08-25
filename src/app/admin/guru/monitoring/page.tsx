@@ -245,9 +245,13 @@ export default function AdminGuruMonitoringPage() {
                         </span>
                       </td>
 
-                      {/* Status evaluasi (Tanpa icon) */}
+                      {/* Status evaluasi */}
                       <td className="py-4 px-6">
-                        {isPassed ? (
+                        {subjectQuizzes.length === 0 && progress === 0 ? (
+                          <span className="inline-flex items-center text-[11px] bg-slate-100 text-slate-600 font-semibold px-2.5 py-0.5 rounded-[4px]">
+                            Belum mulai
+                          </span>
+                        ) : isPassed ? (
                           <span className="inline-flex items-center text-[11px] bg-emerald-50 text-emerald-700 font-semibold px-2.5 py-0.5 rounded-[4px]">
                             Tuntas / lulus
                           </span>

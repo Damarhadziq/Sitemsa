@@ -885,36 +885,43 @@ Memahami perhitungan daya sangat penting untuk menentukan batas aman kapasitas s
   ];
 
   public students: StudentRecord[] = [
-    {
-      id: 'std-1',
-      nisn: '0082918239',
-      name: 'Muhammad Rizky Pratama',
-      email: 'siswa@belajar.id',
-      classGroup: 'X TJKT 2',
-      avatar: 'https://i.pravatar.cc/150?img=33',
-      lastActive: 'Baru saja',
-      enrolledSubjects: ['Informatika', 'Elektronika', 'Otomotif', 'Seni Tari', 'Bimbingan Konseling', 'Keolahragaan'],
-      moduleProgress: {
-        'Informatika': 85,
-        'Elektronika': 60,
-        'Otomotif': 100,
-        'Seni Tari': 40,
-        'Bimbingan Konseling': 75,
-        'Keolahragaan': 50,
-      },
-      quizHistory: [
-        {
-          id: 'qh-1',
-          subject: 'Otomotif',
-          quizTitle: 'Kuis Evaluasi Sistem Pengisian',
-          score: 90,
-          maxScore: 100,
-          date: '2026-08-24',
-          status: 'Lulus',
-        },
-      ],
-    },
-  ];
+  {
+    id: 'std-1',
+    nisn: '0061234567',
+    name: 'Budi Santoso',
+    email: 'siswa@belajar.id',
+    classGroup: 'XI PPLG 1',
+    avatar: 'https://i.pravatar.cc/150?img=12',
+    lastActive: 'Belum aktif',
+    enrolledSubjects: ['Informatika', 'Elektronika', 'Otomotif', 'Keolahragaan', 'Bimbingan Konseling', 'Seni Tari'],
+    moduleProgress: {},
+    quizHistory: [],
+  },
+  {
+    id: 'std-2',
+    nisn: '0069876543',
+    name: 'Muhammad Rizky Pratama',
+    email: 'rizky.pratama@smkn1semarang.sch.id',
+    classGroup: 'XI TO 1',
+    avatar: 'https://i.pravatar.cc/150?img=33',
+    lastActive: 'Belum aktif',
+    enrolledSubjects: ['Otomotif', 'Elektronika', 'Informatika'],
+    moduleProgress: {},
+    quizHistory: [],
+  },
+  {
+    id: 'std-3',
+    nisn: '0065544332',
+    name: 'Siti Rahmawati',
+    email: 'siti.rahmawati@smkn1semarang.sch.id',
+    classGroup: 'XI TE 1',
+    avatar: 'https://i.pravatar.cc/150?img=25',
+    lastActive: 'Belum aktif',
+    enrolledSubjects: ['Elektronika', 'Informatika', 'Keolahragaan'],
+    moduleProgress: {},
+    quizHistory: [],
+  },
+];;
 
   public notifications: NotificationItem[] = [
     {

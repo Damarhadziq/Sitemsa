@@ -38,6 +38,29 @@ const getSubjectIcon = (name: string): IconSvgElement => {
   return Book01Icon;
 };
 
+const EXACT_SUBJECT_MODULE_COUNTS: Record<string, number> = {
+  'informatika': 3,
+  'elektronika': 6,
+  'otomotif': 2,
+  'keolahragaan': 2,
+  'olahraga & kesehatan': 2,
+  'pendidikan jasmani': 2,
+  'bimbingan konseling': 7,
+  'bimbingan dan konseling': 7,
+  'bk': 7,
+  'seni tari': 2,
+};
+
+const getActualModuleCount = (subjectName: string): number => {
+  const norm = subjectName.toLowerCase().trim();
+  for (const [key, count] of Object.entries(EXACT_SUBJECT_MODULE_COUNTS)) {
+    if (norm.includes(key) || key.includes(norm)) {
+      return count;
+    }
+  }
+  return 2;
+};
+
 export function SubjectCatalog() {
   const [subjectsList, setSubjectsList] = useState<SubjectDisplay[]>([]);
 
@@ -47,7 +70,7 @@ export function SubjectCatalog() {
       const progressMap = student?.moduleProgress || {};
 
       const mapped: SubjectDisplay[] = subs.map((sub) => {
-        const total = sub.totalModules || 5;
+        const total = getActualModuleCount(sub.name);
         const percent = progressMap[sub.name] || 0;
         const completed = Math.round((percent / 100) * total);
 
@@ -72,10 +95,10 @@ export function SubjectCatalog() {
       id: 1,
       name: "Informatika",
       isLastStudied: false,
-      modulesCount: 5,
+      modulesCount: 3,
       completedMateri: 0,
-      totalMateri: 5,
-      description: "Pahami logika dan kuasai dunia digital.",
+      totalMateri: 3,
+      description: "Pemrograman dasar, logika algoritma, struktur data, dan pengembangan perangkat lunak.",
       icon: ComputerIcon,
     },
     {
@@ -85,47 +108,47 @@ export function SubjectCatalog() {
       modulesCount: 6,
       completedMateri: 0,
       totalMateri: 6,
-      description: "Dari sirkuit sederhana hingga inovasi masa depan.",
+      description: "Komponen pasif & aktif, dasar kelistrikan, sirkuit terpadu, dan mikrokontroler.",
       icon: CpuIcon,
     },
     {
       id: 3,
-      name: "Bimbingan dan Konseling",
+      name: "Bimbingan Konseling",
       isLastStudied: false,
-      modulesCount: 6,
+      modulesCount: 7,
       completedMateri: 0,
-      totalMateri: 6,
-      description: "Kenali potensimu dan rancang masa depanmu.",
+      totalMateri: 7,
+      description: "Kepercayaan diri, pemetaan potensi diri, prokrastinasi, dan bimbingan karir masa depan.",
       icon: UserGroupIcon,
     },
     {
       id: 4,
       name: "Seni Tari",
       isLastStudied: false,
-      modulesCount: 4,
+      modulesCount: 2,
       completedMateri: 0,
-      totalMateri: 4,
-      description: "Ekspresikan dirimu melalui harmoni gerak.",
+      totalMateri: 2,
+      description: "Eksplorasi gerak koreografi, tata busana panggung, tata rias, dan properti tari tradisional.",
       icon: MusicNote01Icon,
     },
     {
       id: 5,
       name: "Otomotif",
       isLastStudied: false,
-      modulesCount: 5,
+      modulesCount: 2,
       completedMateri: 0,
-      totalMateri: 5,
-      description: "Eksplorasi teknologi mesin dan kendaraan.",
+      totalMateri: 2,
+      description: "Sistem pengisian kelistrikan, transmisi manual, termodinamika mesin, dan diagnosis kendaraan.",
       icon: Car01Icon,
     },
     {
       id: 6,
-      name: "Olahraga & Kesehatan",
+      name: "Keolahragaan",
       isLastStudied: false,
-      modulesCount: 4,
+      modulesCount: 2,
       completedMateri: 0,
-      totalMateri: 4,
-      description: "Jaga kebugaran dan kesehatan jasmani.",
+      totalMateri: 2,
+      description: "Keterampilan gerak & taktik bola basket, bola voli, kebugaran jasmani, dan sportivitas.",
       icon: Dumbbell01Icon,
     },
   ];

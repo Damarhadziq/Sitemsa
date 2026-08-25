@@ -260,9 +260,14 @@ CREATE POLICY "Allow public read on articles" ON public.articles FOR SELECT USIN
 
 DROP POLICY IF EXISTS "Allow public read on users" ON public.users;
 CREATE POLICY "Allow public read on users" ON public.users FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Allow public write on users" ON public.users;
+CREATE POLICY "Allow public write on users" ON public.users FOR ALL USING (true) WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Allow public read on notifications" ON public.notifications;
-CREATE POLICY "Allow public read on notifications" ON public.notifications FOR SELECT USING (true);
+CREATE POLICY "Allow public read on notifications" ON public.notifications FOR ALL USING (true) WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Allow public read on team_members" ON public.team_members;
-CREATE POLICY "Allow public read on team_members" ON public.team_members FOR SELECT USING (true);
+CREATE POLICY "Allow public read on team_members" ON public.team_members FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public read on quiz_attempts" ON public.quiz_attempts;
+CREATE POLICY "Allow public read on quiz_attempts" ON public.quiz_attempts FOR ALL USING (true) WITH CHECK (true);

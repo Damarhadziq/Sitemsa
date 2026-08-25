@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { isStudentAuthenticated } from '@/services/student-profile.service';
+import { isStudentAuthenticated, syncStudentProfileFromSupabase } from '@/services/student-profile.service';
 import { useAuth } from '@/lib/auth-context';
 
 export function StudentAuthGuard({ children }: { children: React.ReactNode }) {
@@ -29,6 +29,8 @@ export function StudentAuthGuard({ children }: { children: React.ReactNode }) {
     if (studentAuthed || hasActiveUser) {
       setIsAuthorized(true);
       setIsChecking(false);
+      // Sync latest profile data from Supabase
+      syncStudentProfileFromSupabase();
     } else {
       setIsAuthorized(false);
       setIsChecking(false);

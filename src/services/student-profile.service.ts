@@ -1,5 +1,7 @@
 'use client';
 
+import { supabase } from '@/lib/supabase';
+
 export interface StudentProfile {
   id: string;
   name: string;
@@ -18,13 +20,13 @@ const STUDENT_PROFILE_STORAGE_KEY = 'sintesa_student_profile_v1';
 const STUDENT_SESSION_KEY = 'sintesa_student_session_v1';
 
 export const OFFICIAL_DUMMY_STUDENT: StudentProfile = {
-  id: 'std-budi-01',
+  id: 'usr-student-1',
   name: 'Budi Santoso',
   email: 'siswa@belajar.id',
   school: 'SMKN 1 Semarang',
   nisn: '0071234567',
   grade: 'XI PPLG 1',
-  avatar: 'https://i.pravatar.cc/150?img=12',
+  avatar: 'https://i.pravatar.cc/300?img=12',
   bio: 'Siswa Rekayasa Perangkat Lunak SMKN 1 Semarang. Antusias dalam pengembangan web dan inovasi digital.',
   phone: '0812-3456-7890',
 };
@@ -33,7 +35,7 @@ export const OFFICIAL_DUMMY_STUDENT: StudentProfile = {
 export const DEFAULT_DUMMY_STUDENT = OFFICIAL_DUMMY_STUDENT;
 
 /**
- * Valid student credentials list for testing
+ * Valid student credentials list for login authentication
  */
 export const VALID_STUDENT_CREDENTIALS = [
   {
@@ -82,14 +84,14 @@ export const authenticateStudent = (email: string, password?: string): { success
   if (!matched) {
     return {
       success: false,
-      message: 'Email siswa tidak terdaftar. Gunakan akun uji coba siswa@belajar.id',
+      message: 'Email siswa tidak terdaftar di sistem Sitemsa.',
     };
   }
 
   if (cleanPassword && cleanPassword !== matched.password) {
     return {
       success: false,
-      message: 'Kata sandi siswa salah. Password default: SiswaSitemsa#2026',
+      message: 'Kata sandi siswa salah. Silakan periksa kembali.',
     };
   }
 
@@ -106,6 +108,9 @@ export const authenticateStudent = (email: string, password?: string): { success
       document.cookie = `sintesa_student_auth=true; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
       window.dispatchEvent(new CustomEvent('sintesa-student-profile-updated', { detail: sessionData }));
       window.dispatchEvent(new CustomEvent('sintesa-student-auth-changed', { detail: { isAuthenticated: true, user: sessionData } }));
+      
+      // Async sync from Supabase if available
+      syncStudentProfileFromSupabase(cleanEmail);
     } catch (e) {
       console.error(e);
     }
@@ -149,7 +154,7 @@ export const getStudentProfile = (): StudentProfile => {
 };
 
 /**
- * Save updated student profile
+ * Save updated student profile locally & directly to Supabase public.users
  */
 export const saveStudentProfile = (profile: Partial<StudentProfile>): StudentProfile => {
   if (typeof window === 'undefined') return OFFICIAL_DUMMY_STUDENT;
@@ -158,14 +163,70 @@ export const saveStudentProfile = (profile: Partial<StudentProfile>): StudentPro
     ...current,
     ...profile,
   };
+
   try {
     localStorage.setItem(STUDENT_PROFILE_STORAGE_KEY, JSON.stringify(updated));
     if (localStorage.getItem(STUDENT_SESSION_KEY)) {
       localStorage.setItem(STUDENT_SESSION_KEY, JSON.stringify(updated));
     }
     window.dispatchEvent(new CustomEvent('sintesa-student-profile-updated', { detail: updated }));
+
+    // Sync updates directly to Supabase database public.users
+    if (supabase) {
+      supabase
+        .from('users')
+        .update({
+          name: updated.name,
+          avatar: updated.avatar,
+          nip: updated.nisn,
+        })
+        .eq('email', updated.email)
+        .then(({ data, error }) => {
+          if (error) {
+            console.warn('Gagal sinkronisasi profil ke Supabase users:', error.message);
+          } else {
+            console.log('✅ Profil siswa berhasil tersinkronisasi ke Supabase users:', data);
+          }
+        });
+    }
   } catch (e) {
     console.error(e);
   }
+
   return updated;
+};
+
+/**
+ * Fetch latest student profile from Supabase and sync locally
+ */
+export const syncStudentProfileFromSupabase = async (targetEmail?: string) => {
+  if (typeof window === 'undefined' || !supabase) return;
+
+  try {
+    const current = getStudentProfile();
+    const queryEmail = targetEmail || current.email || 'siswa@belajar.id';
+
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', queryEmail)
+      .maybeSingle();
+
+    if (!error && data) {
+      const merged: StudentProfile = {
+        ...current,
+        name: data.name || current.name,
+        avatar: data.avatar || current.avatar,
+        nisn: data.nip || current.nisn,
+        email: data.email || current.email,
+      };
+      localStorage.setItem(STUDENT_PROFILE_STORAGE_KEY, JSON.stringify(merged));
+      if (localStorage.getItem(STUDENT_SESSION_KEY)) {
+        localStorage.setItem(STUDENT_SESSION_KEY, JSON.stringify(merged));
+      }
+      window.dispatchEvent(new CustomEvent('sintesa-student-profile-updated', { detail: merged }));
+    }
+  } catch (err) {
+    console.warn('Error fetching student profile from Supabase:', err);
+  }
 };

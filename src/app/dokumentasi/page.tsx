@@ -621,7 +621,7 @@ export default function DocumentationPage() {
                         {art.category}
                       </span>
 
-                      <h3 className="text-base font-bold text-[#2E2D2D] leading-snug">
+                      <h3 className="text-base font-semibold text-[#2E2D2D] leading-snug">
                         {art.title}
                       </h3>
 

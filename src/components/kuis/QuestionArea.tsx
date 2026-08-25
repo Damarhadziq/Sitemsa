@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { ProgressService } from "@/services/progress.service";
 import { addUserNotification } from "@/services/notification.service";
+import { recordModuleCompletion } from "@/services/weekly-target.service";
 
 // Web Audio API Synthesizer (Zero-dependency SFX)
 function playQuizSound(type: "pop" | "correct" | "wrong") {
@@ -264,6 +265,7 @@ export function QuestionArea() {
           status: finalScorePercent >= 70 ? 'Lulus' : 'Perlu Bimbingan',
         });
         ProgressService.updateProgress('std-1', 'Informatika', 100);
+        recordModuleCompletion('mod-quiz-active');
 
         // Dispatch live dynamic notification
         addUserNotification({

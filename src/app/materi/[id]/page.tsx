@@ -29,7 +29,10 @@ import {
   Link01Icon,
   Cancel01Icon,
   Calendar01Icon,
+  CheckmarkCircle01Icon,
 } from "@hugeicons/core-free-icons";
+import { recordModuleCompletion } from "@/services/weekly-target.service";
+import { addUserNotification } from "@/services/notification.service";
 
 export type QuizSourceType = "internal" | "barcode" | "external_link";
 
@@ -2066,6 +2069,20 @@ export default function MaterialDetailPage({
     }
   }, [material]);
 
+  const [isMarkedDone, setIsMarkedDone] = useState(false);
+
+  const handleMarkComplete = () => {
+    if (isMarkedDone || !material) return;
+    setIsMarkedDone(true);
+    recordModuleCompletion(String(material.id));
+    addUserNotification({
+      type: 'materi',
+      title: 'Materi Selesai Dipelajari',
+      message: `Selamat! Kamu telah menyelesaikan materi "${material.title}". Target mingguanmu bertambah.`,
+      linkUrl: `/materi/${material.id}`,
+    });
+  };
+
   const handleStartQuizClick = (e: React.MouseEvent) => {
     const qSource = material.quizSource;
     if (qSource.type === "barcode") {
@@ -2484,6 +2501,39 @@ export default function MaterialDetailPage({
                   <HugeiconsIcon icon={Download01Icon} size={15} />
                   <span>Unduh Modul PDF</span>
                 </a>
+              </section>
+
+              {/* Mark Completed Section */}
+              <section className="bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-white border border-blue-100 rounded-[12px] p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-[8px] bg-[#2563EB]/10 text-[#2563EB] flex items-center justify-center shrink-0">
+                    <HugeiconsIcon icon={CheckmarkCircle01Icon} size={20} />
+                  </div>
+                  <div>
+                    <h3 className="text-xs md:text-sm font-bold text-[#2E2D2D]">
+                      {isMarkedDone ? "Materi Selesai Dipelajari" : "Sudah Selesai Mempelajari Materi Ini?"}
+                    </h3>
+                    <p className="text-[11px] text-[#737373]">
+                      {isMarkedDone
+                        ? "Progres belajarmu telah tercatat pada Target Mingguan."
+                        : "Tandai untuk mencatat progres belajarmu ke Target Mingguan."}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleMarkComplete}
+                  disabled={isMarkedDone}
+                  className={`px-4 py-2.5 sm:py-2 rounded-[6px] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all duration-200 shrink-0 w-full sm:w-auto ${
+                    isMarkedDone
+                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-default"
+                      : "bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-95 text-white cursor-pointer shadow-xs"
+                  }`}
+                >
+                  <HugeiconsIcon icon={CheckmarkCircle01Icon} size={15} />
+                  <span>{isMarkedDone ? "Sudah Selesai ✓" : "Tandai Selesai"}</span>
+                </button>
               </section>
             </article>
 

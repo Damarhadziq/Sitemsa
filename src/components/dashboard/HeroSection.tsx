@@ -2,23 +2,28 @@
 
 import { useState, useEffect } from 'react';
 import { getStudentProfile, DEFAULT_DUMMY_STUDENT } from '@/services/student-profile.service';
+import { getWeeklyTarget } from '@/services/weekly-target.service';
 
 export function HeroSection() {
   const [firstName, setFirstName] = useState(DEFAULT_DUMMY_STUDENT.name.split(' ')[0]);
+  const [weeklyTarget, setWeeklyTarget] = useState(getWeeklyTarget());
 
   useEffect(() => {
-    const updateName = () => {
+    const updateData = () => {
       const p = getStudentProfile();
       setFirstName(p.name ? p.name.split(' ')[0] : 'Siswa');
+      setWeeklyTarget(getWeeklyTarget());
     };
 
-    updateName();
-    window.addEventListener('sintesa-student-profile-updated', updateName);
-    window.addEventListener('storage', updateName);
+    updateData();
+    window.addEventListener('sintesa-student-profile-updated', updateData);
+    window.addEventListener('sintesa-weekly-target-updated', updateData);
+    window.addEventListener('storage', updateData);
 
     return () => {
-      window.removeEventListener('sintesa-student-profile-updated', updateName);
-      window.removeEventListener('storage', updateName);
+      window.removeEventListener('sintesa-student-profile-updated', updateData);
+      window.removeEventListener('sintesa-weekly-target-updated', updateData);
+      window.removeEventListener('storage', updateData);
     };
   }, []);
 
@@ -40,17 +45,21 @@ export function HeroSection() {
         <div className="flex items-center justify-between gap-3">
           {/* Custom Progress Bar */}
           <div className="flex-1 h-2 bg-white border border-[#ECECEC] rounded-full overflow-hidden p-[1px]">
-            <div className="h-full w-[60%] bg-[#2563EB] rounded-full transition-all duration-500 ease-out" />
+            <div
+              className="h-full bg-[#2563EB] rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${weeklyTarget.percentage}%` }}
+            />
           </div>
           <span className="text-xs font-semibold text-[#2E2D2D] shrink-0">
-            3 dari 5 Materi Selesai
+            {weeklyTarget.completed} dari {weeklyTarget.target} Materi Selesai
           </span>
         </div>
 
         <p className="text-xs text-[#737373]">
-          Sedikit lagi, pertahankan rentetan belajarmu!
+          {weeklyTarget.message}
         </p>
       </div>
     </section>
   );
 }
+

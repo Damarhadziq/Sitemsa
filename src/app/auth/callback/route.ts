@@ -6,6 +6,8 @@ export async function GET(request: Request) {
   const code = searchParams.get('code');
   const next = searchParams.get('next') || '/lengkapi-profil';
 
+  const redirectUrl = new URL(next, origin);
+
   if (code) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -19,16 +21,26 @@ export async function GET(request: Request) {
         const email = user.email || '';
         const avatar = user.user_metadata?.avatar_url || user.user_metadata?.picture || '';
 
-        const redirectUrl = new URL(next, origin);
         redirectUrl.searchParams.set('name', name);
         redirectUrl.searchParams.set('email', email);
         if (avatar) redirectUrl.searchParams.set('avatar', avatar);
 
-        return NextResponse.redirect(redirectUrl);
+        const response = NextResponse.redirect(redirectUrl);
+        response.cookies.set('sintesa_student_auth', 'true', {
+          path: '/',
+          maxAge: 2592000,
+          sameSite: 'lax',
+        });
+        return response;
       }
     }
   }
 
-  // Fallback redirect
-  return NextResponse.redirect(`${origin}${next}`);
+  const response = NextResponse.redirect(redirectUrl);
+  response.cookies.set('sintesa_student_auth', 'true', {
+    path: '/',
+    maxAge: 2592000,
+    sameSite: 'lax',
+  });
+  return response;
 }

@@ -35,6 +35,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { recordModuleCompletion } from "@/services/weekly-target.service";
 import { addUserNotification } from "@/services/notification.service";
+import { StudyAnalyticsService } from "@/services/analytics.service";
 
 export type QuizSourceType = "internal" | "barcode" | "external_link";
 
@@ -1370,6 +1371,39 @@ export default function MaterialDetailPage({
         console.error(e);
       }
     }
+  }, [material]);
+
+  // Realtime Active Reading & Study Timer
+  useEffect(() => {
+    if (!material) return;
+    const startTime = Date.now();
+
+    const handleBeforeUnload = () => {
+      const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+      if (elapsedSeconds >= 5) {
+        StudyAnalyticsService.recordReadingSession({
+          moduleId: material.id,
+          moduleTitle: material.title,
+          subject: material.subject,
+          durationSeconds: elapsedSeconds,
+        });
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+      if (elapsedSeconds >= 5) {
+        StudyAnalyticsService.recordReadingSession({
+          moduleId: material.id,
+          moduleTitle: material.title,
+          subject: material.subject,
+          durationSeconds: elapsedSeconds,
+        });
+      }
+    };
   }, [material]);
 
   const [isMarkedDone, setIsMarkedDone] = useState(false);

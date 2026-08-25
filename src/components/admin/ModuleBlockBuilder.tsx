@@ -263,8 +263,6 @@ function AutoResizeTextarea({
       style={{
         textAlign: 'justify',
         textAlignLast: 'left',
-        paddingLeft: '1.25rem',
-        textIndent: '-1.25rem',
         ...style,
       }}
     />

@@ -55,24 +55,13 @@ const normalizeSubName = (cat: string) => {
 const getActualModuleCount = (subjectName: string, storeModules: any[] = []): number => {
   const norm = normalizeSubName(subjectName);
   
-  // 1. Base modules
-  const baseMods = MODUL_DATA.filter((m) => normalizeSubName(m.subject) === norm);
-  
-  // 2. Count distinct store modules by title
-  const seenTitles = new Set(baseMods.map((b) => b.title.toLowerCase().trim()));
-  let count = baseMods.length;
+  if (storeModules && storeModules.length > 0) {
+    const matching = storeModules.filter((m) => m.isPublished !== false && normalizeSubName(m.subject || '') === norm);
+    const uniqueTitles = new Set(matching.map((m) => (m.title || '').toLowerCase().trim()));
+    return uniqueTitles.size;
+  }
 
-  storeModules.forEach((m) => {
-    if (m.isPublished === false) return;
-    if (normalizeSubName(m.subject || '') !== norm) return;
-    const titleKey = (m.title || '').toLowerCase().trim();
-    if (!seenTitles.has(titleKey)) {
-      seenTitles.add(titleKey);
-      count++;
-    }
-  });
-
-  return Math.max(1, count);
+  return MODUL_DATA.filter((m) => normalizeSubName(m.subject) === norm).length;
 };
 
 export function SubjectCatalog() {
@@ -84,38 +73,27 @@ export function SubjectCatalog() {
       SubjectService.fetchFromSupabase(),
       ModuleService.fetchFromSupabase(),
     ]).then(([subs, cloudModules]) => {
-      // Sync cloud modules to store if missing
       if (cloudModules && cloudModules.length > 0) {
-        const currentStoreModules = useAdminStore.getState().modules;
-        const missingFromStore = cloudModules.filter(
-          (c) => !currentStoreModules.some((m) => m.id === c.id || m.title.trim().toLowerCase() === c.title.trim().toLowerCase())
-        );
-
-        if (missingFromStore.length > 0) {
-          useAdminStore.setState((state) => ({
-            modules: [
-              ...missingFromStore.map((c) => ({
-                id: c.id,
-                subject: c.subject,
-                title: c.title,
-                level: c.level,
-                duration: c.duration,
-                topics: c.topics,
-                description: c.description,
-                teacherId: c.teacherId,
-                teacherName: c.teacherName,
-                isPublished: c.isPublished,
-                createdAt: c.createdAt,
-                isAiRecommended: c.isAiRecommended,
-                quizSource: c.quizSource,
-              })),
-              ...state.modules,
-            ],
-          }));
-        }
+        useAdminStore.setState({
+          modules: cloudModules.map((c) => ({
+            id: c.id,
+            subject: c.subject,
+            title: c.title,
+            level: c.level,
+            duration: c.duration,
+            topics: c.topics,
+            description: c.description,
+            teacherId: c.teacherId,
+            teacherName: c.teacherName,
+            isPublished: c.isPublished !== false,
+            createdAt: c.createdAt,
+            isAiRecommended: c.isAiRecommended,
+            quizSource: c.quizSource,
+          })),
+        });
       }
 
-      const activeStoreModules = useAdminStore.getState().modules;
+      const activeStoreModules = cloudModules && cloudModules.length > 0 ? cloudModules : useAdminStore.getState().modules;
       const student = ProgressService.getStudentById('std-1');
       const progressMap = student?.moduleProgress || {};
 

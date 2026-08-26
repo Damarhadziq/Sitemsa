@@ -496,33 +496,23 @@ function MateriLandingContent() {
   useEffect(() => {
     ModuleService.fetchFromSupabase().then((cloudModules) => {
       if (cloudModules && cloudModules.length > 0) {
-        const currentStoreModules = useAdminStore.getState().modules;
-        const missingFromStore = cloudModules.filter(
-          (c) => !currentStoreModules.some((m) => m.id === c.id || m.title.trim().toLowerCase() === c.title.trim().toLowerCase())
-        );
-
-        if (missingFromStore.length > 0) {
-          useAdminStore.setState((state) => ({
-            modules: [
-              ...missingFromStore.map((c) => ({
-                id: c.id,
-                subject: c.subject,
-                title: c.title,
-                level: c.level,
-                duration: c.duration,
-                topics: c.topics,
-                description: c.description,
-                teacherId: c.teacherId,
-                teacherName: c.teacherName,
-                isPublished: c.isPublished,
-                createdAt: c.createdAt,
-                isAiRecommended: c.isAiRecommended,
-                quizSource: c.quizSource,
-              })),
-              ...state.modules,
-            ],
-          }));
-        }
+        useAdminStore.setState({
+          modules: cloudModules.map((c) => ({
+            id: c.id,
+            subject: c.subject,
+            title: c.title,
+            level: c.level,
+            duration: c.duration,
+            topics: c.topics,
+            description: c.description,
+            teacherId: c.teacherId,
+            teacherName: c.teacherName,
+            isPublished: c.isPublished !== false,
+            createdAt: c.createdAt,
+            isAiRecommended: c.isAiRecommended,
+            quizSource: c.quizSource,
+          })),
+        });
       }
     });
   }, []);
@@ -562,55 +552,30 @@ function MateriLandingContent() {
   const { modules } = useAdminStore();
 
   const liveModulData = useMemo(() => {
-    const matchedStoreIds = new Set<string>();
+    if (modules && modules.length > 0) {
+      const uniqueMap = new Map<string, ModulItem>();
+      modules
+        .filter((m) => m.isPublished !== false)
+        .forEach((m) => {
+          const key = `${(m.subject || '').toLowerCase().trim()}_${(m.title || '').toLowerCase().trim()}`;
+          if (!uniqueMap.has(key)) {
+            uniqueMap.set(key, {
+              id: m.id,
+              subject: m.subject || "Informatika",
+              title: m.title,
+              level: m.level || "Pemula",
+              duration: m.duration || "30 Menit",
+              topics: m.topics && m.topics.length > 0 ? m.topics : ["Materi Pembelajaran"],
+              description: m.description || "Materi pembelajaran interaktif.",
+              icon: getSubjectIcon(m.subject || ""),
+              isAiRecommended: m.isAiRecommended,
+            });
+          }
+        });
+      return Array.from(uniqueMap.values());
+    }
 
-    const updatedBaseList: ModulItem[] = MODUL_DATA.map((base) => {
-      const targetKey = idToModuleKey[Number(base.id)];
-      const storeMod = modules.find(
-        (m) =>
-          (targetKey && m.id === targetKey) ||
-          m.id === String(base.id) ||
-          moduleKeyToId[m.id] === Number(base.id) ||
-          m.title.toLowerCase().trim() === base.title.toLowerCase().trim()
-      );
-      if (!storeMod) return base;
-      matchedStoreIds.add(storeMod.id);
-      return {
-        ...base,
-        title: storeMod.title || base.title,
-        subject: storeMod.subject || base.subject,
-        description: storeMod.description || base.description,
-        level: (storeMod.level as any) || base.level,
-        duration: storeMod.duration || base.duration,
-        topics: storeMod.topics || base.topics,
-      };
-    });
-
-    // Append newly created modules from admin/teacher store
-    const newStoreModules: ModulItem[] = modules
-      .filter((m) => !matchedStoreIds.has(m.id) && m.isPublished !== false)
-      .map((m) => ({
-        id: m.id,
-        subject: m.subject || "Elektronika",
-        title: m.title,
-        level: m.level || "Pemula",
-        duration: m.duration || "30 Menit",
-        topics: m.topics && m.topics.length > 0 ? m.topics : ["Materi Baru"],
-        description: m.description || "Materi pembelajaran interaktif.",
-        icon: getSubjectIcon(m.subject || ""),
-        isAiRecommended: m.isAiRecommended,
-      }));
-
-    const combined = [...updatedBaseList, ...newStoreModules];
-    const uniqueMap = new Map<string, ModulItem>();
-    combined.forEach((item) => {
-      const key = `${(item.subject || '').toLowerCase().trim()}_${(item.title || '').toLowerCase().trim()}`;
-      if (!uniqueMap.has(key)) {
-        uniqueMap.set(key, item);
-      }
-    });
-
-    return Array.from(uniqueMap.values());
+    return MODUL_DATA;
   }, [modules]);
 
   // Filter modules

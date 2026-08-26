@@ -197,6 +197,51 @@ export default function AdminGuruPelajaranPage() {
   const selectedModule = selectedItemId ? subjectModules.find((m) => m.id === selectedItemId) : null;
   const selectedQuiz = selectedItemId ? subjectQuizzes.find((q) => q.id === selectedItemId) : null;
 
+  // Live fetch from Supabase on mount to ensure IDs are 100% in sync with database
+  useEffect(() => {
+    ModuleService.fetchFromSupabase().then((cloudModules) => {
+      if (cloudModules && cloudModules.length > 0) {
+        useAdminStore.setState({
+          modules: cloudModules.map((c) => ({
+            id: c.id,
+            subject: c.subject,
+            title: c.title,
+            level: c.level,
+            duration: c.duration,
+            topics: c.topics,
+            description: c.description,
+            teacherId: c.teacherId,
+            teacherName: c.teacherName,
+            isPublished: c.isPublished !== false,
+            createdAt: c.createdAt,
+            isAiRecommended: c.isAiRecommended,
+            quizSource: c.quizSource,
+          })),
+        });
+      }
+    });
+
+    QuizService.fetchFromSupabase().then((cloudQuizzes) => {
+      if (cloudQuizzes && cloudQuizzes.length > 0) {
+        useAdminStore.setState({
+          quizzes: cloudQuizzes.map((q) => ({
+            id: q.id,
+            subject: q.subject,
+            title: q.title,
+            duration: q.duration,
+            passScore: q.passScore,
+            questionCount: q.questionCount ?? (q.questions ? q.questions.length : 0),
+            questions: q.questions,
+            teacherId: q.teacherId || 't-1',
+            teacherName: q.teacherName || 'Pengajar Sitemsa',
+            createdAt: q.createdAt,
+            published: q.published !== false,
+          })),
+        });
+      }
+    });
+  }, []);
+
   // Loading state simulation
   const [isLoading, setIsLoading] = useState(true);
 
@@ -377,31 +422,59 @@ export default function AdminGuruPelajaranPage() {
     setDeleteTarget({ id, title, type });
   };
 
-  const confirmDeleteModule = () => {
+  const confirmDeleteModule = async () => {
     if (deleteTarget) {
       const wasViewingDeletedItem = selectedItemId === deleteTarget.id;
+      const targetId = deleteTarget.id;
+      const targetTitle = deleteTarget.title;
 
       if (deleteTarget.type === 'kuis') {
-        deleteQuiz(deleteTarget.id);
-        QuizService.deleteQuiz(deleteTarget.id);
-        quizzesClientService.delete(deleteTarget.id).catch((err) => console.warn('Sync delete quiz error:', err));
+        deleteQuiz(targetId);
+        await QuizService.deleteQuiz(targetId);
+        quizzesClientService.delete(targetId).catch((err) => console.warn('Sync delete quiz error:', err));
         if (supabase) {
-          supabase.from('quizzes').delete().eq('id', deleteTarget.id);
-        }
-        showToast(<>Kuis <span className="font-bold">{deleteTarget.title}</span> berhasil dihapus.</>, 'warning');
-      } else {
-        deleteModule(deleteTarget.id);
-        ModuleService.deleteModule(deleteTarget.id, deleteTarget.title);
-        modulesClientService.delete(deleteTarget.id).catch((err) => console.warn('Sync delete module error:', err));
-        if (supabase) {
-          supabase.from('modules').delete().eq('id', deleteTarget.id);
-          if (deleteTarget.title) {
-            supabase.from('modules').delete().eq('title', deleteTarget.title);
+          await supabase.from('quizzes').delete().eq('id', targetId);
+          if (targetTitle) {
+            await supabase.from('quizzes').delete().ilike('title', targetTitle);
           }
         }
-        showToast(<>Materi <span className="font-bold">{deleteTarget.title}</span> berhasil dihapus.</>, 'warning');
+        showToast(<>Kuis <span className="font-bold">{targetTitle}</span> berhasil dihapus.</>, 'warning');
+      } else {
+        deleteModule(targetId);
+        await ModuleService.deleteModule(targetId, targetTitle);
+        modulesClientService.delete(targetId).catch((err) => console.warn('Sync delete module error:', err));
+        if (supabase) {
+          await supabase.from('modules').delete().eq('id', targetId);
+          if (targetTitle) {
+            await supabase.from('modules').delete().ilike('title', targetTitle);
+          }
+        }
+        showToast(<>Materi <span className="font-bold">{targetTitle}</span> berhasil dihapus.</>, 'warning');
       }
       setDeleteTarget(null);
+
+      // Re-fetch from Supabase to guarantee complete sync
+      ModuleService.fetchFromSupabase().then((fresh) => {
+        if (fresh) {
+          useAdminStore.setState({
+            modules: fresh.map((c) => ({
+              id: c.id,
+              subject: c.subject,
+              title: c.title,
+              level: c.level,
+              duration: c.duration,
+              topics: c.topics,
+              description: c.description,
+              teacherId: c.teacherId,
+              teacherName: c.teacherName,
+              isPublished: c.isPublished !== false,
+              createdAt: c.createdAt,
+              isAiRecommended: c.isAiRecommended,
+              quizSource: c.quizSource,
+            })),
+          });
+        }
+      });
 
       // If we were viewing the deleted item's detail, go back to overview
       if (wasViewingDeletedItem) {

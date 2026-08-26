@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRight, BarChart2 } from "lucide-react";
 import { MateriSkeleton } from "@/components/materi/MateriSkeleton";
 import { useAdminStore } from "@/lib/admin-store";
 import { idToModuleKey, moduleKeyToId } from "@/app/materi/[id]/page";
+import { getStudentScopedStorageKey } from "@/services/student-profile.service";
 import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react";
 import {
   Search01Icon,
@@ -417,7 +418,8 @@ function MateriLandingContent() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
-      const rawViews = localStorage.getItem('sintesa_user_views');
+      const key = getStudentScopedStorageKey('sintesa_user_views');
+      const rawViews = localStorage.getItem(key);
       const views: { id: number; subject: string; timestamp: number }[] = rawViews ? JSON.parse(rawViews) : [];
 
       if (views && views.length > 0) {

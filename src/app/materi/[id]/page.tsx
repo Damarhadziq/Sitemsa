@@ -36,6 +36,7 @@ import {
 import { recordModuleCompletion, isModuleCompletedByStudent } from "@/services/weekly-target.service";
 import { addUserNotification } from "@/services/notification.service";
 import { StudyAnalyticsService } from "@/services/analytics.service";
+import { getStudentScopedStorageKey } from "@/services/student-profile.service";
 
 export type QuizSourceType = "internal" | "barcode" | "external_link";
 
@@ -2036,11 +2037,12 @@ export default function MateriDetailPage({
   useEffect(() => {
     if (material) {
       try {
-        const raw = localStorage.getItem("sintesa_user_views") || "[]";
+        const key = getStudentScopedStorageKey("sintesa_user_views");
+        const raw = localStorage.getItem(key) || "[]";
         const views: { id: number; subject: string; timestamp: number }[] = JSON.parse(raw);
         const filtered = views.filter((v) => v.id !== material.id);
         filtered.unshift({ id: material.id, subject: material.subject, timestamp: Date.now() });
-        localStorage.setItem("sintesa_user_views", JSON.stringify(filtered.slice(0, 30)));
+        localStorage.setItem(key, JSON.stringify(filtered.slice(0, 30)));
       } catch (e) {
         console.error(e);
       }

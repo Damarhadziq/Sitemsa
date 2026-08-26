@@ -215,6 +215,26 @@ export const registerStudent = (data: {
 };
 
 /**
+ * Helper to generate a storage key uniquely scoped to the logged-in student email
+ */
+export const getStudentScopedStorageKey = (baseKey: string): string => {
+  if (typeof window === 'undefined') return baseKey;
+  try {
+    const raw = localStorage.getItem(STUDENT_SESSION_KEY) || localStorage.getItem(STUDENT_PROFILE_STORAGE_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      if (data?.email) {
+        const safeSuffix = String(data.email).toLowerCase().replace(/[^a-z0-9]/g, '_');
+        return `${baseKey}_${safeSuffix}`;
+      }
+    }
+  } catch {
+    // fallback
+  }
+  return baseKey;
+};
+
+/**
  * Sync logged in Google student profile from URL params or active Supabase session
  */
 export const syncFromUrlParamsOrSupabase = async () => {

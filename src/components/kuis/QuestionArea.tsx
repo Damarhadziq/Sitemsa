@@ -19,6 +19,7 @@ import {
 import { ProgressService } from "@/services/progress.service";
 import { addUserNotification } from "@/services/notification.service";
 import { recordModuleCompletion } from "@/services/weekly-target.service";
+import { getStudentProfile } from "@/services/student-profile.service";
 
 // Web Audio API Synthesizer (Zero-dependency SFX)
 function playQuizSound(type: "pop" | "correct" | "wrong") {
@@ -292,16 +293,19 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
       setIsCompleted(true);
       const finalScorePercent = Math.round((correctCount / questionsList.length) * 100);
       try {
-        ProgressService.recordQuizAttempt('std-1', {
+        const studentProfile = getStudentProfile();
+        const studentId = studentProfile.id || studentProfile.email || 'std-1';
+
+        ProgressService.recordQuizAttempt(studentId, {
           quizId: quizId || 'quiz-active',
           quizTitle: 'Kuis Evaluasi Sitemsa',
           subject: 'Informatika',
           score: finalScorePercent,
           maxScore: 100,
           status: finalScorePercent >= 70 ? 'Lulus' : 'Perlu Bimbingan',
-        });
-        ProgressService.updateProgress('std-1', 'Informatika', 100);
-        recordModuleCompletion('mod-quiz-active');
+        }, studentProfile.name, studentProfile.email);
+        ProgressService.updateProgress(studentId, 'Informatika', finalScorePercent, studentProfile.name, studentProfile.email);
+        recordModuleCompletion(quizId || 'mod-quiz-active');
 
         // Dispatch live dynamic notification
         addUserNotification({

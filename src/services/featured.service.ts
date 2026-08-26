@@ -100,13 +100,16 @@ export const FEATURED_CARDS_DATA: FeaturedModuleCard[] = [
   },
 ];
 
+import { getStudentScopedStorageKey } from '@/services/student-profile.service';
+
 const STORAGE_KEY = 'sintesa_featured_condition_filter';
 
 export const getFeaturedModules = (filter?: string): FeaturedModuleCard[] => {
   if (typeof window === 'undefined') return FEATURED_CARDS_DATA.slice(0, 3);
   try {
     // Dynamic contextual resolution: can prioritize by user view history if available
-    const rawViews = localStorage.getItem('sintesa_user_views');
+    const key = getStudentScopedStorageKey('sintesa_user_views');
+    const rawViews = localStorage.getItem(key);
     if (rawViews) {
       const views: { id: number; subject: string; timestamp: number }[] = JSON.parse(rawViews);
       if (views.length > 0) {

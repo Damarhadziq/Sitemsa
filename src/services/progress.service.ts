@@ -37,13 +37,35 @@ export class ProgressService {
 
   static getStudentById(id: string): StudentRecord | null {
     this.ensureHydrated();
-    return dbStore.students.find((s) => s.id === id) || null;
+    return dbStore.students.find((s) => s.id === id || s.email === id) || null;
   }
 
-  static updateProgress(studentId: string, subject: string, progress: number): StudentRecord | null {
+  static getOrCreateStudent(studentId: string, studentName?: string, studentEmail?: string, avatar?: string): StudentRecord {
     this.ensureHydrated();
-    const student = dbStore.students.find((s) => s.id === studentId);
-    if (!student) return null;
+    let student = dbStore.students.find((s) => s.id === studentId || s.email === studentId || (studentEmail && s.email === studentEmail));
+    if (!student) {
+      const newStudent: StudentRecord = {
+        id: studentId,
+        nisn: '-',
+        name: studentName || 'Siswa Sitemsa',
+        email: studentEmail || studentId,
+        classGroup: 'X PPLG 1',
+        avatar: avatar || `https://i.pravatar.cc/150?u=${studentId}`,
+        lastActive: 'Baru saja',
+        enrolledSubjects: ['Informatika', 'Elektronika', 'Otomotif', 'Bimbingan Konseling', 'Seni Tari', 'Keolahragaan'],
+        moduleProgress: {},
+        quizHistory: [],
+      };
+      dbStore.students.unshift(newStudent);
+      this.persist();
+      return newStudent;
+    }
+    return student;
+  }
+
+  static updateProgress(studentId: string, subject: string, progress: number, studentName?: string, studentEmail?: string): StudentRecord {
+    this.ensureHydrated();
+    const student = this.getOrCreateStudent(studentId, studentName, studentEmail);
 
     student.moduleProgress[subject] = Math.min(100, Math.max(0, progress));
     student.lastActive = 'Baru saja';
@@ -58,21 +80,19 @@ export class ProgressService {
     score: number;
     maxScore: number;
     status: 'Lulus' | 'Perlu Bimbingan';
-  }) {
+  }, studentName?: string, studentEmail?: string) {
     this.ensureHydrated();
-    const student = dbStore.students.find((s) => s.id === studentId);
+    const student = this.getOrCreateStudent(studentId, studentName, studentEmail);
     const newAttemptId = `qh-${Date.now()}`;
     const dateStr = new Date().toISOString().split('T')[0];
 
-    if (student) {
-      student.quizHistory.unshift({
-        id: newAttemptId,
-        ...attempt,
-        date: dateStr,
-      });
-      student.lastActive = 'Baru saja';
-      this.persist();
-    }
+    student.quizHistory.unshift({
+      id: newAttemptId,
+      ...attempt,
+      date: dateStr,
+    });
+    student.lastActive = 'Baru saja';
+    this.persist();
 
     // Direct Supabase record insert
     if (supabase) {

@@ -77,7 +77,6 @@ export function UserProfileModal({
   // Track if any field has changed compared to saved profile
   const hasChanges =
     name !== savedProfile.name ||
-    email !== savedProfile.email ||
     school !== savedProfile.school ||
     nisn !== savedProfile.nisn ||
     grade !== savedProfile.grade ||
@@ -247,15 +246,20 @@ export function UserProfileModal({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-[#2E2D2D]">
-                    Email Siswa
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-[#2E2D2D]">
+                      Email Siswa
+                    </label>
+                    <span className="text-[10px] font-semibold text-[#737373] bg-[#F5F5F5] px-2 py-0.5 rounded-[4px]">
+                      Tidak dapat diubah
+                    </span>
+                  </div>
                   <input
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-white border border-[#ECECEC] rounded-[10px] px-3.5 py-2.5 text-xs text-[#2E2D2D] focus:outline-none focus:border-[#2563EB] transition-colors font-medium"
-                    required
+                    disabled
+                    readOnly
+                    className="w-full bg-[#FAFAFA] border border-[#ECECEC] text-[#737373] cursor-not-allowed rounded-[10px] px-3.5 py-2.5 text-xs font-medium focus:outline-none select-none"
                   />
                 </div>
 

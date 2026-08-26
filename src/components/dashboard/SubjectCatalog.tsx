@@ -14,6 +14,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import Link from "next/link";
 import { SubjectService } from '@/services/subject.service';
+import { ModuleService } from '@/services/module.service';
 import { ProgressService } from '@/services/progress.service';
 import { useAdminStore } from '@/lib/admin-store';
 import { MODUL_DATA } from '@/app/materi/page';
@@ -75,12 +76,47 @@ export function SubjectCatalog() {
   const [subjectsList, setSubjectsList] = useState<SubjectDisplay[]>([]);
 
   useEffect(() => {
-    SubjectService.fetchFromSupabase().then((subs) => {
+    Promise.all([
+      SubjectService.fetchFromSupabase(),
+      ModuleService.fetchFromSupabase(),
+    ]).then(([subs, cloudModules]) => {
+      // Sync cloud modules to store if missing
+      if (cloudModules && cloudModules.length > 0) {
+        const currentStoreModules = useAdminStore.getState().modules;
+        const missingFromStore = cloudModules.filter(
+          (c) => !currentStoreModules.some((m) => m.id === c.id || m.title.trim().toLowerCase() === c.title.trim().toLowerCase())
+        );
+
+        if (missingFromStore.length > 0) {
+          useAdminStore.setState((state) => ({
+            modules: [
+              ...missingFromStore.map((c) => ({
+                id: c.id,
+                subject: c.subject,
+                title: c.title,
+                level: c.level,
+                duration: c.duration,
+                topics: c.topics,
+                description: c.description,
+                teacherId: c.teacherId,
+                teacherName: c.teacherName,
+                isPublished: c.isPublished,
+                createdAt: c.createdAt,
+                isAiRecommended: c.isAiRecommended,
+                quizSource: c.quizSource,
+              })),
+              ...state.modules,
+            ],
+          }));
+        }
+      }
+
+      const activeStoreModules = useAdminStore.getState().modules;
       const student = ProgressService.getStudentById('std-1');
       const progressMap = student?.moduleProgress || {};
 
       const mapped: SubjectDisplay[] = subs.map((sub) => {
-        const total = getActualModuleCount(sub.name, modules);
+        const total = getActualModuleCount(sub.name, activeStoreModules);
         const percent = progressMap[sub.name] || 0;
         const completed = Math.round((percent / 100) * total);
 

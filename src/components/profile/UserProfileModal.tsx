@@ -40,10 +40,10 @@ export function UserProfileModal({
   const [prevInitialTab, setPrevInitialTab] = useState(initialTab);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleLogout = () => {
-    logoutStudent();
+  const handleLogout = async () => {
     onClose();
-    router.push('/login');
+    await logoutStudent();
+    window.location.href = '/login';
   };
 
   // Baseline initial profile state

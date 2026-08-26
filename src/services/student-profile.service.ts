@@ -378,11 +378,23 @@ export const authenticateStudent = (email: string, password?: string): { success
 /**
  * Log out student and destroy session
  */
-export const logoutStudent = (): void => {
+export const logoutStudent = async (): Promise<void> => {
   if (typeof window !== 'undefined') {
     try {
       localStorage.removeItem(STUDENT_SESSION_KEY);
-      document.cookie = 'sintesa_student_auth=; path=/; max-age=0; SameSite=Lax';
+      localStorage.removeItem(STUDENT_PROFILE_STORAGE_KEY);
+      localStorage.removeItem('sintesa_user');
+      localStorage.removeItem('sintesa_last_active');
+
+      document.cookie = 'sintesa_student_auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0;';
+      document.cookie = 'auth_student=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0;';
+      document.cookie = 'auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0;';
+      document.cookie = 'auth_admin=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0;';
+
+      if (supabase) {
+        await supabase.auth.signOut().catch(() => {});
+      }
+
       window.dispatchEvent(new CustomEvent('sintesa-student-auth-changed', { detail: { isAuthenticated: false } }));
     } catch (e) {
       console.error(e);

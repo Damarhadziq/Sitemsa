@@ -372,11 +372,11 @@ export function Navbar() {
 
                     <button
                       type="button"
-                      onClick={() => {
+                      onClick={async () => {
                         setIsProfileOpen(false);
-                        logoutStudent();
+                        await logoutStudent();
                         logout();
-                        router.push('/login');
+                        window.location.href = '/login';
                       }}
                       className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 rounded-[6px] transition-colors cursor-pointer"
                     >

@@ -21,6 +21,40 @@ export default function LoginPage() {
   const [isPending, setIsPending] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
+  React.useEffect(() => {
+    // Check if arriving with active Supabase session or hash token
+    const checkSupabaseAuth = async () => {
+      if (typeof window === 'undefined') return;
+      if (supabase) {
+        try {
+          const { data } = await supabase.auth.getSession();
+          if (data?.session?.user) {
+            const u = data.session.user;
+            const uName = u.user_metadata?.full_name || u.user_metadata?.name || u.email?.split('@')[0] || 'Siswa Sitemsa';
+            const uEmail = u.email || '';
+            const uAvatar = u.user_metadata?.avatar_url || u.user_metadata?.picture || '';
+
+            if (uEmail) {
+              registerStudent({
+                name: uName,
+                email: uEmail,
+                avatar: uAvatar,
+              });
+              document.cookie = 'sintesa_student_auth=true; path=/; max-age=2592000; SameSite=Lax';
+              document.cookie = 'auth_student=siswa; path=/; max-age=2592000; SameSite=Lax';
+              document.cookie = 'auth=true; path=/; max-age=2592000; SameSite=Lax';
+              window.location.href = '/';
+            }
+          }
+        } catch (e) {
+          console.warn('Session check warning:', e);
+        }
+      }
+    };
+
+    checkSupabaseAuth();
+  }, []);
+
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
     setErrorMsg('');

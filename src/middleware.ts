@@ -6,10 +6,11 @@ export function middleware(request: NextRequest) {
   const adminCookie = request.cookies.get('auth_admin');
   const studentCookie = request.cookies.get('sintesa_student_auth') || request.cookies.get('auth');
 
-  // Ignore static assets, favicon, images, documents, and internal Next.js requests
+  // Ignore static assets, favicon, images, documents, auth callbacks, and internal Next.js requests
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
+    pathname.startsWith('/auth') ||
     pathname.startsWith('/images') ||
     pathname.startsWith('/documents') ||
     pathname.startsWith('/favicon') ||

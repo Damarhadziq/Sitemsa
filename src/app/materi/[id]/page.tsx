@@ -1965,27 +1965,54 @@ export default function MateriDetailPage({
 
       return {
         ...baseMaterial,
+        id: (storeMod.id as any) || baseMaterial.id,
+        subject: storeMod.subject || baseMaterial.subject,
         title: storeMod.title || baseMaterial.title,
         description: storeMod.description || baseMaterial.description,
         level: (storeMod.level as any) || baseMaterial.level,
         duration: storeMod.duration || baseMaterial.duration,
+        author: storeMod.teacherName || baseMaterial.author,
+        updatedAt: storeMod.createdAt || baseMaterial.updatedAt,
         topics: storeMod.topics || baseMaterial.topics,
         imageUrl: storeMod.thumbnail || baseMaterial.imageUrl,
-        contentSections: dynamicSections.length > 0 ? dynamicSections : baseMaterial.contentSections,
-        stepByStepSection: dynamicStepByStep || baseMaterial.stepByStepSection,
-        videoSection: dynamicVideo || baseMaterial.videoSection,
+        contentSections: dynamicSections.length > 0 ? dynamicSections : (storeMod.description ? [{ id: 'sec-1', title: storeMod.title, paragraphs: [storeMod.description] }] : baseMaterial.contentSections),
+        stepByStepSection: dynamicStepByStep || (dynamicSections.length > 0 ? undefined : baseMaterial.stepByStepSection),
+        videoSection: dynamicVideo || (dynamicSections.length > 0 ? undefined : baseMaterial.videoSection),
         attachment: dynamicAttachment,
+        quizSource: storeMod.quizSource ? {
+          type: storeMod.quizSource.type === 'kuis_sitemsa' ? 'internal' : storeMod.quizSource.type === 'qr_code' ? 'barcode' : 'external_link',
+          title: storeMod.quizSource.title || 'Uji Pemahaman Materi',
+          description: 'Ikuti kuis evaluasi untuk menguji pemahaman materi ini.',
+          externalUrl: storeMod.quizSource.externalUrl,
+          qrImageUrl: storeMod.quizSource.qrImageUrl,
+          externalPlatformName: 'Platform Eksternal',
+          internalUrl: `/kuis/${storeMod.id}`,
+        } : baseMaterial.quizSource,
       };
     }
 
     return {
       ...baseMaterial,
+      id: (storeMod.id as any) || baseMaterial.id,
+      subject: storeMod.subject || baseMaterial.subject,
       title: storeMod.title || baseMaterial.title,
       description: storeMod.description || baseMaterial.description,
       level: (storeMod.level as any) || baseMaterial.level,
       duration: storeMod.duration || baseMaterial.duration,
+      author: storeMod.teacherName || baseMaterial.author,
+      updatedAt: storeMod.createdAt || baseMaterial.updatedAt,
       topics: storeMod.topics || baseMaterial.topics,
       imageUrl: storeMod.thumbnail || baseMaterial.imageUrl,
+      contentSections: storeMod.description ? [{ id: 'sec-1', title: storeMod.title, paragraphs: [storeMod.description] }] : baseMaterial.contentSections,
+      quizSource: storeMod.quizSource ? {
+        type: storeMod.quizSource.type === 'kuis_sitemsa' ? 'internal' : storeMod.quizSource.type === 'qr_code' ? 'barcode' : 'external_link',
+        title: storeMod.quizSource.title || 'Uji Pemahaman Materi',
+        description: 'Ikuti kuis evaluasi untuk menguji pemahaman materi ini.',
+        externalUrl: storeMod.quizSource.externalUrl,
+        qrImageUrl: storeMod.quizSource.qrImageUrl,
+        externalPlatformName: 'Platform Eksternal',
+        internalUrl: `/kuis/${storeMod.id}`,
+      } : baseMaterial.quizSource,
     };
   }, [baseMaterial, modules, id]);
 

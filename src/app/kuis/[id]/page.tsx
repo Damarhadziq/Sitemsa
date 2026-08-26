@@ -7,12 +7,11 @@ export default async function QuizPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  void id;
 
   return (
     <div className="flex flex-col min-h-screen">
       <QuizHeader exitUrl="/materi" />
-      <QuestionArea />
+      <QuestionArea quizId={id} />
     </div>
   );
 }

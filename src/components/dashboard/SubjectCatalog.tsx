@@ -15,6 +15,7 @@ import {
 import Link from "next/link";
 import { SubjectService } from '@/services/subject.service';
 import { ProgressService } from '@/services/progress.service';
+import { useAdminStore } from '@/lib/admin-store';
 
 interface SubjectDisplay {
   id: string | number;
@@ -38,6 +39,17 @@ const getSubjectIcon = (name: string): IconSvgElement => {
   return Book01Icon;
 };
 
+const normalizeSubName = (cat: string) => {
+  const c = cat.toLowerCase().replace(/\s+/g, ' ').trim();
+  if (c.includes('bk') || c.includes('konseling')) return 'bimbingan konseling';
+  if (c.includes('informatika') || c.includes('komputer')) return 'informatika';
+  if (c.includes('elektronika')) return 'elektronika';
+  if (c.includes('tari')) return 'seni tari';
+  if (c.includes('otomotif')) return 'otomotif';
+  if (c.includes('olahraga') || c.includes('keolahragaan')) return 'keolahragaan';
+  return c;
+};
+
 const EXACT_SUBJECT_MODULE_COUNTS: Record<string, number> = {
   'informatika': 3,
   'elektronika': 6,
@@ -51,8 +63,12 @@ const EXACT_SUBJECT_MODULE_COUNTS: Record<string, number> = {
   'seni tari': 2,
 };
 
-const getActualModuleCount = (subjectName: string): number => {
-  const norm = subjectName.toLowerCase().trim();
+const getActualModuleCount = (subjectName: string, storeModules: any[] = []): number => {
+  const norm = normalizeSubName(subjectName);
+  if (storeModules && storeModules.length > 0) {
+    const fromStore = storeModules.filter((m) => normalizeSubName(m.subject || '') === norm);
+    if (fromStore.length > 0) return fromStore.length;
+  }
   for (const [key, count] of Object.entries(EXACT_SUBJECT_MODULE_COUNTS)) {
     if (norm.includes(key) || key.includes(norm)) {
       return count;
@@ -62,6 +78,7 @@ const getActualModuleCount = (subjectName: string): number => {
 };
 
 export function SubjectCatalog() {
+  const { modules } = useAdminStore();
   const [subjectsList, setSubjectsList] = useState<SubjectDisplay[]>([]);
 
   useEffect(() => {
@@ -70,7 +87,7 @@ export function SubjectCatalog() {
       const progressMap = student?.moduleProgress || {};
 
       const mapped: SubjectDisplay[] = subs.map((sub) => {
-        const total = getActualModuleCount(sub.name);
+        const total = getActualModuleCount(sub.name, modules);
         const percent = progressMap[sub.name] || 0;
         const completed = Math.round((percent / 100) * total);
 
@@ -88,7 +105,7 @@ export function SubjectCatalog() {
 
       setSubjectsList(mapped);
     });
-  }, []);
+  }, [modules]);
 
   const displayList = subjectsList.length > 0 ? subjectsList : [
     {

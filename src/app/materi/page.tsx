@@ -61,7 +61,7 @@ export function LevelBadge({ level }: { level: string }) {
 }
 
 interface ModulItem {
-  id: number;
+  id: string | number;
   subject: string;
   title: string;
   level: "Pemula" | "Menengah" | "Mahir";
@@ -72,6 +72,17 @@ interface ModulItem {
   isAiRecommended?: boolean;
   aiReason?: string;
 }
+
+const getSubjectIcon = (subject?: string): IconSvgElement => {
+  const s = (subject || "").toLowerCase();
+  if (s.includes('informatika') || s.includes('komputer')) return ComputerIcon;
+  if (s.includes('elektronika')) return CpuIcon;
+  if (s.includes('konseling') || s.includes('bk')) return UserGroupIcon;
+  if (s.includes('tari') || s.includes('seni')) return MusicNote01Icon;
+  if (s.includes('otomotif')) return Car01Icon;
+  if (s.includes('olahraga') || s.includes('keolahragaan')) return Dumbbell01Icon;
+  return ComputerIcon;
+};
 
 const MODUL_DATA: ModulItem[] = [
   // --- INFORMATIKA ---
@@ -474,7 +485,7 @@ function MateriLandingContent() {
       }
     } catch {
       // Fallback
-      setAiRecommendedModules(MODUL_DATA.filter((m) => [1, 9, 4].includes(m.id)).slice(0, 3));
+      setAiRecommendedModules(MODUL_DATA.filter((m) => [1, 9, 4].includes(Number(m.id))).slice(0, 3));
     }
   }, []);
 
@@ -513,25 +524,46 @@ function MateriLandingContent() {
   const { modules } = useAdminStore();
 
   const liveModulData = useMemo(() => {
-    return MODUL_DATA.map((base) => {
-      const targetKey = idToModuleKey[base.id];
+    const matchedStoreIds = new Set<string>();
+
+    const updatedBaseList: ModulItem[] = MODUL_DATA.map((base) => {
+      const targetKey = idToModuleKey[Number(base.id)];
       const storeMod = modules.find(
         (m) =>
           (targetKey && m.id === targetKey) ||
           m.id === String(base.id) ||
-          moduleKeyToId[m.id] === base.id ||
+          moduleKeyToId[m.id] === Number(base.id) ||
           m.title.toLowerCase().trim() === base.title.toLowerCase().trim()
       );
       if (!storeMod) return base;
+      matchedStoreIds.add(storeMod.id);
       return {
         ...base,
         title: storeMod.title || base.title,
+        subject: storeMod.subject || base.subject,
         description: storeMod.description || base.description,
         level: (storeMod.level as any) || base.level,
         duration: storeMod.duration || base.duration,
         topics: storeMod.topics || base.topics,
       };
     });
+
+    // Append newly created modules from admin/teacher store
+    const newStoreModules: ModulItem[] = modules
+      .filter((m) => !matchedStoreIds.has(m.id) && m.isPublished !== false)
+      .map((m) => ({
+        id: m.id,
+        subject: m.subject || "Elektronika",
+        title: m.title,
+        level: m.level || "Pemula",
+        duration: m.duration || "30 Menit",
+        topics: m.topics && m.topics.length > 0 ? m.topics : ["Materi Baru"],
+        description: m.description || "Materi pembelajaran interaktif.",
+        icon: getSubjectIcon(m.subject || ""),
+        isAiRecommended: m.isAiRecommended,
+      }));
+
+    return [...updatedBaseList, ...newStoreModules];
   }, [modules]);
 
   // Filter modules
@@ -664,13 +696,13 @@ function MateriLandingContent() {
                 const q = searchQuery.toLowerCase();
                 const count =
                   category === "Semua"
-                    ? MODUL_DATA.filter(
+                    ? liveModulData.filter(
                         (m) =>
                           m.title.toLowerCase().includes(q) ||
                           m.subject.toLowerCase().includes(q) ||
                           m.description.toLowerCase().includes(q)
                       ).length
-                    : MODUL_DATA.filter(
+                    : liveModulData.filter(
                         (m) =>
                           normalizeCategory(m.subject).toLowerCase() === normalizeCategory(category).toLowerCase() &&
                           (m.title.toLowerCase().includes(q) ||

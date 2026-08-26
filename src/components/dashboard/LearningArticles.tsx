@@ -1,15 +1,19 @@
+'use client';
+
+import { useMemo } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import Link from "next/link";
+import { useAdminStore } from "@/lib/admin-store";
 
 interface Article {
-  id: number;
+  id: number | string;
   title: string;
   author: string;
   description: string;
 }
 
-const ARTICLES: Article[] = [
+const FALLBACK_ARTICLES: Article[] = [
   {
     id: 1,
     title: "5 Strategi Efektif Menguasai Logika Pemrograman",
@@ -31,6 +35,20 @@ const ARTICLES: Article[] = [
 ];
 
 export function LearningArticles() {
+  const { articles } = useAdminStore();
+
+  const displayArticles: Article[] = useMemo(() => {
+    if (articles && articles.length > 0) {
+      return articles.slice(0, 3).map((art, idx) => ({
+        id: parseInt(String(art.id).replace(/\D/g, ''), 10) || idx + 1,
+        title: art.title,
+        author: art.author || 'Tim Sitemsa',
+        description: art.excerpt || (art.content ? art.content.slice(0, 110) + '...' : 'Tips dan strategi belajar efektif.'),
+      }));
+    }
+    return FALLBACK_ARTICLES;
+  }, [articles]);
+
   return (
     <section className="mb-10">
       <div className="flex items-center justify-between mb-6">
@@ -47,7 +65,7 @@ export function LearningArticles() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {ARTICLES.map((article) => (
+        {displayArticles.map((article) => (
           <div
             key={article.id}
             className="bg-white border border-[#ECECEC] rounded-[10px] p-4 flex flex-col justify-between hover:bg-[#F6F5FF] hover:border-[#2563EB]/40 transition-all duration-300 ease-out group"

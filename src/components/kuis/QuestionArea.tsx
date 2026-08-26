@@ -187,7 +187,43 @@ const QUIZ_QUESTIONS = [
   },
 ];
 
-export function QuestionArea() {
+import { useAdminStore } from "@/lib/admin-store";
+
+export function QuestionArea({ quizId }: { quizId?: string }) {
+  const { quizzes, modules } = useAdminStore();
+
+  const questionsList = React.useMemo(() => {
+    if (quizId) {
+      // 1. Look in quizzes
+      const targetQuiz = quizzes.find((q) => q.id === quizId || q.title.toLowerCase().includes(quizId.toLowerCase()));
+      if (targetQuiz && targetQuiz.questions && targetQuiz.questions.length > 0) {
+        return targetQuiz.questions.map((q, idx) => ({
+          id: q.id || `q-${idx}`,
+          text: q.text,
+          options: q.options,
+          correctAnswer: q.correctAnswer,
+          explanation: q.explanation || "Pembahasan kuis evaluasi.",
+        }));
+      }
+
+      // 2. Look in modules (if module id was passed)
+      const targetMod = modules.find((m) => m.id === quizId || String(m.id) === String(quizId));
+      if (targetMod) {
+        const subQuiz = quizzes.find((q) => q.subject.toLowerCase() === targetMod.subject.toLowerCase());
+        if (subQuiz && subQuiz.questions && subQuiz.questions.length > 0) {
+          return subQuiz.questions.map((q, idx) => ({
+            id: q.id || `q-${idx}`,
+            text: q.text,
+            options: q.options,
+            correctAnswer: q.correctAnswer,
+            explanation: q.explanation || "Pembahasan kuis evaluasi.",
+          }));
+        }
+      }
+    }
+    return QUIZ_QUESTIONS;
+  }, [quizId, quizzes, modules]);
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
@@ -198,7 +234,7 @@ export function QuestionArea() {
   const [timeLeft, setTimeLeft] = useState(45);
   const [isCompleted, setIsCompleted] = useState(false);
 
-  const currentQuestion = QUIZ_QUESTIONS[currentIndex];
+  const currentQuestion = questionsList[currentIndex] || QUIZ_QUESTIONS[0];
 
   // Timer Countdown
   useEffect(() => {
@@ -247,17 +283,17 @@ export function QuestionArea() {
   const handleNextQuestion = () => {
     playQuizSound("pop");
 
-    if (currentIndex + 1 < QUIZ_QUESTIONS.length) {
+    if (currentIndex + 1 < questionsList.length) {
       setCurrentIndex((prev) => prev + 1);
       setSelectedOption(null);
       setIsAnswered(false);
       setTimeLeft(45);
     } else {
       setIsCompleted(true);
-      const finalScorePercent = Math.round((correctCount / QUIZ_QUESTIONS.length) * 100);
+      const finalScorePercent = Math.round((correctCount / questionsList.length) * 100);
       try {
         ProgressService.recordQuizAttempt('std-1', {
-          quizId: 'quiz-active',
+          quizId: quizId || 'quiz-active',
           quizTitle: 'Kuis Evaluasi Sitemsa',
           subject: 'Informatika',
           score: finalScorePercent,
@@ -311,7 +347,7 @@ export function QuestionArea() {
 
   // RESULTS SCREEN
   if (isCompleted) {
-    const accuracy = Math.round((correctCount / QUIZ_QUESTIONS.length) * 100);
+    const accuracy = Math.round((correctCount / questionsList.length) * 100);
 
     return (
       <main className="flex-1 flex flex-col items-center justify-center p-6 w-full max-w-xl mx-auto my-auto animate-in fade-in zoom-in-95 duration-300">
@@ -496,7 +532,7 @@ export function QuestionArea() {
               className="px-6 py-3 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white font-extrabold text-xs shadow-md shadow-blue-500/20 flex items-center gap-2 transition-all cursor-pointer shrink-0 active:scale-98"
             >
               <span>
-                {currentIndex + 1 < QUIZ_QUESTIONS.length
+                {currentIndex + 1 < questionsList.length
                   ? "Soal Berikutnya"
                   : "Lihat Hasil Kuis"}
               </span>

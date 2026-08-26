@@ -110,6 +110,8 @@ function TiptapTextEditor({
 }) {
   const formatContentForTiptap = (val: string) => {
     if (!val) return '';
+    // Strip bold/strong tags and inline font-weight to prevent pasted bold format
+    val = val.replace(/<\/?(strong|b)\b[^>]*>/gi, '').replace(/font-weight\s*:\s*[^;"]+;?/gi, '');
     const stripped = val.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
     if (!stripped) return '';
     if (val.trim().startsWith('<') && val.trim().endsWith('>')) {
@@ -168,6 +170,7 @@ function TiptapTextEditor({
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
+        bold: false,
         bulletList: {
           HTMLAttributes: {
             class: 'list-disc pl-6 my-1 space-y-1',
@@ -198,6 +201,14 @@ function TiptapTextEditor({
     editorProps: {
       attributes: {
         class: `outline-none min-h-[1.5rem] break-words text-justify ${className || ''}`,
+      },
+      transformPastedHTML(html) {
+        return html
+          .replace(/<\/?(strong|b)\b[^>]*>/gi, '')
+          .replace(/font-weight\s*:\s*[^;"]+;?/gi, '');
+      },
+      transformPastedText(text) {
+        return text;
       },
     },
     immediatelyRender: false,
@@ -1206,8 +1217,24 @@ export function ModuleBlockBuilder({
 
             {/* EMPTY STATE CANVAS */}
             {blocks.length === 0 && (
-              <div className="py-16 text-center space-y-4 border-2 border-dashed border-slate-200 rounded-[12px] p-12 bg-white mt-4">
-                <div className="w-12 h-12 rounded-full bg-blue-50 text-[#2563EB] flex items-center justify-center mx-auto">
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedBlockId(null);
+                  setInsertTargetIndex(undefined);
+                  setShowRightSidebar(true);
+                }}
+                className="py-16 text-center space-y-4 border-2 border-dashed border-slate-200 hover:border-blue-300 rounded-[12px] p-12 bg-white mt-4 cursor-pointer transition-colors"
+              >
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedBlockId(null);
+                    setInsertTargetIndex(undefined);
+                    setShowRightSidebar(true);
+                  }}
+                  className="w-12 h-12 rounded-full bg-blue-50 text-[#2563EB] flex items-center justify-center mx-auto cursor-pointer hover:bg-blue-100 transition-colors"
+                >
                   <Plus className="w-6 h-6" />
                 </div>
                 <div>

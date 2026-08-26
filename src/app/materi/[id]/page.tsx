@@ -1665,12 +1665,15 @@ function SmartParagraph({ text }: { text: string }) {
     return null;
   }
 
-  // 2. If text contains HTML tags (e.g. <p class="...">, <ol>, <ul>, <li>, <strong>, etc.)
+  // 2. If text contains HTML tags (e.g. <p class="...">, <ol>, <ul>, <li>, etc.)
   if (/<[a-z][\s\S]*>/i.test(text)) {
+    const cleanHtml = text
+      .replace(/<\/?(strong|b)\b[^>]*>/gi, '')
+      .replace(/font-weight\s*:\s*[^;"]+;?/gi, '');
     return (
       <div
         className="prose-content text-xs md:text-sm font-medium text-[#4A4A4A] leading-relaxed text-justify [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:my-1.5 [&_ol]:space-y-1 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-1.5 [&_ul]:space-y-1 [&_li]:pl-1 [&_li]:text-justify [&_p]:mb-2 last:[&_p]:mb-0"
-        dangerouslySetInnerHTML={{ __html: text }}
+        dangerouslySetInnerHTML={{ __html: cleanHtml }}
       />
     );
   }

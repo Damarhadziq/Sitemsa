@@ -492,29 +492,8 @@ function MateriLandingContent() {
     }
   }, []);
 
-  // Synchronize dynamic modules from Supabase cloud so any device (mobile/desktop) sees new modules
+  // Synchronize dynamic modules from Supabase cloud
   useEffect(() => {
-    // 1. Auto-upload any local custom modules that were created earlier offline/locally
-    const localModules = useAdminStore.getState().modules;
-    const localCustomModules = localModules.filter((m) => m.id.startsWith('mod-'));
-    if (localCustomModules.length > 0) {
-      localCustomModules.forEach((mod) => {
-        ModuleService.createModule({
-          subject: mod.subject,
-          title: mod.title,
-          level: mod.level,
-          duration: mod.duration,
-          topics: mod.topics || ['Materi Praktik'],
-          description: mod.description,
-          teacherId: mod.teacherId,
-          teacherName: mod.teacherName,
-          isPublished: mod.isPublished,
-          quizSource: mod.quizSource as any,
-        });
-      });
-    }
-
-    // 2. Fetch all cloud modules from Supabase and sync into state
     ModuleService.fetchFromSupabase().then((cloudModules) => {
       if (cloudModules && cloudModules.length > 0) {
         const currentStoreModules = useAdminStore.getState().modules;
@@ -622,7 +601,16 @@ function MateriLandingContent() {
         isAiRecommended: m.isAiRecommended,
       }));
 
-    return [...updatedBaseList, ...newStoreModules];
+    const combined = [...updatedBaseList, ...newStoreModules];
+    const uniqueMap = new Map<string, ModulItem>();
+    combined.forEach((item) => {
+      const key = `${(item.subject || '').toLowerCase().trim()}_${(item.title || '').toLowerCase().trim()}`;
+      if (!uniqueMap.has(key)) {
+        uniqueMap.set(key, item);
+      }
+    });
+
+    return Array.from(uniqueMap.values());
   }, [modules]);
 
   // Filter modules

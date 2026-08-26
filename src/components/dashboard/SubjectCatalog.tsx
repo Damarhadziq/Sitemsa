@@ -55,20 +55,24 @@ const normalizeSubName = (cat: string) => {
 const getActualModuleCount = (subjectName: string, storeModules: any[] = []): number => {
   const norm = normalizeSubName(subjectName);
   
-  // 1. Count matching official modules in base MODUL_DATA
-  const baseCount = MODUL_DATA.filter((m) => normalizeSubName(m.subject) === norm).length;
+  // 1. Base modules
+  const baseMods = MODUL_DATA.filter((m) => normalizeSubName(m.subject) === norm);
   
-  // 2. Count any new modules added by teachers/admin in admin store that are published
-  const newStoreCount = storeModules.filter((m) => {
-    if (m.isPublished === false) return false;
-    const isAlreadyInBase = MODUL_DATA.some((base) => 
-      m.id === String(base.id) || 
-      m.title.toLowerCase().trim() === base.title.toLowerCase().trim()
-    );
-    return !isAlreadyInBase && normalizeSubName(m.subject || '') === norm;
-  }).length;
+  // 2. Count distinct store modules by title
+  const seenTitles = new Set(baseMods.map((b) => b.title.toLowerCase().trim()));
+  let count = baseMods.length;
 
-  return Math.max(1, baseCount + newStoreCount);
+  storeModules.forEach((m) => {
+    if (m.isPublished === false) return;
+    if (normalizeSubName(m.subject || '') !== norm) return;
+    const titleKey = (m.title || '').toLowerCase().trim();
+    if (!seenTitles.has(titleKey)) {
+      seenTitles.add(titleKey);
+      count++;
+    }
+  });
+
+  return Math.max(1, count);
 };
 
 export function SubjectCatalog() {

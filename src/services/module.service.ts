@@ -46,27 +46,35 @@ export class ModuleService {
       }
 
       if (data && Array.isArray(data) && data.length > 0) {
-        const mapped: ModuleItem[] = data.map((item: any) => ({
-          id: String(item.id),
-          subject: item.subject || 'Informatika',
-          teacherId: item.teacher_id || 'tch-01',
-          teacherName: item.teacher_name || 'Guru Sitemsa',
-          title: item.title || 'Modul Pembelajaran',
-          level: (item.level as 'Pemula' | 'Menengah' | 'Mahir') || 'Pemula',
-          duration: item.duration || '45 Menit',
-          topics: Array.isArray(item.topics) ? item.topics : [],
-          description: item.description || '',
-          isAiRecommended: Boolean(item.is_ai_recommended),
-          isPublished: item.is_published !== undefined ? Boolean(item.is_published) : true,
-          quizSource: item.quiz_source_type ? {
-            type: (item.quiz_source_type === 'KUIS_SITEMSA' ? 'kuis_sitemsa' : item.quiz_source_type === 'LINK_EKSTERNAL' ? 'link_eksternal' : 'qr_code') as any,
-            title: item.quiz_source_title || 'Kuis Evaluasi',
-            externalUrl: item.external_url || undefined,
-            qrImageUrl: item.qr_image_url || undefined,
-          } : undefined,
-          createdAt: item.created_at ? new Date(item.created_at).toISOString().split('T')[0] : '2026-08-01',
-        }));
+        const uniqueMap = new Map<string, ModuleItem>();
 
+        data.forEach((item: any) => {
+          const titleKey = `${(item.subject || '').toLowerCase().trim()}_${(item.title || '').toLowerCase().trim()}`;
+          if (!uniqueMap.has(titleKey)) {
+            uniqueMap.set(titleKey, {
+              id: String(item.id),
+              subject: item.subject || 'Informatika',
+              teacherId: item.teacher_id || 'tch-01',
+              teacherName: item.teacher_name || 'Guru Sitemsa',
+              title: item.title || 'Modul Pembelajaran',
+              level: (item.level as 'Pemula' | 'Menengah' | 'Mahir') || 'Pemula',
+              duration: item.duration || '45 Menit',
+              topics: Array.isArray(item.topics) ? item.topics : [],
+              description: item.description || '',
+              isAiRecommended: Boolean(item.is_ai_recommended),
+              isPublished: item.is_published !== undefined ? Boolean(item.is_published) : true,
+              quizSource: item.quiz_source_type ? {
+                type: (item.quiz_source_type === 'KUIS_SITEMSA' ? 'kuis_sitemsa' : item.quiz_source_type === 'LINK_EKSTERNAL' ? 'link_eksternal' : 'qr_code') as any,
+                title: item.quiz_source_title || 'Kuis Evaluasi',
+                externalUrl: item.external_url || undefined,
+                qrImageUrl: item.qr_image_url || undefined,
+              } : undefined,
+              createdAt: item.created_at ? new Date(item.created_at).toISOString().split('T')[0] : '2026-08-01',
+            });
+          }
+        });
+
+        const mapped = Array.from(uniqueMap.values());
         dbStore.modules = mapped;
         this.persist();
         return mapped;
@@ -123,7 +131,7 @@ export class ModuleService {
 
     if (supabase) {
       try {
-        const { error: insErr } = await supabase.from('modules').insert({
+        const { error: insErr } = await supabase.from('modules').upsert({
           id: newId,
           subject: data.subject,
           teacher_id: data.teacherId || 't-olr-1',
@@ -134,23 +142,23 @@ export class ModuleService {
           topics: data.topics || [],
           description: data.description || '',
           is_published: data.isPublished !== undefined ? data.isPublished : true,
-        });
+        }, { onConflict: 'id' });
 
         if (insErr) {
-          console.warn('Supabase full insert note, trying minimal columns:', insErr.message);
-          const { error: minErr } = await supabase.from('modules').insert({
+          console.warn('Supabase full upsert note, trying minimal columns:', insErr.message);
+          const { error: minErr } = await supabase.from('modules').upsert({
             id: newId,
             subject: data.subject,
             teacher_id: data.teacherId || 't-olr-1',
             teacher_name: data.teacherName || 'Guru Sitemsa',
             title: data.title,
-          });
+          }, { onConflict: 'id' });
           if (minErr) {
-            console.error('Supabase minimal insert note:', minErr.message);
+            console.error('Supabase minimal upsert note:', minErr.message);
           }
         }
       } catch (e) {
-        console.warn('Failed to insert module to Supabase:', e);
+        console.warn('Failed to upsert module to Supabase:', e);
       }
     }
 

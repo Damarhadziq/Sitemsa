@@ -42,6 +42,7 @@ import ModuleBlockBuilder, { CanvasBlock } from '@/components/admin/ModuleBlockB
 import { ModuleInfoModal } from '@/components/admin/ModuleInfoModal';
 import { Tooltip } from '@/components/ui/tooltip';
 import { StudyAnalyticsService } from '@/services/analytics.service';
+import { ModuleService } from '@/services/module.service';
 
 // Card More Dropdown Component (Profile Dropdown Style)
 function CardMoreDropdown({
@@ -290,6 +291,17 @@ export default function AdminGuruPelajaranPage() {
         quizSource: moduleData.quizSource || editingModule.quizSource,
         blocks: blocks,
       });
+
+      ModuleService.updateModule(editingModule.id, {
+        title: moduleData.title || editingModule.title,
+        description: moduleData.description || editingModule.description,
+        level: moduleData.level || editingModule.level,
+        duration: moduleData.duration || editingModule.duration,
+        topics: moduleData.topics || editingModule.topics,
+        isPublished: moduleData.isPublished ?? editingModule.isPublished,
+        quizSource: moduleData.quizSource as any,
+      });
+
       setNewlyAddedMateriId(editingModule.id);
       setTimeout(() => setNewlyAddedMateriId(null), 3000);
     } else {
@@ -305,6 +317,19 @@ export default function AdminGuruPelajaranPage() {
         isPublished: moduleData.isPublished ?? true,
         quizSource: moduleData.quizSource,
         blocks: blocks,
+      });
+
+      ModuleService.createModule({
+        subject: currentSubject,
+        title: moduleData.title || 'Materi Baru',
+        level: moduleData.level || 'Pemula',
+        duration: moduleData.duration || '30 Menit',
+        topics: moduleData.topics || ['Materi Sintesa', 'Praktikum'],
+        description: moduleData.description || 'Deskripsi materi pembelajaran.',
+        teacherId: user?.id || 't-1',
+        teacherName: user?.name || 'Pak Budi Prasetyo, M.Kom.',
+        isPublished: moduleData.isPublished ?? true,
+        quizSource: moduleData.quizSource as any,
       });
 
       setNewlyAddedMateriId(newId);

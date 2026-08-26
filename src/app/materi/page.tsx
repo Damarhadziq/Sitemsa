@@ -9,6 +9,7 @@ import { MateriSkeleton } from "@/components/materi/MateriSkeleton";
 import { useAdminStore } from "@/lib/admin-store";
 import { idToModuleKey, moduleKeyToId } from "@/app/materi/[id]/page";
 import { getStudentScopedStorageKey } from "@/services/student-profile.service";
+import { ModuleService } from "@/services/module.service";
 import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react";
 import {
   Search01Icon,
@@ -489,6 +490,41 @@ function MateriLandingContent() {
       // Fallback
       setAiRecommendedModules(MODUL_DATA.filter((m) => [1, 9, 4].includes(Number(m.id))).slice(0, 3));
     }
+  }, []);
+
+  // Synchronize dynamic modules from Supabase cloud so any device (mobile/desktop) sees new modules
+  useEffect(() => {
+    ModuleService.fetchFromSupabase().then((cloudModules) => {
+      if (cloudModules && cloudModules.length > 0) {
+        const currentStoreModules = useAdminStore.getState().modules;
+        const missingFromStore = cloudModules.filter(
+          (c) => !currentStoreModules.some((m) => m.id === c.id || m.title.trim().toLowerCase() === c.title.trim().toLowerCase())
+        );
+
+        if (missingFromStore.length > 0) {
+          useAdminStore.setState((state) => ({
+            modules: [
+              ...missingFromStore.map((c) => ({
+                id: c.id,
+                subject: c.subject,
+                title: c.title,
+                level: c.level,
+                duration: c.duration,
+                topics: c.topics,
+                description: c.description,
+                teacherId: c.teacherId,
+                teacherName: c.teacherName,
+                isPublished: c.isPublished,
+                createdAt: c.createdAt,
+                isAiRecommended: c.isAiRecommended,
+                quizSource: c.quizSource,
+              })),
+              ...state.modules,
+            ],
+          }));
+        }
+      }
+    });
   }, []);
 
   // Simulate skeleton loading on mount

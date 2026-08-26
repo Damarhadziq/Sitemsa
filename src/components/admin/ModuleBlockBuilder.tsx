@@ -221,9 +221,10 @@ function TiptapTextEditor({
 
   useEffect(() => {
     if (editor && value !== undefined) {
+      if (editor.isFocused) return;
       const currentHtml = editor.getHTML();
       const newFormatted = formatContentForTiptap(value);
-      if (currentHtml !== newFormatted && editor.getText().trim() !== value.trim()) {
+      if (currentHtml !== newFormatted) {
         editor.commands.setContent(newFormatted, { emitUpdate: false });
       }
     }
@@ -303,10 +304,7 @@ export function ModuleBlockBuilder({
   // 16:9 Cover / Thumbnail state
   const [moduleThumbnail, setModuleThumbnail] = useState<string>(() => {
     if (initialModule?.thumbnail) return initialModule.thumbnail;
-    if (subjectName.toLowerCase().includes('tari')) {
-      return 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=1200&q=80';
-    }
-    return 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80';
+    return '';
   });
   const thumbnailFileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -489,6 +487,13 @@ export function ModuleBlockBuilder({
       newBlock.sectionTitle = 'Heading';
       newBlock.textValue = 'Tuliskan isi paragraf materi di sini....';
       newBlock.alignment = 'left';
+      newBlock.elements = [
+        {
+          id: `el-${newBlock.id}-1`,
+          type: 'paragraph',
+          text: 'Tuliskan isi paragraf materi di sini....',
+        },
+      ];
     } else if (type === 'image') {
       newBlock.mediaUrl = '';
     } else if (type === 'video') {
@@ -670,18 +675,24 @@ export function ModuleBlockBuilder({
     elIndex: number,
     partial: Partial<SectionElement>
   ) => {
-    const block = blocks.find((b) => b.id === blockId);
-    if (!block) return;
+    setIsDirty(true);
+    setBlocks((prev) =>
+      prev.map((b) => {
+        if (b.id !== blockId) return b;
+        const currentElements: SectionElement[] =
+          b.elements && b.elements.length > 0
+            ? [...b.elements]
+            : [{ id: `el-${b.id}-1`, type: 'paragraph', text: b.textValue || '' }];
 
-    const currentElements =
-      block.elements && block.elements.length > 0
-        ? [...block.elements]
-        : [{ id: 'el-1', type: 'paragraph' as const, text: block.textValue || '' }];
-
-    if (!currentElements[elIndex]) return;
-
-    currentElements[elIndex] = { ...currentElements[elIndex], ...partial };
-    updateBlockById(blockId, { elements: currentElements });
+        if (!currentElements[elIndex]) return b;
+        currentElements[elIndex] = { ...currentElements[elIndex], ...partial };
+        return {
+          ...b,
+          elements: currentElements,
+          textValue: currentElements.find((e) => e.type === 'paragraph')?.text || b.textValue,
+        };
+      })
+    );
   };
 
   const handleDeleteSectionElement = (blockId: string, elIndex: number) => {
@@ -1354,7 +1365,7 @@ export function ModuleBlockBuilder({
                           const elements =
                             block.elements && block.elements.length > 0
                               ? block.elements
-                              : [{ id: 'el-init', type: 'paragraph' as const, text: block.textValue || '' }];
+                              : [{ id: `el-${block.id}-1`, type: 'paragraph' as const, text: block.textValue || '' }];
 
                           return (
                             <div className="space-y-4">

@@ -61,6 +61,9 @@ export default function SignupPage() {
           provider: 'google',
           options: {
             redirectTo: `${window.location.origin}/auth/callback?next=/lengkapi-profil`,
+            queryParams: {
+              prompt: 'select_account',
+            },
           },
         });
         if (error) {
@@ -73,18 +76,10 @@ export default function SignupPage() {
       }
     }
 
-    setTimeout(() => {
-      const defaultGoogleStudent = {
-        name: 'Siswa Sitemsa',
-        email: 'siswa@belajar.id',
-        avatar: 'https://i.pravatar.cc/150?img=12',
-        grade: 'X PPLG 1',
-        school: 'SMK Negeri 1 Semarang',
-      };
-
-      registerStudent(defaultGoogleStudent);
-      router.push(`/lengkapi-profil?name=${encodeURIComponent(defaultGoogleStudent.name)}&email=${encodeURIComponent(defaultGoogleStudent.email)}`);
-    }, 350);
+    // Direct redirect to Supabase Google OAuth endpoint (triggers native Google Account chooser)
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mwgipmmimftavnwktmwf.supabase.co';
+    const redirectUrl = `${window.location.origin}/auth/callback?next=/lengkapi-profil`;
+    window.location.href = `${supabaseUrl}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectUrl)}&prompt=select_account`;
   };
 
   return (

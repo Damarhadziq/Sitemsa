@@ -31,6 +31,9 @@ export default function LoginPage() {
           provider: 'google',
           options: {
             redirectTo: `${window.location.origin}/auth/callback?next=/`,
+            queryParams: {
+              prompt: 'select_account',
+            },
           },
         });
         if (error) {
@@ -43,34 +46,10 @@ export default function LoginPage() {
       }
     }
 
-    setTimeout(() => {
-      // Direct instant login with default Google account
-      const defaultGoogleStudent = {
-        name: 'Siswa Sitemsa',
-        email: 'siswa@belajar.id',
-        avatar: 'https://i.pravatar.cc/150?img=12',
-        grade: 'X PPLG 1',
-        school: 'SMK Negeri 1 Semarang',
-      };
-
-      registerStudent(defaultGoogleStudent);
-
-      if (typeof document !== 'undefined') {
-        document.cookie = 'sintesa_student_auth=true; path=/; max-age=2592000; SameSite=Lax';
-        document.cookie = 'auth_student=siswa; path=/; max-age=2592000; SameSite=Lax';
-        document.cookie = 'auth=true; path=/; max-age=2592000; SameSite=Lax';
-        localStorage.setItem(
-          'sintesa_student_session_v1',
-          JSON.stringify({
-            ...defaultGoogleStudent,
-            role: 'siswa',
-            loginTime: new Date().toISOString(),
-          })
-        );
-      }
-
-      window.location.href = '/';
-    }, 350);
+    // Direct redirect to Supabase Google OAuth endpoint (triggers native Google Account chooser)
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mwgipmmimftavnwktmwf.supabase.co';
+    const redirectUrl = `${window.location.origin}/auth/callback?next=/`;
+    window.location.href = `${supabaseUrl}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectUrl)}&prompt=select_account`;
   };
 
   const handleSubmit = (e: React.FormEvent) => {

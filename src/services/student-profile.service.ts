@@ -215,6 +215,53 @@ export const registerStudent = (data: {
 };
 
 /**
+ * Sync logged in Google student profile from URL params or active Supabase session
+ */
+export const syncFromUrlParamsOrSupabase = async () => {
+  if (typeof window === 'undefined') return;
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const name = params.get('name');
+    const email = params.get('email');
+    const avatar = params.get('avatar');
+
+    if (email) {
+      registerStudent({
+        name: name || email.split('@')[0],
+        email: email,
+        avatar: avatar || undefined,
+      });
+      // Clean up URL parameters cleanly
+      const url = new URL(window.location.href);
+      url.searchParams.delete('name');
+      url.searchParams.delete('email');
+      url.searchParams.delete('avatar');
+      window.history.replaceState({}, document.title, url.pathname + (url.search ? url.search : ''));
+      return;
+    }
+
+    if (supabase) {
+      const { data } = await supabase.auth.getSession();
+      if (data?.session?.user) {
+        const u = data.session.user;
+        const uName = u.user_metadata?.full_name || u.user_metadata?.name || u.email?.split('@')[0] || 'Siswa Sitemsa';
+        const uEmail = u.email || '';
+        const uAvatar = u.user_metadata?.avatar_url || u.user_metadata?.picture || '';
+        if (uEmail) {
+          registerStudent({
+            name: uName,
+            email: uEmail,
+            avatar: uAvatar,
+          });
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Sync from Supabase/URL warning:', e);
+  }
+};
+
+/**
  * Check if the student is currently logged in with a valid session
  */
 export const isStudentAuthenticated = (): boolean => {

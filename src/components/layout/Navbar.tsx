@@ -38,6 +38,7 @@ import {
   StudentProfile,
   isStudentAuthenticated,
   logoutStudent,
+  syncFromUrlParamsOrSupabase,
 } from "@/services/student-profile.service";
 
 interface QuickSearchResult {
@@ -82,6 +83,11 @@ export function Navbar() {
   const [studentProfile, setStudentProfile] = useState<StudentProfile>(DEFAULT_DUMMY_STUDENT);
 
   useEffect(() => {
+    syncFromUrlParamsOrSupabase().then(() => {
+      setIsLoggedIn(isStudentAuthenticated() || !!user);
+      setStudentProfile(getStudentProfile());
+    });
+
     setIsLoggedIn(isStudentAuthenticated() || !!user);
     setNotifications(getStoredNotifications());
     setStudentProfile(getStudentProfile());

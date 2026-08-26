@@ -85,7 +85,7 @@ const getSubjectIcon = (subject?: string): IconSvgElement => {
   return ComputerIcon;
 };
 
-const MODUL_DATA: ModulItem[] = [
+export const MODUL_DATA: ModulItem[] = [
   // --- INFORMATIKA ---
   {
     id: 1,

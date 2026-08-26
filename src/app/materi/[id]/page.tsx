@@ -2083,6 +2083,9 @@ export default function MateriDetailPage({
   }, [material]);
 
   const [isMarkedDone, setIsMarkedDone] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [readingSeconds, setReadingSeconds] = useState(0);
+  const [showCompletedToast, setShowCompletedToast] = useState(false);
 
   useEffect(() => {
     if (material) {
@@ -2090,16 +2093,71 @@ export default function MateriDetailPage({
     }
   }, [material]);
 
+  // Track Active Reading Duration
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setReadingSeconds((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Track Scroll Depth & Back to Top Toggle
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
+      if (totalScroll > 0) {
+        const currentScroll = window.scrollY;
+        const progress = Math.min(100, Math.max(0, Math.round((currentScroll / totalScroll) * 100)));
+        setScrollProgress(progress);
+      }
+
+      if (window.scrollY > 300) {
+        setShowBackToTop(true);
+      } else {
+        setShowBackToTop(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Smart Read Auto-Completion Trigger:
+  // Completes automatically when student scrolls >= 75% AND spends >= 15 seconds reading
+  useEffect(() => {
+    if (!material || isMarkedDone) return;
+
+    if (scrollProgress >= 75 && readingSeconds >= 15) {
+      setIsMarkedDone(true);
+      recordModuleCompletion(String(material.id));
+      setShowCompletedToast(true);
+
+      addUserNotification({
+        type: 'materi',
+        title: 'Materi Selesai Dipelajari 🎉',
+        message: `Hebat! Kamu telah menuntaskan pembelajaran "${material.title}". Target mingguanmu otomatis bertambah.`,
+        linkUrl: `/materi/${material.id}`,
+      });
+
+      const timeout = setTimeout(() => setShowCompletedToast(false), 5000);
+      return () => clearTimeout(timeout);
+    }
+  }, [scrollProgress, readingSeconds, material, isMarkedDone]);
+
   const handleMarkComplete = () => {
     if (isMarkedDone || !material) return;
     setIsMarkedDone(true);
     recordModuleCompletion(String(material.id));
+    setShowCompletedToast(true);
     addUserNotification({
       type: 'materi',
       title: 'Materi Selesai Dipelajari',
       message: `Selamat! Kamu telah menyelesaikan materi "${material.title}". Target mingguanmu bertambah.`,
       linkUrl: `/materi/${material.id}`,
     });
+    const timeout = setTimeout(() => setShowCompletedToast(false), 5000);
+    return () => clearTimeout(timeout);
   };
 
   const handleStartQuizClick = (e: React.MouseEvent) => {
@@ -2127,19 +2185,6 @@ export default function MateriDetailPage({
       document.body.style.overflow = "";
     };
   }, [activeQuizModal]);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 300) {
-        setShowBackToTop(true);
-      } else {
-        setShowBackToTop(false);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -2196,6 +2241,16 @@ export default function MateriDetailPage({
 
   return (
     <div className="min-h-screen bg-white flex flex-col font-sans">
+      {/* Top Reading Progress Bar (Smart Read Scroll Depth) */}
+      <div className="fixed top-0 left-0 right-0 h-[3.5px] bg-slate-100 z-50 pointer-events-none">
+        <div
+          className={`h-full transition-all duration-100 ${
+            isMarkedDone ? "bg-emerald-500" : "bg-[#2563EB]"
+          }`}
+          style={{ width: `${isMarkedDone ? 100 : scrollProgress}%` }}
+        />
+      </div>
+
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-16 w-full flex-1">
@@ -2270,6 +2325,19 @@ export default function MateriDetailPage({
                     <span className="inline-flex items-center gap-1 bg-purple-50 text-purple-700 border border-purple-200/80 px-2.5 py-1 rounded-[4px] text-xs font-semibold">
                       <BarChart2 className="w-3.5 h-3.5 text-purple-600 shrink-0" />
                       <span>{material.level || "Mahir"}</span>
+                    </span>
+                  )}
+
+                  {/* Dynamic Smart Read Auto-Completion Badge */}
+                  {isMarkedDone ? (
+                    <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200/80 px-2.5 py-1 rounded-[4px] text-xs font-semibold animate-in fade-in duration-200">
+                      <HugeiconsIcon icon={CheckmarkCircle01Icon} size={14} className="text-emerald-600" />
+                      <span>Selesai Dipelajari</span>
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 bg-blue-50 text-[#2563EB] border border-blue-100 px-2.5 py-1 rounded-[4px] text-xs font-semibold">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#2563EB] animate-pulse" />
+                      <span>Membaca ({scrollProgress}%)</span>
                     </span>
                   )}
                 </div>
@@ -2878,6 +2946,19 @@ export default function MateriDetailPage({
                 <HugeiconsIcon icon={ArrowRight01Icon} size={14} />
               </a>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Celebratory Smart Read Auto-Completion Toast */}
+      {showCompletedToast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-white border border-emerald-200/90 shadow-2xl rounded-[14px] p-4 flex items-center gap-3 animate-in slide-in-from-bottom-5 duration-300 max-w-sm">
+          <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+            <HugeiconsIcon icon={CheckmarkCircle01Icon} size={22} />
+          </div>
+          <div className="space-y-0.5">
+            <p className="text-xs font-bold text-[#2E2D2D]">Materi Selesai Dipelajari! 🎉</p>
+            <p className="text-[11px] text-[#737373] leading-tight">Progres dan target belajarmu berhasil tercatat otomatis.</p>
           </div>
         </div>
       )}

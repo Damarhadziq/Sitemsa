@@ -16,6 +16,7 @@ import Link from "next/link";
 import { SubjectService } from '@/services/subject.service';
 import { ProgressService } from '@/services/progress.service';
 import { useAdminStore } from '@/lib/admin-store';
+import { MODUL_DATA } from '@/app/materi/page';
 
 interface SubjectDisplay {
   id: string | number;
@@ -50,31 +51,23 @@ const normalizeSubName = (cat: string) => {
   return c;
 };
 
-const EXACT_SUBJECT_MODULE_COUNTS: Record<string, number> = {
-  'informatika': 3,
-  'elektronika': 6,
-  'otomotif': 2,
-  'keolahragaan': 2,
-  'olahraga & kesehatan': 2,
-  'pendidikan jasmani': 2,
-  'bimbingan konseling': 7,
-  'bimbingan dan konseling': 7,
-  'bk': 7,
-  'seni tari': 2,
-};
-
 const getActualModuleCount = (subjectName: string, storeModules: any[] = []): number => {
   const norm = normalizeSubName(subjectName);
-  if (storeModules && storeModules.length > 0) {
-    const fromStore = storeModules.filter((m) => normalizeSubName(m.subject || '') === norm);
-    if (fromStore.length > 0) return fromStore.length;
-  }
-  for (const [key, count] of Object.entries(EXACT_SUBJECT_MODULE_COUNTS)) {
-    if (norm.includes(key) || key.includes(norm)) {
-      return count;
-    }
-  }
-  return 2;
+  
+  // 1. Count matching official modules in base MODUL_DATA
+  const baseCount = MODUL_DATA.filter((m) => normalizeSubName(m.subject) === norm).length;
+  
+  // 2. Count any new modules added by teachers/admin in admin store that are published
+  const newStoreCount = storeModules.filter((m) => {
+    if (m.isPublished === false) return false;
+    const isAlreadyInBase = MODUL_DATA.some((base) => 
+      m.id === String(base.id) || 
+      m.title.toLowerCase().trim() === base.title.toLowerCase().trim()
+    );
+    return !isAlreadyInBase && normalizeSubName(m.subject || '') === norm;
+  }).length;
+
+  return Math.max(1, baseCount + newStoreCount);
 };
 
 export function SubjectCatalog() {

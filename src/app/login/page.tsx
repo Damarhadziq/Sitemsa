@@ -25,6 +25,24 @@ export default function LoginPage() {
     setIsGoogleLoading(true);
     setErrorMsg('');
 
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback?next=/`,
+          },
+        });
+        if (error) {
+          setErrorMsg(error.message);
+          setIsGoogleLoading(false);
+        }
+        return;
+      } catch (err: any) {
+        console.warn('OAuth fallback error:', err);
+      }
+    }
+
     setTimeout(() => {
       // Direct instant login with default Google account
       const defaultGoogleStudent = {
@@ -39,6 +57,8 @@ export default function LoginPage() {
 
       if (typeof document !== 'undefined') {
         document.cookie = 'sintesa_student_auth=true; path=/; max-age=2592000; SameSite=Lax';
+        document.cookie = 'auth_student=siswa; path=/; max-age=2592000; SameSite=Lax';
+        document.cookie = 'auth=true; path=/; max-age=2592000; SameSite=Lax';
         localStorage.setItem(
           'sintesa_student_session_v1',
           JSON.stringify({

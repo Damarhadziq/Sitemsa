@@ -31,6 +31,16 @@ export async function GET(request: Request) {
           maxAge: 2592000,
           sameSite: 'lax',
         });
+        response.cookies.set('auth_student', 'siswa', {
+          path: '/',
+          maxAge: 2592000,
+          sameSite: 'lax',
+        });
+        response.cookies.set('auth', 'true', {
+          path: '/',
+          maxAge: 2592000,
+          sameSite: 'lax',
+        });
         return response;
       }
     }
@@ -38,6 +48,16 @@ export async function GET(request: Request) {
 
   const response = NextResponse.redirect(redirectUrl);
   response.cookies.set('sintesa_student_auth', 'true', {
+    path: '/',
+    maxAge: 2592000,
+    sameSite: 'lax',
+  });
+  response.cookies.set('auth_student', 'siswa', {
+    path: '/',
+    maxAge: 2592000,
+    sameSite: 'lax',
+  });
+  response.cookies.set('auth', 'true', {
     path: '/',
     maxAge: 2592000,
     sameSite: 'lax',

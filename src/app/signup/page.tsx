@@ -55,6 +55,24 @@ export default function SignupPage() {
     setIsGoogleLoading(true);
     setErrorMsg('');
 
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback?next=/lengkapi-profil`,
+          },
+        });
+        if (error) {
+          setErrorMsg(error.message);
+          setIsGoogleLoading(false);
+        }
+        return;
+      } catch (err: any) {
+        console.warn('OAuth fallback error:', err);
+      }
+    }
+
     setTimeout(() => {
       const defaultGoogleStudent = {
         name: 'Siswa Sitemsa',

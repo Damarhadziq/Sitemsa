@@ -36,7 +36,7 @@ import {
 import { recordModuleCompletion, isModuleCompletedByStudent } from "@/services/weekly-target.service";
 import { addUserNotification } from "@/services/notification.service";
 import { StudyAnalyticsService } from "@/services/analytics.service";
-import { getStudentScopedStorageKey } from "@/services/student-profile.service";
+import { getStudentScopedStorageKey, getStudentProfile } from "@/services/student-profile.service";
 
 export type QuizSourceType = "internal" | "barcode" | "external_link";
 
@@ -2057,12 +2057,24 @@ export default function MateriDetailPage({
     const handleBeforeUnload = () => {
       const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
       if (elapsedSeconds >= 5) {
-        StudyAnalyticsService.recordReadingSession({
-          moduleId: material.id,
-          moduleTitle: material.title,
-          subject: material.subject,
-          durationSeconds: elapsedSeconds,
-        });
+        try {
+          const profile = getStudentProfile();
+          StudyAnalyticsService.recordReadingSession({
+            moduleId: material.id,
+            moduleTitle: material.title,
+            subject: material.subject,
+            durationSeconds: elapsedSeconds,
+            studentId: profile.id || profile.email,
+            studentName: profile.name,
+          });
+        } catch {
+          StudyAnalyticsService.recordReadingSession({
+            moduleId: material.id,
+            moduleTitle: material.title,
+            subject: material.subject,
+            durationSeconds: elapsedSeconds,
+          });
+        }
       }
     };
 
@@ -2072,12 +2084,24 @@ export default function MateriDetailPage({
       window.removeEventListener("beforeunload", handleBeforeUnload);
       const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
       if (elapsedSeconds >= 5) {
-        StudyAnalyticsService.recordReadingSession({
-          moduleId: material.id,
-          moduleTitle: material.title,
-          subject: material.subject,
-          durationSeconds: elapsedSeconds,
-        });
+        try {
+          const profile = getStudentProfile();
+          StudyAnalyticsService.recordReadingSession({
+            moduleId: material.id,
+            moduleTitle: material.title,
+            subject: material.subject,
+            durationSeconds: elapsedSeconds,
+            studentId: profile.id || profile.email,
+            studentName: profile.name,
+          });
+        } catch {
+          StudyAnalyticsService.recordReadingSession({
+            moduleId: material.id,
+            moduleTitle: material.title,
+            subject: material.subject,
+            durationSeconds: elapsedSeconds,
+          });
+        }
       }
     };
   }, [material]);

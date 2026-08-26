@@ -1,6 +1,7 @@
 'use client';
 
 import { getStudentProfile } from '@/services/student-profile.service';
+import { supabase } from '@/lib/supabase';
 
 export interface WeeklyTargetState {
   targetCount: number;
@@ -133,6 +134,26 @@ export const recordModuleCompletion = (moduleId: string): void => {
 
       localStorage.setItem(key, JSON.stringify(updated));
       window.dispatchEvent(new CustomEvent('sintesa-weekly-target-updated', { detail: updated }));
+
+      // Sync to cloud database Supabase per student
+      if (supabase) {
+        try {
+          const profile = getStudentProfile();
+          if (profile?.email) {
+            supabase.from('student_module_completions').upsert({
+              id: `smc-${profile.email.toLowerCase().replace(/[^a-z0-9]/g, '_')}-${moduleId}`,
+              student_email: profile.email,
+              student_name: profile.name,
+              module_id: String(moduleId),
+              completed_at: new Date().toISOString(),
+            }).then(({ error }) => {
+              if (error) console.warn('Supabase module completion note:', error.message);
+            });
+          }
+        } catch {
+          // fallback
+        }
+      }
     }
   } catch (e) {
     console.error('Error recording module completion:', e);

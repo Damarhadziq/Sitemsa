@@ -110,9 +110,9 @@ export class ModuleService {
     return dbStore.modules.find((m) => m.id === id) || null;
   }
 
-  static async createModule(data: Omit<ModuleItem, 'id' | 'createdAt'>): Promise<ModuleItem> {
+  static async createModule(data: Omit<ModuleItem, 'id' | 'createdAt'> & { id?: string }): Promise<ModuleItem> {
     this.ensureHydrated();
-    const newId = `mod-${Date.now()}`;
+    const newId = data.id || `mod-${Date.now()}`;
     const newModule: ModuleItem = {
       id: newId,
       ...data,
@@ -199,11 +199,11 @@ export class ModuleService {
     return dbStore.modules[idx];
   }
 
-  static async deleteModule(id: string): Promise<boolean> {
+  static async deleteModule(id: string, title?: string): Promise<boolean> {
     this.ensureHydrated();
-    const moduleItem = dbStore.modules.find((m) => m.id === id);
+    const moduleItem = dbStore.modules.find((m) => m.id === id || (title && m.title.trim().toLowerCase() === title.trim().toLowerCase()));
     if (moduleItem) {
-      dbStore.modules = dbStore.modules.filter((m) => m.id !== id);
+      dbStore.modules = dbStore.modules.filter((m) => m.id !== moduleItem.id);
       // Decrement subject count
       const subject = dbStore.subjects.find((s) => s.name.toLowerCase() === moduleItem.subject.toLowerCase());
       if (subject && subject.totalModules > 0) {
@@ -214,9 +214,9 @@ export class ModuleService {
 
     if (supabase) {
       try {
-        const { error } = await supabase.from('modules').delete().eq('id', id);
-        if (error) {
-          console.warn('Supabase delete module warning:', error.message);
+        await supabase.from('modules').delete().eq('id', id);
+        if (title) {
+          await supabase.from('modules').delete().eq('title', title);
         }
       } catch (e) {
         console.warn('Failed to delete module in Supabase:', e);

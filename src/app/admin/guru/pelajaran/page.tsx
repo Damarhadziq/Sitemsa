@@ -43,6 +43,8 @@ import { ModuleInfoModal } from '@/components/admin/ModuleInfoModal';
 import { Tooltip } from '@/components/ui/tooltip';
 import { StudyAnalyticsService } from '@/services/analytics.service';
 import { ModuleService } from '@/services/module.service';
+import { QuizService } from '@/services/quiz.service';
+import { supabase } from '@/lib/supabase';
 
 // Card More Dropdown Component (Profile Dropdown Style)
 function CardMoreDropdown({
@@ -317,34 +319,36 @@ export default function AdminGuruPelajaranPage() {
       setNewlyAddedMateriId(editingModule.id);
       setTimeout(() => setNewlyAddedMateriId(null), 3000);
     } else {
-      const newId = addModule({
+      const fixedId = `mod-${Date.now()}`;
+      addModule({
         subject: currentSubject,
         title: moduleData.title || 'Materi Baru',
         level: moduleData.level || 'Pemula',
         duration: moduleData.duration || '30 Menit',
         topics: moduleData.topics || ['Materi Sintesa', 'Praktikum'],
         description: moduleData.description || 'Deskripsi materi pembelajaran.',
-        teacherId: user?.id || 't-1',
-        teacherName: user?.name || 'Pak Budi Prasetyo, M.Kom.',
+        teacherId: user?.id || 't-olr-1',
+        teacherName: user?.name || 'Brilian Anugraheni',
         isPublished: moduleData.isPublished ?? true,
         quizSource: moduleData.quizSource,
         blocks: blocks,
       });
 
       ModuleService.createModule({
+        id: fixedId,
         subject: currentSubject,
         title: moduleData.title || 'Materi Baru',
         level: moduleData.level || 'Pemula',
         duration: moduleData.duration || '30 Menit',
         topics: moduleData.topics || ['Materi Sintesa', 'Praktikum'],
         description: moduleData.description || 'Deskripsi materi pembelajaran.',
-        teacherId: user?.id || 't-1',
-        teacherName: user?.name || 'Pak Budi Prasetyo, M.Kom.',
+        teacherId: user?.id || 't-olr-1',
+        teacherName: user?.name || 'Brilian Anugraheni',
         isPublished: moduleData.isPublished ?? true,
         quizSource: moduleData.quizSource as any,
       });
 
-      setNewlyAddedMateriId(newId);
+      setNewlyAddedMateriId(fixedId);
       setTimeout(() => setNewlyAddedMateriId(null), 3000);
     }
   };
@@ -379,12 +383,22 @@ export default function AdminGuruPelajaranPage() {
 
       if (deleteTarget.type === 'kuis') {
         deleteQuiz(deleteTarget.id);
+        QuizService.deleteQuiz(deleteTarget.id);
         quizzesClientService.delete(deleteTarget.id).catch((err) => console.warn('Sync delete quiz error:', err));
+        if (supabase) {
+          supabase.from('quizzes').delete().eq('id', deleteTarget.id);
+        }
         showToast(<>Kuis <span className="font-bold">{deleteTarget.title}</span> berhasil dihapus.</>, 'warning');
       } else {
         deleteModule(deleteTarget.id);
-        ModuleService.deleteModule(deleteTarget.id);
+        ModuleService.deleteModule(deleteTarget.id, deleteTarget.title);
         modulesClientService.delete(deleteTarget.id).catch((err) => console.warn('Sync delete module error:', err));
+        if (supabase) {
+          supabase.from('modules').delete().eq('id', deleteTarget.id);
+          if (deleteTarget.title) {
+            supabase.from('modules').delete().eq('title', deleteTarget.title);
+          }
+        }
         showToast(<>Materi <span className="font-bold">{deleteTarget.title}</span> berhasil dihapus.</>, 'warning');
       }
       setDeleteTarget(null);

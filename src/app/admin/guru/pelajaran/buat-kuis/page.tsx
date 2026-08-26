@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { X, Plus, Copy, Trash2, CheckCircle2, ChevronDown, RefreshCw } from 'lucide-react';
 import { useAdminStore, QuizQuestion } from '@/lib/admin-store';
 import { useAuth } from '@/lib/auth-context';
+import { QuizService } from '@/services/quiz.service';
+import { quizzesClientService } from '@/services/client/quizzes.client';
 
 function BuatKuisContent() {
   const router = useRouter();
@@ -243,6 +245,23 @@ function BuatKuisContent() {
           published: isAlreadyPublished ? true : published,
         });
 
+        QuizService.updateQuiz(existingQuiz.id, {
+          subject,
+          title: title.trim(),
+          duration: duration || '15 Menit',
+          passScore: Number(passScore) || 75,
+          questions,
+          published: isAlreadyPublished ? true : published,
+        });
+        quizzesClientService.update(existingQuiz.id, {
+          subject,
+          title: title.trim(),
+          duration: duration || '15 Menit',
+          passScore: Number(passScore) || 75,
+          questions,
+          published: isAlreadyPublished ? true : published,
+        } as any).catch((e) => console.warn('Quiz client sync update error:', e));
+
         if (published) {
           setIsPublishing(false);
           setShowPublishModal(false);
@@ -266,6 +285,27 @@ function BuatKuisContent() {
           teacherName: user?.name || 'Pak Budi Prasetyo, M.Kom.',
           published,
         });
+
+        QuizService.createQuiz({
+          subject,
+          title: title.trim(),
+          duration: duration || '15 Menit',
+          passScore: Number(passScore) || 75,
+          questions,
+          teacherId: user?.id || 't-1',
+          teacherName: user?.name || 'Pengajar Sitemsa',
+          published,
+        });
+        quizzesClientService.create({
+          subject,
+          title: title.trim(),
+          duration: duration || '15 Menit',
+          passScore: Number(passScore) || 75,
+          questions,
+          teacherId: user?.id || 't-1',
+          teacherName: user?.name || 'Pengajar Sitemsa',
+          published,
+        } as any).catch((e) => console.warn('Quiz client sync create error:', e));
 
         if (published) {
           setIsPublishing(false);

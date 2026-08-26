@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const validated = quizSchema.parse(body);
 
-    const newQuiz = QuizService.createQuiz(validated);
+    const newQuiz = await QuizService.createQuiz(validated);
     return apiSuccess(newQuiz, 'Kuis berhasil dibuat & diterbitkan', 201);
   } catch (error) {
     return handleApiError(error);

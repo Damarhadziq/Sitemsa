@@ -30,7 +30,7 @@ export async function PUT(
     const body = await req.json();
     const validated = quizSchema.partial().parse(body);
 
-    const updated = QuizService.updateQuiz(id, validated);
+    const updated = await QuizService.updateQuiz(id, validated);
     if (!updated) {
       return apiError('Kuis tidak ditemukan', 404);
     }
@@ -47,7 +47,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const deleted = QuizService.deleteQuiz(id);
+    const deleted = await QuizService.deleteQuiz(id);
     if (!deleted) {
       return apiError('Kuis tidak ditemukan', 404);
     }

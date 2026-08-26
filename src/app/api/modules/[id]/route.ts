@@ -28,7 +28,7 @@ export async function PUT(
     const body = await req.json();
     const validated = moduleSchema.partial().parse(body);
 
-    const updated = ModuleService.updateModule(id, validated);
+    const updated = await ModuleService.updateModule(id, validated);
     if (!updated) {
       return apiError('Modul pembelajaran tidak ditemukan', 404);
     }
@@ -45,7 +45,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const deleted = ModuleService.deleteModule(id);
+    const deleted = await ModuleService.deleteModule(id);
     if (!deleted) {
       return apiError('Modul pembelajaran tidak ditemukan', 404);
     }

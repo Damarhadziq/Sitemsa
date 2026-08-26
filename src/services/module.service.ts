@@ -202,27 +202,27 @@ export class ModuleService {
   static async deleteModule(id: string): Promise<boolean> {
     this.ensureHydrated();
     const moduleItem = dbStore.modules.find((m) => m.id === id);
-    if (!moduleItem) return false;
-
-    const initialLen = dbStore.modules.length;
-    dbStore.modules = dbStore.modules.filter((m) => m.id !== id);
-
-    // Decrement subject count
-    const subject = dbStore.subjects.find((s) => s.name.toLowerCase() === moduleItem.subject.toLowerCase());
-    if (subject && subject.totalModules > 0) {
-      subject.totalModules -= 1;
+    if (moduleItem) {
+      dbStore.modules = dbStore.modules.filter((m) => m.id !== id);
+      // Decrement subject count
+      const subject = dbStore.subjects.find((s) => s.name.toLowerCase() === moduleItem.subject.toLowerCase());
+      if (subject && subject.totalModules > 0) {
+        subject.totalModules -= 1;
+      }
+      this.persist();
     }
-
-    this.persist();
 
     if (supabase) {
       try {
-        await supabase.from('modules').delete().eq('id', id);
+        const { error } = await supabase.from('modules').delete().eq('id', id);
+        if (error) {
+          console.warn('Supabase delete module warning:', error.message);
+        }
       } catch (e) {
         console.warn('Failed to delete module in Supabase:', e);
       }
     }
 
-    return dbStore.modules.length < initialLen;
+    return true;
   }
 }

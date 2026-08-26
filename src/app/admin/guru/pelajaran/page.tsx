@@ -383,6 +383,7 @@ export default function AdminGuruPelajaranPage() {
         showToast(<>Kuis <span className="font-bold">{deleteTarget.title}</span> berhasil dihapus.</>, 'warning');
       } else {
         deleteModule(deleteTarget.id);
+        ModuleService.deleteModule(deleteTarget.id);
         modulesClientService.delete(deleteTarget.id).catch((err) => console.warn('Sync delete module error:', err));
         showToast(<>Materi <span className="font-bold">{deleteTarget.title}</span> berhasil dihapus.</>, 'warning');
       }

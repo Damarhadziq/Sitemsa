@@ -9,6 +9,7 @@ import {
   BellIcon,
 } from '@hugeicons/core-free-icons';
 import { supabase } from '@/lib/supabase';
+import { getStudentProfile } from '@/services/student-profile.service';
 
 export type NotificationConditionType =
   | 'materi'
@@ -29,7 +30,19 @@ export interface AppNotification {
   userId?: string;
 }
 
-const STORAGE_KEY = 'sintesa_user_notifications_v1';
+const getNotificationStorageKey = (): string => {
+  if (typeof window === 'undefined') return 'sintesa_user_notifications_v1';
+  try {
+    const profile = getStudentProfile();
+    if (profile?.email) {
+      const safeSuffix = profile.email.toLowerCase().replace(/[^a-z0-9]/g, '_');
+      return `sintesa_user_notifications_v1_${safeSuffix}`;
+    }
+  } catch {
+    // fallback
+  }
+  return 'sintesa_user_notifications_v1';
+};
 
 export const INITIAL_NOTIFICATIONS: AppNotification[] = [
   {
@@ -110,9 +123,10 @@ export const getNotificationIcon = (type: string): IconSvgElement => {
 export const getStoredNotifications = (): AppNotification[] => {
   if (typeof window === 'undefined') return INITIAL_NOTIFICATIONS;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const key = getNotificationStorageKey();
+    const raw = localStorage.getItem(key);
     if (!raw) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_NOTIFICATIONS));
+      localStorage.setItem(key, JSON.stringify(INITIAL_NOTIFICATIONS));
       return INITIAL_NOTIFICATIONS;
     }
     return JSON.parse(raw);
@@ -149,7 +163,8 @@ export const syncNotificationsFromSupabase = async (userId?: string): Promise<Ap
       }));
 
       if (typeof window !== 'undefined') {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(mapped));
+        const key = getNotificationStorageKey();
+        localStorage.setItem(key, JSON.stringify(mapped));
         window.dispatchEvent(new CustomEvent('sintesa-notifications-updated'));
       }
       return mapped;
@@ -179,7 +194,8 @@ export const addUserNotification = (
   const updated = [newNotif, ...current];
   if (typeof window !== 'undefined') {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      const key = getNotificationStorageKey();
+      localStorage.setItem(key, JSON.stringify(updated));
       window.dispatchEvent(new CustomEvent('sintesa-notifications-updated'));
     } catch (e) {
       console.error(e);
@@ -210,7 +226,8 @@ export const markAllNotificationsRead = (): AppNotification[] => {
   const current = getStoredNotifications();
   const updated = current.map((n) => ({ ...n, isRead: true }));
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    const key = getNotificationStorageKey();
+    localStorage.setItem(key, JSON.stringify(updated));
     window.dispatchEvent(new CustomEvent('sintesa-notifications-updated'));
   } catch (e) {
     console.error(e);
@@ -228,7 +245,8 @@ export const markNotificationAsRead = (id: string): AppNotification[] => {
   const current = getStoredNotifications();
   const updated = current.map((n) => (n.id === id ? { ...n, isRead: true } : n));
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    const key = getNotificationStorageKey();
+    localStorage.setItem(key, JSON.stringify(updated));
     window.dispatchEvent(new CustomEvent('sintesa-notifications-updated'));
   } catch (e) {
     console.error(e);

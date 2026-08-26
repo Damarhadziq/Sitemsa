@@ -1,5 +1,7 @@
 'use client';
 
+import { getStudentProfile } from '@/services/student-profile.service';
+
 export interface WeeklyTargetState {
   targetCount: number;
   completedCount: number;
@@ -7,8 +9,21 @@ export interface WeeklyTargetState {
   lastUpdated: string;
 }
 
-const STORAGE_KEY = 'sintesa_weekly_target_v1';
 const DEFAULT_TARGET = 5;
+
+const getWeeklyStorageKey = (): string => {
+  if (typeof window === 'undefined') return 'sintesa_weekly_target_v1';
+  try {
+    const profile = getStudentProfile();
+    if (profile?.email) {
+      const safeSuffix = profile.email.toLowerCase().replace(/[^a-z0-9]/g, '_');
+      return `sintesa_weekly_target_v1_${safeSuffix}`;
+    }
+  } catch {
+    // fallback
+  }
+  return 'sintesa_weekly_target_v1';
+};
 
 // Clean production initial state (0 completed until student actually finishes materials)
 const INITIAL_STATE: WeeklyTargetState = {
@@ -19,7 +34,7 @@ const INITIAL_STATE: WeeklyTargetState = {
 };
 
 /**
- * Get current weekly target progress
+ * Get current weekly target progress for active logged in student
  */
 export const getWeeklyTarget = (): {
   completed: number;
@@ -39,7 +54,8 @@ export const getWeeklyTarget = (): {
   }
 
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const key = getWeeklyStorageKey();
+    const raw = localStorage.getItem(key);
     const data: WeeklyTargetState = raw ? JSON.parse(raw) : INITIAL_STATE;
 
     const completed = Math.max(0, data.completedCount || 0);
@@ -68,29 +84,46 @@ export const getWeeklyTarget = (): {
   } catch (e) {
     console.error('Error getting weekly target:', e);
     return {
-      completed: 3,
+      completed: 0,
       target: 5,
-      percentage: 60,
+      percentage: 0,
       isCompleted: false,
-      message: 'Sedikit lagi, pertahankan rentetan belajarmu!',
+      message: 'Mulai langkah belajarmu minggu ini dengan 1 materi baru!',
     };
   }
 };
 
 /**
- * Record a completed module to dynamically increase weekly progress
+ * Check if a specific module has been marked complete by the current student
+ */
+export const isModuleCompletedByStudent = (moduleId: string | number): boolean => {
+  if (typeof window === 'undefined') return false;
+  try {
+    const key = getWeeklyStorageKey();
+    const raw = localStorage.getItem(key);
+    if (!raw) return false;
+    const data: WeeklyTargetState = JSON.parse(raw);
+    return Array.isArray(data.completedModuleIds) && data.completedModuleIds.includes(String(moduleId));
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Record a completed module to dynamically increase weekly progress for active student
  */
 export const recordModuleCompletion = (moduleId: string): void => {
   if (typeof window === 'undefined') return;
 
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const key = getWeeklyStorageKey();
+    const raw = localStorage.getItem(key);
     const data: WeeklyTargetState = raw ? JSON.parse(raw) : INITIAL_STATE;
 
     const ids = Array.isArray(data.completedModuleIds) ? data.completedModuleIds : [];
 
-    if (!ids.includes(moduleId)) {
-      ids.push(moduleId);
+    if (!ids.includes(String(moduleId))) {
+      ids.push(String(moduleId));
       const updated: WeeklyTargetState = {
         ...data,
         completedCount: ids.length,
@@ -98,7 +131,7 @@ export const recordModuleCompletion = (moduleId: string): void => {
         lastUpdated: new Date().toISOString().split('T')[0],
       };
 
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      localStorage.setItem(key, JSON.stringify(updated));
       window.dispatchEvent(new CustomEvent('sintesa-weekly-target-updated', { detail: updated }));
     }
   } catch (e) {

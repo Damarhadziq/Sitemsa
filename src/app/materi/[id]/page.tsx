@@ -33,7 +33,7 @@ import {
   MusicNote01Icon,
   Dumbbell01Icon,
 } from "@hugeicons/core-free-icons";
-import { recordModuleCompletion } from "@/services/weekly-target.service";
+import { recordModuleCompletion, isModuleCompletedByStudent } from "@/services/weekly-target.service";
 import { addUserNotification } from "@/services/notification.service";
 import { StudyAnalyticsService } from "@/services/analytics.service";
 
@@ -2081,6 +2081,12 @@ export default function MateriDetailPage({
   }, [material]);
 
   const [isMarkedDone, setIsMarkedDone] = useState(false);
+
+  useEffect(() => {
+    if (material) {
+      setIsMarkedDone(isModuleCompletedByStudent(material.id));
+    }
+  }, [material]);
 
   const handleMarkComplete = () => {
     if (isMarkedDone || !material) return;

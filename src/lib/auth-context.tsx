@@ -222,22 +222,22 @@ const TEACHER_USERS: Record<string, AuthUser> = {
 
   // --- 5. Pend. Olahraga ---
   'brilian.guru@sitemsa.sch.id': {
-    id: 't-pjok-1',
+    id: 't-olr-1',
     name: 'Brilian Anugraheni',
     email: 'brilian.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19981616 202401 2 016',
     avatar: 'https://i.pravatar.cc/150?img=29',
-    assignedSubjects: ['Olahraga & Kesehatan', 'Pendidikan Jasmani'],
+    assignedSubjects: ['Keolahragaan', 'Olahraga & Kesehatan', 'Pendidikan Jasmani'],
   },
   'luthfi.guru@sitemsa.sch.id': {
-    id: 't-pjok-2',
+    id: 't-olr-2',
     name: 'Ahmad Luthfi F.',
     email: 'luthfi.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19981717 202401 1 017',
     avatar: 'https://i.pravatar.cc/150?img=31',
-    assignedSubjects: ['Olahraga & Kesehatan', 'Pendidikan Jasmani'],
+    assignedSubjects: ['Keolahragaan', 'Olahraga & Kesehatan', 'Pendidikan Jasmani'],
   },
   'rinal.guru@sitemsa.sch.id': {
     id: 't-pjok-3',

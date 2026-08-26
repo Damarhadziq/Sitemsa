@@ -155,9 +155,21 @@ export default function AdminGuruPelajaranPage() {
   const assignedSubjects = user?.assignedSubjects || ['Informatika'];
   const currentSubject = activeSubjectFilter || assignedSubjects[0] || 'Informatika';
 
+  const isSubjectMatch = (mSub?: string, curSub?: string) => {
+    if (!mSub || !curSub) return false;
+    const a = mSub.toLowerCase().replace(/[^a-z]/g, '');
+    const b = curSub.toLowerCase().replace(/[^a-z]/g, '');
+    if (a === b) return true;
+    if ((a.includes('olahraga') || a.includes('keolahragaan') || a.includes('pjok') || a.includes('jasmani')) &&
+        (b.includes('olahraga') || b.includes('keolahragaan') || b.includes('pjok') || b.includes('jasmani'))) {
+      return true;
+    }
+    return false;
+  };
+
   const subjectModules = modules.filter(
     (m) =>
-      m.subject === currentSubject &&
+      isSubjectMatch(m.subject, currentSubject) &&
       (!user ||
         user.role === 'superadmin' ||
         m.teacherId === user.id ||
@@ -167,7 +179,7 @@ export default function AdminGuruPelajaranPage() {
   );
   const subjectQuizzes = quizzes.filter(
     (q) =>
-      q.subject === currentSubject &&
+      isSubjectMatch(q.subject, currentSubject) &&
       (!user ||
         user.role === 'superadmin' ||
         q.teacherId === user.id ||

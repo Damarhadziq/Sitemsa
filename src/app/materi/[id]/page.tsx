@@ -108,7 +108,7 @@ interface MaterialDetail {
     fileName: string;
     fileSize: string;
   };
-  quizSource: QuizSource;
+  quizSource?: QuizSource;
   prevMaterial?: { id: number; title: string };
   nextMaterial?: { id: number; title: string };
 }
@@ -1988,7 +1988,7 @@ export default function MateriDetailPage({
           qrImageUrl: storeMod.quizSource.qrImageUrl,
           externalPlatformName: 'Platform Eksternal',
           internalUrl: `/kuis/${storeMod.id}`,
-        } : baseMaterial.quizSource,
+        } : (targetKey ? baseMaterial.quizSource : undefined),
       };
     }
 
@@ -2013,7 +2013,7 @@ export default function MateriDetailPage({
         qrImageUrl: storeMod.quizSource.qrImageUrl,
         externalPlatformName: 'Platform Eksternal',
         internalUrl: `/kuis/${storeMod.id}`,
-      } : baseMaterial.quizSource,
+      } : undefined,
     };
   }, [baseMaterial, modules, id]);
 
@@ -2159,8 +2159,8 @@ export default function MateriDetailPage({
 
       addUserNotification({
         type: 'materi',
-        title: 'Materi Selesai Dipelajari 🎉',
-        message: `Hebat! Kamu telah menuntaskan pembelajaran "${material.title}". Target mingguanmu otomatis bertambah.`,
+        title: 'Materi Selesai Dipelajari',
+        message: `Kamu telah menuntaskan pembelajaran "${material.title}". Target mingguanmu berhasil tercatat.`,
         linkUrl: `/materi/${material.id}`,
       });
 
@@ -2186,6 +2186,7 @@ export default function MateriDetailPage({
 
   const handleStartQuizClick = (e: React.MouseEvent) => {
     const qSource = material.quizSource;
+    if (!qSource) return;
     if (qSource.type === "barcode") {
       e.preventDefault();
       setActiveQuizModal("barcode");
@@ -2349,19 +2350,6 @@ export default function MateriDetailPage({
                     <span className="inline-flex items-center gap-1 bg-purple-50 text-purple-700 border border-purple-200/80 px-2.5 py-1 rounded-[4px] text-xs font-semibold">
                       <BarChart2 className="w-3.5 h-3.5 text-purple-600 shrink-0" />
                       <span>{material.level || "Mahir"}</span>
-                    </span>
-                  )}
-
-                  {/* Dynamic Smart Read Auto-Completion Badge */}
-                  {isMarkedDone ? (
-                    <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200/80 px-2.5 py-1 rounded-[4px] text-xs font-semibold animate-in fade-in duration-200">
-                      <HugeiconsIcon icon={CheckmarkCircle01Icon} size={14} className="text-emerald-600" />
-                      <span>Selesai Dipelajari</span>
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1.5 bg-blue-50 text-[#2563EB] border border-blue-100 px-2.5 py-1 rounded-[4px] text-xs font-semibold">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#2563EB] animate-pulse" />
-                      <span>Membaca ({scrollProgress}%)</span>
                     </span>
                   )}
                 </div>
@@ -2674,46 +2662,48 @@ export default function MateriDetailPage({
                 </nav>
               </div>
 
-              {/* Start Quiz Card */}
-              <div className="bg-gradient-to-br from-[#FAFAFF] via-[#F4EFFF] to-[#EBE4FF] border border-[#E0D7FF] rounded-[12px] p-5 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="bg-[#2563EB]/10 text-[#2563EB] px-2.5 py-0.5 rounded-[4px] text-[11px] font-semibold flex items-center gap-1">
-                    {material.quizSource.type === "barcode" && (
-                      <>
-                        <HugeiconsIcon icon={QrCode01Icon} size={12} />
-                        <span>Barcode / QR Code</span>
-                      </>
-                    )}
-                    {material.quizSource.type === "external_link" && (
-                      <>
-                        <HugeiconsIcon icon={Link01Icon} size={12} />
-                        <span>Link Eksternal</span>
-                      </>
-                    )}
-                    {material.quizSource.type === "internal" && (
-                      <>
-                        <HugeiconsIcon icon={Certificate01Icon} size={12} />
-                        <span>Kuis Sitemsa</span>
-                      </>
-                    )}
-                  </span>
-                </div>
+              {/* Start Quiz Card (Only shown if material has a configured evaluation/quiz) */}
+              {material.quizSource && (
+                <div className="bg-gradient-to-br from-[#FAFAFF] via-[#F4EFFF] to-[#EBE4FF] border border-[#E0D7FF] rounded-[12px] p-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="bg-[#2563EB]/10 text-[#2563EB] px-2.5 py-0.5 rounded-[4px] text-[11px] font-semibold flex items-center gap-1">
+                      {material.quizSource.type === "barcode" && (
+                        <>
+                          <HugeiconsIcon icon={QrCode01Icon} size={12} />
+                          <span>Barcode / QR Code</span>
+                        </>
+                      )}
+                      {material.quizSource.type === "external_link" && (
+                        <>
+                          <HugeiconsIcon icon={Link01Icon} size={12} />
+                          <span>Link Eksternal</span>
+                        </>
+                      )}
+                      {material.quizSource.type === "internal" && (
+                        <>
+                          <HugeiconsIcon icon={Certificate01Icon} size={12} />
+                          <span>Kuis Sitemsa</span>
+                        </>
+                      )}
+                    </span>
+                  </div>
 
-                <h3 className="text-sm font-bold text-[#2E2D2D]">
-                  {material.quizSource.title}
-                </h3>
-                <p className="text-xs text-[#737373] leading-relaxed">
-                  {material.quizSource.description}
-                </p>
-                <Link
-                  href={material.quizSource.internalUrl || "#"}
-                  onClick={handleStartQuizClick}
-                  className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-95 text-white py-2.5 rounded-[6px] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer"
-                >
-                  <span>Mulai Uji Pemahaman</span>
-                  <HugeiconsIcon icon={ArrowRight01Icon} size={14} />
-                </Link>
-              </div>
+                  <h3 className="text-sm font-bold text-[#2E2D2D]">
+                    {material.quizSource.title}
+                  </h3>
+                  <p className="text-xs text-[#737373] leading-relaxed">
+                    {material.quizSource.description}
+                  </p>
+                  <Link
+                    href={material.quizSource.internalUrl || "#"}
+                    onClick={handleStartQuizClick}
+                    className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-95 text-white py-2.5 rounded-[6px] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer"
+                  >
+                    <span>Mulai Uji Pemahaman</span>
+                    <HugeiconsIcon icon={ArrowRight01Icon} size={14} />
+                  </Link>
+                </div>
+              )}
             </aside>
           </div>
         )}
@@ -2811,7 +2801,7 @@ export default function MateriDetailPage({
       )}
 
       {/* Quiz Barcode Modal (Mobile Bottom Sheet & Desktop Dialog) */}
-      {activeQuizModal === "barcode" && (
+      {activeQuizModal === "barcode" && material.quizSource && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-in fade-in duration-200 overscroll-contain">
           {/* Backdrop Click Listener */}
           <div className="absolute inset-0" onClick={() => setActiveQuizModal("none")} />
@@ -2875,7 +2865,7 @@ export default function MateriDetailPage({
       )}
 
       {/* Quiz External Link Confirmation Modal (Mobile Bottom Sheet & Desktop Dialog) */}
-      {activeQuizModal === "link_confirm" && (
+      {activeQuizModal === "link_confirm" && material.quizSource && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-in fade-in duration-200 overscroll-contain">
           {/* Backdrop Click Listener */}
           <div className="absolute inset-0" onClick={() => setActiveQuizModal("none")} />
@@ -2941,16 +2931,22 @@ export default function MateriDetailPage({
         </div>
       )}
 
-      {/* Celebratory Smart Read Auto-Completion Toast */}
+      {/* FLOATING TOAST NOTIFICATION — slides from below navbar (Admin page style, no emojis) */}
       {showCompletedToast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-white border border-emerald-200/90 shadow-2xl rounded-[14px] p-4 flex items-center gap-3 animate-in slide-in-from-bottom-5 duration-300 max-w-sm">
-          <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
-            <HugeiconsIcon icon={CheckmarkCircle01Icon} size={22} />
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-[10px] bg-white/95 backdrop-blur-md border border-[#ECECEC] shadow-[0_14px_32px_-8px_rgba(0,0,0,0.14)] font-sans transition-all duration-300 ease-out animate-in slide-in-from-top-4 fade-in">
+          <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+            <HugeiconsIcon icon={CheckmarkCircle01Icon} size={14} className="text-emerald-700" />
           </div>
-          <div className="space-y-0.5">
-            <p className="text-xs font-bold text-[#2E2D2D]">Materi Selesai Dipelajari! 🎉</p>
-            <p className="text-[11px] text-[#737373] leading-tight">Progres dan target belajarmu berhasil tercatat otomatis.</p>
-          </div>
+          <p className="text-xs font-medium text-[#2E2D2D] max-w-sm truncate">
+            Materi telah selesai dipelajari. Progres berhasil dicatat.
+          </p>
+          <button
+            type="button"
+            onClick={() => setShowCompletedToast(false)}
+            className="text-slate-400 hover:text-slate-600 p-0.5 rounded-full hover:bg-slate-100 transition-colors cursor-pointer shrink-0 ml-1"
+          >
+            <HugeiconsIcon icon={Cancel01Icon} size={13} />
+          </button>
         </div>
       )}
     </div>

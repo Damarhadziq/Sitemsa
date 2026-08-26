@@ -5,7 +5,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarImage, AvatarFallback, AvatarGroup } from '@/components/ui/avatar';
-import { authenticateStudent, saveStudentProfile } from '@/services/student-profile.service';
+import { authenticateStudent, saveStudentProfile, registerStudent } from '@/services/student-profile.service';
 import { useAuth } from '@/lib/auth-context';
 import { GoogleAccountModal, GoogleAccountOption } from '@/components/auth/GoogleAccountModal';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
@@ -22,24 +22,7 @@ export default function LoginPage() {
   const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
 
   const handleGoogleLogin = async () => {
-    if (isSupabaseConfigured && supabase) {
-      try {
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: `${window.location.origin}/auth/callback?next=/`,
-          },
-        });
-        if (error) {
-          console.warn('OAuth fallback:', error.message);
-          setIsGoogleModalOpen(true);
-        }
-      } catch {
-        setIsGoogleModalOpen(true);
-      }
-    } else {
-      setIsGoogleModalOpen(true);
-    }
+    setIsGoogleModalOpen(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -51,7 +34,7 @@ export default function LoginPage() {
       const cleanEmail = email.trim().toLowerCase();
 
       // Check if admin/teacher login
-      if (cleanEmail.includes('guru') || cleanEmail.includes('admin')) {
+      if (cleanEmail.includes('guru') || cleanEmail.includes('admin') || cleanEmail.includes('superadmin')) {
         const adminSuccess = loginWithCredentials(cleanEmail, password);
         if (adminSuccess) {
           if (cleanEmail.includes('admin') || cleanEmail.includes('superadmin')) {
@@ -76,11 +59,13 @@ export default function LoginPage() {
 
   const handleSelectGoogleAccount = (acc: GoogleAccountOption) => {
     setIsGoogleModalOpen(false);
-    // Save student profile with chosen account
-    saveStudentProfile({
+    
+    // Register/update student profile with chosen account
+    registerStudent({
       name: acc.name,
       email: acc.email,
       avatar: acc.avatar,
+      grade: acc.grade || 'XI PPLG 1',
     });
 
     if (typeof document !== 'undefined') {
@@ -92,6 +77,8 @@ export default function LoginPage() {
           name: acc.name,
           role: 'siswa',
           avatar: acc.avatar,
+          grade: acc.grade || 'XI PPLG 1',
+          school: 'SMK Negeri 1 Semarang',
           loginTime: new Date().toISOString(),
         })
       );

@@ -2,7 +2,7 @@
 
 import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { saveStudentProfile } from '@/services/student-profile.service';
+import { saveStudentProfile, registerStudent } from '@/services/student-profile.service';
 import { addUserNotification } from '@/services/notification.service';
 import { CheckCircle2, School, GraduationCap, Sparkles, ArrowLeft } from 'lucide-react';
 
@@ -37,9 +37,9 @@ function OnboardingContent() {
     setIsSubmitting(true);
 
     setTimeout(() => {
-      saveStudentProfile({
+      registerStudent({
         name: name.trim(),
-        email: initialEmail,
+        email: initialEmail || 'siswa@belajar.id',
         nisn: nisn.trim(),
         school: school,
         grade: `${selectedGrade} ${selectedMajor.split(' ')[0]}`,

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
-import { saveStudentProfile } from '@/services/student-profile.service';
+import { saveStudentProfile, registerStudent } from '@/services/student-profile.service';
 import { GoogleAccountModal, GoogleAccountOption } from '@/components/auth/GoogleAccountModal';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
@@ -37,44 +37,29 @@ export default function SignupPage() {
     setIsPending(true);
 
     setTimeout(() => {
-      // Save temporary profile info
-      saveStudentProfile({
+      // Register student credentials persistently
+      registerStudent({
         name: name.trim(),
         email: email.trim().toLowerCase(),
+        password: password,
       });
 
       // Redirect to OTP verification
       router.push(`/verifikasi-otp?from=signup&email=${encodeURIComponent(email.trim())}&name=${encodeURIComponent(name.trim())}`);
-    }, 400);
+    }, 300);
   };
 
   const handleGoogleSignup = async () => {
-    if (isSupabaseConfigured && supabase) {
-      try {
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: `${window.location.origin}/auth/callback?next=/lengkapi-profil`,
-          },
-        });
-        if (error) {
-          console.warn('OAuth fallback:', error.message);
-          setIsGoogleModalOpen(true);
-        }
-      } catch {
-        setIsGoogleModalOpen(true);
-      }
-    } else {
-      setIsGoogleModalOpen(true);
-    }
+    setIsGoogleModalOpen(true);
   };
 
   const handleSelectGoogleAccount = (acc: GoogleAccountOption) => {
     setIsGoogleModalOpen(false);
-    saveStudentProfile({
+    registerStudent({
       name: acc.name,
       email: acc.email,
       avatar: acc.avatar,
+      grade: acc.grade,
     });
     router.push(`/lengkapi-profil?name=${encodeURIComponent(acc.name)}&email=${encodeURIComponent(acc.email)}`);
   };

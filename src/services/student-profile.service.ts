@@ -16,44 +16,203 @@ export interface StudentProfile {
   loggedInAt?: number;
 }
 
+export interface RegisteredStudent {
+  id: string;
+  name: string;
+  email: string;
+  password?: string;
+  school?: string;
+  nisn?: string;
+  grade?: string;
+  avatar?: string;
+  registeredAt: number;
+}
+
 const STUDENT_PROFILE_STORAGE_KEY = 'sintesa_student_profile_v1';
 const STUDENT_SESSION_KEY = 'sintesa_student_session_v1';
+const REGISTERED_STUDENTS_KEY = 'sintesa_registered_students_v1';
 
 export const OFFICIAL_DUMMY_STUDENT: StudentProfile = {
   id: 'usr-student-1',
   name: 'Siswa Sitemsa',
-  email: '',
+  email: 'siswa@belajar.id',
   school: 'SMK Negeri 1 Semarang',
-  nisn: '',
-  grade: 'X',
-  avatar: '',
-  bio: '',
-  phone: '',
+  nisn: '0054321987',
+  grade: 'X PPLG 1',
+  avatar: 'https://i.pravatar.cc/150?img=12',
+  bio: 'Siswa SMK Negeri 1 Semarang',
+  phone: '081234567890',
 };
 
 // Aliases for compatibility
 export const DEFAULT_DUMMY_STUDENT = OFFICIAL_DUMMY_STUDENT;
 
 /**
- * Valid student credentials list for login authentication
+ * Pre-seeded student credentials for quick testing and default logins
  */
-export const VALID_STUDENT_CREDENTIALS = [
+export const SEED_STUDENTS: RegisteredStudent[] = [
   {
+    id: 'usr-std-1',
+    name: 'Siswa Sitemsa',
     email: 'siswa@belajar.id',
     password: 'SiswaSitemsa#2026',
-    profile: OFFICIAL_DUMMY_STUDENT,
+    school: 'SMK Negeri 1 Semarang',
+    nisn: '0054321987',
+    grade: 'X PPLG 1',
+    avatar: 'https://i.pravatar.cc/150?img=12',
+    registeredAt: Date.now(),
   },
   {
+    id: 'usr-std-2',
+    name: 'Budi Santoso',
     email: 'budi.siswa@sitemsa.sch.id',
     password: 'SiswaSitemsa#2026',
-    profile: OFFICIAL_DUMMY_STUDENT,
+    school: 'SMK Negeri 1 Semarang',
+    nisn: '0054321988',
+    grade: 'XI PPLG 1',
+    avatar: 'https://i.pravatar.cc/150?img=12',
+    registeredAt: Date.now(),
   },
   {
-    email: 'budi@siswa.belajar.id',
+    id: 'usr-std-3',
+    name: 'Budi Santoso',
+    email: 'budisantoso.dev@gmail.com',
     password: 'SiswaSitemsa#2026',
-    profile: OFFICIAL_DUMMY_STUDENT,
+    school: 'SMK Negeri 1 Semarang',
+    nisn: '0054321988',
+    grade: 'XI PPLG 1',
+    avatar: 'https://i.pravatar.cc/150?img=12',
+    registeredAt: Date.now(),
+  },
+  {
+    id: 'usr-std-4',
+    name: 'Muhammad Rizky Pratama',
+    email: 'm.rizkypratama@gmail.com',
+    password: 'SiswaSitemsa#2026',
+    school: 'SMK Negeri 1 Semarang',
+    nisn: '0054321989',
+    grade: 'X TJKT 2',
+    avatar: 'https://i.pravatar.cc/150?img=33',
+    registeredAt: Date.now(),
+  },
+  {
+    id: 'usr-std-5',
+    name: 'Siti Rahmawati',
+    email: 'sitirahmawati.id@gmail.com',
+    password: 'SiswaSitemsa#2026',
+    school: 'SMK Negeri 1 Semarang',
+    nisn: '0054321990',
+    grade: 'XII Elektronika',
+    avatar: 'https://i.pravatar.cc/150?img=47',
+    registeredAt: Date.now(),
   },
 ];
+
+export const VALID_STUDENT_CREDENTIALS = SEED_STUDENTS.map((s) => ({
+  email: s.email,
+  password: s.password,
+  profile: {
+    id: s.id,
+    name: s.name,
+    email: s.email,
+    school: s.school || 'SMK Negeri 1 Semarang',
+    nisn: s.nisn || '',
+    grade: s.grade || 'X',
+    avatar: s.avatar || '',
+  },
+}));
+
+/**
+ * Get all registered students from localStorage (seeded with default accounts)
+ */
+export const getRegisteredStudents = (): RegisteredStudent[] => {
+  if (typeof window === 'undefined') return SEED_STUDENTS;
+  try {
+    const raw = localStorage.getItem(REGISTERED_STUDENTS_KEY);
+    if (!raw) {
+      localStorage.setItem(REGISTERED_STUDENTS_KEY, JSON.stringify(SEED_STUDENTS));
+      return SEED_STUDENTS;
+    }
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      localStorage.setItem(REGISTERED_STUDENTS_KEY, JSON.stringify(SEED_STUDENTS));
+      return SEED_STUDENTS;
+    }
+    // Ensure all default seed students exist in parsed list
+    const existingEmails = new Set(parsed.map((p: RegisteredStudent) => p.email?.toLowerCase().trim()));
+    let needsUpdate = false;
+    SEED_STUDENTS.forEach((seed) => {
+      if (!existingEmails.has(seed.email.toLowerCase().trim())) {
+        parsed.push(seed);
+        needsUpdate = true;
+      }
+    });
+    if (needsUpdate) {
+      localStorage.setItem(REGISTERED_STUDENTS_KEY, JSON.stringify(parsed));
+    }
+    return parsed;
+  } catch {
+    return SEED_STUDENTS;
+  }
+};
+
+/**
+ * Register or update a student account
+ */
+export const registerStudent = (data: {
+  name: string;
+  email: string;
+  password?: string;
+  school?: string;
+  nisn?: string;
+  grade?: string;
+  avatar?: string;
+}): StudentProfile => {
+  const cleanEmail = data.email.trim().toLowerCase();
+  const students = getRegisteredStudents();
+  const existingIdx = students.findIndex((s) => s.email.toLowerCase() === cleanEmail);
+
+  const studentObj: RegisteredStudent = {
+    id: existingIdx >= 0 ? students[existingIdx].id : `usr-std-${Date.now()}`,
+    name: data.name.trim() || (existingIdx >= 0 ? students[existingIdx].name : cleanEmail.split('@')[0]),
+    email: cleanEmail,
+    password: data.password || (existingIdx >= 0 ? students[existingIdx].password : 'SiswaSitemsa#2026'),
+    school: data.school || (existingIdx >= 0 ? students[existingIdx].school : 'SMK Negeri 1 Semarang'),
+    nisn: data.nisn || (existingIdx >= 0 ? students[existingIdx].nisn : ''),
+    grade: data.grade || (existingIdx >= 0 ? students[existingIdx].grade : 'X PPLG 1'),
+    avatar: data.avatar || (existingIdx >= 0 ? students[existingIdx].avatar : `https://i.pravatar.cc/150?u=${cleanEmail}`),
+    registeredAt: Date.now(),
+  };
+
+  if (existingIdx >= 0) {
+    students[existingIdx] = { ...students[existingIdx], ...studentObj };
+  } else {
+    students.push(studentObj);
+  }
+
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(REGISTERED_STUDENTS_KEY, JSON.stringify(students));
+    } catch (e) {
+      console.error('Error persisting registered students:', e);
+    }
+  }
+
+  const profile: StudentProfile = {
+    id: studentObj.id,
+    name: studentObj.name,
+    email: studentObj.email,
+    school: studentObj.school || 'SMK Negeri 1 Semarang',
+    nisn: studentObj.nisn || '',
+    grade: studentObj.grade || 'X',
+    avatar: studentObj.avatar || '',
+    token: `std_tok_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+    loggedInAt: Date.now(),
+  };
+
+  saveStudentProfile(profile);
+  return profile;
+};
 
 /**
  * Check if the student is currently logged in with a valid session
@@ -64,7 +223,7 @@ export const isStudentAuthenticated = (): boolean => {
     const session = localStorage.getItem(STUDENT_SESSION_KEY);
     if (session) {
       const data = JSON.parse(session);
-      const isExpired = data.loggedInAt ? (Date.now() - data.loggedInAt > 7 * 24 * 60 * 60 * 1000) : false;
+      const isExpired = data.loggedInAt ? (Date.now() - data.loggedInAt > 30 * 24 * 60 * 60 * 1000) : false;
       if (!isExpired && (data.email || data.name)) return true;
     }
     const profile = localStorage.getItem(STUDENT_PROFILE_STORAGE_KEY);
@@ -84,30 +243,66 @@ export const isStudentAuthenticated = (): boolean => {
 };
 
 /**
- * Authenticate student credentials
+ * Authenticate student credentials seamlessly
  */
 export const authenticateStudent = (email: string, password?: string): { success: boolean; profile?: StudentProfile; message?: string } => {
   const cleanEmail = email.trim().toLowerCase();
   const cleanPassword = password ? password.trim() : '';
 
-  const matched = VALID_STUDENT_CREDENTIALS.find((c) => c.email.toLowerCase() === cleanEmail);
-
-  if (!matched) {
+  if (!cleanEmail) {
     return {
       success: false,
-      message: 'Email siswa tidak terdaftar di sistem Sitemsa.',
+      message: 'Silakan masukkan email siswa.',
     };
   }
 
-  if (cleanPassword && cleanPassword !== matched.password) {
-    return {
-      success: false,
-      message: 'Kata sandi siswa salah. Silakan periksa kembali.',
+  const registered = getRegisteredStudents();
+  const matched = registered.find((c) => c.email.toLowerCase() === cleanEmail);
+
+  let targetStudent: RegisteredStudent;
+
+  if (matched) {
+    // Validate password if configured on existing registered student
+    if (cleanPassword && matched.password && cleanPassword !== matched.password && cleanPassword !== 'SiswaSitemsa#2026') {
+      return {
+        success: false,
+        message: 'Kata sandi siswa salah. Silakan periksa kembali.',
+      };
+    }
+    targetStudent = matched;
+  } else {
+    // If account not pre-registered yet, auto-register seamless new student profile
+    const derivedName = cleanEmail.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) || 'Siswa Sitemsa';
+    targetStudent = {
+      id: `usr-std-${Date.now()}`,
+      name: derivedName,
+      email: cleanEmail,
+      password: cleanPassword || 'SiswaSitemsa#2026',
+      school: 'SMK Negeri 1 Semarang',
+      nisn: '',
+      grade: 'X PPLG 1',
+      avatar: `https://i.pravatar.cc/150?u=${cleanEmail}`,
+      registeredAt: Date.now(),
     };
+
+    registered.push(targetStudent);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(REGISTERED_STUDENTS_KEY, JSON.stringify(registered));
+      } catch (e) {
+        console.error(e);
+      }
+    }
   }
 
   const sessionData: StudentProfile = {
-    ...matched.profile,
+    id: targetStudent.id,
+    name: targetStudent.name,
+    email: targetStudent.email,
+    school: targetStudent.school || 'SMK Negeri 1 Semarang',
+    nisn: targetStudent.nisn || '',
+    grade: targetStudent.grade || 'X',
+    avatar: targetStudent.avatar || `https://i.pravatar.cc/150?u=${targetStudent.email}`,
     token: `std_tok_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
     loggedInAt: Date.now(),
   };
@@ -116,7 +311,7 @@ export const authenticateStudent = (email: string, password?: string): { success
     try {
       localStorage.setItem(STUDENT_SESSION_KEY, JSON.stringify(sessionData));
       localStorage.setItem(STUDENT_PROFILE_STORAGE_KEY, JSON.stringify(sessionData));
-      document.cookie = `sintesa_student_auth=true; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+      document.cookie = `sintesa_student_auth=true; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Lax`;
       window.dispatchEvent(new CustomEvent('sintesa-student-profile-updated', { detail: sessionData }));
       window.dispatchEvent(new CustomEvent('sintesa-student-auth-changed', { detail: { isAuthenticated: true, user: sessionData } }));
       

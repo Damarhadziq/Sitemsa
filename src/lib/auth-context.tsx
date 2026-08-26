@@ -240,13 +240,13 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     assignedSubjects: ['Keolahragaan', 'Olahraga & Kesehatan', 'Pendidikan Jasmani'],
   },
   'rinal.guru@sitemsa.sch.id': {
-    id: 't-pjok-3',
+    id: 't-olr-3',
     name: 'Rinal Febriarso D. P.',
     email: 'rinal.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19981818 202401 1 018',
     avatar: 'https://i.pravatar.cc/150?img=34',
-    assignedSubjects: ['Olahraga & Kesehatan', 'Pendidikan Jasmani'],
+    assignedSubjects: ['Keolahragaan', 'Olahraga & Kesehatan', 'Pendidikan Jasmani'],
   },
 
   // --- 6. Pend. Seni Tari ---

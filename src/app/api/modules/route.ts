@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const validated = moduleSchema.parse(body);
 
-    const newModule = ModuleService.createModule(validated);
+    const newModule = await ModuleService.createModule(validated);
     return apiSuccess(newModule, 'Modul pembelajaran berhasil diterbitkan', 201);
   } catch (error) {
     return handleApiError(error);

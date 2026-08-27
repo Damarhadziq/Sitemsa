@@ -26,6 +26,8 @@ import {
   FaqItem,
   TeamMemberItem,
 } from '@/lib/admin-store';
+import { ArticleService } from '@/services/article.service';
+import { supabase } from '@/lib/supabase';
 
 export default function SuperadminKontenPage() {
   const {
@@ -53,6 +55,15 @@ export default function SuperadminKontenPage() {
   } = useAdminStore();
 
   const [activeTab, setActiveTab] = useState<'hero' | 'articles' | 'subjects' | 'docs' | 'faqs' | 'team'>('hero');
+
+  // Live fetch articles on mount from Supabase
+  React.useEffect(() => {
+    ArticleService.fetchFromSupabase().then((data) => {
+      if (data && data.length > 0) {
+        useAdminStore.setState({ articles: data });
+      }
+    });
+  }, []);
 
   // Hero Form state
   const [heroForm, setHeroForm] = useState({ ...heroContent });
@@ -191,14 +202,22 @@ export default function SuperadminKontenPage() {
     setShowArticleModal(true);
   };
 
-  const handleSaveArticle = (e: React.FormEvent) => {
+  const handleSaveArticle = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!articleForm.title.trim()) return;
 
     if (editingArticle) {
       updateArticle(editingArticle.id, articleForm);
+      await ArticleService.updateArticle(editingArticle.id, articleForm);
     } else {
-      addArticle(articleForm);
+      const fixedId = `art-${Date.now()}`;
+      const newArt = {
+        id: fixedId,
+        ...articleForm,
+        date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
+      };
+      addArticle(newArt);
+      await ArticleService.createArticle(newArt);
     }
     setShowArticleModal(false);
   };
@@ -1342,8 +1361,10 @@ export default function SuperadminKontenPage() {
                 Batal
               </button>
               <button
-                onClick={() => {
-                  deleteArticle(deleteTargetArticle.id);
+                onClick={async () => {
+                  const target = deleteTargetArticle;
+                  deleteArticle(target.id);
+                  await ArticleService.deleteArticle(target.id, target.title);
                   setDeleteTargetArticle(null);
                 }}
                 className="px-4 py-2 rounded-[8px] bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 cursor-pointer shadow-xs transition-all"

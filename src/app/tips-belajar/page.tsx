@@ -348,15 +348,29 @@ function TipsBelajarContent() {
     if (!sourceList || sourceList.length === 0) return TIPS_ARTICLES;
 
     return sourceList.map((art: any, idx: number) => {
-      const sections = art.content
-        ? art.content
-            .split('\n\n')
-            .filter(Boolean)
-            .map((para: string, pIdx: number) => ({
-              title: pIdx === 0 ? 'Poin Utama Pembahasan' : `Langkah ${pIdx + 1}`,
-              description: para,
-            }))
-        : [];
+      let sections: { title: string; description: string }[] = [];
+
+      if (art.content) {
+        // Split by double newline to get content blocks
+        const rawBlocks = art.content.split('\n\n').map((b: string) => b.trim()).filter(Boolean);
+        
+        rawBlocks.forEach((block: string, bIdx: number) => {
+          const lines = block.split('\n').map((l: string) => l.trim()).filter(Boolean);
+          if (lines.length > 1) {
+            // First line is section header, rest is description
+            sections.push({
+              title: lines[0].replace(/^#+\s*/, '').replace(/^\d+\.\s*/, ''),
+              description: lines.slice(1).join('\n'),
+            });
+          } else {
+            // Single paragraph
+            sections.push({
+              title: bIdx === 0 ? 'Poin Utama Pembahasan' : `Langkah ${bIdx + 1}`,
+              description: block,
+            });
+          }
+        });
+      }
 
       return {
         id: art.id !== undefined ? art.id : (idx + 1),
@@ -524,9 +538,16 @@ function TipsBelajarContent() {
           </aside>
 
           {/* Right Main Article View */}
-          <article className="col-span-8 space-y-8">
-            <header className="space-y-2">
-              <h2 className="text-2xl md:text-4xl font-bold text-[#2E2D2D] leading-tight tracking-tight">
+          <article className="col-span-8 space-y-6">
+            <header className="space-y-3 pb-4 border-b border-[#ECECEC]">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-[#2563EB] bg-[#EFF6FF] px-2.5 py-0.5 rounded-[4px] border border-blue-100">
+                  {desktopActiveArticle.category || 'Tips Belajar'}
+                </span>
+                <span className="text-xs text-[#737373]">•</span>
+                <span className="text-xs text-[#737373]">{desktopActiveArticle.author}</span>
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold text-[#2E2D2D] leading-tight tracking-tight">
                 {desktopActiveArticle.title}
               </h2>
             </header>
@@ -537,7 +558,7 @@ function TipsBelajarContent() {
                   <h3 className="text-base md:text-lg font-semibold text-[#2E2D2D]">
                     {sec.title}
                   </h3>
-                  <p className="text-xs md:text-sm text-[#4A4A4A] leading-relaxed">
+                  <p className="text-xs md:text-sm text-[#4A4A4A] leading-relaxed whitespace-pre-line">
                     {sec.description}
                   </p>
                 </section>
@@ -565,19 +586,26 @@ function TipsBelajarContent() {
             </div>
 
             <article className="space-y-6 pt-1">
-              <header className="space-y-2">
-                <h1 className="text-2xl sm:text-3xl font-bold text-[#2E2D2D] leading-tight tracking-tight">
+              <header className="space-y-2.5 pb-3 border-b border-[#ECECEC]">
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-semibold text-[#2563EB] bg-[#EFF6FF] px-2 py-0.5 rounded-[4px] border border-blue-100">
+                    {mobileActiveArticle.category || 'Tips Belajar'}
+                  </span>
+                  <span className="text-xs text-[#737373]">•</span>
+                  <span className="text-xs text-[#737373]">{mobileActiveArticle.author}</span>
+                </div>
+                <h1 className="text-xl sm:text-2xl font-bold text-[#2E2D2D] leading-tight tracking-tight">
                   {mobileActiveArticle.title}
                 </h1>
               </header>
 
-              <div className="space-y-6 pt-2">
+              <div className="space-y-5 pt-1">
                 {mobileActiveArticle.contentSections.map((sec, idx) => (
-                  <section key={idx} className="space-y-2">
-                    <h3 className="text-base font-bold text-[#2E2D2D]">
+                  <section key={idx} className="space-y-1.5">
+                    <h3 className="text-sm sm:text-base font-bold text-[#2E2D2D]">
                       {sec.title}
                     </h3>
-                    <p className="text-xs text-[#4A4A4A] leading-relaxed">
+                    <p className="text-xs sm:text-sm text-[#4A4A4A] leading-relaxed whitespace-pre-line">
                       {sec.description}
                     </p>
                   </section>

@@ -515,7 +515,7 @@ function TipsBelajarContent() {
                     Tidak ada tips yang cocok
                   </div>
                 ) : (
-                  filteredArticles.map((art) => {
+                  desktopPaginatedArticles.map((art) => {
                     const isActive = desktopActiveArticle.id === art.id;
                     return (
                       <button
@@ -534,20 +534,24 @@ function TipsBelajarContent() {
                   })
                 )}
               </nav>
+
+              {/* Desktop Sidebar Pagination */}
+              {desktopTotalPages > 1 && (
+                <div className="pt-2 border-t border-[#ECECEC]">
+                  <Pagination
+                    currentPage={desktopPage}
+                    totalPages={desktopTotalPages}
+                    onPageChange={setDesktopPage}
+                  />
+                </div>
+              )}
             </div>
           </aside>
 
-          {/* Right Main Article View */}
-          <article className="col-span-8 space-y-6">
-            <header className="space-y-3 pb-4 border-b border-[#ECECEC]">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-[#2563EB] bg-[#EFF6FF] px-2.5 py-0.5 rounded-[4px] border border-blue-100">
-                  {desktopActiveArticle.category || 'Tips Belajar'}
-                </span>
-                <span className="text-xs text-[#737373]">•</span>
-                <span className="text-xs text-[#737373]">{desktopActiveArticle.author}</span>
-              </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-[#2E2D2D] leading-tight tracking-tight">
+          {/* Right Main Article View (100% Original UI Layout) */}
+          <article className="col-span-8 space-y-8">
+            <header className="space-y-2">
+              <h2 className="text-2xl md:text-4xl font-bold text-[#2E2D2D] leading-tight tracking-tight">
                 {desktopActiveArticle.title}
               </h2>
             </header>
@@ -586,26 +590,19 @@ function TipsBelajarContent() {
             </div>
 
             <article className="space-y-6 pt-1">
-              <header className="space-y-2.5 pb-3 border-b border-[#ECECEC]">
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-semibold text-[#2563EB] bg-[#EFF6FF] px-2 py-0.5 rounded-[4px] border border-blue-100">
-                    {mobileActiveArticle.category || 'Tips Belajar'}
-                  </span>
-                  <span className="text-xs text-[#737373]">•</span>
-                  <span className="text-xs text-[#737373]">{mobileActiveArticle.author}</span>
-                </div>
-                <h1 className="text-xl sm:text-2xl font-bold text-[#2E2D2D] leading-tight tracking-tight">
+              <header className="space-y-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-[#2E2D2D] leading-tight tracking-tight">
                   {mobileActiveArticle.title}
                 </h1>
               </header>
 
-              <div className="space-y-5 pt-1">
+              <div className="space-y-6 pt-2">
                 {mobileActiveArticle.contentSections.map((sec, idx) => (
-                  <section key={idx} className="space-y-1.5">
-                    <h3 className="text-sm sm:text-base font-bold text-[#2E2D2D]">
+                  <section key={idx} className="space-y-2">
+                    <h3 className="text-base font-bold text-[#2E2D2D]">
                       {sec.title}
                     </h3>
-                    <p className="text-xs sm:text-sm text-[#4A4A4A] leading-relaxed whitespace-pre-line">
+                    <p className="text-xs text-[#4A4A4A] leading-relaxed whitespace-pre-line">
                       {sec.description}
                     </p>
                   </section>

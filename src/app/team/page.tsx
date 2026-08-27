@@ -99,6 +99,65 @@ const getMemberDetails = (division: string) => {
 
 import { TeamService, FALLBACK_TEAM_MEMBERS } from "@/services/team.service";
 
+function TeamMemberAvatar({
+  image,
+  name,
+  borderColor,
+  size = 'md',
+}: {
+  image: string;
+  name: string;
+  borderColor: string;
+  size?: 'md' | 'lg';
+}) {
+  const [hasError, setHasError] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  const initials = useMemo(() => {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+    return (name.slice(0, 2) || 'TM').toUpperCase();
+  }, [name]);
+
+  const sizeClasses = size === 'lg' ? 'w-24 h-24 text-xl' : 'w-14 h-14 text-sm';
+  const paddingClass = size === 'lg' ? 'p-1' : 'p-0.5';
+
+  return (
+    <div
+      className={`relative ${sizeClasses} rounded-full ${paddingClass} border-2 shadow-2xs shrink-0 overflow-hidden bg-slate-100 flex items-center justify-center`}
+      style={{ borderColor }}
+    >
+      {/* Background Initials Monogram Badge (Instant 0ms zero-lag fallback for slow networks) */}
+      <div
+        className="w-full h-full rounded-full flex items-center justify-center font-bold font-sans text-white tracking-wider select-none"
+        style={{
+          backgroundColor: borderColor,
+          backgroundImage: `linear-gradient(135deg, ${borderColor}ee, ${borderColor}99)`,
+        }}
+      >
+        <span>{initials}</span>
+      </div>
+
+      {/* Actual photo overlay with progressive lazy load and onError recovery */}
+      {!hasError && image && (
+        <img
+          src={image}
+          alt={name}
+          loading="lazy"
+          decoding="async"
+          onLoad={() => setIsLoaded(true)}
+          onError={() => setHasError(true)}
+          className={`absolute inset-0 w-full h-full rounded-full object-cover transition-opacity duration-300 ${
+            isLoaded ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
+      )}
+    </div>
+  );
+}
+
 export default function TeamPage() {
   const { teamMembers: storeTeamMembers } = useAdminStore();
   const [liveMembers, setLiveMembers] = useState<TeamMember[]>([]);
@@ -173,17 +232,12 @@ export default function TeamPage() {
                 
                 {/* Top Row: Avatar Left + Division/Prodi Badge Right */}
                 <div className="flex items-start justify-between gap-2">
-                  <div
-                    className="relative w-14 h-14 rounded-full p-0.5 border-2 shadow-2xs shrink-0"
-                    style={{ borderColor: member.borderColor }}
-                  >
-                    {/* eslint-disable-next-next/no-img-element */}
-                    <img
-                      src={member.image}
-                      alt={member.title}
-                      className="w-full h-full rounded-full object-cover"
-                    />
-                  </div>
+                  <TeamMemberAvatar
+                    image={member.image}
+                    name={member.title}
+                    borderColor={member.borderColor}
+                    size="md"
+                  />
 
                   <span className="text-xs font-semibold text-[#2563EB] bg-[#EFF6FF] px-3.5 py-1 rounded-full border border-blue-100/80 shrink-0">
                     {member.division}
@@ -238,17 +292,12 @@ export default function TeamPage() {
 
             {/* Profile Avatar & Name Header */}
             <div className="flex flex-col items-center text-center space-y-3 pt-2">
-              <div
-                className="relative w-24 h-24 rounded-full p-1 border-2 shadow-sm"
-                style={{ borderColor: selectedMember.borderColor }}
-              >
-                {/* eslint-disable-next-next/no-img-element */}
-                <img
-                  src={selectedMember.image}
-                  alt={selectedMember.title}
-                  className="w-full h-full rounded-full object-cover"
-                />
-              </div>
+              <TeamMemberAvatar
+                image={selectedMember.image}
+                name={selectedMember.title}
+                borderColor={selectedMember.borderColor}
+                size="lg"
+              />
 
               <div>
                 <h3 className="text-xl font-bold text-[#2E2D2D] tracking-tight">

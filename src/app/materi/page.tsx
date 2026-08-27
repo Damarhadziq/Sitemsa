@@ -896,18 +896,17 @@ function MateriLandingContent() {
             </div>
           )}
 
-          {/* Interactive Pagination (Loads exactly 6 items per page) */}
+          {/* Interactive Pagination with Smart Ellipsis (Loads only items for active page) */}
           {!isLoading && totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 pt-6 pb-2">
+            <div className="flex items-center justify-center gap-1.5 md:gap-2 pt-6 pb-2">
               {/* Frameless Previous Arrow */}
               <button
                 type="button"
                 onClick={() => {
-                  setCurrentPage((prev) => {
-                    const newPage = Math.max(prev - 1, 1);
-                    document.getElementById("daftar-materi-section")?.scrollIntoView({ behavior: "smooth" });
-                    return newPage;
-                  });
+                  const newPage = Math.max(currentPage - 1, 1);
+                  triggerLoading();
+                  setCurrentPage(newPage);
+                  document.getElementById("daftar-materi-section")?.scrollIntoView({ behavior: "smooth" });
                 }}
                 disabled={currentPage === 1}
                 className="w-8 h-8 rounded-full bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-gray-100 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
@@ -916,37 +915,76 @@ function MateriLandingContent() {
                 <ChevronLeft className="w-4 h-4" />
               </button>
 
-              {/* Numbered Page Buttons - Active is 100% Circle Filled */}
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                const isActive = currentPage === page;
-                return (
-                  <button
-                    key={page}
-                    type="button"
-                    onClick={() => {
-                      setCurrentPage(page);
-                      document.getElementById("daftar-materi-section")?.scrollIntoView({ behavior: "smooth" });
-                    }}
-                    className={`w-8 h-8 rounded-full text-xs font-semibold transition-all flex items-center justify-center cursor-pointer ${
-                      isActive
-                        ? "bg-[#2563EB] text-white shadow-2xs"
-                        : "bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-gray-100"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                );
-              })}
+              {/* Numbered Page Buttons with Smart Dynamic Ellipsis Windowing */}
+              {(() => {
+                const getPaginationRange = (curr: number, total: number): (number | string)[] => {
+                  if (total <= 6) {
+                    return Array.from({ length: total }, (_, i) => i + 1);
+                  }
+                  if (curr <= 3) {
+                    return [1, 2, 3, 4, '...right', total];
+                  }
+                  if (curr >= total - 2) {
+                    return [1, '...left', total - 3, total - 2, total - 1, total];
+                  }
+                  return [1, '...left', curr - 1, curr, curr + 1, '...right', total];
+                };
+
+                return getPaginationRange(currentPage, totalPages).map((item, idx) => {
+                  if (typeof item === 'string') {
+                    const isLeft = item === '...left';
+                    return (
+                      <button
+                        key={`ellipsis-${idx}`}
+                        type="button"
+                        onClick={() => {
+                          const target = isLeft ? Math.max(1, currentPage - 3) : Math.min(totalPages, currentPage + 3);
+                          triggerLoading();
+                          setCurrentPage(target);
+                          document.getElementById("daftar-materi-section")?.scrollIntoView({ behavior: "smooth" });
+                        }}
+                        title={isLeft ? "Lompat 3 Halaman ke Belakang" : "Lompat 3 Halaman ke Depan"}
+                        className="w-8 h-8 rounded-full text-xs font-semibold text-[#8C8C8C] hover:text-[#2563EB] hover:bg-blue-50 flex items-center justify-center transition-colors cursor-pointer"
+                      >
+                        ...
+                      </button>
+                    );
+                  }
+
+                  const pageNum = item as number;
+                  const isActive = currentPage === pageNum;
+
+                  return (
+                    <button
+                      key={`page-${pageNum}`}
+                      type="button"
+                      onClick={() => {
+                        if (currentPage !== pageNum) {
+                          triggerLoading();
+                          setCurrentPage(pageNum);
+                          document.getElementById("daftar-materi-section")?.scrollIntoView({ behavior: "smooth" });
+                        }
+                      }}
+                      className={`w-8 h-8 rounded-full text-xs font-semibold transition-all flex items-center justify-center cursor-pointer ${
+                        isActive
+                          ? "bg-[#2563EB] text-white shadow-xs"
+                          : "bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-gray-100"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                });
+              })()}
 
               {/* Frameless Next Arrow */}
               <button
                 type="button"
                 onClick={() => {
-                  setCurrentPage((prev) => {
-                    const newPage = Math.min(prev + 1, totalPages);
-                    document.getElementById("daftar-materi-section")?.scrollIntoView({ behavior: "smooth" });
-                    return newPage;
-                  });
+                  const newPage = Math.min(currentPage + 1, totalPages);
+                  triggerLoading();
+                  setCurrentPage(newPage);
+                  document.getElementById("daftar-materi-section")?.scrollIntoView({ behavior: "smooth" });
                 }}
                 disabled={currentPage === totalPages}
                 className="w-8 h-8 rounded-full bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-gray-100 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"

@@ -9,10 +9,11 @@ import { Search01Icon } from "@hugeicons/core-free-icons";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface ArticleItem {
-  id: number;
+  id: number | string;
   title: string;
   author: string;
   summary: string;
+  category?: string;
   contentSections: {
     title: string;
     description: string;
@@ -27,6 +28,7 @@ const TIPS_ARTICLES: ArticleItem[] = [
     id: 1,
     title: "5 Strategi Efektif Menguasai Logika Pemrograman",
     author: "Tim Informatika",
+    category: "Informatika",
     summary: "Pelajari pendekatan bertahap untuk mengasah logika komputasi, menyusun algoritma, dan memecahkan masalah pemrograman dengan mudah.",
     contentSections: [
       {
@@ -34,7 +36,7 @@ const TIPS_ARTICLES: ArticleItem[] = [
         description: "Sebelum langsung menulis kode program di editor, biasakan menyusun algoritma sederhana dengan pseudocode atau diagram alur di kertas catatan. Pendekatan ini membantu memvisualisasikan struktur logika secara jernih tanpa terdistraksi syntax error.",
       },
       {
-        title: "Pecah Masalah Kompleks Menjadi Bagian Kecil (Decomposisi)",
+        title: "Pecah Masalah Kompleks Menjadi Bagian Kecil (Dekomposisi)",
         description: "Jangan mencoba menyelesaikan seluruh masalah sekaligus. Pecah program menjadi fungsi-fungsi kecil yang berfokus pada satu tugas spesifik. Metode ini memudahkan proses pengujian dan pelacakan bug saat kode berjalan.",
       },
       {
@@ -51,6 +53,7 @@ const TIPS_ARTICLES: ArticleItem[] = [
     id: 2,
     title: "Teknik Pomodoro: Solusi Fokus Tanpa Cepat Lelah",
     author: "Bimbingan Konseling",
+    category: "Bimbingan Konseling",
     summary: "Cara praktis mengatur sesi belajar 25 menit dengan istirahat teratur untuk menjaga konsentrasi puncak dan mencegah kejenuhan mental.",
     contentSections: [
       {
@@ -71,6 +74,7 @@ const TIPS_ARTICLES: ArticleItem[] = [
     id: 3,
     title: "Mengenal Dasar Rangkaian Listrik & Komponen Pasif",
     author: "Tim Elektronika",
+    category: "Elektronika",
     summary: "Panduan komprehensif untuk memahami prinsip kerja resistor, kapasitor, dan induktor dalam sirkuit elektronika vokasi.",
     contentSections: [
       {
@@ -91,6 +95,7 @@ const TIPS_ARTICLES: ArticleItem[] = [
     id: 4,
     title: "Metode Active Recall & Spaced Repetition untuk Teori Vokasi",
     author: "Tim Kurikulum",
+    category: "Umum",
     summary: "Teknik belajar berbasis bukti ilmiah untuk memperkuat daya ingat jangka panjang menghadapi ujian teori dan praktikum.",
     contentSections: [
       {
@@ -107,7 +112,8 @@ const TIPS_ARTICLES: ArticleItem[] = [
     id: 5,
     title: "Menjaga Kebugaran Fisik & Stamina Saat Ujian Praktik Bengkel",
     author: "Tim Keolahragaan",
-    summary: "Pengaturan gizi, hidrasi, dan postur ergonomy agar stamina tetap prima saat menempuh asesmen praktik laboratorium yang panjang.",
+    category: "Keolahragaan",
+    summary: "Pengaturan gizi, hidrasi, dan postur ergonomi agar stamina tetap prima saat menempuh asesmen praktik laboratorium yang panjang.",
     contentSections: [
       {
         title: "Pentingnya Hidrasi Tubuh Secara Teratur",
@@ -123,6 +129,7 @@ const TIPS_ARTICLES: ArticleItem[] = [
     id: 6,
     title: "Panduan Membaca Skema Elektronika & Wiring Diagram",
     author: "Tim Elektronika",
+    category: "Elektronika",
     summary: "Langkah-langkah sistematis menerjemahkan gambar diagram simbolis menjadi tata letak komponen nyata di breadboard atau PCB.",
     contentSections: [
       {
@@ -139,6 +146,7 @@ const TIPS_ARTICLES: ArticleItem[] = [
     id: 7,
     title: "Manajemen Catatan Digital: Menata Kode & Dokumentasi Proyek",
     author: "Tim Informatika",
+    category: "Informatika",
     summary: "Tips mengorganisir snippet kode, jurnal laboratorium, dan repositori proyek agar rapi dan mudah diakses kapan saja.",
     contentSections: [
       {
@@ -148,6 +156,57 @@ const TIPS_ARTICLES: ArticleItem[] = [
       {
         title: "Dokumentasikan Langkah Troubleshooting",
         description: "Setiap kali berhasil menyelesaikan bug yang rumit, catat penyebab dan solusinya pada jurnal digital milikmu agar tidak perlu mencari dari awal jika masalah serupa terulang.",
+      },
+    ],
+  },
+  {
+    id: 8,
+    title: "Panduan Membaca Wiring Diagram Kelistrikan Mobil",
+    author: "Tim Otomotif",
+    category: "Otomotif",
+    summary: "Langkah sistematis membaca jalur arus utama, relay, fuse box, dan kode warna kabel pada sistem kelistrikan otomotif modern.",
+    contentSections: [
+      {
+        title: "Pahami Kode Warna Kabel dan Simbol Standar",
+        description: "Setiap produsen otomotif menggunakan kode warna standar (seperti B = Black/Ground, W = White, R = Red). Menguasai kode ini mempercepat pelacakan sumber arus tanpa salah potong kabel.",
+      },
+      {
+        title: "Uji Tegangan dengan Multimeter dan Test Lamp",
+        description: "Gunakan test lamp untuk verifikasi cepat adanya arus dan multimeter digital untuk mengukur drop tegangan pada sambungan konektor.",
+      },
+    ],
+  },
+  {
+    id: 9,
+    title: "Teknik Olah Tubuh & Pemanasan Penari Tradisional",
+    author: "Tim Seni Tari",
+    category: "Seni Tari",
+    summary: "Latihan kelenturan sendi, penguatan otot inti, dan pernapasan ritmis untuk mendukung postur menari yang anggun dan bebas cedera.",
+    contentSections: [
+      {
+        title: "Latihan Peregangan Dinamis Sendi dan Tulang Belakang",
+        description: "Lakukan peregangan leher, bahu, pergelangan tangan, dan pinggul selama 10-15 menit sebelum mulai menari agar gerak wiraga mengalir luwes.",
+      },
+      {
+        title: "Pernapasan Diafragma untuk Stabilitas Gerak",
+        description: "Kuasai pernapasan diafragma agar tidak terengah-engah saat membawakan tarian bertempo cepat dan dinamis.",
+      },
+    ],
+  },
+  {
+    id: 10,
+    title: "Mengatasi Demam Panggung & Membangun Rasa Percaya Diri",
+    author: "Bimbingan Konseling",
+    category: "Bimbingan Konseling",
+    summary: "Teknik pernapasan diafragma 4-7-8 dan afirmasi positif untuk mengendalikan kecemasan sebelum presentasi atau ujian praktik.",
+    contentSections: [
+      {
+        title: "Metode Relaksasi Pernapasan 4-7-8",
+        description: "Tarik napas melalui hidung selama 4 detik, tahan selama 7 detik, dan hembuskan perlahan lewat mulut selama 8 detik. Lakukan 3-4 siklus untuk menurunkan detak jantung yang berdebar kencang.",
+      },
+      {
+        title: "Fokus pada Nilai Manfaat yang Disampaikan",
+        description: "Alihkan fokus dari rasa takut dinilai orang lain menjadi semangat membagikan hasil karya dan proses belajarmu yang terbaik.",
       },
     ],
   },
@@ -164,34 +223,64 @@ function Pagination({
 }) {
   if (totalPages <= 1) return null;
 
+  const getPaginationRange = (curr: number, total: number): (number | string)[] => {
+    if (total <= 6) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+    if (curr <= 3) {
+      return [1, 2, 3, 4, '...right', total];
+    }
+    if (curr >= total - 2) {
+      return [1, '...left', total - 3, total - 2, total - 1, total];
+    }
+    return [1, '...left', curr - 1, curr, curr + 1, '...right', total];
+  };
+
   return (
-    <div className="flex items-center justify-center gap-2 pt-6 pb-2">
+    <div className="flex items-center justify-center gap-1.5 md:gap-2 pt-6 pb-2">
       {/* Frameless Previous Arrow */}
       <button
         type="button"
         disabled={currentPage === 1}
-        onClick={() => onPageChange(currentPage - 1)}
+        onClick={() => onPageChange(Math.max(1, currentPage - 1))}
         className="w-8 h-8 rounded-full bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-gray-100 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
         aria-label="Halaman Sebelumnya"
       >
         <ChevronLeft className="w-4 h-4" />
       </button>
 
-      {/* Numbered Page Buttons - Active is 100% Circle Filled */}
-      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-        const isActive = currentPage === page;
+      {/* Numbered Page Buttons with Smart Dynamic Ellipsis Windowing */}
+      {getPaginationRange(currentPage, totalPages).map((item, idx) => {
+        if (typeof item === 'string') {
+          const isLeft = item === '...left';
+          return (
+            <button
+              key={`ellipsis-${idx}`}
+              type="button"
+              onClick={() => onPageChange(isLeft ? Math.max(1, currentPage - 3) : Math.min(totalPages, currentPage + 3))}
+              title={isLeft ? "Lompat 3 Halaman ke Belakang" : "Lompat 3 Halaman ke Depan"}
+              className="w-8 h-8 rounded-full text-xs font-semibold text-[#8C8C8C] hover:text-[#2563EB] hover:bg-blue-50 flex items-center justify-center transition-colors cursor-pointer"
+            >
+              ...
+            </button>
+          );
+        }
+
+        const pageNum = item as number;
+        const isActive = currentPage === pageNum;
+
         return (
           <button
-            key={page}
+            key={`page-${pageNum}`}
             type="button"
-            onClick={() => onPageChange(page)}
+            onClick={() => onPageChange(pageNum)}
             className={`w-8 h-8 rounded-full text-xs font-semibold transition-all flex items-center justify-center cursor-pointer ${
               isActive
-                ? "bg-[#2563EB] text-white shadow-2xs"
+                ? "bg-[#2563EB] text-white shadow-xs"
                 : "bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-gray-100"
             }`}
           >
-            {page}
+            {pageNum}
           </button>
         );
       })}
@@ -200,7 +289,7 @@ function Pagination({
       <button
         type="button"
         disabled={currentPage === totalPages}
-        onClick={() => onPageChange(currentPage + 1)}
+        onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
         className="w-8 h-8 rounded-full bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-gray-100 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
         aria-label="Halaman Selanjutnya"
       >
@@ -270,9 +359,10 @@ function TipsBelajarContent() {
         : [];
 
       return {
-        id: parseInt(String(art.id).replace(/\D/g, ''), 10) || idx + 1,
+        id: art.id !== undefined ? art.id : (idx + 1),
         title: art.title,
         author: art.author || 'Tim Sitemsa',
+        category: art.category || 'Umum',
         summary: art.excerpt || art.title,
         contentSections:
           sections.length > 0
@@ -289,19 +379,34 @@ function TipsBelajarContent() {
 
   const initialId = useMemo(() => {
     if (queryIdStr) {
-      const parsed = parseInt(queryIdStr, 10);
-      if (!isNaN(parsed) && allArticles.some((a) => a.id === parsed)) {
-        return parsed;
-      }
+      const match = allArticles.find(
+        (a) => String(a.id) === String(queryIdStr) || a.id === parseInt(queryIdStr, 10)
+      );
+      if (match) return match.id;
     }
     return allArticles[0]?.id || 1;
   }, [queryIdStr, allArticles]);
 
-  const [desktopSelectedId, setDesktopSelectedId] = useState<number>(initialId);
-  const [mobileSelectedId, setMobileSelectedId] = useState<number | null>(null);
+  const [desktopSelectedId, setDesktopSelectedId] = useState<number | string>(initialId);
+  const [mobileSelectedId, setMobileSelectedId] = useState<number | string | null>(
+    queryIdStr ? initialId : null
+  );
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [mobilePage, setMobilePage] = useState<number>(1);
   const [desktopPage, setDesktopPage] = useState<number>(1);
+
+  // Sync selected article when query param changes
+  useEffect(() => {
+    if (queryIdStr) {
+      const match = allArticles.find(
+        (a) => String(a.id) === String(queryIdStr) || a.id === parseInt(queryIdStr, 10)
+      );
+      if (match) {
+        setDesktopSelectedId(match.id);
+        setMobileSelectedId(match.id);
+      }
+    }
+  }, [queryIdStr, allArticles]);
 
   useEffect(() => {
     setMobilePage(1);
@@ -312,7 +417,8 @@ function TipsBelajarContent() {
     return allArticles.filter(
       (art) =>
         art.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        art.summary.toLowerCase().includes(searchQuery.toLowerCase())
+        art.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (art.category && art.category.toLowerCase().includes(searchQuery.toLowerCase()))
     );
   }, [allArticles, searchQuery]);
 
@@ -330,12 +436,12 @@ function TipsBelajarContent() {
   }, [filteredArticles, mobilePage]);
 
   const desktopActiveArticle = useMemo(() => {
-    return allArticles.find((art) => art.id === desktopSelectedId) || allArticles[0] || TIPS_ARTICLES[0];
+    return allArticles.find((art) => String(art.id) === String(desktopSelectedId)) || allArticles[0] || TIPS_ARTICLES[0];
   }, [allArticles, desktopSelectedId]);
 
   const mobileActiveArticle = useMemo(() => {
     if (mobileSelectedId === null) return null;
-    return allArticles.find((art) => art.id === mobileSelectedId) || null;
+    return allArticles.find((art) => String(art.id) === String(mobileSelectedId)) || null;
   }, [allArticles, mobileSelectedId]);
 
   // Hide mobile bottom navigation only when reading detail article on mobile

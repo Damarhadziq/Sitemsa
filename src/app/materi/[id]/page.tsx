@@ -2931,19 +2931,17 @@ export default function MateriDetailPage({
         </div>
       )}
 
-      {/* FLOATING TOAST NOTIFICATION — slides from below navbar (Admin page style, no emojis) */}
+      {/* FLOATING TOAST NOTIFICATION — slides from below navbar (Clean style, no icon, concise copy) */}
       {showCompletedToast && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-[10px] bg-white/95 backdrop-blur-md border border-[#ECECEC] shadow-[0_14px_32px_-8px_rgba(0,0,0,0.14)] font-sans transition-all duration-300 ease-out animate-in slide-in-from-top-4 fade-in">
-          <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-            <HugeiconsIcon icon={CheckmarkCircle01Icon} size={14} className="text-emerald-700" />
-          </div>
-          <p className="text-xs font-medium text-[#2E2D2D] max-w-sm truncate">
-            Materi telah selesai dipelajari. Progres berhasil dicatat.
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2 rounded-[8px] bg-white/95 backdrop-blur-md border border-[#ECECEC] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.12)] font-sans transition-all duration-300 ease-out animate-in slide-in-from-top-4 fade-in">
+          <p className="text-xs font-medium text-[#2E2D2D]">
+            Materi telah selesai dipelajari.
           </p>
           <button
             type="button"
             onClick={() => setShowCompletedToast(false)}
-            className="text-slate-400 hover:text-slate-600 p-0.5 rounded-full hover:bg-slate-100 transition-colors cursor-pointer shrink-0 ml-1"
+            className="text-slate-400 hover:text-slate-600 p-0.5 rounded-full hover:bg-slate-100 transition-colors cursor-pointer shrink-0 ml-1.5"
+            aria-label="Tutup notifikasi"
           >
             <HugeiconsIcon icon={Cancel01Icon} size={13} />
           </button>

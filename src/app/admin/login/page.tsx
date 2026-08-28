@@ -10,9 +10,22 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [securityNotice, setSecurityNotice] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const { loginWithCredentials } = useAuth();
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const reason = params.get('reason');
+      if (reason === 'inactivity') {
+        setSecurityNotice('Sesi Anda telah berakhir karena tidak ada aktivitas selama 30 menit. Silakan masuk kembali.');
+      } else if (reason === 'concurrent_device') {
+        setSecurityNotice('Akun Anda telah masuk di perangkat lain. Anda telah otomatis dikeluarkan dari perangkat ini demi keamanan.');
+      }
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +41,7 @@ export default function AdminLoginPage() {
       }
       const success = loginWithCredentials(cleanEmail, password);
       if (!success) {
-        setErrorMsg('Email atau kata sandi tidak valid.');
+        setErrorMsg('Email atau kata sandi pengelola / guru tidak sesuai. Silakan periksa kembali.');
         setIsLoading(false);
       }
     }, 250);
@@ -95,6 +108,14 @@ export default function AdminLoginPage() {
                 Masukkan email dan kata sandi pengelola atau guru untuk mengakses dashboard.
               </p>
             </div>
+
+            {/* Security Notice / Inactivity / Device Notice Alert */}
+            {securityNotice && (
+              <div className="p-3 rounded-[8px] bg-amber-50 text-amber-800 text-xs font-medium border border-amber-200 animate-in fade-in duration-200 flex items-start gap-2">
+                <span className="shrink-0 font-bold">⚠️</span>
+                <span className="leading-relaxed">{securityNotice}</span>
+              </div>
+            )}
 
             {/* Error Alert */}
             {errorMsg && (

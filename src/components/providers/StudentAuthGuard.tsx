@@ -11,6 +11,7 @@ export function StudentAuthGuard({ children }: { children: React.ReactNode }) {
   const { user, isLoading: isAuthLoading } = useAuth();
   const [isChecking, setIsChecking] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const isAuthFlowRoute = 
     pathname === '/' ||
@@ -26,6 +27,14 @@ export function StudentAuthGuard({ children }: { children: React.ReactNode }) {
     pathname.startsWith('/team') || 
     pathname.startsWith('/admin') || 
     pathname.startsWith('/api');
+
+  useEffect(() => {
+    const handleLogoutStart = () => {
+      setIsLoggingOut(true);
+    };
+    window.addEventListener('sintesa-logging-out', handleLogoutStart);
+    return () => window.removeEventListener('sintesa-logging-out', handleLogoutStart);
+  }, []);
 
   useEffect(() => {
     // 1. If accessing public/auth flow or admin routes, don't block
@@ -52,6 +61,23 @@ export function StudentAuthGuard({ children }: { children: React.ReactNode }) {
       router.replace('/login');
     }
   }, [pathname, user, isAuthLoading, isAuthFlowRoute, router]);
+
+  // If currently logging out, render full page skeleton transition overlay
+  if (isLoggingOut) {
+    return (
+      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-white font-sans">
+        <div className="w-full max-w-4xl px-6 space-y-6 animate-pulse">
+          <div className="h-10 bg-gray-100 rounded-[10px] w-48" />
+          <div className="h-40 bg-gray-100 rounded-[12px] w-full" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="h-32 bg-gray-100 rounded-[10px]" />
+            <div className="h-32 bg-gray-100 rounded-[10px]" />
+            <div className="h-32 bg-gray-100 rounded-[10px]" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Public/exempt routes
   if (isAuthFlowRoute) {

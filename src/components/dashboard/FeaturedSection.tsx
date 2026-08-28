@@ -51,7 +51,7 @@ export function FeaturedSection() {
             <Link
               key={id}
               href={linkUrl}
-              className="bg-white rounded-[10px] p-4 flex flex-col justify-between border border-[#ECECEC] hover:border-[#2563EB]/40 hover:shadow-xs transition-all duration-200 group cursor-pointer block"
+              className="bg-white rounded-[10px] p-[10px] md:p-4 flex flex-col justify-between border border-[#ECECEC] hover:border-[#2563EB]/40 hover:shadow-xs transition-all duration-200 group cursor-pointer block"
             >
               <div>
                 {/* Subject Badge */}

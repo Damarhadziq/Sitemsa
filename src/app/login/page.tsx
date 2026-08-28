@@ -18,8 +18,21 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [securityNotice, setSecurityNotice] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const reason = params.get('reason');
+      if (reason === 'inactivity') {
+        setSecurityNotice('Sesi Anda telah berakhir karena tidak ada aktivitas selama 30 menit. Silakan masuk kembali.');
+      } else if (reason === 'concurrent_device') {
+        setSecurityNotice('Akun Anda telah masuk di perangkat lain. Anda telah otomatis dikeluarkan dari perangkat ini demi keamanan.');
+      }
+    }
+  }, []);
 
   React.useEffect(() => {
     // Check if arriving with active Supabase session or hash token
@@ -110,6 +123,11 @@ export default function LoginPage() {
       // Authenticate student
       const studentAuth = authenticateStudent(cleanEmail, password);
       if (studentAuth.success) {
+        // If student profile is incomplete (missing NISN or grade), require completion first
+        if (!studentAuth.profile?.nisn || !studentAuth.profile?.grade || studentAuth.profile.grade === 'X') {
+          window.location.href = `/lengkapi-profil?name=${encodeURIComponent(studentAuth.profile?.name || '')}&email=${encodeURIComponent(cleanEmail)}`;
+          return;
+        }
         window.location.href = '/';
       } else {
         setErrorMsg(studentAuth.message || 'Email atau kata sandi salah. Silakan periksa kembali.');
@@ -177,6 +195,14 @@ export default function LoginPage() {
         <div className="w-full lg:w-1/2 flex justify-center lg:justify-end">
           <div className="w-full max-w-[420px]">
             <form onSubmit={handleSubmit} className="flex flex-col">
+              {/* Security Notice / Inactivity / Device Notice Alert */}
+              {securityNotice && (
+                <div className="bg-amber-50 text-amber-800 p-3 rounded-[10px] text-xs font-medium border border-amber-200 mb-3 sm:mb-4 animate-in fade-in flex items-start gap-2">
+                  <span className="shrink-0 font-bold">⚠️</span>
+                  <span className="leading-relaxed">{securityNotice}</span>
+                </div>
+              )}
+
               {errorMsg && (
                 <div className="bg-red-50 text-red-600 p-2.5 rounded-[10px] text-xs font-medium border border-red-200 mb-3 sm:mb-4 animate-in fade-in">
                   {errorMsg}
@@ -234,8 +260,8 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* Buttons area */}
-              <div className="flex flex-col mt-4 sm:mt-5">
+              {/* Buttons area with enhanced gap */}
+              <div className="flex flex-col mt-6 sm:mt-7">
                 {/* Submit */}
                 <button
                   type="submit"

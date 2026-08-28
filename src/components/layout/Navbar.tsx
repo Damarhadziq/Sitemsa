@@ -79,6 +79,7 @@ export function Navbar() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [profileModalTab, setProfileModalTab] = useState<ProfileTab>("profile");
   const [isNotifModalOpen, setIsNotifModalOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [studentProfile, setStudentProfile] = useState<StudentProfile>(DEFAULT_DUMMY_STUDENT);
 
@@ -105,15 +106,21 @@ export function Navbar() {
       setStudentProfile(getStudentProfile());
     };
 
+    const handleLogoutStart = () => {
+      setIsLoggingOut(true);
+    };
+
     window.addEventListener("sintesa-notifications-updated", handleNotifUpdate);
     window.addEventListener("sintesa-student-profile-updated", handleProfileUpdate);
     window.addEventListener("sintesa-student-auth-changed", handleAuthCheck);
+    window.addEventListener("sintesa-logging-out", handleLogoutStart);
     window.addEventListener("storage", handleNotifUpdate);
 
     return () => {
       window.removeEventListener("sintesa-notifications-updated", handleNotifUpdate);
       window.removeEventListener("sintesa-student-profile-updated", handleProfileUpdate);
       window.removeEventListener("sintesa-student-auth-changed", handleAuthCheck);
+      window.removeEventListener("sintesa-logging-out", handleLogoutStart);
       window.removeEventListener("storage", handleNotifUpdate);
     };
   }, [user]);
@@ -373,7 +380,9 @@ export function Navbar() {
                     <button
                       type="button"
                       onClick={async () => {
+                        setIsLoggingOut(true);
                         setIsProfileOpen(false);
+                        window.dispatchEvent(new Event('sintesa-logging-out'));
                         await logoutStudent();
                         logout();
                         window.location.href = '/login';
@@ -386,6 +395,8 @@ export function Navbar() {
                   </div>
                 )}
               </div>
+            ) : isLoggingOut ? (
+              <div className="h-9 w-20 bg-gray-100 animate-pulse rounded-[8px]" />
             ) : (
               <Link
                 href="/login"

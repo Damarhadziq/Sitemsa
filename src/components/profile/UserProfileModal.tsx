@@ -42,6 +42,9 @@ export function UserProfileModal({
 
   const handleLogout = async () => {
     onClose();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('sintesa-logging-out'));
+    }
     await logoutStudent();
     window.location.href = '/login';
   };

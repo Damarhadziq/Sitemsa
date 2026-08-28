@@ -36,8 +36,8 @@ export function HeroSection() {
         </h1>
       </div>
 
-      {/* Right Target Mingguan Card */}
-      <div className="w-full md:w-[380px] bg-[#FAFAFA] border border-[#ECECEC] rounded-[12px] p-5 space-y-3 shrink-0 hover:border-[#2563EB]/30 transition-colors duration-300 ease-out">
+      {/* Right Target Mingguan Card (12px padding on mobile) */}
+      <div className="w-full md:w-[380px] bg-[#FAFAFA] border border-[#ECECEC] rounded-[12px] p-3 md:p-5 space-y-3 shrink-0 hover:border-[#2563EB]/30 transition-colors duration-300 ease-out">
         <h2 className="text-sm font-semibold text-[#2E2D2D]">
           Target Mingguan
         </h2>

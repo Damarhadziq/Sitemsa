@@ -32,13 +32,13 @@ export function PromoBanner() {
         </div>
       </div>
 
-      {/* Right Image (Wider image, matching left height) */}
-      <div className="w-full md:w-[380px] lg:w-[440px] xl:w-[480px] min-h-[200px] md:min-h-0 relative rounded-[10px] overflow-hidden border border-white/20 shrink-0 z-10 group cursor-pointer self-stretch">
+      {/* Right Image (Static without hover scaling) */}
+      <div className="w-full md:w-[380px] lg:w-[440px] xl:w-[480px] min-h-[200px] md:min-h-0 relative rounded-[10px] overflow-hidden border border-white/20 shrink-0 z-10 self-stretch">
         <Image
           src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=800&auto=format&fit=crop"
           alt="Sitemsa Learning Space"
           fill
-          className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+          className="object-cover"
         />
       </div>
     </section>

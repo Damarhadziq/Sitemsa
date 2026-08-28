@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useRef, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { OtpService } from '@/services/otp.service';
 
 function OtpVerificationContent() {
   const router = useRouter();
@@ -34,6 +35,35 @@ function OtpVerificationContent() {
     }
   }, [timer]);
 
+  // Execute verification logic
+  const executeVerification = useCallback((fullCode: string) => {
+    if (fullCode.length < 4 || isVerifying || isSuccess) return;
+
+    setIsVerifying(true);
+    setErrorMsg('');
+
+    setTimeout(() => {
+      const result = OtpService.verifyOtp(emailParam, fullCode);
+
+      if (!result.success) {
+        setIsVerifying(false);
+        setErrorMsg(result.message || 'Kode OTP tidak valid. Silakan periksa kembali.');
+        return;
+      }
+
+      setIsVerifying(false);
+      setIsSuccess(true);
+
+      setTimeout(() => {
+        if (fromAction === 'reset') {
+          router.push('/login');
+        } else {
+          router.push(`/lengkapi-profil?name=${encodeURIComponent(nameParam)}&email=${encodeURIComponent(emailParam)}`);
+        }
+      }, 700);
+    }, 450);
+  }, [emailParam, fromAction, nameParam, router, isVerifying, isSuccess]);
+
   const handleOtpChange = (index: number, value: string) => {
     // Only accept numbers
     const cleanVal = value.replace(/\D/g, '').slice(-1);
@@ -46,6 +76,12 @@ function OtpVerificationContent() {
     if (cleanVal && index < 3) {
       inputRefs.current[index + 1]?.focus();
     }
+
+    // Auto-submit when all 4 boxes are populated
+    const fullCode = newOtp.join('');
+    if (fullCode.length === 4 && newOtp.every((digit) => digit.trim().length === 1)) {
+      executeVerification(fullCode);
+    }
   };
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -56,42 +92,28 @@ function OtpVerificationContent() {
 
   const handleResend = () => {
     if (!canResend) return;
+    OtpService.generateOtp(emailParam);
     setTimer(59);
     setCanResend(false);
     setOtp(['', '', '', '']);
+    setErrorMsg('');
     inputRefs.current[0]?.focus();
   };
 
   const handleVerify = (e: React.FormEvent) => {
     e.preventDefault();
     const fullOtp = otp.join('');
-
     if (fullOtp.length < 4) {
       setErrorMsg('Masukkan 4-digit kode OTP lengkap.');
       return;
     }
-
-    setIsVerifying(true);
-    setErrorMsg('');
-
-    setTimeout(() => {
-      setIsVerifying(false);
-      setIsSuccess(true);
-
-      setTimeout(() => {
-        if (fromAction === 'reset') {
-          router.push('/login');
-        } else {
-          router.push(`/lengkapi-profil?name=${encodeURIComponent(nameParam)}&email=${encodeURIComponent(emailParam)}`);
-        }
-      }, 900);
-    }, 600);
+    executeVerification(fullOtp);
   };
 
   return (
     <div className="w-full max-w-[420px] animate-in fade-in duration-200">
-      {/* Back button (Icon Only) */}
-      <div className="mb-7">
+      {/* Back button (Icon Only with 64px top margin) */}
+      <div className="mt-[64px] mb-7">
         <button
           type="button"
           onClick={() => router.push(fromAction === 'reset' ? '/lupa-password' : '/signup')}
@@ -123,15 +145,15 @@ function OtpVerificationContent() {
           </p>
         </div>
       ) : (
-        <form onSubmit={handleVerify} className="space-y-6">
+        <form onSubmit={handleVerify} className="space-y-4">
           {errorMsg && (
             <div className="bg-red-50 text-red-600 p-2.5 rounded-[10px] text-xs font-medium border border-red-200 animate-in fade-in">
               {errorMsg}
             </div>
           )}
 
-          {/* 4 Digit OTP Box Input (Clean Web Utama Style) */}
-          <div className="flex justify-center gap-3 sm:gap-4 my-2">
+          {/* 4 Digit OTP Box Input with Smooth Scale Transition */}
+          <div className="flex justify-center gap-3 sm:gap-4 my-3">
             {[0, 1, 2, 3].map((idx) => (
               <input
                 key={idx}
@@ -145,23 +167,25 @@ function OtpVerificationContent() {
                 value={otp[idx]}
                 onChange={(e) => handleOtpChange(idx, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(idx, e)}
-                className="w-13 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-bold text-[#2E2D2D] bg-[#FAFAFA] border border-[#ECECEC] rounded-[12px] focus:border-[#2563EB] focus:bg-white focus:outline-none transition-all shadow-none"
+                className="w-13 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-bold text-[#2E2D2D] bg-[#FAFAFA] border border-[#ECECEC] rounded-[12px] focus:border-[#2563EB] focus:bg-white focus:scale-105 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all duration-200 shadow-none"
                 autoFocus={idx === 0}
               />
             ))}
           </div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isVerifying}
-            className="w-full h-[42px] sm:h-[44px] bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.99] text-white font-semibold rounded-[10px] transition-all disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center text-xs sm:text-sm cursor-pointer shadow-none"
-          >
-            {isVerifying ? 'Memverifikasi Kode...' : 'Konfirmasi & Lanjutkan'}
-          </button>
+          {/* Extra Gap before Submit Button */}
+          <div className="pt-4 sm:pt-6">
+            <button
+              type="submit"
+              disabled={isVerifying}
+              className="w-full h-[42px] sm:h-[44px] bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.99] text-white font-semibold rounded-[10px] transition-all disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center text-xs sm:text-sm cursor-pointer shadow-none"
+            >
+              {isVerifying ? 'Memverifikasi Kode...' : 'Konfirmasi & Lanjutkan'}
+            </button>
+          </div>
 
           {/* Resend OTP area */}
-          <div className="text-center pt-1">
+          <div className="text-center pt-2">
             <p className="text-xs text-[#737373]">
               Tidak menerima kode?{' '}
               {canResend ? (
@@ -207,11 +231,6 @@ export default function OtpPage() {
           <OtpVerificationContent />
         </Suspense>
       </div>
-
-      {/* Footer */}
-      <footer className="px-6 py-4 border-t border-[#ECECEC] text-center text-[11px] sm:text-xs text-gray-400">
-        Copyright Lantip 7 SMKN 1 Semarang. 2026
-      </footer>
     </div>
   );
 }

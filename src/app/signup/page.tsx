@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
-import { saveStudentProfile, registerStudent } from '@/services/student-profile.service';
+import { saveStudentProfile, registerStudent, getRegisteredStudents } from '@/services/student-profile.service';
+import { OtpService } from '@/services/otp.service';
 import { GoogleAccountModal, GoogleAccountOption } from '@/components/auth/GoogleAccountModal';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
@@ -24,6 +25,14 @@ export default function SignupPage() {
     e.preventDefault();
     setErrorMsg('');
 
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanName = name.trim();
+
+    if (!cleanEmail.endsWith('@gmail.com')) {
+      setErrorMsg('Pendaftaran akun siswa hanya dapat menggunakan email @gmail.com.');
+      return;
+    }
+
     if (password !== confirmPassword) {
       setErrorMsg('Konfirmasi kata sandi tidak cocok. Silakan periksa kembali.');
       return;
@@ -34,18 +43,29 @@ export default function SignupPage() {
       return;
     }
 
+    // Check if account already exists
+    const registered = getRegisteredStudents();
+    const existing = registered.find((r) => r.email.toLowerCase() === cleanEmail);
+    if (existing && existing.nisn) {
+      setErrorMsg('Email ini sudah terdaftar. Silakan langsung masuk ke akun Anda.');
+      return;
+    }
+
     setIsPending(true);
 
     setTimeout(() => {
+      // Generate real secure OTP
+      OtpService.generateOtp(cleanEmail);
+
       // Register student credentials persistently
       registerStudent({
-        name: name.trim(),
-        email: email.trim().toLowerCase(),
+        name: cleanName,
+        email: cleanEmail,
         password: password,
       });
 
       // Redirect to OTP verification
-      router.push(`/verifikasi-otp?from=signup&email=${encodeURIComponent(email.trim())}&name=${encodeURIComponent(name.trim())}`);
+      router.push(`/verifikasi-otp?from=signup&email=${encodeURIComponent(cleanEmail)}&name=${encodeURIComponent(cleanName)}`);
     }, 300);
   };
 
@@ -98,11 +118,11 @@ export default function SignupPage() {
       </div>
 
       {/* Main Form Area */}
-      <div className="flex-1 flex flex-col justify-start items-center px-6 sm:px-12 pt-[64px] pb-8 max-w-xl mx-auto w-full">
+      <div className="flex-1 flex flex-col justify-start items-center px-6 sm:px-12 pt-0 pb-8 max-w-xl mx-auto w-full">
         <div className="w-full max-w-[420px] animate-in fade-in duration-200">
           
-          {/* Back button (Icon Only - without copy) */}
-          <div className="mb-7">
+          {/* Back button (Icon Only with 64px top margin) */}
+          <div className="mt-[64px] mb-7">
             <button
               type="button"
               onClick={() => router.push('/login')}

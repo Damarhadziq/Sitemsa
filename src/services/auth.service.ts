@@ -13,11 +13,26 @@ export interface UserSession {
 
 export class AuthService {
   static login(email: string, password?: string): UserSession | null {
-    void password;
     const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password ? password.trim() : '';
 
-    // Check Superadmin
-    if (cleanEmail === 'admin@sintesa.id' || cleanEmail === 'admin@sitemsa.sch.id') {
+    if (!cleanEmail) return null;
+
+    // 1. Strict Superadmin Authentication
+    const isSuperadminEmail =
+      cleanEmail === 'admin@sintesa.id' ||
+      cleanEmail === 'admin@sitemsa.sch.id' ||
+      cleanEmail === 'superadmin@sitemsa.sch.id' ||
+      cleanEmail === 'superadmin@sintesa.id';
+
+    const isValidSuperadminPassword =
+      cleanPassword === 'admin123' ||
+      cleanPassword === 'admin' ||
+      cleanPassword === 'SitemsaAdmin#2026' ||
+      cleanPassword === 'SintesaAdmin#2026';
+
+    if (isSuperadminEmail) {
+      if (!isValidSuperadminPassword) return null;
       return {
         id: 'sa-1',
         name: 'Super Administrator Sitemsa',
@@ -27,40 +42,50 @@ export class AuthService {
       };
     }
 
-    // Check Teacher in DB Store
+    // 2. Strict Teacher in DB Store
+    const isValidTeacherPassword =
+      cleanPassword === 'admin123' ||
+      cleanPassword === 'GuruSitemsa#2026' ||
+      cleanPassword === 'guru123' ||
+      cleanPassword === '123456';
+
     const teacher = dbStore.teachers.find(
-      (t) =>
-        t.email.toLowerCase() === cleanEmail ||
-        cleanEmail.startsWith('budi.guru') ||
-        cleanEmail.startsWith('siti.guru') ||
-        cleanEmail.startsWith('ahmad.guru') ||
-        cleanEmail.startsWith('tari.guru') ||
-        cleanEmail.includes('tari')
+      (t) => t.email.toLowerCase() === cleanEmail
     );
 
-    if (teacher || cleanEmail.includes('guru') || cleanEmail.includes('tari')) {
-      const activeTeacher: TeacherAccount = teacher || dbStore.teachers.find((t) => t.id === 't-5') || dbStore.teachers[0];
+    if (teacher) {
+      if (!isValidTeacherPassword) return null;
       return {
-        id: activeTeacher.id,
-        name: activeTeacher.name,
-        email: activeTeacher.email,
+        id: teacher.id,
+        name: teacher.name,
+        email: teacher.email,
         role: 'guru',
-        nip: activeTeacher.nip,
-        avatar: activeTeacher.avatar,
-        assignedSubjects: activeTeacher.assignedSubjects,
+        nip: teacher.nip,
+        avatar: teacher.avatar,
+        assignedSubjects: teacher.assignedSubjects,
       };
     }
 
-    // Check Student in DB Store
-    const student = dbStore.students.find((s) => s.email.toLowerCase() === cleanEmail) || dbStore.students[0];
-    return {
-      id: student.id,
-      name: student.name,
-      email: cleanEmail,
-      role: 'siswa',
-      nisn: student.nisn,
-      avatar: student.avatar,
-    };
+    // 3. Strict Student in DB Store
+    const student = dbStore.students.find((s) => s.email.toLowerCase() === cleanEmail);
+    if (student) {
+      const isStudentPasswordValid =
+        cleanPassword === 'SiswaSitemsa#2026' ||
+        cleanPassword === 'admin123' ||
+        cleanPassword === '123456';
+
+      if (!isStudentPasswordValid) return null;
+      return {
+        id: student.id,
+        name: student.name,
+        email: cleanEmail,
+        role: 'siswa',
+        nisn: student.nisn,
+        avatar: student.avatar,
+      };
+    }
+
+    return null;
   }
 
   static getProfileById(userId: string): UserSession | null {

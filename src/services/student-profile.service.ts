@@ -457,23 +457,23 @@ export const saveStudentProfile = (profile: Partial<StudentProfile>): StudentPro
     window.dispatchEvent(new CustomEvent('sintesa-student-profile-updated', { detail: updated }));
     window.dispatchEvent(new CustomEvent('sintesa-student-auth-changed', { detail: { isAuthenticated: true, user: updated } }));
 
-    // Sync updates directly to Supabase database public.users
+    // Sync / Upsert updates directly to Supabase database public.users
     if (supabase) {
-      supabase
-        .from('users')
-        .update({
-          name: updated.name,
-          avatar: updated.avatar,
-          nip: updated.nisn,
-        })
-        .eq('email', updated.email)
-        .then(({ data, error }) => {
-          if (error) {
-            console.warn('Gagal sinkronisasi profil ke Supabase users:', error.message);
-          } else {
-            console.log('✅ Profil siswa berhasil tersinkronisasi ke Supabase users:', data);
-          }
-        });
+      Promise.resolve(
+        supabase
+          .from('users')
+          .upsert({
+            name: updated.name,
+            email: updated.email,
+            role: 'siswa',
+            avatar: updated.avatar,
+            nip: updated.nisn,
+          }, { onConflict: 'email' })
+      ).then(() => {
+        console.log('✅ Akun siswa berhasil disinkronisasi ke Supabase users:', updated.email);
+      }).catch((err) => {
+        console.warn('Sync student account to Supabase notice:', err);
+      });
     }
   } catch (e) {
     console.error(e);

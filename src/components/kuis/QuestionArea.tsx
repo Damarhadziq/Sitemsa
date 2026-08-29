@@ -15,23 +15,7 @@ import { addUserNotification } from "@/services/notification.service";
 import { recordModuleCompletion } from "@/services/weekly-target.service";
 import { getStudentProfile } from "@/services/student-profile.service";
 
-// Audio player helper using user's MP3 assets with synthesis fallback
-function playSoundEffect(type: "correct" | "wrong" | "result" | "remedial" | "countdown") {
-  if (typeof window === "undefined") return;
-  try {
-    const audio = new Audio(`/audio/${type}.mp3`);
-    audio.volume = type === "result" || type === "remedial" ? 0.75 : 0.65;
-    const playPromise = audio.play();
-    if (playPromise !== undefined) {
-      playPromise.catch(() => {
-        playSynthFallback(type);
-      });
-    }
-  } catch {
-    playSynthFallback(type);
-  }
-}
-
+// Fallback synthesizer in case audio files fail to load
 function playSynthFallback(type: "correct" | "wrong" | "result" | "remedial" | "countdown") {
   if (typeof window === "undefined") return;
   try {
@@ -95,25 +79,6 @@ function playSynthFallback(type: "correct" | "wrong" | "result" | "remedial" | "
   } catch {}
 }
 
-// Custom SVG Icons
-function CorrectCheckIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 shrink-0">
-      <path d="M22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12Z" fill="white" stroke="#10B981" strokeWidth="1.5" />
-      <path d="M8 12.5L10.5 15L16 9" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function WrongCancelIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 shrink-0">
-      <path d="M22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12Z" fill="white" stroke="#EF4444" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M14.9994 15L9 9M9.00064 15L15 9" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 // Default Sample Questions fallback
 const DEFAULT_QUIZ_QUESTIONS = [
   {
@@ -160,6 +125,42 @@ const DEFAULT_QUIZ_QUESTIONS = [
 export function QuestionArea({ quizId }: { quizId?: string }) {
   const router = useRouter();
   const { quizzes, modules } = useAdminStore();
+
+  // Preloaded Audio Cache for Instant 0ms Latency Playback
+  const audioCacheRef = useRef<Record<string, HTMLAudioElement>>({});
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const soundNames = ["correct", "wrong", "result", "remedial", "countdown"];
+    soundNames.forEach((name) => {
+      try {
+        const audio = new Audio(`/audio/${name}.mp3`);
+        audio.preload = "auto";
+        audio.load();
+        audioCacheRef.current[name] = audio;
+      } catch {}
+    });
+  }, []);
+
+  const playInstantSound = (type: "correct" | "wrong" | "result" | "remedial" | "countdown") => {
+    if (typeof window === "undefined") return;
+    try {
+      const audio = audioCacheRef.current[type];
+      if (audio) {
+        audio.currentTime = 0;
+        audio.volume = type === "result" || type === "remedial" ? 0.75 : 0.65;
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => playSynthFallback(type));
+        }
+      } else {
+        const newAudio = new Audio(`/audio/${type}.mp3`);
+        newAudio.play().catch(() => playSynthFallback(type));
+      }
+    } catch {
+      playSynthFallback(type);
+    }
+  };
 
   // Find Target Quiz & Subject Metadata
   const targetQuizData = useMemo(() => {
@@ -274,13 +275,12 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
   useEffect(() => {
     if (stage === "countdown") {
       setCountdownValue(3);
-      playSoundEffect("countdown");
+      playInstantSound("countdown");
 
       const timer = setInterval(() => {
         setCountdownValue((prev) => {
           if (prev <= 1) {
             clearInterval(timer);
-            // Display 'Mulai!' for 500ms then transition into quiz
             setTimeout(() => {
               setStage("in_quiz");
             }, 550);
@@ -301,7 +301,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
         if (!bgmAudioRef.current) {
           bgmAudioRef.current = new Audio("/audio/bgm.mp3");
           bgmAudioRef.current.loop = true;
-          bgmAudioRef.current.volume = 0.48; // Increased volume as requested
+          bgmAudioRef.current.volume = 0.48;
         }
         bgmAudioRef.current.play().catch(() => {});
       } catch {}
@@ -327,12 +327,12 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
     const isCorrect = index === currentQuestion.correctAnswer;
 
     if (isCorrect) {
-      playSoundEffect("correct");
+      playInstantSound("correct");
       setCorrectCount((prev) => prev + 1);
       setShowCelebrationLottie(true);
       setTimeout(() => setShowCelebrationLottie(false), 2800);
     } else {
-      playSoundEffect("wrong");
+      playInstantSound("wrong");
     }
 
     // Record answer permanently
@@ -380,9 +380,9 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
 
     // Play appropriate sound based on pass / remedial condition
     if (isPassed) {
-      playSoundEffect("result");
+      playInstantSound("result");
     } else {
-      playSoundEffect("remedial");
+      playInstantSound("remedial");
     }
 
     try {
@@ -441,7 +441,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
     const isPassed = accuracy >= targetQuizData.passScore;
 
     return (
-      <main className="fixed inset-0 w-screen h-screen overflow-hidden flex items-center justify-center font-sans bg-[#C3DFFB] z-50">
+      <main className="fixed inset-0 w-full h-full overflow-hidden flex items-center justify-center font-sans bg-[#C3DFFB] z-50">
         {/* Animated Background Buildings */}
         <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden flex items-center justify-center">
           {/* eslint-disable-next-next/no-img-element */}
@@ -535,13 +535,18 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
     );
   }
 
-  // 3. ACTIVE QUIZ STAGE (FULL SIZE SVG BACKGROUND WITH DARK TINT, WHITE QUESTION TEXT, 60PX MARGIN)
+  // 2. ACTIVE QUIZ STAGE (FULL SIZE SVG BACKGROUND WITH DARK TINT, WHITE QUESTION TEXT, 60PX MARGIN)
   return (
-    <div
-      className="fixed inset-0 w-full h-full overflow-hidden flex flex-col justify-between font-sans text-[#2E2D2D] relative bg-cover bg-center bg-no-repeat selection:bg-blue-100"
-      style={{ backgroundImage: "url('/bg-konten-quiz.svg')" }}
-    >
-      {/* Dark Overlay for contrast */}
+    <div className="fixed inset-0 w-full h-full overflow-hidden flex flex-col justify-between font-sans text-[#2E2D2D] relative bg-[#60a5fa] selection:bg-blue-100">
+      {/* Full-bleed background image with top-aligned scaling */}
+      {/* eslint-disable-next-next/no-img-element */}
+      <img
+        src="/bg-konten-quiz.svg"
+        alt="Quiz Background"
+        className="absolute inset-0 w-full h-full object-cover object-top pointer-events-none select-none z-0"
+      />
+
+      {/* Dark Overlay for text contrast */}
       <div className="absolute inset-0 bg-slate-950/30 pointer-events-none z-0" />
 
       {/* COUNTDOWN OVERLAY (MASSIVE DIGIT / MULAI DIRECTLY ON CANVAS WITHOUT CIRCLE OR OTHER TEXT) */}
@@ -564,146 +569,143 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
             : "filter-none scale-100 opacity-100"
         }`}
       >
-
-      {/* CELEBRATION LOTTIE ANIMATION RISING FROM BOTTOM ON CORRECT ANSWER */}
-      {showCelebrationLottie && (
-        <div className="fixed inset-x-0 bottom-0 flex items-end justify-center pointer-events-none z-[100] animate-in slide-in-from-bottom-12 duration-400 fade-in">
-          <div className="w-96 h-80 relative flex items-center justify-center">
-            <iframe
-              src="https://lottie.host/embed/522d1d2c-7fa8-443b-b605-b7a455444486/VVxd2YUFkE.lottie"
-              className="w-full h-full border-0 pointer-events-none"
-              title="Celebration Animation"
-            />
+        {/* CELEBRATION LOTTIE ANIMATION RISING FROM BOTTOM ON CORRECT ANSWER */}
+        {showCelebrationLottie && (
+          <div className="fixed inset-x-0 bottom-0 flex items-end justify-center pointer-events-none z-[100] animate-in slide-in-from-bottom-12 duration-400 fade-in">
+            <div className="w-96 h-80 relative flex items-center justify-center">
+              <iframe
+                src="https://lottie.host/embed/522d1d2c-7fa8-443b-b605-b7a455444486/VVxd2YUFkE.lottie"
+                className="w-full h-full border-0 pointer-events-none"
+                title="Celebration Animation"
+              />
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* TOP BAR (60PX MARGIN, MATCHING CIRCLE BACK BUTTON, ENLARGED UNIFIED CHIPS) */}
-      <header className="w-full px-6 md:px-[60px] pt-6 flex items-center justify-between z-20 shrink-0">
-        {/* Circle Back Button (Matching Main Website Style) */}
-        <button
-          type="button"
-          onClick={() => setShowExitConfirmModal(true)}
-          className="w-9 h-9 rounded-full bg-white/90 hover:bg-white border border-white/40 text-[#2E2D2D] hover:text-[#2563EB] shadow-xs transition-all cursor-pointer flex items-center justify-center"
-          aria-label="Kembali"
-          title="Keluar Kuis"
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </button>
-
-        {/* Right Area: Unified Height Chips (Mapel Gradient Chip, Question Counter, Sound Toggle) */}
-        <div className="flex items-center gap-3">
-          {/* Subject Gradient Chip (Enlarged, h-9) */}
-          <div className="h-9 px-4.5 rounded-full bg-gradient-to-r from-[#2563EB] to-[#4F46E5] text-white font-bold text-xs shadow-sm flex items-center border border-white/20">
-            {targetQuizData.subject}
-          </div>
-
-          {/* Question Counter Chip (Enlarged, h-9) */}
-          <div className="h-9 px-4 rounded-full bg-white/90 backdrop-blur-xs text-[#1E293B] font-bold text-xs shadow-xs flex items-center border border-white/40">
-            {currentIndex + 1} / {questionsList.length}
-          </div>
-
-          {/* BGM Mute/Unmute Toggle (h-9 w-9) */}
+        {/* TOP BAR (60PX MARGIN, MATCHING CIRCLE BACK BUTTON, ENLARGED UNIFIED CHIPS) */}
+        <header className="w-full px-6 md:px-[60px] pt-6 flex items-center justify-between z-20 shrink-0">
+          {/* Circle Back Button (Matching Main Website Style) */}
           <button
             type="button"
-            onClick={() => setIsMuted(!isMuted)}
-            className="w-9 h-9 rounded-full bg-white/90 backdrop-blur-xs border border-white/40 shadow-xs text-[#1E293B] hover:text-[#2563EB] flex items-center justify-center transition-colors cursor-pointer"
-            title={isMuted ? "Aktifkan Musik" : "Matikan Musik"}
+            onClick={() => setShowExitConfirmModal(true)}
+            className="w-9 h-9 rounded-full bg-white/90 hover:bg-white border border-white/40 text-[#2E2D2D] hover:text-[#2563EB] shadow-xs transition-all cursor-pointer flex items-center justify-center"
+            aria-label="Kembali"
+            title="Keluar Kuis"
           >
-            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            <ArrowLeft className="w-4 h-4" />
           </button>
-        </div>
-      </header>
 
-      {/* CENTER MAIN CONTENT: WHITE QUESTION TEXT & 2X2 ANSWER GRID WITH HOVER COLOR SHIFT */}
-      <main className="max-w-4xl w-full mx-auto px-6 sm:px-10 py-6 flex-1 flex flex-col justify-center items-center text-center z-10">
-        {/* Large Centered White Question Text */}
-        <div className="space-y-2 mb-8 max-w-3xl">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-snug tracking-tight drop-shadow-md">
-            {currentQuestion.text}
-          </h1>
-        </div>
+          {/* Right Area: Unified Height Chips (Mapel Gradient Chip, Question Counter, Sound Toggle) */}
+          <div className="flex items-center gap-3">
+            {/* Subject Gradient Chip (Enlarged, h-9) */}
+            <div className="h-9 px-4.5 rounded-full bg-gradient-to-r from-[#2563EB] to-[#4F46E5] text-white font-bold text-xs shadow-sm flex items-center border border-white/20">
+              {targetQuizData.subject}
+            </div>
 
-        {/* 2x2 Answer Grid with White Framed Cards & Hover Color Shift Only */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-3xl">
-          {currentQuestion.options.map((optionText, index) => {
-            const isSelected = selectedOption === index;
-            const isCorrectOption = index === currentQuestion.correctAnswer;
-            const isSelectedWrong = isAnswerChecked && isSelected && !isCorrectOption;
-            const isSelectedCorrect = isAnswerChecked && isSelected && isCorrectOption;
-            const isRevealedCorrect = isAnswerChecked && isCorrectOption;
+            {/* Question Counter Chip (Enlarged, h-9) */}
+            <div className="h-9 px-4 rounded-full bg-white/90 backdrop-blur-xs text-[#1E293B] font-bold text-xs shadow-xs flex items-center border border-white/40">
+              {currentIndex + 1} / {questionsList.length}
+            </div>
 
-            return (
-              <button
-                key={index}
-                type="button"
-                disabled={isAnswerChecked || answeredMap[currentIndex] !== undefined}
-                onClick={() => handleSelectOptionDirect(index)}
-                className={`w-full min-h-[76px] p-4 sm:p-5 rounded-[16px] text-left flex items-center gap-3.5 transition-colors duration-150 cursor-pointer shadow-xs ${
-                  !isAnswerChecked
-                    ? "bg-white/95 backdrop-blur-xs border border-[#ECECEC] hover:bg-[#EEF2FF] hover:border-[#2563EB] text-[#1E293B] hover:text-[#2563EB]"
-                    : isSelectedCorrect || isRevealedCorrect
-                    ? "bg-[#10B981] text-white font-semibold border-transparent shadow-md"
-                    : isSelectedWrong
-                    ? "bg-[#EF4444] text-white font-semibold border-transparent shadow-md"
-                    : "bg-white/95 backdrop-blur-xs border border-[#ECECEC] text-[#94A3B8] cursor-default"
-                }`}
-              >
-                {/* Option Letter Badge or SVG Status Icon */}
-                <div className="shrink-0 flex items-center justify-center">
-                  {!isAnswerChecked ? (
-                    <div className="w-8 h-8 rounded-full bg-slate-100 text-[#2563EB] font-bold text-xs flex items-center justify-center border border-slate-200">
-                      {String.fromCharCode(65 + index)}
-                    </div>
-                  ) : isSelectedCorrect || isRevealedCorrect ? (
-                    <CorrectCheckIcon />
-                  ) : isSelectedWrong ? (
-                    <WrongCancelIcon />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-slate-100 text-[#94A3B8] font-bold text-xs flex items-center justify-center border border-slate-200">
-                      {String.fromCharCode(65 + index)}
-                    </div>
-                  )}
-                </div>
+            {/* BGM Mute/Unmute Toggle (h-9 w-9) */}
+            <button
+              type="button"
+              onClick={() => setIsMuted(!isMuted)}
+              className="w-9 h-9 rounded-full bg-white/90 backdrop-blur-xs border border-white/40 shadow-xs text-[#1E293B] hover:text-[#2563EB] flex items-center justify-center transition-colors cursor-pointer"
+              title={isMuted ? "Aktifkan Musik" : "Matikan Musik"}
+            >
+              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            </button>
+          </div>
+        </header>
 
-                {/* Option Text */}
-                <span
-                  className={`text-xs sm:text-sm leading-relaxed flex-1 font-medium ${
+        {/* CENTER MAIN CONTENT: WHITE QUESTION TEXT & 2X2 ANSWER GRID (LETTERS STAY AS A/B/C/D) */}
+        <main className="max-w-4xl w-full mx-auto px-6 sm:px-10 py-6 flex-1 flex flex-col justify-center items-center text-center z-10">
+          {/* Large Centered White Question Text */}
+          <div className="space-y-2 mb-8 max-w-3xl">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-snug tracking-tight drop-shadow-md">
+              {currentQuestion.text}
+            </h1>
+          </div>
+
+          {/* 2x2 Answer Grid with White Framed Cards & Color Shift Only */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-3xl">
+            {currentQuestion.options.map((optionText, index) => {
+              const isSelected = selectedOption === index;
+              const isCorrectOption = index === currentQuestion.correctAnswer;
+              const isSelectedWrong = isAnswerChecked && isSelected && !isCorrectOption;
+              const isSelectedCorrect = isAnswerChecked && isSelected && isCorrectOption;
+              const isRevealedCorrect = isAnswerChecked && isCorrectOption;
+
+              return (
+                <button
+                  key={index}
+                  type="button"
+                  disabled={isAnswerChecked || answeredMap[currentIndex] !== undefined}
+                  onClick={() => handleSelectOptionDirect(index)}
+                  className={`w-full min-h-[76px] p-4 sm:p-5 rounded-[16px] text-left flex items-center gap-3.5 transition-colors duration-150 cursor-pointer shadow-xs ${
                     !isAnswerChecked
-                      ? "text-inherit"
-                      : isSelectedCorrect || isRevealedCorrect || isSelectedWrong
-                      ? "text-white font-semibold"
-                      : "text-[#94A3B8]"
+                      ? "bg-white/95 backdrop-blur-xs border border-[#ECECEC] hover:bg-[#EEF2FF] hover:border-[#2563EB] text-[#1E293B] hover:text-[#2563EB]"
+                      : isSelectedCorrect || isRevealedCorrect
+                      ? "bg-[#10B981] text-white font-semibold border-transparent shadow-md"
+                      : isSelectedWrong
+                      ? "bg-[#EF4444] text-white font-semibold border-transparent shadow-md"
+                      : "bg-white/95 backdrop-blur-xs border border-[#ECECEC] text-[#94A3B8] cursor-default"
                   }`}
                 >
-                  {optionText}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+                  {/* Option Letter Badge (A, B, C, D Always Visible) */}
+                  <div className="shrink-0 flex items-center justify-center">
+                    <div
+                      className={`w-8 h-8 rounded-full font-bold text-xs flex items-center justify-center border transition-colors ${
+                        !isAnswerChecked
+                          ? "bg-slate-100 text-[#2563EB] border-slate-200"
+                          : isSelectedCorrect || isRevealedCorrect || isSelectedWrong
+                          ? "bg-white/20 text-white border-white/40"
+                          : "bg-slate-100 text-[#94A3B8] border-slate-200"
+                      }`}
+                    >
+                      {String.fromCharCode(65 + index)}
+                    </div>
+                  </div>
 
-        {/* Explanation Banner (Smooth Inside Fade-in) */}
-        {isAnswerChecked && (
-          <div className="w-full max-w-3xl mt-5 p-4 rounded-[14px] bg-white/95 backdrop-blur-xs border border-[#ECECEC] text-left text-xs leading-relaxed animate-in fade-in slide-in-from-bottom-2 duration-300 shadow-xs space-y-1">
-            <span className="font-bold text-[#2E2D2D] block">Pembahasan:</span>
-            <p className="text-[#475569]">{currentQuestion.explanation}</p>
+                  {/* Option Text */}
+                  <span
+                    className={`text-xs sm:text-sm leading-relaxed flex-1 font-medium ${
+                      !isAnswerChecked
+                        ? "text-inherit"
+                        : isSelectedCorrect || isRevealedCorrect || isSelectedWrong
+                        ? "text-white font-semibold"
+                        : "text-[#94A3B8]"
+                    }`}
+                  >
+                    {optionText}
+                  </span>
+                </button>
+              );
+            })}
           </div>
-        )}
-      </main>
 
-      {/* BOTTOM ACTION BAR (NEXT BUTTON APPEARS ONCE ANSWERED) */}
-      <footer className="w-full max-w-5xl mx-auto px-6 sm:px-10 pb-6 pt-2 flex items-center justify-center z-20 min-h-[56px] shrink-0">
-        {isAnswerChecked && (
-          <button
-            type="button"
-            onClick={handleNextQuestion}
-            className="px-8 py-3 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all cursor-pointer animate-in fade-in zoom-in-95 duration-200 active:scale-98"
-          >
-            {currentIndex + 1 < questionsList.length ? "Lanjut" : "Lihat Hasil"}
-          </button>
-        )}
-      </footer>
+          {/* Explanation Banner (Smooth Inside Fade-in) */}
+          {isAnswerChecked && (
+            <div className="w-full max-w-3xl mt-5 p-4 rounded-[14px] bg-white/95 backdrop-blur-xs border border-[#ECECEC] text-left text-xs leading-relaxed animate-in fade-in slide-in-from-bottom-2 duration-300 shadow-xs space-y-1">
+              <span className="font-bold text-[#2E2D2D] block">Pembahasan:</span>
+              <p className="text-[#475569]">{currentQuestion.explanation}</p>
+            </div>
+          )}
+        </main>
+
+        {/* BOTTOM ACTION BAR (NEXT BUTTON APPEARS ONCE ANSWERED) */}
+        <footer className="w-full max-w-5xl mx-auto px-6 sm:px-10 pb-6 pt-2 flex items-center justify-center z-20 min-h-[56px] shrink-0">
+          {isAnswerChecked && (
+            <button
+              type="button"
+              onClick={handleNextQuestion}
+              className="px-8 py-3 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all cursor-pointer animate-in fade-in zoom-in-95 duration-200 active:scale-98"
+            >
+              {currentIndex + 1 < questionsList.length ? "Lanjut" : "Lihat Hasil"}
+            </button>
+          )}
+        </footer>
       </div>
 
       {/* CONFIRMATION MODAL KELUAR KUIS */}

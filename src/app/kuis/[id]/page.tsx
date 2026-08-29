@@ -8,7 +8,7 @@ export default async function QuizPage({
   const { id } = await params;
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col w-full h-screen overflow-hidden bg-[#60a5fa]">
       <QuestionArea quizId={id} />
     </div>
   );

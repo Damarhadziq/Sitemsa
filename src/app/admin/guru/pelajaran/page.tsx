@@ -1468,11 +1468,11 @@ export default function AdminGuruPelajaranPage() {
                       <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                     </div>
                     <p className="text-2xl font-bold text-emerald-600">
-                      {modSpecificAnalytics && modSpecificAnalytics.totalViews > 0 ? '100%' : '0%'}
+                      {modSpecificAnalytics ? `${modSpecificAnalytics.completionRate}%` : '0%'}
                     </p>
                     <p className="text-[11px] text-[#AAAAAA]">
-                      {modSpecificAnalytics && modSpecificAnalytics.totalViews > 0
-                        ? `${modSpecificAnalytics.totalViews} siswa selesai`
+                      {modSpecificAnalytics && modSpecificAnalytics.completedCount > 0
+                        ? `${modSpecificAnalytics.completedCount} siswa selesai`
                         : 'Belum ada siswa selesai'}
                     </p>
                   </div>
@@ -1482,8 +1482,15 @@ export default function AdminGuruPelajaranPage() {
                       <span className="text-xs font-semibold text-[#737373]">Perlu Perhatian</span>
                       <AlertCircle className="w-4 h-4 text-amber-500" />
                     </div>
-                    <p className="text-2xl font-bold text-amber-600">0 <span className="text-xs font-normal text-[#737373]">Siswa</span></p>
-                    <p className="text-[11px] text-[#AAAAAA]">Tidak ada siswa tertinggal</p>
+                    <p className="text-2xl font-bold text-amber-600">
+                      {modSpecificAnalytics ? modSpecificAnalytics.needsAttentionCount : 0}{' '}
+                      <span className="text-xs font-normal text-[#737373]">Siswa</span>
+                    </p>
+                    <p className="text-[11px] text-[#AAAAAA]">
+                      {modSpecificAnalytics && modSpecificAnalytics.needsAttentionCount > 0
+                        ? `${modSpecificAnalytics.needsAttentionCount} siswa durasi baca sangat singkat`
+                        : 'Tidak ada siswa tertinggal'}
+                    </p>
                   </div>
                 </div>
 

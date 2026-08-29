@@ -213,10 +213,17 @@ export class StudyAnalyticsService {
       });
     }
 
+    const completedCount = modSessions.filter((s) => s.durationMinutes >= 15 || s.durationSeconds >= 600).length;
+    const completionRate = totalViews > 0 ? Math.round((completedCount / totalViews) * 100) : 0;
+    const needsAttentionCount = modSessions.filter((s) => s.durationSeconds < 60 && s.durationSeconds >= 5).length;
+
     return {
       totalViews,
       totalMinutes,
       avgMinutes,
+      completionRate,
+      completedCount,
+      needsAttentionCount,
       weeklyChart,
       recentReaders: modSessions.slice(-5).reverse().map((s) => ({
         name: s.studentName,

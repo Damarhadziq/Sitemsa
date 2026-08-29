@@ -109,6 +109,7 @@ export interface QuizQuestion {
 
 export interface QuizItem {
   id: string;
+  moduleId?: string;
   subject: string;
   title: string;
   duration: string;

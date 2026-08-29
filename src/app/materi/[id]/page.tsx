@@ -1871,7 +1871,7 @@ export default function MateriDetailPage({
   const searchParams = useSearchParams();
   const fromParam = searchParams.get("from");
 
-  const { modules } = useAdminStore();
+  const { modules, quizzes } = useAdminStore();
 
   const baseMaterial = useMemo(() => {
     return getMaterialDetailForModule(id) || MATERIAL_DATABASE[parseInt(id, 10) || 1] || MATERIAL_DATABASE[1];
@@ -2016,6 +2016,37 @@ export default function MateriDetailPage({
       } : undefined,
     };
   }, [baseMaterial, modules, id]);
+
+  // Find linked quiz created by teacher / admin
+  const activeQuizInfo = useMemo(() => {
+    const cleanId = String(id || "").toLowerCase();
+    const cleanSubject = String(material.subject || "").toLowerCase();
+    const cleanTitle = String(material.title || "").toLowerCase();
+
+    // 1. By moduleId or ID or Subject in quizzes
+    const byQuiz = quizzes.find(
+      (q) =>
+        (q.moduleId && (q.moduleId === id || q.moduleId.toLowerCase() === cleanId)) ||
+        q.id === id ||
+        (q.subject && q.subject.toLowerCase() === cleanSubject) ||
+        (q.title && q.title.toLowerCase().includes(cleanTitle))
+    );
+
+    const title =
+      byQuiz?.title ||
+      (material.quizSource?.title &&
+      material.quizSource.title !== "Kuis Evaluasi" &&
+      material.quizSource.title !== "Uji Pemahaman Materi"
+        ? material.quizSource.title
+        : `Kuis ${material.title || "Evaluasi"}`);
+    const passScore = byQuiz?.passScore || 75;
+
+    return {
+      title,
+      passScore,
+      quizId: byQuiz?.id || material.id,
+    };
+  }, [quizzes, material, id]);
 
   const initialSectionId = material.videoSection ? "video-tutorial" : (material.contentSections[0]?.id || "pengantar");
   const [activeSection, setActiveSection] = useState(initialSectionId);
@@ -2698,7 +2729,7 @@ export default function MateriDetailPage({
                   </div>
 
                   <h3 className="text-sm font-bold text-[#2E2D2D]">
-                    {material.quizSource.title}
+                    {activeQuizInfo.title}
                   </h3>
                   <p className="text-xs text-[#737373] leading-relaxed">
                     {material.quizSource.description}
@@ -2917,11 +2948,11 @@ export default function MateriDetailPage({
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-2 pt-2">
+            <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 type="button"
                 onClick={() => setActiveQuizModal("none")}
-                className="w-1/2 bg-[#FAFAFA] border border-[#ECECEC] hover:bg-[#F6F5FF] hover:border-[#0400F4]/40 text-[#737373] hover:text-[#0400F4] py-2.5 rounded-[6px] text-xs font-semibold transition-all duration-200 cursor-pointer text-center"
+                className="px-4 py-2 rounded-[8px] bg-white border border-[#ECECEC] text-[#2E2D2D] font-semibold text-xs hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 Batalkan
               </button>
@@ -2930,7 +2961,7 @@ export default function MateriDetailPage({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setActiveQuizModal("none")}
-                className="w-1/2 bg-[#0400F4] hover:bg-[#0300d4] active:scale-95 text-white py-2.5 rounded-[6px] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer text-center"
+                className="px-5 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer text-center shadow-xs"
               >
                 <span>Lanjutkan ke Link</span>
                 <HugeiconsIcon icon={ArrowRight01Icon} size={14} />
@@ -2945,7 +2976,8 @@ export default function MateriDetailPage({
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans">
           <div className="absolute inset-0" onClick={() => setActiveQuizModal("none")} />
           <div className="bg-white rounded-[12px] max-w-md w-full border border-[#ECECEC] overflow-hidden shadow-xl animate-in zoom-in-95 duration-200 z-10 relative">
-            <div className="p-5 pb-4 bg-white flex items-center justify-between border-b border-[#ECECEC]">
+            {/* Header: Pure white seamless header without dividing line */}
+            <div className="p-5 pb-0 bg-white flex items-center justify-between">
               <h3 className="text-base font-bold text-[#2E2D2D]">Siap memulai kuis</h3>
               <button
                 type="button"
@@ -2959,11 +2991,8 @@ export default function MateriDetailPage({
 
             <div className="p-5 space-y-4">
               <div>
-                <span className="text-[11px] font-bold text-[#2563EB] bg-blue-50 px-2.5 py-0.5 rounded-[4px] border border-blue-100 inline-block mb-2">
-                  {material.subject}
-                </span>
                 <h4 className="text-base font-bold text-[#2E2D2D] leading-snug">
-                  {material.quizSource.title}
+                  {activeQuizInfo.title}
                 </h4>
               </div>
 
@@ -2974,7 +3003,7 @@ export default function MateriDetailPage({
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-[#737373]">Standar KKM</span>
-                  <span className="font-bold text-emerald-700">75%</span>
+                  <span className="font-bold text-emerald-700">{activeQuizInfo.passScore}%</span>
                 </div>
               </div>
 
@@ -2982,18 +3011,19 @@ export default function MateriDetailPage({
                 Pastikan Anda telah membaca dan memahami materi ini dengan baik sebelum memulai pengerjaan kuis.
               </p>
 
-              <div className="pt-2 flex items-center justify-end gap-2 border-t border-[#ECECEC]">
+              {/* Action Buttons without dividing line */}
+              <div className="pt-2 flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setActiveQuizModal("none")}
-                  className="px-4 py-2 rounded-[8px] bg-white border border-[#ECECEC] text-[#2E2D2D] font-semibold text-xs hover:bg-slate-50 cursor-pointer"
+                  className="px-4 py-2 rounded-[8px] bg-white border border-[#ECECEC] text-[#2E2D2D] font-semibold text-xs hover:bg-slate-50 transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
                 <Link
-                  href={material.quizSource.internalUrl || `/kuis/${material.id}`}
+                  href={material.quizSource.internalUrl || `/kuis/${encodeURIComponent(id)}`}
                   onClick={() => setActiveQuizModal("none")}
-                  className="px-5 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs cursor-pointer shadow-xs"
+                  className="px-5 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs cursor-pointer shadow-xs transition-colors"
                 >
                   Mulai kuis
                 </Link>

@@ -16,7 +16,7 @@ import { recordModuleCompletion } from "@/services/weekly-target.service";
 import { getStudentProfile } from "@/services/student-profile.service";
 
 // Audio player helper using user's MP3 assets with synthesis fallback
-function playSoundEffect(type: "correct" | "wrong" | "result" | "remedial") {
+function playSoundEffect(type: "correct" | "wrong" | "result" | "remedial" | "countdown") {
   if (typeof window === "undefined") return;
   try {
     const audio = new Audio(`/audio/${type}.mp3`);
@@ -32,7 +32,7 @@ function playSoundEffect(type: "correct" | "wrong" | "result" | "remedial") {
   }
 }
 
-function playSynthFallback(type: "correct" | "wrong" | "result" | "remedial") {
+function playSynthFallback(type: "correct" | "wrong" | "result" | "remedial" | "countdown") {
   if (typeof window === "undefined") return;
   try {
     const AudioCtx =
@@ -42,7 +42,18 @@ function playSynthFallback(type: "correct" | "wrong" | "result" | "remedial") {
     const ctx = new AudioCtx();
     const now = ctx.currentTime;
 
-    if (type === "correct") {
+    if (type === "countdown") {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(540, now);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.1);
+    } else if (type === "correct") {
       [523.25, 659.25, 783.99].forEach((freq, i) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -152,32 +163,17 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
 
   // Find Target Quiz & Subject Metadata
   const targetQuizData = useMemo(() => {
-    if (quizId) {
-      // 1. By ID or Title in quizzes
-      const byQuizId = quizzes.find(
-        (q) => q.id === quizId || q.title.toLowerCase().includes(quizId.toLowerCase())
-      );
-      if (byQuizId) {
-        return {
-          title: byQuizId.title,
-          subject: byQuizId.subject || "Informatika",
-          passScore: byQuizId.passScore || 75,
-          moduleId: quizId,
-          questions:
-            byQuizId.questions && byQuizId.questions.length > 0
-              ? byQuizId.questions.map((q, idx) => ({
-                  id: q.id || `q-${idx}`,
-                  text: q.text,
-                  options: q.options.filter((opt) => opt.trim().length > 0),
-                  correctAnswer: q.correctAnswer,
-                  explanation: q.explanation || "Pembahasan materi kuis Sitemsa.",
-                }))
-              : DEFAULT_QUIZ_QUESTIONS,
-        };
-      }
+    const cleanQuizId = quizId ? decodeURIComponent(quizId).trim() : "";
 
-      // 2. By Module ID
-      const byModule = modules.find((m) => m.id === quizId || String(m.id) === String(quizId));
+    if (cleanQuizId) {
+      // 1. By Module ID first (exact material navigation)
+      const byModule = modules.find(
+        (m) =>
+          m.id === cleanQuizId ||
+          String(m.id).toLowerCase() === cleanQuizId.toLowerCase() ||
+          m.id.replace(/\s+/g, "-").toLowerCase() === cleanQuizId.replace(/\s+/g, "-").toLowerCase()
+      );
+
       if (byModule) {
         const subQuiz = quizzes.find(
           (q) => q.subject.toLowerCase() === byModule.subject.toLowerCase()
@@ -197,6 +193,37 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
             })),
           };
         }
+
+        return {
+          title: `Evaluasi ${byModule.title}`,
+          subject: byModule.subject,
+          passScore: 75,
+          moduleId: byModule.id,
+          questions: DEFAULT_QUIZ_QUESTIONS,
+        };
+      }
+
+      // 2. By ID or Title in quizzes
+      const byQuizId = quizzes.find(
+        (q) => q.id === cleanQuizId || q.title.toLowerCase().includes(cleanQuizId.toLowerCase())
+      );
+      if (byQuizId) {
+        return {
+          title: byQuizId.title,
+          subject: byQuizId.subject || "Informatika",
+          passScore: byQuizId.passScore || 75,
+          moduleId: cleanQuizId,
+          questions:
+            byQuizId.questions && byQuizId.questions.length > 0
+              ? byQuizId.questions.map((q, idx) => ({
+                  id: q.id || `q-${idx}`,
+                  text: q.text,
+                  options: q.options.filter((opt) => opt.trim().length > 0),
+                  correctAnswer: q.correctAnswer,
+                  explanation: q.explanation || "Pembahasan materi kuis Sitemsa.",
+                }))
+              : DEFAULT_QUIZ_QUESTIONS,
+        };
       }
     }
 
@@ -204,7 +231,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
       title: "Evaluasi Pemahaman Materi",
       subject: "Informatika",
       passScore: 75,
-      moduleId: "1",
+      moduleId: cleanQuizId || "1",
       questions: DEFAULT_QUIZ_QUESTIONS,
     };
   }, [quizId, quizzes, modules]);
@@ -243,10 +270,11 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
     };
   }, []);
 
-  // 3-Second Smooth Countdown Timer
+  // 3-Second Smooth Countdown Timer & Sound
   useEffect(() => {
     if (stage === "countdown") {
       setCountdownValue(3);
+      playSoundEffect("countdown");
 
       const timer = setInterval(() => {
         setCountdownValue((prev) => {
@@ -332,8 +360,12 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
     if (bgmAudioRef.current) {
       bgmAudioRef.current.pause();
     }
-    const returnPath = `/materi/${targetQuizData.moduleId || "1"}`;
-    router.push(returnPath);
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+    } else {
+      const returnPath = `/materi/${encodeURIComponent(targetQuizData.moduleId || "1")}`;
+      router.push(returnPath);
+    }
   };
 
   // Finish Quiz & Record Progress
@@ -492,7 +524,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
               Ulangi Kuis
             </button>
 
-            <Link href={`/materi/${targetQuizData.moduleId || "1"}`} className="w-full sm:flex-1">
+            <Link href={`/materi/${encodeURIComponent(targetQuizData.moduleId || "1")}`} className="w-full sm:flex-1">
               <button className="w-full py-2.5 px-5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs transition-colors cursor-pointer shadow-xs">
                 Kembali ke Pembelajaran
               </button>

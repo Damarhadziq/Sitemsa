@@ -489,10 +489,10 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
           />
         </div>
 
-        {/* Result Card (py-4, enlarged Lottie, contextual message) */}
-        <div className="w-full max-w-lg bg-white rounded-[20px] border border-[#ECECEC] py-4 px-8 sm:px-10 shadow-2xl text-center space-y-3.5 animate-in fade-in zoom-in-95 duration-500 z-10 relative mx-4">
+        {/* Result Card (Equal padding on all 4 sides matching bottom padding, balanced typography) */}
+        <div className="w-full max-w-md bg-white rounded-[20px] border border-[#ECECEC] p-5 sm:p-6 shadow-2xl text-center space-y-3.5 animate-in fade-in zoom-in-95 duration-500 z-10 relative mx-4">
           {/* Conditional Lottie Animation Embed (Enlarged) */}
-          <div className="w-44 h-44 sm:w-52 sm:h-52 mx-auto relative flex items-center justify-center overflow-hidden">
+          <div className="w-36 h-36 sm:w-44 sm:h-44 mx-auto relative flex items-center justify-center overflow-hidden">
             {isPassed ? (
               <iframe
                 src="https://lottie.host/embed/67d35880-5f9d-4309-bee5-04db1bb3f075/b7nNeNfkhM.lottie"
@@ -512,48 +512,48 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
             <span className="text-xs font-bold text-[#2563EB] bg-blue-50 px-3 py-0.5 rounded-full border border-blue-100 inline-block">
               {targetQuizData.subject}
             </span>
-            <h2 className="text-xl sm:text-2xl font-bold text-[#2E2D2D] tracking-tight">
+            <h2 className="text-lg sm:text-xl font-bold text-[#2E2D2D] tracking-tight">
               {targetQuizData.title}
             </h2>
           </div>
 
-          {/* Clean Score Card (Plain Text Numbers & Status without Background) */}
+          {/* Clean Score Card (Exact matching sizes for all 3 columns) */}
           <div className="p-3.5 sm:p-4 rounded-[14px] bg-slate-50 border border-[#ECECEC] flex items-center justify-around">
-            <div className="text-center">
-              <p className="text-xl sm:text-2xl font-extrabold text-[#2E2D2D]">{accuracy}%</p>
-              <p className="text-[10px] sm:text-xs font-semibold text-[#737373] mt-0.5">Nilai Akhir</p>
+            <div className="text-center flex-1">
+              <p className="text-lg sm:text-xl font-extrabold text-[#2E2D2D] leading-none">{accuracy}%</p>
+              <p className="text-[11px] sm:text-xs font-semibold text-[#737373] mt-1.5">Nilai Akhir</p>
             </div>
             <div className="w-[1px] h-8 bg-[#ECECEC]" />
-            <div className="text-center">
-              <p className="text-xl sm:text-2xl font-extrabold text-[#2E2D2D]">
+            <div className="text-center flex-1">
+              <p className="text-lg sm:text-xl font-extrabold text-[#2E2D2D] leading-none">
                 {correctCount}/{questionsList.length}
               </p>
-              <p className="text-[10px] sm:text-xs font-semibold text-[#737373] mt-0.5">Jawaban Benar</p>
+              <p className="text-[11px] sm:text-xs font-semibold text-[#737373] mt-1.5">Jawaban Benar</p>
             </div>
             <div className="w-[1px] h-8 bg-[#ECECEC]" />
-            <div className="text-center">
+            <div className="text-center flex-1">
               <p
-                className={`text-sm sm:text-base font-bold leading-tight ${
+                className={`text-lg sm:text-xl font-extrabold leading-none ${
                   isPassed ? "text-emerald-600" : "text-amber-600"
                 }`}
               >
                 {isPassed ? "Tuntas" : "Remedial"}
               </p>
-              <p className="text-[10px] sm:text-xs font-semibold text-[#737373] mt-0.5">
+              <p className="text-[11px] sm:text-xs font-semibold text-[#737373] mt-1.5">
                 KKM {targetQuizData.passScore}%
               </p>
             </div>
           </div>
 
-          {/* Contextual Copy Message Based on Condition */}
+          {/* Short & Concise Contextual Copy */}
           <p className="text-xs text-[#64748B] leading-relaxed max-w-md mx-auto px-1">
             {isPassed
-              ? "Selamat! Kamu telah berhasil menuntaskan kuis evaluasi ini dengan sangat baik. Terus pertahankan prestasimu!"
-              : "Nilaimu masih di bawah standar kelulusan KKM. Silakan pelajari kembali materi dan coba lagi untuk hasil yang lebih baik!"}
+              ? "Selamat! Kamu telah berhasil menuntaskan kuis evaluasi ini dengan sangat baik."
+              : "Nilaimu masih di bawah standar kelulusan KKM. Silakan pelajari kembali materi ini."}
           </p>
 
-          {/* Action Buttons (SIDE BY SIDE / KANAN KIRI) */}
-          <div className="flex flex-row items-center gap-2.5 pt-1">
+          {/* Action Buttons with increased gap on mobile (SIDE BY SIDE / KANAN KIRI) */}
+          <div className="flex flex-row items-center gap-2.5 pt-3.5 sm:pt-2">
             <button
               onClick={handleRestartQuiz}
               className="flex-1 py-2.5 px-3 sm:px-5 rounded-[8px] bg-white border border-[#ECECEC] text-[#2E2D2D] hover:bg-slate-50 font-semibold text-xs transition-colors cursor-pointer text-center whitespace-nowrap"
@@ -575,11 +575,16 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
   // 2. ACTIVE QUIZ STAGE (FULL SIZE SVG BACKGROUND WITH DARK TINT, WHITE QUESTION TEXT, 60PX MARGIN)
   return (
     <div className="fixed inset-0 w-full h-full overflow-hidden flex flex-col justify-between font-sans text-[#2E2D2D] relative bg-[#60a5fa] selection:bg-blue-100">
-      {/* QUESTION & BACKGROUND WRAPPER (BLURRED DURING COUNTDOWN, ZOOM IN ON START) */}
+      {/* FULL BLEED BACKDROP BLUR OVERLAY DURING COUNTDOWN (ZERO EDGE MISS AT BOTTOM) */}
+      {stage === "countdown" && (
+        <div className="fixed inset-0 w-full h-full backdrop-blur-xl bg-slate-950/25 z-40 pointer-events-none transition-all duration-500" />
+      )}
+
+      {/* QUESTION & BACKGROUND WRAPPER (FULL BLEED COVERAGE) */}
       <div
         className={`fixed inset-0 w-full h-full flex flex-col justify-between transition-all duration-700 ease-out z-10 ${
           stage === "countdown"
-            ? "filter blur-md scale-95 opacity-75 pointer-events-none"
+            ? "filter blur-sm scale-100 opacity-90 pointer-events-none"
             : "filter-none scale-100 opacity-100"
         }`}
       >

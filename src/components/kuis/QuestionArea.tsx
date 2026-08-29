@@ -5,19 +5,18 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
-  ArrowRight,
-  RotateCcw,
-  Sparkles,
   X,
 } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Tick01Icon, Cancel01Icon } from "@hugeicons/core-free-icons";
 import { useAdminStore } from "@/lib/admin-store";
 import { ProgressService } from "@/services/progress.service";
 import { addUserNotification } from "@/services/notification.service";
 import { recordModuleCompletion } from "@/services/weekly-target.service";
 import { getStudentProfile } from "@/services/student-profile.service";
 
-// Clean Web Audio API SFX
-function playQuizSound(type: "pop" | "correct" | "wrong" | "tick" | "start") {
+// Clean Web Audio API SFX (Only for Correct, Wrong, and Completion Results)
+function playQuizSound(type: "correct" | "wrong" | "tada" | "tick" | "start") {
   if (typeof window === "undefined") return;
   try {
     const AudioContextClass =
@@ -26,24 +25,12 @@ function playQuizSound(type: "pop" | "correct" | "wrong" | "tick" | "start") {
     if (!AudioContextClass) return;
     const ctx = new AudioContextClass();
 
-    if (type === "pop") {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(400, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.05);
-      gain.gain.setValueAtTime(0.1, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.05);
-    } else if (type === "tick") {
+    if (type === "tick") {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = "sine";
       osc.frequency.setValueAtTime(540, ctx.currentTime);
-      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.07);
       osc.connect(gain);
       gain.connect(ctx.destination);
@@ -55,7 +42,7 @@ function playQuizSound(type: "pop" | "correct" | "wrong" | "tick" | "start") {
       osc.type = "triangle";
       osc.frequency.setValueAtTime(523.25, ctx.currentTime);
       osc.frequency.exponentialRampToValueAtTime(1046.5, ctx.currentTime + 0.22);
-      gain.gain.setValueAtTime(0.18, ctx.currentTime);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.22);
       osc.connect(gain);
       gain.connect(ctx.destination);
@@ -88,6 +75,20 @@ function playQuizSound(type: "pop" | "correct" | "wrong" | "tick" | "start") {
       gain.connect(ctx.destination);
       osc.start(now);
       osc.stop(now + 0.16);
+    } else if (type === "tada") {
+      const now = ctx.currentTime;
+      [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(freq, now + i * 0.08);
+        gain.gain.setValueAtTime(0.2, now + i * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.35);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + i * 0.08);
+        osc.stop(now + i * 0.08 + 0.35);
+      });
     }
   } catch {
     // Audio fallback
@@ -217,7 +218,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
   const [correctCount, setCorrectCount] = useState(0);
   const [answeredMap, setAnsweredMap] = useState<Record<number, { isCorrect: boolean; selected: number }>>({});
 
-  // Diffuse Neon Glow Layer State with smooth in/out
+  // Clean Neon Glow State (Edge Vignette Only)
   const [neonGlow, setNeonGlow] = useState<"correct" | "wrong" | null>(null);
 
   const currentQuestion = questionsList[currentIndex] || DEFAULT_QUIZ_QUESTIONS[0];
@@ -247,10 +248,9 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
     }
   }, [stage]);
 
-  // Select Option Handler with wave effect
+  // Select Option Handler (No sound on plain click)
   const handleSelectOption = (index: number) => {
     if (isAnswerChecked || answeredMap[currentIndex] !== undefined) return;
-    playQuizSound("pop");
     setSelectedOption(index);
   };
 
@@ -261,7 +261,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
     setIsAnswerChecked(true);
     const isCorrect = selectedOption === currentQuestion.correctAnswer;
 
-    // Trigger Diffuse Layered Neon Glow
+    // Trigger Ambient Neon Edge Glow & Sound
     if (isCorrect) {
       playQuizSound("correct");
       setCorrectCount((prev) => prev + 1);
@@ -280,12 +280,11 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
     // Fade out neon glow smoothly
     setTimeout(() => {
       setNeonGlow(null);
-    }, 1800);
+    }, 1600);
   };
 
   // Next Question Handler
   const handleNextQuestion = () => {
-    playQuizSound("pop");
     setNeonGlow(null);
 
     if (currentIndex + 1 < questionsList.length) {
@@ -294,22 +293,6 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
       setIsAnswerChecked(false);
     } else {
       finishQuiz();
-    }
-  };
-
-  // Jump Question in Sidebar (Only allowed to jump forward if unanswered, cannot re-edit answered)
-  const handleJumpQuestion = (targetIdx: number) => {
-    if (targetIdx === currentIndex) return;
-    // If the target is already answered, show it in read-only mode
-    playQuizSound("pop");
-    setNeonGlow(null);
-    setCurrentIndex(targetIdx);
-    if (answeredMap[targetIdx] !== undefined) {
-      setSelectedOption(answeredMap[targetIdx].selected);
-      setIsAnswerChecked(true);
-    } else {
-      setSelectedOption(null);
-      setIsAnswerChecked(false);
     }
   };
 
@@ -322,6 +305,8 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
   // Finish Quiz & Record Progress
   const finishQuiz = () => {
     setStage("completed");
+    playQuizSound("tada");
+
     const finalScorePercent = Math.round((correctCount / questionsList.length) * 100);
     try {
       const studentProfile = getStudentProfile();
@@ -364,7 +349,6 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
 
   // Restart Quiz
   const handleRestartQuiz = () => {
-    playQuizSound("pop");
     setCurrentIndex(0);
     setSelectedOption(null);
     setIsAnswerChecked(false);
@@ -395,31 +379,36 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
     );
   }
 
-  // 2. RESULT COMPLETION SCREEN
+  // 2. RESULT COMPLETION SCREEN (WITH BG QUIZ HASIL SVG & LOTTIE EMBED)
   if (stage === "completed") {
     const accuracy = Math.round((correctCount / questionsList.length) * 100);
     const isPassed = accuracy >= targetQuizData.passScore;
 
     return (
-      <main className="flex-1 flex flex-col items-center justify-center p-6 w-full max-w-xl mx-auto my-auto font-sans bg-white">
-        <div className="w-full bg-white rounded-[20px] border border-[#ECECEC] p-8 sm:p-10 shadow-xs text-center space-y-6 animate-in fade-in zoom-in-95 duration-200">
-          <div className="w-16 h-16 rounded-full bg-blue-50 text-[#2563EB] flex items-center justify-center mx-auto border border-blue-100">
-            <Sparkles className="w-8 h-8 text-[#2563EB]" />
+      <main
+        className="min-h-screen w-full flex flex-col items-center justify-center p-6 font-sans bg-cover bg-center bg-no-repeat relative"
+        style={{ backgroundImage: "url('/bg-quiz-hasil.svg')" }}
+      >
+        <div className="w-full max-w-xl bg-white rounded-[20px] border border-[#ECECEC] p-8 sm:p-10 shadow-2xl text-center space-y-6 animate-in fade-in zoom-in-95 duration-200 z-10 relative">
+          {/* Lottie Animation Embed */}
+          <div className="w-40 h-40 mx-auto relative flex items-center justify-center overflow-hidden">
+            <iframe
+              src="https://lottie.host/embed/67d35880-5f9d-4309-bee5-04db1bb3f075/b7nNeNfkhM.lottie"
+              className="w-full h-full border-0 pointer-events-none"
+              title="Quiz Completion Animation"
+            />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <span className="text-xs font-bold text-[#2563EB] bg-blue-50 px-3 py-1 rounded-full border border-blue-100 inline-block">
               {targetQuizData.subject}
             </span>
-            <h2 className="text-2xl font-bold text-[#2E2D2D] tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#2E2D2D] tracking-tight">
               {targetQuizData.title}
             </h2>
-            <p className="text-xs text-[#737373]">
-              Evaluasi kuis telah selesai. Hasil jawaban Anda telah tersimpan secara otomatis.
-            </p>
           </div>
 
-          {/* Clean Score Card */}
+          {/* Clean Score Card (Plain Text Numbers & Status without Background) */}
           <div className="p-5 rounded-[14px] bg-slate-50 border border-[#ECECEC] flex items-center justify-around">
             <div>
               <p className="text-2xl font-extrabold text-[#2E2D2D]">{accuracy}%</p>
@@ -434,16 +423,16 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
             </div>
             <div className="w-[1px] h-10 bg-[#ECECEC]" />
             <div>
-              <span
-                className={`inline-block text-xs font-bold px-2.5 py-1 rounded-[6px] ${
-                  isPassed
-                    ? "bg-emerald-100 text-emerald-800"
-                    : "bg-amber-100 text-amber-800"
+              <p
+                className={`text-2xl font-extrabold ${
+                  isPassed ? "text-emerald-600" : "text-amber-600"
                 }`}
               >
-                {isPassed ? "Tuntas KKM" : "Perlu Remedial"}
-              </span>
-              <p className="text-[11px] text-[#737373] mt-0.5">KKM {targetQuizData.passScore}%</p>
+                {isPassed ? "Tuntas" : "Remedial"}
+              </p>
+              <p className="text-xs font-semibold text-[#737373] mt-0.5">
+                KKM {targetQuizData.passScore}%
+              </p>
             </div>
           </div>
 
@@ -451,16 +440,14 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
           <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
             <button
               onClick={handleRestartQuiz}
-              className="w-full sm:flex-1 py-3 px-4 rounded-[12px] bg-white border border-[#ECECEC] hover:bg-slate-50 text-[#2E2D2D] font-semibold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
+              className="w-full sm:flex-1 py-2.5 px-5 rounded-[8px] bg-white border border-[#ECECEC] text-[#2E2D2D] hover:bg-slate-50 font-semibold text-xs transition-colors cursor-pointer"
             >
-              <RotateCcw className="w-4 h-4" />
-              <span>Ulangi Kuis</span>
+              Ulangi Kuis
             </button>
 
             <Link href={`/materi/${targetQuizData.moduleId || "1"}`} className="w-full sm:flex-1">
-              <button className="w-full py-3 px-4 rounded-[12px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs">
-                <span>Kembali ke Materi</span>
-                <ArrowRight className="w-4 h-4" />
+              <button className="w-full py-2.5 px-5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs transition-colors cursor-pointer shadow-xs">
+                Kembali ke Pembelajaran
               </button>
             </Link>
           </div>
@@ -469,17 +456,17 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
     );
   }
 
-  // 3. ACTIVE QUIZ STAGE (WHITE CANVAS, FIXED TOP MARGIN, VERTICAL SIDEBAR LIST, RIGHT EXPLANATION)
+  // 3. ACTIVE QUIZ STAGE (WHITE CANVAS, FIXED TOP MARGIN, DISABLED SIDEBAR NAV, RIGHT EXPLANATION)
   return (
     <div className="min-h-screen bg-white flex font-sans text-[#2E2D2D] relative selection:bg-blue-100">
-      {/* HIGH-DIFFUSE NEON GLOW LAYER (Smooth In/Out with High Blur Spread) */}
+      {/* AMBIENT NEON EDGE GLOW (Subtle Viewport Borders Only, No Center Blur) */}
       <div
-        className={`pointer-events-none fixed inset-0 z-40 transition-all duration-700 ease-in-out ${
+        className={`pointer-events-none fixed inset-0 z-40 transition-opacity duration-500 ease-in-out ${
           neonGlow === "correct"
-            ? "opacity-100 shadow-[inset_0_0_120px_35px_rgba(16,185,129,0.32)] backdrop-blur-[1px]"
+            ? "opacity-100 shadow-[inset_0_0_80px_rgba(16,185,129,0.35)]"
             : neonGlow === "wrong"
-            ? "opacity-100 shadow-[inset_0_0_120px_35px_rgba(239,68,68,0.32)] backdrop-blur-[1px]"
-            : "opacity-0 shadow-none pointer-events-none"
+            ? "opacity-100 shadow-[inset_0_0_80px_rgba(239,68,68,0.35)]"
+            : "opacity-0"
         }`}
       />
 
@@ -502,14 +489,14 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
             </span>
           </div>
 
-          {/* Quiz Title (Bigger Text, No Subtitle/Helper) */}
+          {/* Quiz Title (Bigger Text, No Subtitle) */}
           <div>
             <h2 className="text-lg sm:text-xl font-bold text-[#2E2D2D] leading-tight tracking-tight">
               {targetQuizData.title}
             </h2>
           </div>
 
-          {/* Vertical Question List (Display Question Text with Ellipsis) */}
+          {/* Vertical Question List (Disabled non-active questions with muted text) */}
           <div className="space-y-2 pt-1">
             <span className="text-xs font-bold text-[#737373] block">
               Daftar soal
@@ -517,34 +504,30 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
             <div className="space-y-2 max-h-[calc(100vh-320px)] overflow-y-auto pr-1">
               {questionsList.map((q, qIdx) => {
                 const isCurrent = qIdx === currentIndex;
-                const record = answeredMap[qIdx];
-                const isAnswered = record !== undefined;
+                const isAnswered = answeredMap[qIdx] !== undefined;
 
                 return (
-                  <button
+                  <div
                     key={qIdx}
-                    type="button"
-                    disabled={isAnswered}
-                    onClick={() => handleJumpQuestion(qIdx)}
-                    className={`w-full text-left p-3 rounded-[10px] text-xs transition-all flex items-center gap-2.5 ${
+                    className={`w-full text-left p-3 rounded-[10px] text-xs transition-all flex items-center gap-2.5 select-none ${
                       isCurrent
-                        ? "bg-blue-50 text-[#2563EB] border border-blue-200 font-bold shadow-2xs cursor-default"
+                        ? "bg-blue-50 text-[#2563EB] border border-blue-200 font-bold shadow-2xs"
                         : isAnswered
-                        ? "bg-[#2563EB] text-white border border-[#2563EB] font-semibold cursor-not-allowed opacity-95"
-                        : "bg-white text-[#737373] border border-[#ECECEC] hover:bg-slate-50 font-medium cursor-pointer"
+                        ? "bg-[#2563EB] text-white border border-[#2563EB] font-semibold cursor-not-allowed opacity-90"
+                        : "text-[#A1A1AA] bg-white border border-transparent font-medium cursor-not-allowed opacity-50"
                     }`}
                   >
                     <span className="font-bold shrink-0">{qIdx + 1}.</span>
                     <span className="truncate flex-1">{q.text}</span>
-                  </button>
+                  </div>
                 );
               })}
             </div>
           </div>
         </div>
 
-        {/* Bottom Progress Bar in Sidebar */}
-        <div className="pt-4 border-t border-[#ECECEC] space-y-2">
+        {/* Bottom Progress Bar in Sidebar (No dividing border line) */}
+        <div className="pt-2 space-y-2">
           <div className="flex items-center justify-between text-xs font-bold">
             <span className="text-[#737373]">Progres</span>
             <span className="text-[#2563EB]">
@@ -560,8 +543,8 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
         </div>
       </aside>
 
-      {/* RIGHT MAIN CANVAS AREA (Pure White, Top Margin) */}
-      <main className="flex-1 flex flex-col justify-between min-h-screen bg-white pt-10 sm:pt-14 pb-28 px-6 sm:px-12">
+      {/* RIGHT MAIN CANVAS AREA */}
+      <main className="flex-1 flex flex-col justify-between min-h-screen bg-white pt-10 sm:pt-14 pb-28 px-8 sm:px-12">
         {/* Mobile Top Header (with Back button) */}
         <div className="flex md:hidden items-center justify-between pb-4 border-b border-[#ECECEC] mb-6">
           <button
@@ -577,21 +560,18 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
           </span>
         </div>
 
-        {/* Main Content Row: Question & Options on Left, Explanation on Desktop Right */}
+        {/* Main Content Row: Question & Options on Left, Explanation on Desktop Right (Aligned Margins) */}
         <div className="w-full max-w-5xl flex flex-col lg:flex-row gap-8 items-start">
           {/* Question & Options Column */}
-          <div className="flex-1 w-full space-y-6 text-left">
-            {/* Question Text as the biggest text replacing headline */}
-            <div className="space-y-1.5">
+          <div className="flex-1 w-full space-y-5 text-left">
+            {/* Question Text as the biggest text without helper paragraph */}
+            <div>
               <h1 className="text-xl sm:text-2xl font-bold text-[#1E293B] leading-snug tracking-tight">
                 {currentQuestion.text}
               </h1>
-              <p className="text-xs sm:text-sm text-[#64748B] font-medium">
-                Pilih 1 jawaban yang tepat:
-              </p>
             </div>
 
-            {/* Options List (Seamless Cards with Solid Primary Background on Submit) */}
+            {/* Options List (Checklist & X Icon on Answered Option) */}
             <div className="space-y-3 pt-1">
               {currentQuestion.options.map((optionText, index) => {
                 const isSelected = selectedOption === index;
@@ -615,10 +595,10 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
                         ? "bg-[#10B981] text-white shadow-sm font-semibold"
                         : isSelectedWrong
                         ? "bg-[#EF4444] text-white shadow-sm font-semibold"
-                        : "bg-slate-50 text-[#94A3B8] opacity-50 cursor-default"
+                        : "bg-slate-50 text-[#94A3B8] opacity-40 cursor-default"
                     }`}
                   >
-                    {/* Radio Bullet Indicator */}
+                    {/* Radio Indicator with Checklist / X icon */}
                     <div className="shrink-0 relative z-10">
                       {!isAnswerChecked ? (
                         isSelected ? (
@@ -629,15 +609,15 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
                           <div className="w-5 h-5 rounded-full border-2 border-[#CBD5E1] bg-white" />
                         )
                       ) : isSelectedCorrect || isRevealedCorrect ? (
-                        <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center">
-                          <div className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
+                        <div className="w-5 h-5 rounded-full bg-white/20 border border-white flex items-center justify-center">
+                          <HugeiconsIcon icon={Tick01Icon} size={14} className="text-white" />
                         </div>
                       ) : isSelectedWrong ? (
-                        <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center">
-                          <div className="w-2.5 h-2.5 rounded-full bg-[#EF4444]" />
+                        <div className="w-5 h-5 rounded-full bg-white/20 border border-white flex items-center justify-center">
+                          <HugeiconsIcon icon={Cancel01Icon} size={14} className="text-white" />
                         </div>
                       ) : (
-                        <div className="w-5 h-5 rounded-full border-2 border-[#CBD5E1] bg-white opacity-60" />
+                        <div className="w-5 h-5 rounded-full border-2 border-[#CBD5E1] bg-white opacity-40" />
                       )}
                     </div>
 
@@ -669,7 +649,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
             )}
           </div>
 
-          {/* DESKTOP RIGHT EXPLANATION PANEL (Clean, No Icon) */}
+          {/* DESKTOP RIGHT EXPLANATION PANEL (Clean, No Icon, Aligned with Right Margin) */}
           {isAnswerChecked && (
             <div className="hidden lg:block w-80 shrink-0 p-5 rounded-[16px] bg-slate-50 border border-[#ECECEC] text-xs leading-relaxed animate-in fade-in slide-in-from-right-3 duration-300 space-y-2 sticky top-14">
               <span className="font-bold text-sm text-[#2E2D2D] block">Pembahasan:</span>
@@ -680,15 +660,15 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
           )}
         </div>
 
-        {/* BOTTOM FIXED ACTION BAR (Right-aligned action button only, no redundant counter text) */}
-        <div className="fixed bottom-0 right-0 left-0 md:left-72 lg:left-80 bg-white/95 backdrop-blur-md border-t border-[#ECECEC] py-3.5 px-6 sm:px-12 z-30 flex items-center justify-end">
+        {/* BOTTOM ACTION BAR (Right-aligned action button, no dividing line, standard rounded-[8px] button) */}
+        <div className="fixed bottom-0 right-0 left-0 md:left-72 lg:left-80 bg-white/95 backdrop-blur-md py-4 px-8 sm:px-12 z-30 flex items-center justify-end">
           <div className="flex items-center gap-3">
             {!isAnswerChecked ? (
               <button
                 type="button"
                 disabled={selectedOption === null || answeredMap[currentIndex] !== undefined}
                 onClick={handleCheckAnswer}
-                className="px-6 py-2.5 rounded-full bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed active:scale-98"
+                className="px-5 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed active:scale-98"
               >
                 Periksa
               </button>
@@ -696,17 +676,16 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
               <button
                 type="button"
                 onClick={handleNextQuestion}
-                className="px-6 py-2.5 rounded-full bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-98"
+                className="px-5 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-98"
               >
-                <span>{currentIndex + 1 < questionsList.length ? "Lanjut" : "Lihat Hasil"}</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                {currentIndex + 1 < questionsList.length ? "Lanjut" : "Lihat Hasil"}
               </button>
             )}
           </div>
         </div>
       </main>
 
-      {/* CONFIRMATION MODAL KELUAR KUIS (STANDARD MODAL DESIGN SYSTEM) */}
+      {/* CONFIRMATION MODAL KELUAR KUIS (NO DIVIDER LINES, MATCHING STANDARD SECONDARY/PRIMARY BUTTON STYLES) */}
       {showExitConfirmModal && (
         <div
           onClick={() => setShowExitConfirmModal(false)}
@@ -714,10 +693,10 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-[12px] max-w-sm w-full border border-[#ECECEC] overflow-hidden shadow-xl animate-in zoom-in-95 duration-200"
+            className="bg-white rounded-[12px] max-w-sm w-full p-6 space-y-4 shadow-xl border border-[#ECECEC] animate-in zoom-in-95 duration-200"
           >
-            {/* Headline Only Header with Close X button */}
-            <div className="p-5 pb-4 bg-white flex items-center justify-between border-b border-[#ECECEC]">
+            {/* Header without dividing border line */}
+            <div className="flex items-center justify-between">
               <h3 className="text-base font-bold text-[#2E2D2D]">Keluar dari kuis</h3>
               <button
                 onClick={() => setShowExitConfirmModal(false)}
@@ -728,27 +707,26 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
               </button>
             </div>
 
-            <div className="p-5 space-y-4">
-              <p className="text-xs text-[#737373] leading-relaxed">
-                Apakah Anda yakin ingin keluar dari kuis? Progres pengerjaan saat ini tidak akan tersimpan.
-              </p>
+            <p className="text-xs text-[#737373] leading-relaxed">
+              Apakah Anda yakin ingin keluar dari kuis? Progres pengerjaan saat ini tidak akan tersimpan.
+            </p>
 
-              <div className="pt-2 flex items-center justify-end gap-2 border-t border-[#ECECEC]">
-                <button
-                  type="button"
-                  onClick={() => setShowExitConfirmModal(false)}
-                  className="px-4 py-2 rounded-[8px] bg-white border border-[#ECECEC] text-[#2E2D2D] font-semibold text-xs hover:bg-slate-50 cursor-pointer"
-                >
-                  Batal
-                </button>
-                <button
-                  type="button"
-                  onClick={handleExitQuiz}
-                  className="px-5 py-2 rounded-[8px] bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs cursor-pointer shadow-xs"
-                >
-                  Ya, keluar
-                </button>
-              </div>
+            {/* Action buttons without dividing border line */}
+            <div className="pt-2 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowExitConfirmModal(false)}
+                className="px-4 py-2 rounded-[8px] bg-white border border-[#ECECEC] text-[#2E2D2D] font-semibold text-xs hover:bg-slate-50 cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleExitQuiz}
+                className="px-5 py-2 rounded-[8px] bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs cursor-pointer shadow-xs"
+              >
+                Ya, keluar
+              </button>
             </div>
           </div>
         </div>

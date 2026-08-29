@@ -538,37 +538,26 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
   // 2. ACTIVE QUIZ STAGE (FULL SIZE SVG BACKGROUND WITH DARK TINT, WHITE QUESTION TEXT, 60PX MARGIN)
   return (
     <div className="fixed inset-0 w-full h-full overflow-hidden flex flex-col justify-between font-sans text-[#2E2D2D] relative bg-[#60a5fa] selection:bg-blue-100">
-      {/* Full-bleed background image with top-aligned scaling */}
-      {/* eslint-disable-next-next/no-img-element */}
-      <img
-        src="/bg-konten-quiz.svg"
-        alt="Quiz Background"
-        className="absolute inset-0 w-full h-full object-cover object-top pointer-events-none select-none z-0"
-      />
-
-      {/* Dark Overlay for text contrast */}
-      <div className="absolute inset-0 bg-slate-950/30 pointer-events-none z-0" />
-
-      {/* COUNTDOWN OVERLAY (MASSIVE DIGIT / MULAI DIRECTLY ON CANVAS WITHOUT CIRCLE OR OTHER TEXT) */}
-      {stage === "countdown" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/25 pointer-events-none select-none">
-          <div
-            key={countdownValue}
-            className="text-8xl sm:text-9xl md:text-[160px] lg:text-[190px] font-black text-white drop-shadow-[0_15px_35px_rgba(0,0,0,0.8)] animate-in zoom-in-75 fade-in duration-300 tracking-tight text-center leading-none"
-          >
-            {countdownValue > 0 ? countdownValue : "Mulai!"}
-          </div>
-        </div>
-      )}
-
-      {/* QUESTION CONTENT WRAPPER (BLURRED DURING COUNTDOWN, ZOOM IN ON START) */}
+      {/* QUESTION & BACKGROUND WRAPPER (BLURRED DURING COUNTDOWN, ZOOM IN ON START) */}
       <div
-        className={`w-full h-full flex flex-col justify-between transition-all duration-700 ease-out z-10 ${
+        className={`fixed inset-0 w-full h-full flex flex-col justify-between transition-all duration-700 ease-out z-10 ${
           stage === "countdown"
             ? "filter blur-md scale-95 opacity-75 pointer-events-none"
             : "filter-none scale-100 opacity-100"
         }`}
       >
+        {/* Full-window SVG Background aligned to bottom to showcase the green hill */}
+        <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden z-0">
+          {/* eslint-disable-next-next/no-img-element */}
+          <img
+            src="/bg-konten-quiz.svg"
+            alt="Quiz Background"
+            className="w-full h-full object-fill object-bottom pointer-events-none select-none"
+          />
+          {/* Dark Overlay for text contrast */}
+          <div className="absolute inset-0 bg-slate-950/25 pointer-events-none" />
+        </div>
+
         {/* CELEBRATION LOTTIE ANIMATION RISING FROM BOTTOM ON CORRECT ANSWER */}
         {showCelebrationLottie && (
           <div className="fixed inset-x-0 bottom-0 flex items-end justify-center pointer-events-none z-[100] animate-in slide-in-from-bottom-12 duration-400 fade-in">
@@ -707,6 +696,18 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
           )}
         </footer>
       </div>
+
+      {/* COUNTDOWN OVERLAY (ON TOP OF BLURRED CANVAS, Z-50) */}
+      {stage === "countdown" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/20 pointer-events-none select-none">
+          <div
+            key={countdownValue}
+            className="text-8xl sm:text-9xl md:text-[160px] lg:text-[190px] font-black text-white drop-shadow-[0_15px_35px_rgba(0,0,0,0.8)] animate-in zoom-in-75 fade-in duration-300 tracking-tight text-center leading-none"
+          >
+            {countdownValue > 0 ? countdownValue : "Mulai!"}
+          </div>
+        </div>
+      )}
 
       {/* CONFIRMATION MODAL KELUAR KUIS */}
       {showExitConfirmModal && (

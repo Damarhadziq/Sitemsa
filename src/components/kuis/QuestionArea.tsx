@@ -541,16 +541,14 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
           <div className="absolute inset-0 bg-slate-950/25 pointer-events-none" />
         </div>
 
-        {/* CELEBRATION LOTTIE ANIMATION RISING FROM BOTTOM ON CORRECT ANSWER */}
+        {/* FULLSCREEN CELEBRATION LOTTIE ANIMATION (FIT WINDOW HEIGHT & WIDTH) */}
         {showCelebrationLottie && (
-          <div className="fixed inset-x-0 bottom-0 flex items-end justify-center pointer-events-none z-[100] animate-in slide-in-from-bottom-12 duration-400 fade-in">
-            <div className="w-96 h-80 relative flex items-center justify-center">
-              <iframe
-                src="https://lottie.host/embed/522d1d2c-7fa8-443b-b605-b7a455444486/VVxd2YUFkE.lottie"
-                className="w-full h-full border-0 pointer-events-none"
-                title="Celebration Animation"
-              />
-            </div>
+          <div className="fixed inset-0 w-full h-full flex items-center justify-center pointer-events-none z-[100] animate-in fade-in duration-300">
+            <iframe
+              src="https://lottie.host/embed/522d1d2c-7fa8-443b-b605-b7a455444486/VVxd2YUFkE.lottie"
+              className="w-full h-full border-0 pointer-events-none"
+              title="Celebration Animation"
+            />
           </div>
         )}
 

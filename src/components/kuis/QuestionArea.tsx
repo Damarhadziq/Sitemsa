@@ -546,13 +546,13 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
             : "filter-none scale-100 opacity-100"
         }`}
       >
-        {/* Full-window SVG Background aligned to bottom to showcase the green hill */}
+        {/* Full-window Background aligned to bottom to showcase the green hill */}
         <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden z-0">
           {/* eslint-disable-next-next/no-img-element */}
           <img
-            src="/bg-konten-quiz.svg"
+            src="/bg-konten-quiz.png"
             alt="Quiz Background"
-            className="w-full h-full object-fill object-bottom pointer-events-none select-none"
+            className="w-full h-full object-cover object-bottom pointer-events-none select-none"
           />
           {/* Dark Overlay for text contrast */}
           <div className="absolute inset-0 bg-slate-950/25 pointer-events-none" />

@@ -92,7 +92,29 @@
   }
   html {
     @apply font-sans;
-    scrollbar-gutter: stable;
+    scrollbar-gutter: auto;
+  }
+
+  html.quiz-mode,
+  body.quiz-mode {
+    overflow: hidden !important;
+    scrollbar-gutter: auto !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  html.quiz-mode::-webkit-scrollbar,
+  body.quiz-mode::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  html.quiz-mode,
+  body.quiz-mode {
+    scrollbar-width: none !important;
   }
   button,
   [role="button"],

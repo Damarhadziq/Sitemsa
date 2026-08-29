@@ -234,14 +234,12 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
 
   // Lock body scroll during entire quiz session to eliminate right scrollbar gutter
   useEffect(() => {
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
-    document.body.style.margin = "0";
+    document.documentElement.classList.add("quiz-mode");
+    document.body.classList.add("quiz-mode");
 
     return () => {
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
-      document.body.style.margin = "";
+      document.documentElement.classList.remove("quiz-mode");
+      document.body.classList.remove("quiz-mode");
     };
   }, []);
 
@@ -254,7 +252,10 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
         setCountdownValue((prev) => {
           if (prev <= 1) {
             clearInterval(timer);
-            setTimeout(() => setStage("in_quiz"), 400);
+            // Display 'Mulai!' for 500ms then transition into quiz
+            setTimeout(() => {
+              setStage("in_quiz");
+            }, 550);
             return 0;
           }
           return prev - 1;
@@ -402,28 +403,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
     setStage("countdown");
   };
 
-  // 1. 3-SECOND SMOOTH COUNTDOWN OVERLAY
-  if (stage === "countdown") {
-    return (
-      <div className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center font-sans overflow-hidden w-screen h-screen">
-        <div className="text-center space-y-4 animate-in zoom-in-90 duration-300">
-          <p className="text-xs font-semibold text-[#737373] tracking-wide">
-            Kuis dimulai dalam
-          </p>
-          <div className="w-24 h-24 rounded-full bg-blue-50 border-3 border-[#2563EB] flex items-center justify-center mx-auto shadow-lg shadow-blue-500/10">
-            <span className="text-4xl font-extrabold text-[#2563EB] animate-pulse">
-              {countdownValue > 0 ? countdownValue : "Mulai!"}
-            </span>
-          </div>
-          <p className="text-xs font-bold text-[#2E2D2D] max-w-xs mx-auto truncate px-4">
-            {targetQuizData.title}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // 2. RESULT COMPLETION SCREEN (ANIMATED BACKGROUND SVG & CONDITIONAL LOTTIE)
+  // 1. RESULT COMPLETION SCREEN (ANIMATED BACKGROUND SVG & CONDITIONAL LOTTIE)
   if (stage === "completed") {
     const accuracy = Math.round((correctCount / questionsList.length) * 100);
     const isPassed = accuracy >= targetQuizData.passScore;
@@ -526,11 +506,32 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
   // 3. ACTIVE QUIZ STAGE (FULL SIZE SVG BACKGROUND WITH DARK TINT, WHITE QUESTION TEXT, 60PX MARGIN)
   return (
     <div
-      className="fixed inset-0 w-screen h-screen overflow-hidden flex flex-col justify-between font-sans text-[#2E2D2D] relative bg-cover bg-center bg-no-repeat selection:bg-blue-100"
+      className="fixed inset-0 w-full h-full overflow-hidden flex flex-col justify-between font-sans text-[#2E2D2D] relative bg-cover bg-center bg-no-repeat selection:bg-blue-100"
       style={{ backgroundImage: "url('/bg-konten-quiz.svg')" }}
     >
       {/* Dark Overlay for contrast */}
       <div className="absolute inset-0 bg-slate-950/30 pointer-events-none z-0" />
+
+      {/* COUNTDOWN OVERLAY (MASSIVE DIGIT / MULAI DIRECTLY ON CANVAS WITHOUT CIRCLE OR OTHER TEXT) */}
+      {stage === "countdown" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/25 pointer-events-none select-none">
+          <div
+            key={countdownValue}
+            className="text-8xl sm:text-9xl md:text-[160px] lg:text-[190px] font-black text-white drop-shadow-[0_15px_35px_rgba(0,0,0,0.8)] animate-in zoom-in-75 fade-in duration-300 tracking-tight text-center leading-none"
+          >
+            {countdownValue > 0 ? countdownValue : "Mulai!"}
+          </div>
+        </div>
+      )}
+
+      {/* QUESTION CONTENT WRAPPER (BLURRED DURING COUNTDOWN, ZOOM IN ON START) */}
+      <div
+        className={`w-full h-full flex flex-col justify-between transition-all duration-700 ease-out z-10 ${
+          stage === "countdown"
+            ? "filter blur-md scale-95 opacity-75 pointer-events-none"
+            : "filter-none scale-100 opacity-100"
+        }`}
+      >
 
       {/* CELEBRATION LOTTIE ANIMATION RISING FROM BOTTOM ON CORRECT ANSWER */}
       {showCelebrationLottie && (
@@ -613,7 +614,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
                     ? "bg-[#10B981] text-white font-semibold border-transparent shadow-md"
                     : isSelectedWrong
                     ? "bg-[#EF4444] text-white font-semibold border-transparent shadow-md"
-                    : "bg-white/70 border border-[#ECECEC] text-[#94A3B8] opacity-50 cursor-default"
+                    : "bg-white/95 backdrop-blur-xs border border-[#ECECEC] text-[#94A3B8] cursor-default"
                 }`}
               >
                 {/* Option Letter Badge or SVG Status Icon */}
@@ -627,7 +628,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
                   ) : isSelectedWrong ? (
                     <WrongCancelIcon />
                   ) : (
-                    <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-400 font-bold text-xs flex items-center justify-center border border-slate-200 opacity-60">
+                    <div className="w-8 h-8 rounded-full bg-slate-100 text-[#94A3B8] font-bold text-xs flex items-center justify-center border border-slate-200">
                       {String.fromCharCode(65 + index)}
                     </div>
                   )}
@@ -671,6 +672,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
           </button>
         )}
       </footer>
+      </div>
 
       {/* CONFIRMATION MODAL KELUAR KUIS */}
       {showExitConfirmModal && (

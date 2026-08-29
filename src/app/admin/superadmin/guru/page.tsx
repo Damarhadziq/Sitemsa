@@ -441,8 +441,8 @@ export default function SuperadminGuruPage() {
                             setFormData({ ...formData, status: st });
                             setShowStatusDropdown(false);
                           }}
-                          className={`w-full text-left px-3 py-2 rounded-[6px] text-xs font-semibold flex items-center justify-between cursor-pointer ${
-                            formData.status === st ? 'bg-blue-50 text-[#2563EB]' : 'text-[#2E2D2D] hover:bg-slate-50'
+                          className={`w-full text-left px-3 py-2 rounded-[6px] text-xs flex items-center justify-between cursor-pointer ${
+                            formData.status === st ? 'text-[#2563EB] font-bold' : 'text-[#2E2D2D] hover:bg-slate-50 font-medium'
                           }`}
                         >
                           <span>{st}</span>
@@ -458,13 +458,18 @@ export default function SuperadminGuruPage() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2.5 rounded-[8px] bg-white border border-[#ECECEC] text-[#2E2D2D] font-semibold text-xs hover:bg-slate-50"
+                  className="px-4 py-2.5 rounded-[8px] bg-white border border-[#ECECEC] text-[#2E2D2D] font-semibold text-xs hover:bg-slate-50 cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs"
+                  disabled={!formData.name.trim() || !formData.email.trim() || formData.assignedSubjects.length === 0}
+                  className={`px-5 py-2.5 rounded-[8px] font-semibold text-xs transition-all ${
+                    formData.name.trim() && formData.email.trim() && formData.assignedSubjects.length > 0
+                      ? 'bg-[#2563EB] hover:bg-blue-700 text-white cursor-pointer active:scale-98'
+                      : 'bg-slate-100 text-[#AAAAAA] cursor-not-allowed opacity-50'
+                  }`}
                 >
                   Simpan hak akses guru
                 </button>

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { X, Plus, Copy, Trash2, CheckCircle2, ChevronDown, RefreshCw } from 'lucide-react';
+import { X, Plus, Copy, Trash2, CheckCircle2, Check, ChevronDown, RefreshCw } from 'lucide-react';
 import { useAdminStore, QuizQuestion } from '@/lib/admin-store';
 import { useAuth } from '@/lib/auth-context';
 import { QuizService } from '@/services/quiz.service';
@@ -116,10 +116,10 @@ function BuatKuisContent() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Realtime Form Validation Checks
+  // Realtime Form Validation Checks (Min 5 Questions Required)
   const isTitleValid = title.trim().length > 0;
   const isPassScoreValid = passScore !== '' && !isNaN(Number(passScore)) && Number(passScore) > 0;
-  const hasQuestions = questions.length > 0;
+  const hasMinQuestions = questions.length >= 5;
   const allQuestionsHaveText = questions.every((q) => q.text.trim().length > 0);
   const allQuestionsValidKeys = questions.every(
     (q) => q.options[q.correctAnswer] && q.options[q.correctAnswer].trim().length > 0
@@ -128,11 +128,11 @@ function BuatKuisContent() {
     (q) => q.explanation && q.explanation.trim().length > 0
   );
   
-  // Entire form mandatory completeness condition
+  // Entire form mandatory completeness condition (including minimum 5 questions)
   const isFormComplete =
     isTitleValid &&
     isPassScoreValid &&
-    hasQuestions &&
+    hasMinQuestions &&
     allQuestionsHaveText &&
     allQuestionsValidKeys &&
     allQuestionsHaveExplanation;
@@ -355,9 +355,13 @@ function BuatKuisContent() {
           {!isAlreadyPublished && (
             <button
               type="button"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !title.trim()}
               onClick={() => handleSubmitQuiz(false)}
-              className="px-4 py-2 rounded-[8px] border border-[#ECECEC] bg-white hover:bg-gray-50 text-[#2E2D2D] text-xs font-semibold transition-all cursor-pointer"
+              className={`px-4 py-2 rounded-[8px] border border-[#ECECEC] text-xs font-semibold transition-all ${
+                title.trim() && !isSubmitting
+                  ? 'bg-white hover:bg-slate-50 text-[#2E2D2D] cursor-pointer'
+                  : 'bg-slate-100 text-[#AAAAAA] cursor-not-allowed opacity-50'
+              }`}
             >
               Simpan Draft
             </button>
@@ -365,8 +369,13 @@ function BuatKuisContent() {
 
           <button
             type="button"
+            disabled={!isFormComplete || questions.length < 5}
             onClick={() => setShowPublishModal(true)}
-            className="px-5 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-semibold transition-all cursor-pointer active:scale-98"
+            className={`px-5 py-2 rounded-[8px] text-xs font-semibold transition-all ${
+              isFormComplete && questions.length >= 5
+                ? 'bg-[#2563EB] hover:bg-blue-700 text-white cursor-pointer active:scale-98 shadow-xs'
+                : 'bg-slate-100 text-[#AAAAAA] cursor-not-allowed opacity-50 shadow-none'
+            }`}
           >
             Continue
           </button>
@@ -436,14 +445,14 @@ function BuatKuisContent() {
                                   setSubject(subName);
                                   setIsSubjectDropdownOpen(false);
                                 }}
-                                className={`w-full px-3 py-2.5 rounded-[8px] text-left text-xs font-semibold flex items-center justify-between transition-all cursor-pointer ${
+                                className={`w-full px-3 py-2.5 rounded-[8px] text-left text-xs flex items-center justify-between transition-all cursor-pointer ${
                                   isSelected
-                                    ? 'bg-blue-50/80 text-[#2563EB] font-bold'
-                                    : 'text-[#2E2D2D] hover:bg-slate-50'
+                                    ? 'text-[#2563EB] font-bold'
+                                    : 'text-[#2E2D2D] hover:bg-slate-50 font-medium'
                                 }`}
                               >
                                 <span>{subName}</span>
-                                {isSelected && <CheckCircle2 className="w-4 h-4 text-[#2563EB]" />}
+                                {isSelected && <Check className="w-4 h-4 text-[#2563EB]" />}
                               </button>
                             );
                           })}
@@ -609,10 +618,6 @@ function BuatKuisContent() {
                                 className="flex-1 bg-transparent border-none text-xs text-[#2E2D2D] focus:outline-none font-medium"
                                 placeholder={`Opsi ${labelLetter}`}
                               />
-
-                              {isCorrect && (
-                                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                              )}
                             </div>
                           );
                         })}
@@ -720,13 +725,13 @@ function BuatKuisContent() {
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-[#737373]">Minimal 1 Soal</span>
+                    <span className="text-[#737373]">Minimal 5 Soal</span>
                     <span
                       className={`font-semibold ${
-                        hasQuestions ? 'text-emerald-600' : 'text-amber-600'
+                        hasMinQuestions ? 'text-emerald-600' : 'text-amber-600'
                       }`}
                     >
-                      {hasQuestions ? `${questions.length} Soal` : 'Belum Ada Soal'}
+                      {hasMinQuestions ? `${questions.length} Soal (Terpenuhi)` : `${questions.length}/5 Soal`}
                     </span>
                   </div>
 
@@ -849,14 +854,14 @@ function BuatKuisContent() {
                               setSubject(subName);
                               setIsModalSubjectDropdownOpen(false);
                             }}
-                            className={`w-full px-3 py-2.5 rounded-[8px] text-left text-xs font-semibold flex items-center justify-between transition-all cursor-pointer ${
+                            className={`w-full px-3 py-2.5 rounded-[8px] text-left text-xs flex items-center justify-between transition-all cursor-pointer ${
                               isSelected
-                                ? 'bg-blue-50/80 text-[#2563EB] font-bold'
-                                : 'text-[#2E2D2D] hover:bg-slate-50'
+                                ? 'text-[#2563EB] font-bold'
+                                : 'text-[#2E2D2D] hover:bg-slate-50 font-medium'
                             }`}
                           >
                             <span>{subName}</span>
-                            {isSelected && <CheckCircle2 className="w-4 h-4 text-[#2563EB]" />}
+                            {isSelected && <Check className="w-4 h-4 text-[#2563EB]" />}
                           </button>
                         );
                       })}

@@ -95,11 +95,108 @@ export default function AdminGuruMonitoringPage() {
     currentPage * itemsPerPage
   );
 
-  const [exportToast, setExportToast] = useState(false);
+  const [exportToast, setExportToast] = useState<{ show: boolean; success: boolean; message: string }>({
+    show: false,
+    success: true,
+    message: '',
+  });
 
   const handleExportGrades = () => {
-    setExportToast(true);
-    setTimeout(() => setExportToast(false), 3000);
+    try {
+      if (filteredStudents.length === 0) {
+        setExportToast({
+          show: true,
+          success: false,
+          message: 'Tidak ada data siswa untuk diekspor.',
+        });
+        setTimeout(() => setExportToast((prev) => ({ ...prev, show: false })), 3000);
+        return;
+      }
+
+      // Generate HTML Excel Table with clean formatting
+      let tableHtml = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+          <meta http-equiv="content-type" content="text/plain; charset=UTF-8"/>
+          <style>
+            table { border-collapse: collapse; width: 100%; font-family: sans-serif; font-size: 12px; }
+            th { background-color: #2563EB; color: #ffffff; font-weight: bold; text-align: left; padding: 10px; border: 1px solid #d1d5db; }
+            td { padding: 8px 10px; border: 1px solid #e5e7eb; color: #1f2937; }
+            tr:nth-child(even) { background-color: #f9fafb; }
+          </style>
+        </head>
+        <body>
+          <h2>REKAP NILAI SISWA - MATA PELAJARAN ${currentSubject.toUpperCase()}</h2>
+          <p>Tanggal Ekspor: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+          <table>
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>NISN</th>
+                <th>Nama Siswa</th>
+                <th>Kelas</th>
+                <th>Mata Pelajaran</th>
+                <th>Progress Belajar</th>
+                <th>Nilai Rata-rata</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      filteredStudents.forEach((std, idx) => {
+        const progress = std.moduleProgress?.[currentSubject] || 0;
+        const subjectQuizzes = std.quizHistory?.filter((q) => q.subject === currentSubject) || [];
+        const totalScore = subjectQuizzes.reduce((acc, q) => acc + q.score, 0);
+        const avgScore = subjectQuizzes.length > 0
+          ? Math.round(totalScore / subjectQuizzes.length)
+          : (progress > 0 ? Math.round(progress * 0.9) : 0);
+        const isPassed = avgScore >= 75;
+
+        tableHtml += `
+          <tr>
+            <td>${idx + 1}</td>
+            <td>${std.nisn || '-'}</td>
+            <td>${std.name}</td>
+            <td>${std.classGroup || '-'}</td>
+            <td>${currentSubject}</td>
+            <td>${progress}%</td>
+            <td>${avgScore}</td>
+            <td>${isPassed ? 'Tuntas' : 'Belum Tuntas'}</td>
+          </tr>
+        `;
+      });
+
+      tableHtml += `
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `;
+
+      const blob = new Blob([tableHtml], { type: 'application/vnd.ms-excel;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Rekap_Nilai_${currentSubject.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.xls`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      setExportToast({
+        show: true,
+        success: true,
+        message: `Rekap nilai ${currentSubject} berhasil diunduh.`,
+      });
+    } catch {
+      setExportToast({
+        show: true,
+        success: false,
+        message: 'Gagal mengunduh file rekap nilai.',
+      });
+    }
+    setTimeout(() => setExportToast((prev) => ({ ...prev, show: false })), 3000);
   };
 
   return (
@@ -111,13 +208,19 @@ export default function AdminGuruMonitoringPage() {
         </h1>
       </div>
 
-      {exportToast && (
-        <div className="p-3 rounded-[8px] bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold flex items-center justify-between animate-in fade-in duration-200 shadow-2xs">
+      {exportToast.show && (
+        <div className={`p-3 rounded-[8px] border text-xs font-bold flex items-center justify-between animate-in fade-in duration-200 shadow-2xs ${
+          exportToast.success ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-rose-50 border-rose-200 text-rose-700'
+        }`}>
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>File rekap nilai siswa bidang <strong>{currentSubject}</strong> (.XLSX) berhasil diunduh.</span>
+            {exportToast.success ? (
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            ) : (
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+            )}
+            <span>{exportToast.message}</span>
           </div>
-          <button onClick={() => setExportToast(false)} className="text-emerald-700 hover:text-emerald-900">
+          <button onClick={() => setExportToast((prev) => ({ ...prev, show: false }))} className="text-current hover:opacity-75">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -197,27 +300,37 @@ export default function AdminGuruMonitoringPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#ECECEC] text-xs">
-                {paginatedStudents.map((std) => {
-                  const progress = std.moduleProgress[currentSubject] || 0;
-                  const readCount = Math.min(
-                    totalSubjectModules,
-                    Math.round((progress / 100) * totalSubjectModules)
-                  );
+                {paginatedStudents.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center text-xs text-[#737373]">
+                      <div className="flex flex-col items-center justify-center gap-1.5">
+                        <p className="font-bold text-[#2E2D2D] text-sm">Belum Ada Data Siswa</p>
+                        <p className="text-[#737373] text-xs">Belum ada siswa yang mulai mempelajari materi mata pelajaran {currentSubject}.</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedStudents.map((std) => {
+                    const progress = std.moduleProgress[currentSubject] || 0;
+                    const readCount = Math.min(
+                      totalSubjectModules,
+                      Math.round((progress / 100) * totalSubjectModules)
+                    );
 
-                  const subjectQuizzes = std.quizHistory.filter((q) => q.subject === currentSubject);
-                  const totalScore = subjectQuizzes.reduce((acc, q) => acc + q.score, 0);
-                  const avgScore = subjectQuizzes.length > 0
-                    ? Math.round(totalScore / subjectQuizzes.length)
-                    : (progress > 0 ? Math.round(progress * 0.9) : 0);
+                    const subjectQuizzes = std.quizHistory.filter((q) => q.subject === currentSubject);
+                    const totalScore = subjectQuizzes.reduce((acc, q) => acc + q.score, 0);
+                    const avgScore = subjectQuizzes.length > 0
+                      ? Math.round(totalScore / subjectQuizzes.length)
+                      : (progress > 0 ? Math.round(progress * 0.9) : 0);
 
-                  const latestQuiz = subjectQuizzes[0];
-                  const isPassed = latestQuiz ? latestQuiz.status === 'Lulus' : avgScore >= 75;
+                    const latestQuiz = subjectQuizzes[0];
+                    const isPassed = latestQuiz ? latestQuiz.status === 'Lulus' : avgScore >= 75;
 
-                  return (
-                    <tr key={std.id} className="hover:bg-slate-50 transition-colors">
-                      {/* Profil siswa (Foto + Nama) */}
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-2.5">
+                    return (
+                      <tr key={std.id} className="hover:bg-slate-50 transition-colors">
+                        {/* Profil siswa (Foto + Nama) */}
+                        <td className="py-4 px-6">
+                          <div className="flex items-center gap-2.5">
                           {/* eslint-disable-next-next/no-img-element */}
                           <img
                             src={std.avatar}
@@ -274,17 +387,10 @@ export default function AdminGuruMonitoringPage() {
                       </td>
                     </tr>
                   );
-                })}
-
-                {filteredStudents.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="py-12 text-center text-[#737373] text-xs">
-                      Belum ada siswa yang membaca materi atau mengerjakan evaluasi pada bidang {currentSubject}.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                })
+              )}
+            </tbody>
+          </table>
           </div>
         </div>
 

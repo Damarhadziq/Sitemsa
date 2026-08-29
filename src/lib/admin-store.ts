@@ -1067,44 +1067,7 @@ const INITIAL_QUIZZES: QuizItem[] = [
   },
 ];
 
-const INITIAL_STUDENTS: StudentRecord[] = [
-  {
-    id: 'std-1',
-    nisn: '0061234567',
-    name: 'Budi Santoso',
-    email: 'siswa@belajar.id',
-    classGroup: 'XI PPLG 1',
-    avatar: 'https://i.pravatar.cc/150?img=12',
-    lastActive: 'Belum aktif',
-    enrolledSubjects: ['Informatika', 'Elektronika', 'Otomotif', 'Keolahragaan', 'Bimbingan Konseling', 'Seni Tari'],
-    moduleProgress: {},
-    quizHistory: [],
-  },
-  {
-    id: 'std-2',
-    nisn: '0069876543',
-    name: 'Muhammad Rizky Pratama',
-    email: 'rizky.pratama@smkn1semarang.sch.id',
-    classGroup: 'XI TO 1',
-    avatar: 'https://i.pravatar.cc/150?img=33',
-    lastActive: 'Belum aktif',
-    enrolledSubjects: ['Otomotif', 'Elektronika', 'Informatika'],
-    moduleProgress: {},
-    quizHistory: [],
-  },
-  {
-    id: 'std-3',
-    nisn: '0065544332',
-    name: 'Siti Rahmawati',
-    email: 'siti.rahmawati@smkn1semarang.sch.id',
-    classGroup: 'XI TE 1',
-    avatar: 'https://i.pravatar.cc/150?img=25',
-    lastActive: 'Belum aktif',
-    enrolledSubjects: ['Elektronika', 'Informatika', 'Keolahragaan'],
-    moduleProgress: {},
-    quizHistory: [],
-  },
-];
+const INITIAL_STUDENTS: StudentRecord[] = [];
 
 const INITIAL_DOCS: DocArticleItem[] = [
   {

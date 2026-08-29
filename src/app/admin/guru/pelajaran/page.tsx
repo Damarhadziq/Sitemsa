@@ -47,13 +47,14 @@ import { QuizService } from '@/services/quiz.service';
 import { supabase } from '@/lib/supabase';
 
 // Card More Dropdown Component (Profile Dropdown Style)
+// Card More Dropdown Component (Profile Dropdown Style)
 function CardMoreDropdown({
-  onPreview,
+  onInfo,
   onEdit,
   onDelete,
   itemType = 'materi',
 }: {
-  onPreview: () => void;
+  onInfo?: () => void;
   onEdit: () => void;
   onDelete: () => void;
   itemType?: 'materi' | 'kuis';
@@ -95,18 +96,20 @@ function CardMoreDropdown({
           onClick={(e) => e.stopPropagation()}
           className="absolute right-0 top-full mt-1.5 z-50 w-48 bg-white border border-[#ECECEC] rounded-[10px] p-1.5 shadow-xs space-y-0.5 font-sans animate-in fade-in zoom-in-95 duration-150"
         >
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsOpen(false);
-              onPreview();
-            }}
-            className="w-full text-left px-3 py-2 rounded-[6px] text-xs font-medium text-[#2E2D2D] hover:bg-slate-50 flex items-center gap-2.5 transition-colors cursor-pointer"
-          >
-            <Eye className="w-3.5 h-3.5 text-[#2E2D2D] shrink-0" />
-            <span>Preview Website</span>
-          </button>
+          {onInfo && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsOpen(false);
+                onInfo();
+              }}
+              className="w-full text-left px-3 py-2 rounded-[6px] text-xs font-medium text-[#2E2D2D] hover:bg-slate-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+            >
+              <Info className="w-3.5 h-3.5 text-[#2563EB] shrink-0" />
+              <span>Informasi {itemType === 'materi' ? 'Modul' : 'Kuis'}</span>
+            </button>
+          )}
 
           <button
             type="button"
@@ -260,6 +263,7 @@ export default function AdminGuruPelajaranPage() {
   const [newlyAddedQuizId, setNewlyAddedQuizId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showDetailInfoModal, setShowDetailInfoModal] = useState(false);
+  const [selectedInfoModule, setSelectedInfoModule] = useState<ModuleItem | null>(null);
   const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const dismissToast = () => {
@@ -818,15 +822,14 @@ export default function AdminGuruPelajaranPage() {
                     </button>
                   </Tooltip>
 
-                  <Tooltip content="Pratinjau Tampilan Materi di Website Utama" side="bottom">
-                    <a
-                      href={`/materi/${selectedModule.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-[8px] bg-slate-50 hover:bg-slate-100 text-slate-700 border border-[#ECECEC] transition-all duration-200 ease-in-out cursor-pointer active:scale-[0.96] flex items-center justify-center"
+                  <Tooltip content="Informasi Modul" side="bottom">
+                    <button
+                      type="button"
+                      onClick={() => setShowDetailInfoModal(true)}
+                      className="p-2 rounded-[8px] bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-[#2563EB] border border-[#ECECEC] transition-all duration-200 ease-in-out cursor-pointer active:scale-[0.96] flex items-center justify-center"
                     >
-                      <Eye className="w-4 h-4 text-slate-600" />
-                    </a>
+                      <Info className="w-4 h-4" />
+                    </button>
                   </Tooltip>
 
                   <Tooltip content="Hapus Materi Ini" side="bottom">
@@ -1134,7 +1137,7 @@ export default function AdminGuruPelajaranPage() {
                                           type="button"
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            handleDeleteModuleItem(mod.id, mod.title);
+                                            handleDeleteModuleItem(mod.id, mod.title, 'materi');
                                           }}
                                           title="Hapus Draft Materi"
                                           className="p-1 rounded-[4px] text-[#737373] hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
@@ -1145,9 +1148,12 @@ export default function AdminGuruPelajaranPage() {
                                     ) : (
                                       <CardMoreDropdown
                                         itemType="materi"
-                                        onPreview={() => window.open(`/materi/${mod.id}`, '_blank')}
+                                        onInfo={() => {
+                                          setSelectedInfoModule(mod);
+                                          setShowDetailInfoModal(true);
+                                        }}
                                         onEdit={() => handleOpenBlockBuilder(mod)}
-                                        onDelete={() => handleDeleteModuleItem(mod.id, mod.title)}
+                                        onDelete={() => handleDeleteModuleItem(mod.id, mod.title, 'materi')}
                                       />
                                     )}
                                   </div>
@@ -1183,15 +1189,24 @@ export default function AdminGuruPelajaranPage() {
                               >
                                 <div className="space-y-2.5">
                                   <div className="flex items-center justify-between">
-                                    <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
-                                      Kuis Interaktif
-                                    </span>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                                        Kuis Interaktif
+                                      </span>
+                                      {qz.published === false && (
+                                        <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded border border-amber-200">
+                                          Draft
+                                        </span>
+                                      )}
+                                    </div>
 
                                     <CardMoreDropdown
                                       itemType="kuis"
-                                      onPreview={() => window.open(`/kuis/${qz.id}`, '_blank')}
-                                      onEdit={() => handleOpenBlockBuilder()}
-                                      onDelete={() => handleDeleteModuleItem(qz.id, qz.title)}
+                                      onInfo={() => {
+                                        showToast(<>Kuis: <strong className="text-[#2E2D2D]">{qz.title}</strong> • {qz.questions.length} Soal • Batas KKM {qz.passScore}%</>, 'info');
+                                      }}
+                                      onEdit={() => router.push(`/admin/guru/pelajaran/buat-kuis?id=${qz.id}`)}
+                                      onDelete={() => handleDeleteModuleItem(qz.id, qz.title, 'kuis')}
                                     />
                                   </div>
 
@@ -1290,7 +1305,7 @@ export default function AdminGuruPelajaranPage() {
                                           type="button"
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            handleDeleteModuleItem(mod.id, mod.title);
+                                            handleDeleteModuleItem(mod.id, mod.title, 'materi');
                                           }}
                                           title="Hapus Draft Materi"
                                           className="p-1 rounded-[4px] text-[#737373] hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
@@ -1301,9 +1316,12 @@ export default function AdminGuruPelajaranPage() {
                                     ) : (
                                       <CardMoreDropdown
                                         itemType="materi"
-                                        onPreview={() => window.open(`/materi/${mod.id}`, '_blank')}
+                                        onInfo={() => {
+                                          setSelectedInfoModule(mod);
+                                          setShowDetailInfoModal(true);
+                                        }}
                                         onEdit={() => handleOpenBlockBuilder(mod)}
-                                        onDelete={() => handleDeleteModuleItem(mod.id, mod.title)}
+                                        onDelete={() => handleDeleteModuleItem(mod.id, mod.title, 'materi')}
                                       />
                                     )}
                                   </div>
@@ -1360,15 +1378,24 @@ export default function AdminGuruPelajaranPage() {
                               >
                                 <div className="space-y-2.5">
                                   <div className="flex items-center justify-between">
-                                    <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
-                                      Kuis Interaktif
-                                    </span>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                                        Kuis Interaktif
+                                      </span>
+                                      {qz.published === false && (
+                                        <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded border border-amber-200">
+                                          Draft
+                                        </span>
+                                      )}
+                                    </div>
 
                                     <CardMoreDropdown
                                       itemType="kuis"
-                                      onPreview={() => window.open(`/kuis/${qz.id}`, '_blank')}
-                                      onEdit={() => handleOpenBlockBuilder()}
-                                      onDelete={() => handleDeleteModuleItem(qz.id, qz.title)}
+                                      onInfo={() => {
+                                        showToast(<>Kuis: <strong className="text-[#2E2D2D]">{qz.title}</strong> • {qz.questions.length} Soal • Batas KKM {qz.passScore}%</>, 'info');
+                                      }}
+                                      onEdit={() => router.push(`/admin/guru/pelajaran/buat-kuis?id=${qz.id}`)}
+                                      onDelete={() => handleDeleteModuleItem(qz.id, qz.title, 'kuis')}
                                     />
                                   </div>
 
@@ -2353,16 +2380,19 @@ export default function AdminGuruPelajaranPage() {
           </div>
         )}
       {/* DETAIL MODAL INFO WITH DETAIL TIM LIST LAYOUT */}
-      {selectedModule && (
+      {(selectedModule || selectedInfoModule) && (
         <ModuleInfoModal
           isOpen={showDetailInfoModal}
-          onClose={() => setShowDetailInfoModal(false)}
-          title={selectedModule.title}
-          subject={selectedModule.subject}
-          teacherName={selectedModule.teacherName || user?.name || 'Ibu Siti Rahmawati, S.Pd.'}
-          teacherRole={user?.role === 'superadmin' ? 'Superadmin Kurikulum Sitemsa' : `Guru Pengampu ${selectedModule.subject}`}
+          onClose={() => {
+            setShowDetailInfoModal(false);
+            setSelectedInfoModule(null);
+          }}
+          title={(selectedModule || selectedInfoModule)!.title}
+          subject={(selectedModule || selectedInfoModule)!.subject}
+          teacherName={(selectedModule || selectedInfoModule)!.teacherName || user?.name || 'Ibu Siti Rahmawati, S.Pd.'}
+          teacherRole={user?.role === 'superadmin' ? 'Superadmin Kurikulum Sitemsa' : `Guru Pengampu ${(selectedModule || selectedInfoModule)!.subject}`}
           teacherAvatar={user?.avatar}
-          publishDate={selectedModule.createdAt || '20 Agustus 2026, 08:30 WIB'}
+          publishDate={(selectedModule || selectedInfoModule)!.createdAt || '20 Agustus 2026, 08:30 WIB'}
           lastUpdate="22 Agustus 2026, 13:45 WIB"
         />
       )}

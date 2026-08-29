@@ -1121,7 +1121,7 @@ export function ModuleBlockBuilder({
                 </Tooltip>
 
                 {isHeaderLevelDropdownOpen && (
-                  <div className="absolute left-0 top-full mt-1.5 w-36 bg-white/95 backdrop-blur-md border border-[#ECECEC] rounded-[10px] shadow-xl p-1 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-0.5">
+                  <div className="absolute left-0 top-full mt-1.5 w-36 bg-white border border-[#ECECEC] rounded-[10px] shadow-xl p-1 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-0.5 font-sans">
                     {(['Pemula', 'Menengah', 'Mahir'] as const).map((lvl) => {
                       const isSelected = moduleLevel === lvl;
                       return (
@@ -1133,14 +1133,14 @@ export function ModuleBlockBuilder({
                             setIsHeaderLevelDropdownOpen(false);
                             setIsDirty(true);
                           }}
-                          className={`w-full px-3 py-2 rounded-[6px] text-left text-xs font-semibold flex items-center justify-between transition-all cursor-pointer ${
+                          className={`w-full px-3 py-2 rounded-[6px] text-left text-xs flex items-center justify-between transition-all cursor-pointer ${
                             isSelected
-                              ? 'bg-blue-50/80 text-[#2563EB] font-bold'
-                              : 'text-[#2E2D2D] hover:bg-slate-50'
+                              ? 'text-[#2563EB] font-bold'
+                              : 'text-[#2E2D2D] hover:bg-slate-50 font-medium'
                           }`}
                         >
                           <span>{lvl}</span>
-                          {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-[#2563EB]" />}
+                          {isSelected && <Check className="w-3.5 h-3.5 text-[#2563EB]" />}
                         </button>
                       );
                     })}
@@ -1162,17 +1162,32 @@ export function ModuleBlockBuilder({
                 </button>
               </Tooltip>
 
-              {/* Evaluasi Button */}
+              {/* Evaluasi Button (Blue Chip if has evaluation, else Add with Document icon) */}
               <Tooltip content={evaluationType ? 'Pengaturan Evaluasi / Kuis' : 'Tambahkan Evaluasi / Kuis'} side="bottom">
                 <button
                   type="button"
                   onClick={() => setShowEvaluasiModal(true)}
-                  className="h-8 px-2.5 rounded-[6px] border border-[#ECECEC] bg-white hover:bg-slate-50 hover:border-blue-300 flex items-center gap-1.5 cursor-pointer transition-all group/eval"
+                  className={`h-8 px-2.5 rounded-[6px] flex items-center gap-1.5 cursor-pointer transition-all ${
+                    evaluationType
+                      ? 'bg-[#E8E7FF] text-[#2563EB] border border-[#2563EB]/25 font-bold shadow-2xs'
+                      : 'border border-[#ECECEC] bg-white text-[#737373] hover:text-[#2563EB] hover:bg-slate-50 hover:border-blue-300 font-semibold'
+                  }`}
                 >
-                  <FileText className="w-3.5 h-3.5 text-[#737373] group-hover/eval:text-[#2563EB]" />
-                  <span className="text-[11px] font-semibold text-[#737373] group-hover/eval:text-[#2563EB] hidden sm:inline">
-                    {evaluationType ? 'Evaluasi ✓' : 'Tambah Evaluasi'}
-                  </span>
+                  {evaluationType ? (
+                    <>
+                      <FileText className="w-3.5 h-3.5 text-[#2563EB]" />
+                      <span className="text-[11px] font-bold text-[#2563EB] hidden sm:inline">
+                        Evaluasi ✓
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="w-3.5 h-3.5 text-[#737373] group-hover:text-[#2563EB]" />
+                      <span className="text-[11px] font-semibold hidden sm:inline">
+                        Tambah Evaluasi
+                      </span>
+                    </>
+                  )}
                 </button>
               </Tooltip>
             </div>
@@ -1186,10 +1201,10 @@ export function ModuleBlockBuilder({
         >
           {!isAlreadyPublished && (
             <button
-              disabled={!isDirty}
+              disabled={!isDirty || !moduleTitle.trim()}
               onClick={() => handleSaveModuleConfirm(false)}
               className={`px-4 py-2 rounded-[8px] text-xs font-semibold transition-colors ${
-                isDirty
+                isDirty && moduleTitle.trim()
                   ? 'bg-slate-100 hover:bg-slate-200 text-[#2E2D2D] cursor-pointer'
                   : 'bg-slate-100 text-[#AAAAAA] cursor-not-allowed opacity-50'
               }`}
@@ -1198,11 +1213,11 @@ export function ModuleBlockBuilder({
             </button>
           )}
           <button
-            disabled={!isDirty}
+            disabled={!moduleTitle.trim()}
             onClick={handleOpenPublishModal}
             className={`px-5 py-2 rounded-[8px] text-xs font-semibold transition-colors ${
-              isDirty
-                ? 'bg-[#2563EB] hover:bg-blue-700 text-white shadow-xs cursor-pointer'
+              moduleTitle.trim()
+                ? 'bg-[#2563EB] hover:bg-blue-700 text-white shadow-xs cursor-pointer active:scale-98'
                 : 'bg-slate-100 text-[#AAAAAA] cursor-not-allowed opacity-50 shadow-none'
             }`}
           >
@@ -1887,31 +1902,34 @@ export function ModuleBlockBuilder({
                             <div className="bg-[#1E1E2E] rounded-[12px] p-4 text-white overflow-hidden shadow-xs space-y-3 border border-[#313244]">
                               {/* Code Block Header Bar */}
                               <div className="flex items-center justify-between text-xs text-[#A6ADC8] border-b border-[#313244] pb-2.5">
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 relative">
                                   <Code className="w-4 h-4 text-[#89B4FA]" />
-                                  <select
-                                    value={block.codeSnippet?.language || 'JavaScript / TypeScript'}
-                                    onChange={(e) => {
-                                      setIsDirty(true);
-                                      updateBlockById(block.id, {
-                                        codeSnippet: {
-                                          language: e.target.value,
-                                          code: block.codeSnippet?.code || '',
-                                        },
-                                      });
-                                    }}
-                                    className="bg-[#313244] text-[#CDD6F4] text-xs font-mono font-semibold px-2.5 py-1 rounded-[6px] outline-none border border-[#45475A] cursor-pointer"
-                                  >
-                                    <option value="JavaScript / TypeScript">JavaScript / TypeScript</option>
-                                    <option value="Python">Python</option>
-                                    <option value="C++">C++</option>
-                                    <option value="Java">Java</option>
-                                    <option value="PHP">PHP</option>
-                                    <option value="HTML / CSS">HTML / CSS</option>
-                                    <option value="SQL">SQL</option>
-                                    <option value="C#">C#</option>
-                                    <option value="Go">Go</option>
-                                  </select>
+                                  <div className="relative">
+                                    <select
+                                      value={block.codeSnippet?.language || 'JavaScript / TypeScript'}
+                                      onChange={(e) => {
+                                        setIsDirty(true);
+                                        updateBlockById(block.id, {
+                                          codeSnippet: {
+                                            language: e.target.value,
+                                            code: block.codeSnippet?.code || '',
+                                          },
+                                        });
+                                      }}
+                                      className="bg-[#313244] hover:bg-[#45475A] text-[#CDD6F4] text-xs font-mono font-semibold px-3 py-1.5 rounded-[8px] outline-none border border-[#45475A] cursor-pointer transition-colors appearance-none pr-7"
+                                    >
+                                      <option value="JavaScript / TypeScript" className="bg-[#1E1E2E] text-[#CDD6F4]">JavaScript / TypeScript</option>
+                                      <option value="Python" className="bg-[#1E1E2E] text-[#CDD6F4]">Python</option>
+                                      <option value="C++" className="bg-[#1E1E2E] text-[#CDD6F4]">C++</option>
+                                      <option value="Java" className="bg-[#1E1E2E] text-[#CDD6F4]">Java</option>
+                                      <option value="PHP" className="bg-[#1E1E2E] text-[#CDD6F4]">PHP</option>
+                                      <option value="HTML / CSS" className="bg-[#1E1E2E] text-[#CDD6F4]">HTML / CSS</option>
+                                      <option value="SQL" className="bg-[#1E1E2E] text-[#CDD6F4]">SQL</option>
+                                      <option value="C#" className="bg-[#1E1E2E] text-[#CDD6F4]">C#</option>
+                                      <option value="Go" className="bg-[#1E1E2E] text-[#CDD6F4]">Go</option>
+                                    </select>
+                                    <ChevronDown className="w-3.5 h-3.5 text-[#A6ADC8] absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                  </div>
                                 </div>
 
                                 <button
@@ -3080,15 +3098,22 @@ export function ModuleBlockBuilder({
       {showThumbnailModal && (
         <div
           onClick={() => setShowThumbnailModal(false)}
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200 font-sans"
         >
           <div
             onClick={(e) => e.stopPropagation()}
             className="relative w-full max-w-lg bg-white rounded-[16px] shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden"
           >
-            <div className="p-5 pb-4">
-              <h3 className="text-sm font-bold text-[#2E2D2D]">Cover / Thumbnail Materi</h3>
-              <p className="text-[11px] text-[#737373] mt-0.5">Format: PNG, JPG, JPEG (Maks. 5MB) • Rasio 16:9</p>
+            <div className="p-5 pb-3 flex items-center justify-between">
+              <h3 className="text-base font-bold text-[#2E2D2D]">Cover Materi</h3>
+              <button
+                type="button"
+                onClick={() => setShowThumbnailModal(false)}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#737373] hover:text-[#2E2D2D] flex items-center justify-center transition-colors cursor-pointer"
+                aria-label="Tutup Modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
             <div className="px-5 pb-5 space-y-3">
               {moduleThumbnail ? (
@@ -3109,8 +3134,15 @@ export function ModuleBlockBuilder({
                     <button
                       type="button"
                       onClick={() => {
-                        setModuleThumbnail('');
-                        setIsDirty(true);
+                        setDeleteConfirmTarget({
+                          type: 'element',
+                          title: 'Konfirmasi Hapus Cover',
+                          description: 'Apakah Anda yakin ingin menghapus gambar cover materi ini?',
+                          onConfirm: () => {
+                            setModuleThumbnail('');
+                            setIsDirty(true);
+                          },
+                        });
                       }}
                       className="px-3 py-1.5 rounded-[6px] bg-rose-600 text-white text-xs font-bold shadow-md hover:bg-rose-700 transition-all cursor-pointer"
                     >
@@ -3131,13 +3163,13 @@ export function ModuleBlockBuilder({
                 </button>
               )}
             </div>
-            <div className="px-5 pb-4 flex justify-end">
+            <div className="px-5 pb-4 flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setShowThumbnailModal(false)}
-                className="px-4 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-[#2E2D2D] transition-colors cursor-pointer"
+                className="px-5 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-xs font-semibold text-white shadow-xs transition-colors cursor-pointer active:scale-98"
               >
-                Selesai
+                Simpan
               </button>
             </div>
           </div>
@@ -3148,15 +3180,22 @@ export function ModuleBlockBuilder({
       {showTopicsModal && (
         <div
           onClick={() => setShowTopicsModal(false)}
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200 font-sans"
         >
           <div
             onClick={(e) => e.stopPropagation()}
             className="relative w-full max-w-md bg-white rounded-[16px] shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden"
           >
-            <div className="p-5 pb-4">
-              <h3 className="text-sm font-bold text-[#2E2D2D]">Topik Bahasan</h3>
-              <p className="text-[11px] text-[#737373] mt-0.5">Tambahkan topik untuk memudahkan pencarian materi (Maks. 4)</p>
+            <div className="p-5 pb-3 flex items-center justify-between">
+              <h3 className="text-base font-bold text-[#2E2D2D]">Topik Bahasan</h3>
+              <button
+                type="button"
+                onClick={() => setShowTopicsModal(false)}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#737373] hover:text-[#2E2D2D] flex items-center justify-center transition-colors cursor-pointer"
+                aria-label="Tutup Modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
             <div className="px-5 pb-5 space-y-3">
               <div className="flex items-center justify-between">
@@ -3210,13 +3249,13 @@ export function ModuleBlockBuilder({
                 )}
               </div>
             </div>
-            <div className="px-5 pb-4 flex justify-end">
+            <div className="px-5 pb-4 flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setShowTopicsModal(false)}
-                className="px-4 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-[#2E2D2D] transition-colors cursor-pointer"
+                className="px-5 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-xs font-semibold text-white shadow-xs transition-colors cursor-pointer active:scale-98"
               >
-                Selesai
+                Simpan
               </button>
             </div>
           </div>
@@ -3227,15 +3266,22 @@ export function ModuleBlockBuilder({
       {showEvaluasiModal && (
         <div
           onClick={() => setShowEvaluasiModal(false)}
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200 font-sans"
         >
           <div
             onClick={(e) => e.stopPropagation()}
             className="relative w-full max-w-lg bg-white rounded-[16px] shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden"
           >
-            <div className="p-5 pb-4">
-              <h3 className="text-sm font-bold text-[#2E2D2D]">Bahan Evaluasi / Kuis</h3>
-              <p className="text-[11px] text-[#737373] mt-0.5">Tambahkan kuis atau tautan evaluasi untuk materi ini (Opsional)</p>
+            <div className="p-5 pb-3 flex items-center justify-between">
+              <h3 className="text-base font-bold text-[#2E2D2D]">Bahan Evaluasi / Kuis</h3>
+              <button
+                type="button"
+                onClick={() => setShowEvaluasiModal(false)}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#737373] hover:text-[#2E2D2D] flex items-center justify-center transition-colors cursor-pointer"
+                aria-label="Tutup Modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
             <div className="px-5 pb-5">
               {!evaluationType ? (
@@ -3255,7 +3301,17 @@ export function ModuleBlockBuilder({
                     </span>
                     <button
                       type="button"
-                      onClick={() => { handleSwitchEvaluationType(null); setIsDirty(true); }}
+                      onClick={() => {
+                        setDeleteConfirmTarget({
+                          type: 'element',
+                          title: 'Konfirmasi Hapus Evaluasi',
+                          description: 'Apakah Anda yakin ingin menghapus bahan evaluasi dari materi ini?',
+                          onConfirm: () => {
+                            handleSwitchEvaluationType(null);
+                            setIsDirty(true);
+                          },
+                        });
+                      }}
                       className="text-xs text-rose-600 font-semibold hover:underline cursor-pointer flex items-center gap-1"
                     >
                       <Trash2 className="w-3.5 h-3.5" /> Hapus Evaluasi
@@ -3316,7 +3372,7 @@ export function ModuleBlockBuilder({
                         </button>
 
                         {isQuizDropdownOpen && (
-                          <div className="absolute left-0 bottom-full mb-1.5 w-full bg-white/95 backdrop-blur-md border border-[#ECECEC] rounded-[12px] shadow-xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-0.5">
+                          <div className="absolute left-0 bottom-full mb-1.5 w-full bg-white border border-[#ECECEC] rounded-[12px] shadow-xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-0.5 font-sans">
                             {[
                               'Kuis 1: Daspro & Variabel Python (3 Soal)',
                               'Kuis 2: Rangkaian Listrik Seri & Paralel (5 Soal)',
@@ -3332,14 +3388,14 @@ export function ModuleBlockBuilder({
                                     setIsQuizDropdownOpen(false);
                                     setIsDirty(true);
                                   }}
-                                  className={`w-full px-3 py-2.5 rounded-[8px] text-left text-xs font-semibold flex items-center justify-between transition-all cursor-pointer ${
+                                  className={`w-full px-3 py-2.5 rounded-[8px] text-left text-xs flex items-center justify-between transition-all cursor-pointer ${
                                     isSelected
-                                      ? 'bg-blue-50/80 text-[#2563EB] font-bold'
-                                      : 'text-[#2E2D2D] hover:bg-slate-50'
+                                      ? 'text-[#2563EB] font-bold'
+                                      : 'text-[#2E2D2D] hover:bg-slate-50 font-medium'
                                   }`}
                                 >
                                   <span>{quizName}</span>
-                                  {isSelected && <CheckCircle2 className="w-4 h-4 text-[#2563EB]" />}
+                                  {isSelected && <Check className="w-4 h-4 text-[#2563EB]" />}
                                 </button>
                               );
                             })}
@@ -3423,7 +3479,17 @@ export function ModuleBlockBuilder({
                               </button>
                               <button
                                 type="button"
-                                onClick={() => { setEvalQrUrl(''); setIsDirty(true); }}
+                                onClick={() => {
+                                  setDeleteConfirmTarget({
+                                    type: 'element',
+                                    title: 'Konfirmasi Hapus Barcode',
+                                    description: 'Apakah Anda yakin ingin menghapus gambar Barcode / QR Code ini?',
+                                    onConfirm: () => {
+                                      setEvalQrUrl('');
+                                      setIsDirty(true);
+                                    },
+                                  });
+                                }}
                                 className="px-3 py-1.5 rounded-[6px] bg-rose-50 hover:bg-rose-100 text-xs font-semibold text-rose-600 cursor-pointer transition-colors"
                               >
                                 Hapus
@@ -3437,13 +3503,13 @@ export function ModuleBlockBuilder({
                 </div>
               )}
             </div>
-            <div className="px-5 pb-4 flex justify-end">
+            <div className="px-5 pb-4 flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setShowEvaluasiModal(false)}
-                className="px-4 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-[#2E2D2D] transition-colors cursor-pointer"
+                className="px-5 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-xs font-semibold text-white shadow-xs transition-colors cursor-pointer active:scale-98"
               >
-                Selesai
+                Simpan
               </button>
             </div>
           </div>

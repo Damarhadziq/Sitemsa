@@ -894,8 +894,8 @@ export default function SuperadminKontenPage() {
                               setArticleForm({ ...articleForm, category: cat });
                               setShowCategoryDropdown(false);
                             }}
-                            className={`w-full text-left px-3 py-2 rounded-[6px] text-xs font-semibold flex items-center justify-between cursor-pointer ${
-                              articleForm.category === cat ? 'bg-blue-50 text-[#2563EB]' : 'text-[#2E2D2D] hover:bg-slate-50'
+                            className={`w-full text-left px-3 py-2 rounded-[6px] text-xs flex items-center justify-between cursor-pointer ${
+                              articleForm.category === cat ? 'text-[#2563EB] font-bold' : 'text-[#2E2D2D] hover:bg-slate-50 font-medium'
                             }`}
                           >
                             <span>{cat}</span>
@@ -962,7 +962,12 @@ export default function SuperadminKontenPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs cursor-pointer shadow-xs"
+                  disabled={!articleForm.title.trim() || !articleForm.content.trim()}
+                  className={`px-5 py-2.5 rounded-[8px] font-semibold text-xs transition-all ${
+                    articleForm.title.trim() && articleForm.content.trim()
+                      ? 'bg-[#2563EB] hover:bg-blue-700 text-white cursor-pointer active:scale-98 shadow-xs'
+                      : 'bg-slate-100 text-[#AAAAAA] cursor-not-allowed opacity-50'
+                  }`}
                 >
                   Simpan artikel
                 </button>

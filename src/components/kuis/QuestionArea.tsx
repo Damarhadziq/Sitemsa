@@ -478,9 +478,9 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
     const isPassed = accuracy >= targetQuizData.passScore;
 
     return (
-      <main className="fixed inset-0 w-full h-full overflow-hidden flex items-center justify-center font-sans bg-[#C3DFFB] z-50">
-        {/* Animated Background Buildings */}
-        <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden flex items-center justify-center">
+      <main className="fixed inset-0 w-full h-full overflow-y-auto flex items-center justify-center font-sans bg-[#C3DFFB] z-50 p-4 py-8">
+        {/* Animated Background Buildings (Fixed behind scrollable card) */}
+        <div className="fixed inset-0 w-full h-full pointer-events-none overflow-hidden flex items-center justify-center">
           {/* eslint-disable-next-next/no-img-element */}
           <img
             src="/bg-quiz-hasil.svg"
@@ -490,7 +490,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
         </div>
 
         {/* Result Card (Equal padding on all 4 sides matching bottom padding, balanced typography) */}
-        <div className="w-full max-w-md bg-white rounded-[20px] border border-[#ECECEC] p-5 sm:p-6 shadow-2xl text-center space-y-3.5 animate-in fade-in zoom-in-95 duration-500 z-10 relative mx-4">
+        <div className="w-full max-w-md bg-white rounded-[20px] border border-[#ECECEC] p-5 sm:p-6 shadow-2xl text-center space-y-3.5 animate-in fade-in zoom-in-95 duration-500 z-10 relative my-auto">
           {/* Conditional Lottie Animation Embed (Enlarged) */}
           <div className="w-36 h-36 sm:w-44 sm:h-44 mx-auto relative flex items-center justify-center overflow-hidden">
             {isPassed ? (
@@ -572,24 +572,24 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
     );
   }
 
-  // 2. ACTIVE QUIZ STAGE (FULL SIZE SVG BACKGROUND WITH DARK TINT, WHITE QUESTION TEXT, 60PX MARGIN)
+  // 2. ACTIVE QUIZ STAGE (SCROLLABLE CONTAINER WITH FIXED BACKGROUND FOR MOBILE COMFORT)
   return (
-    <div className="fixed inset-0 w-full h-full overflow-hidden flex flex-col justify-between font-sans text-[#2E2D2D] relative bg-[#60a5fa] selection:bg-blue-100">
+    <div className="fixed inset-0 w-full h-full overflow-y-auto flex flex-col justify-between font-sans text-[#2E2D2D] relative bg-[#60a5fa] selection:bg-blue-100">
       {/* FULL BLEED BACKDROP BLUR OVERLAY DURING COUNTDOWN (ZERO EDGE MISS AT BOTTOM) */}
       {stage === "countdown" && (
         <div className="fixed inset-0 w-full h-full backdrop-blur-xl bg-slate-950/25 z-40 pointer-events-none transition-all duration-500" />
       )}
 
-      {/* QUESTION & BACKGROUND WRAPPER (FULL BLEED COVERAGE) */}
+      {/* QUESTION & BACKGROUND WRAPPER (FULL BLEED SCROLLABLE CONTENT) */}
       <div
-        className={`fixed inset-0 w-full h-full flex flex-col justify-between transition-all duration-700 ease-out z-10 ${
+        className={`relative min-h-full w-full flex flex-col justify-between transition-all duration-700 ease-out z-10 ${
           stage === "countdown"
             ? "filter blur-sm scale-100 opacity-90 pointer-events-none"
             : "filter-none scale-100 opacity-100"
         }`}
       >
-        {/* Full-window SVG Background aligned to bottom to showcase the green hill with natural aspect ratio */}
-        <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden z-0">
+        {/* Fixed Full-window SVG Background aligned to bottom */}
+        <div className="fixed inset-0 w-full h-full pointer-events-none overflow-hidden z-0">
           {/* eslint-disable-next-next/no-img-element */}
           <img
             src="/bg-konten-quiz.svg"

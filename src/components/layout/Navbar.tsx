@@ -431,7 +431,7 @@ export function Navbar() {
                 placeholder="Ketik nama materi, topik, atau modul..."
                 value={modalQuery}
                 onChange={(e) => setModalQuery(e.target.value)}
-                className="w-full bg-transparent text-sm text-[#2E2D2D] placeholder:text-[#AAAAAA] outline-none font-medium"
+                className="w-full bg-transparent text-base md:text-sm text-[#2E2D2D] placeholder:text-[#AAAAAA] outline-none font-medium"
               />
               <button
                 type="button"

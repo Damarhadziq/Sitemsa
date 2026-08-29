@@ -630,7 +630,7 @@ function MateriLandingContent() {
                 onFocus={() => setIsSearchFocused(true)}
                 onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                className={`w-full h-11 pr-10 bg-[#F3F3F3] rounded-[8px] text-sm text-[#2E2D2D] placeholder:text-[#AAAAAA] border border-transparent focus:bg-white focus:border-[#2563EB] outline-none transition-all duration-200 ${
+                className={`w-full h-11 pr-10 bg-[#F3F3F3] rounded-[8px] text-base md:text-sm text-[#2E2D2D] placeholder:text-[#AAAAAA] border border-transparent focus:bg-white focus:border-[#2563EB] outline-none transition-all duration-200 ${
                   isSearchFocused ? "pl-4" : "pl-10"
                 }`}
               />

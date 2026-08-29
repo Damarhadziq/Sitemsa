@@ -2140,7 +2140,14 @@ export default function MateriDetailPage({
   const [isMarkedDone, setIsMarkedDone] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [readingSeconds, setReadingSeconds] = useState(0);
-  const [showCompletedToast, setShowCompletedToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage((current) => (current === msg ? null : current));
+    }, 4000);
+  };
 
   useEffect(() => {
     if (material) {
@@ -2186,7 +2193,7 @@ export default function MateriDetailPage({
     if (scrollProgress >= 75 && readingSeconds >= 15) {
       setIsMarkedDone(true);
       recordModuleCompletion(String(material.id));
-      setShowCompletedToast(true);
+      showToast("Materi telah selesai dipelajari.");
 
       addUserNotification({
         type: 'materi',
@@ -2194,9 +2201,6 @@ export default function MateriDetailPage({
         message: `Kamu telah menuntaskan pembelajaran "${material.title}". Target mingguanmu berhasil tercatat.`,
         linkUrl: `/materi/${material.id}`,
       });
-
-      const timeout = setTimeout(() => setShowCompletedToast(false), 5000);
-      return () => clearTimeout(timeout);
     }
   }, [scrollProgress, readingSeconds, material, isMarkedDone]);
 
@@ -2204,15 +2208,13 @@ export default function MateriDetailPage({
     if (isMarkedDone || !material) return;
     setIsMarkedDone(true);
     recordModuleCompletion(String(material.id));
-    setShowCompletedToast(true);
+    showToast("Materi telah selesai dipelajari.");
     addUserNotification({
       type: 'materi',
       title: 'Materi Selesai Dipelajari',
       message: `Selamat! Kamu telah menyelesaikan materi "${material.title}". Target mingguanmu bertambah.`,
       linkUrl: `/materi/${material.id}`,
     });
-    const timeout = setTimeout(() => setShowCompletedToast(false), 5000);
-    return () => clearTimeout(timeout);
   };
 
   const handleStartQuizClick = (e: React.MouseEvent) => {
@@ -2633,7 +2635,7 @@ export default function MateriDetailPage({
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    alert(`Mengunduh file: ${material.attachment.fileName}`);
+                    showToast(`Mengunduh file: ${material.attachment.fileName.replace(/_/g, " ")}`);
                   }}
                   className="inline-flex items-center justify-center gap-1.5 bg-white border border-[#ECECEC] hover:bg-[#F6F5FF] hover:border-[#2563EB]/40 text-[#2563EB] px-4 py-2.5 sm:py-2 rounded-[6px] text-xs font-semibold transition-all duration-200 shrink-0 w-full sm:w-auto"
                 >
@@ -3034,14 +3036,14 @@ export default function MateriDetailPage({
       )}
 
       {/* FLOATING TOAST NOTIFICATION — slides from below navbar (Clean style, no icon, concise copy) */}
-      {showCompletedToast && (
+      {toastMessage && (
         <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2 rounded-[8px] bg-white/95 backdrop-blur-md border border-[#ECECEC] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.12)] font-sans transition-all duration-300 ease-out animate-in slide-in-from-top-4 fade-in">
           <p className="text-xs font-medium text-[#2E2D2D]">
-            Materi telah selesai dipelajari.
+            {toastMessage}
           </p>
           <button
             type="button"
-            onClick={() => setShowCompletedToast(false)}
+            onClick={() => setToastMessage(null)}
             className="text-slate-400 hover:text-slate-600 p-0.5 rounded-full hover:bg-slate-100 transition-colors cursor-pointer shrink-0 ml-1.5"
             aria-label="Tutup notifikasi"
           >

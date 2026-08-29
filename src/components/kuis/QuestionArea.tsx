@@ -15,6 +15,63 @@ import { addUserNotification } from "@/services/notification.service";
 import { recordModuleCompletion } from "@/services/weekly-target.service";
 import { getStudentProfile } from "@/services/student-profile.service";
 
+// High-fidelity countdown sound for every tick (3, 2, 1, and Mulai!)
+function playCountdownTick(val: number) {
+  if (typeof window === "undefined") return;
+  try {
+    const AudioCtx =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    if (ctx.state === "suspended") {
+      ctx.resume().catch(() => {});
+    }
+    const now = ctx.currentTime;
+
+    if (val > 0) {
+      // Crisp, punchy countdown tick sound (E5 -> G5 -> A5)
+      const freq = val === 1 ? 880 : val === 2 ? 783.99 : 659.25;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, now);
+      gain.gain.setValueAtTime(0.55, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.22);
+
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = "triangle";
+      osc2.frequency.setValueAtTime(freq * 1.5, now);
+      gain2.gain.setValueAtTime(0.2, now);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now);
+      osc2.stop(now + 0.15);
+    } else {
+      // "Mulai!" Triumphant GO Chord
+      [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(freq, now + i * 0.04);
+        gain.gain.setValueAtTime(0.4, now + i * 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.04 + 0.4);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + i * 0.04);
+        osc.stop(now + i * 0.04 + 0.4);
+      });
+    }
+  } catch {}
+}
+
 // Fallback synthesizer in case audio files fail to load
 function playSynthFallback(type: "correct" | "wrong" | "result" | "remedial" | "countdown") {
   if (typeof window === "undefined") return;
@@ -30,16 +87,7 @@ function playSynthFallback(type: "correct" | "wrong" | "result" | "remedial" | "
     const now = ctx.currentTime;
 
     if (type === "countdown") {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(540, now);
-      gain.gain.setValueAtTime(0.25, now);
-      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.12);
+      playCountdownTick(3);
     } else if (type === "correct") {
       [523.25, 659.25, 783.99].forEach((freq, i) => {
         const osc = ctx.createOscillator();
@@ -254,11 +302,17 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
     };
   }, []);
 
-  // 3-Second Smooth Countdown Timer & Sound
+  // Play instant synchronized sound on each countdown tick (3 -> 2 -> 1 -> Mulai!)
+  useEffect(() => {
+    if (stage === "countdown") {
+      playCountdownTick(countdownValue);
+    }
+  }, [countdownValue, stage]);
+
+  // 3-Second Smooth Countdown Timer
   useEffect(() => {
     if (stage === "countdown") {
       setCountdownValue(3);
-      playInstantSound("countdown");
 
       const timer = setInterval(() => {
         setCountdownValue((prev) => {
@@ -266,7 +320,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
             clearInterval(timer);
             setTimeout(() => {
               setStage("in_quiz");
-            }, 550);
+            }, 650);
             return 0;
           }
           return prev - 1;
@@ -464,51 +518,51 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
           </div>
 
           {/* Clean Score Card (Plain Text Numbers & Status without Background) */}
-          <div className="p-4 rounded-[14px] bg-slate-50 border border-[#ECECEC] flex items-center justify-around">
-            <div>
-              <p className="text-2xl font-extrabold text-[#2E2D2D]">{accuracy}%</p>
-              <p className="text-xs font-semibold text-[#737373] mt-0.5">Nilai Akhir</p>
+          <div className="p-3.5 sm:p-4 rounded-[14px] bg-slate-50 border border-[#ECECEC] flex items-center justify-around">
+            <div className="text-center">
+              <p className="text-xl sm:text-2xl font-extrabold text-[#2E2D2D]">{accuracy}%</p>
+              <p className="text-[10px] sm:text-xs font-semibold text-[#737373] mt-0.5">Nilai Akhir</p>
             </div>
-            <div className="w-[1px] h-9 bg-[#ECECEC]" />
-            <div>
-              <p className="text-2xl font-extrabold text-[#2E2D2D]">
+            <div className="w-[1px] h-8 bg-[#ECECEC]" />
+            <div className="text-center">
+              <p className="text-xl sm:text-2xl font-extrabold text-[#2E2D2D]">
                 {correctCount}/{questionsList.length}
               </p>
-              <p className="text-xs font-semibold text-[#737373] mt-0.5">Jawaban Benar</p>
+              <p className="text-[10px] sm:text-xs font-semibold text-[#737373] mt-0.5">Jawaban Benar</p>
             </div>
-            <div className="w-[1px] h-9 bg-[#ECECEC]" />
-            <div>
+            <div className="w-[1px] h-8 bg-[#ECECEC]" />
+            <div className="text-center">
               <p
-                className={`text-2xl font-extrabold ${
+                className={`text-sm sm:text-base font-bold leading-tight ${
                   isPassed ? "text-emerald-600" : "text-amber-600"
                 }`}
               >
                 {isPassed ? "Tuntas" : "Remedial"}
               </p>
-              <p className="text-xs font-semibold text-[#737373] mt-0.5">
+              <p className="text-[10px] sm:text-xs font-semibold text-[#737373] mt-0.5">
                 KKM {targetQuizData.passScore}%
               </p>
             </div>
           </div>
 
           {/* Contextual Copy Message Based on Condition */}
-          <p className="text-xs text-[#64748B] leading-relaxed max-w-md mx-auto px-2">
+          <p className="text-xs text-[#64748B] leading-relaxed max-w-md mx-auto px-1">
             {isPassed
               ? "Selamat! Kamu telah berhasil menuntaskan kuis evaluasi ini dengan sangat baik. Terus pertahankan prestasimu!"
               : "Nilaimu masih di bawah standar kelulusan KKM. Silakan pelajari kembali materi dan coba lagi untuk hasil yang lebih baik!"}
           </p>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
+          {/* Action Buttons (SIDE BY SIDE / KANAN KIRI) */}
+          <div className="flex flex-row items-center gap-2.5 pt-1">
             <button
               onClick={handleRestartQuiz}
-              className="w-full sm:flex-1 py-2.5 px-5 rounded-[8px] bg-white border border-[#ECECEC] text-[#2E2D2D] hover:bg-slate-50 font-semibold text-xs transition-colors cursor-pointer"
+              className="flex-1 py-2.5 px-3 sm:px-5 rounded-[8px] bg-white border border-[#ECECEC] text-[#2E2D2D] hover:bg-slate-50 font-semibold text-xs transition-colors cursor-pointer text-center whitespace-nowrap"
             >
               Ulangi Kuis
             </button>
 
-            <Link href={`/materi/${encodeURIComponent(targetQuizData.moduleId || "1")}`} className="w-full sm:flex-1">
-              <button className="w-full py-2.5 px-5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs transition-colors cursor-pointer shadow-xs">
+            <Link href={`/materi/${encodeURIComponent(targetQuizData.moduleId || "1")}`} className="flex-1">
+              <button className="w-full py-2.5 px-3 sm:px-5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs transition-colors cursor-pointer shadow-xs text-center whitespace-nowrap">
                 Kembali ke Pembelajaran
               </button>
             </Link>
@@ -529,13 +583,13 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
             : "filter-none scale-100 opacity-100"
         }`}
       >
-        {/* Full-window SVG Background aligned to bottom to showcase the green hill */}
+        {/* Full-window SVG Background aligned to bottom to showcase the green hill with natural aspect ratio */}
         <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden z-0">
           {/* eslint-disable-next-next/no-img-element */}
           <img
             src="/bg-konten-quiz.svg"
             alt="Quiz Background"
-            className="w-full h-full object-fill object-bottom pointer-events-none select-none"
+            className="w-full h-full object-cover object-bottom pointer-events-none select-none"
           />
           {/* Dark Overlay for text contrast */}
           <div className="absolute inset-0 bg-slate-950/25 pointer-events-none" />

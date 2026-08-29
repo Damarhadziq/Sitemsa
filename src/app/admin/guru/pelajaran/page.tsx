@@ -629,7 +629,7 @@ export default function AdminGuruPelajaranPage() {
   // Confirm Manual Quiz Creation
   const handleConfirmManualQuiz = () => {
     if (!manualQuizTitle.trim()) {
-      alert('Judul kuis tidak boleh kosong.');
+      showToast('Judul kuis tidak boleh kosong.', 'warning');
       return;
     }
 
@@ -1794,7 +1794,7 @@ export default function AdminGuruPelajaranPage() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <a
                             href="#"
-                            onClick={(e) => { e.preventDefault(); alert("Mengunduh file: Modul_Praktikum_Elektronika.pdf"); }}
+                            onClick={(e) => { e.preventDefault(); showToast("Mengunduh file: Modul_Praktikum_Elektronika.pdf", "info"); }}
                             className="flex items-center justify-between p-2 rounded-[8px] bg-slate-50/80 border border-[#ECECEC] hover:border-blue-300 hover:bg-blue-50/40 transition-all group cursor-pointer"
                           >
                             <div className="flex items-center gap-2 truncate">
@@ -1810,7 +1810,7 @@ export default function AdminGuruPelajaranPage() {
 
                           <a
                             href="#"
-                            onClick={(e) => { e.preventDefault(); alert("Mengunduh file: Lembar_Kerja_Resistor.docx"); }}
+                            onClick={(e) => { e.preventDefault(); showToast("Mengunduh file: Lembar_Kerja_Resistor.docx", "info"); }}
                             className="flex items-center justify-between p-2 rounded-[8px] bg-slate-50/80 border border-[#ECECEC] hover:border-blue-300 hover:bg-blue-50/40 transition-all group cursor-pointer"
                           >
                             <div className="flex items-center gap-2 truncate">
@@ -2085,7 +2085,7 @@ export default function AdminGuruPelajaranPage() {
 
               <div className="w-full pt-2">
                 <button
-                  onClick={() => { alert("QR Code berhasil diunduh!"); setShowQrModal(false); }}
+                  onClick={() => { showToast("QR Code berhasil diunduh!", "success"); setShowQrModal(false); }}
                   className="w-full py-2.5 rounded-[8px] bg-[#2563EB] text-white text-xs font-medium hover:bg-blue-700 transition-all cursor-pointer active:scale-[0.98] flex items-center justify-center gap-1.5"
                 >
                   <Download className="w-3.5 h-3.5" />

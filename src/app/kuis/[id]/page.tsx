@@ -1,4 +1,3 @@
-import { QuizHeader } from "@/components/kuis/QuizHeader";
 import { QuestionArea } from "@/components/kuis/QuestionArea";
 
 export default async function QuizPage({
@@ -9,8 +8,7 @@ export default async function QuizPage({
   const { id } = await params;
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <QuizHeader exitUrl="/materi" />
+    <div className="flex flex-col min-h-screen bg-white">
       <QuestionArea quizId={id} />
     </div>
   );

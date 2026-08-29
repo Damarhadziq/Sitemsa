@@ -4,8 +4,8 @@ import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
+  ArrowLeft,
   X,
-  Sparkles,
   Volume2,
   VolumeX,
 } from "lucide-react";
@@ -16,15 +16,14 @@ import { recordModuleCompletion } from "@/services/weekly-target.service";
 import { getStudentProfile } from "@/services/student-profile.service";
 
 // Audio player helper using user's MP3 assets with synthesis fallback
-function playSoundEffect(type: "correct" | "wrong" | "result") {
+function playSoundEffect(type: "correct" | "wrong" | "result" | "remedial") {
   if (typeof window === "undefined") return;
   try {
     const audio = new Audio(`/audio/${type}.mp3`);
-    audio.volume = type === "result" ? 0.7 : 0.55;
+    audio.volume = type === "result" || type === "remedial" ? 0.75 : 0.65;
     const playPromise = audio.play();
     if (playPromise !== undefined) {
       playPromise.catch(() => {
-        // Fallback Web Audio synth
         playSynthFallback(type);
       });
     }
@@ -33,7 +32,7 @@ function playSoundEffect(type: "correct" | "wrong" | "result") {
   }
 }
 
-function playSynthFallback(type: "correct" | "wrong" | "result") {
+function playSynthFallback(type: "correct" | "wrong" | "result" | "remedial") {
   if (typeof window === "undefined") return;
   try {
     const AudioCtx =
@@ -56,18 +55,18 @@ function playSynthFallback(type: "correct" | "wrong" | "result") {
         osc.start(now + i * 0.07);
         osc.stop(now + i * 0.07 + 0.2);
       });
-    } else if (type === "wrong") {
+    } else if (type === "wrong" || type === "remedial") {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = "sawtooth";
       osc.frequency.setValueAtTime(240, now);
-      osc.frequency.linearRampToValueAtTime(150, now + 0.3);
+      osc.frequency.linearRampToValueAtTime(140, now + 0.35);
       gain.gain.setValueAtTime(0.25, now);
-      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start(now);
-      osc.stop(now + 0.3);
+      osc.stop(now + 0.35);
     } else if (type === "result") {
       [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
         const osc = ctx.createOscillator();
@@ -223,13 +222,28 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isAnswerChecked, setIsAnswerChecked] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
-  const [score, setScore] = useState(0);
   const [answeredMap, setAnsweredMap] = useState<Record<number, { isCorrect: boolean; selected: number }>>({});
+
+  // Celebration Lottie on Correct Answer
+  const [showCelebrationLottie, setShowCelebrationLottie] = useState(false);
 
   // Background Looping Music Ref
   const bgmAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const currentQuestion = questionsList[currentIndex] || DEFAULT_QUIZ_QUESTIONS[0];
+
+  // Lock body scroll during entire quiz session to eliminate right scrollbar gutter
+  useEffect(() => {
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    document.body.style.margin = "0";
+
+    return () => {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+      document.body.style.margin = "";
+    };
+  }, []);
 
   // 3-Second Smooth Countdown Timer
   useEffect(() => {
@@ -251,14 +265,14 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
     }
   }, [stage]);
 
-  // Background Music Controller
+  // Background Music Controller with increased volume
   useEffect(() => {
     if (stage === "in_quiz" && !isMuted) {
       try {
         if (!bgmAudioRef.current) {
           bgmAudioRef.current = new Audio("/audio/bgm.mp3");
           bgmAudioRef.current.loop = true;
-          bgmAudioRef.current.volume = 0.22;
+          bgmAudioRef.current.volume = 0.48; // Increased volume as requested
         }
         bgmAudioRef.current.play().catch(() => {});
       } catch {}
@@ -286,7 +300,8 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
     if (isCorrect) {
       playSoundEffect("correct");
       setCorrectCount((prev) => prev + 1);
-      setScore((prev) => prev + 100);
+      setShowCelebrationLottie(true);
+      setTimeout(() => setShowCelebrationLottie(false), 2800);
     } else {
       playSoundEffect("wrong");
     }
@@ -300,6 +315,8 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
 
   // Next Question Handler
   const handleNextQuestion = () => {
+    setShowCelebrationLottie(false);
+
     if (currentIndex + 1 < questionsList.length) {
       setCurrentIndex((prev) => prev + 1);
       setSelectedOption(null);
@@ -324,9 +341,17 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
     if (bgmAudioRef.current) {
       bgmAudioRef.current.pause();
     }
-    playSoundEffect("result");
 
     const finalScorePercent = Math.round((correctCount / questionsList.length) * 100);
+    const isPassed = finalScorePercent >= targetQuizData.passScore;
+
+    // Play appropriate sound based on pass / remedial condition
+    if (isPassed) {
+      playSoundEffect("result");
+    } else {
+      playSoundEffect("remedial");
+    }
+
     try {
       const studentProfile = getStudentProfile();
       const studentId = studentProfile.id || studentProfile.email || "std-1";
@@ -339,7 +364,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
           subject: targetQuizData.subject,
           score: finalScorePercent,
           maxScore: 100,
-          status: finalScorePercent >= targetQuizData.passScore ? "Lulus" : "Perlu Bimbingan",
+          status: isPassed ? "Lulus" : "Perlu Bimbingan",
         },
         studentProfile.name,
         studentProfile.email
@@ -372,15 +397,15 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
     setSelectedOption(null);
     setIsAnswerChecked(false);
     setCorrectCount(0);
-    setScore(0);
     setAnsweredMap({});
+    setShowCelebrationLottie(false);
     setStage("countdown");
   };
 
   // 1. 3-SECOND SMOOTH COUNTDOWN OVERLAY
   if (stage === "countdown") {
     return (
-      <div className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center font-sans overflow-hidden">
+      <div className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center font-sans overflow-hidden w-screen h-screen">
         <div className="text-center space-y-4 animate-in zoom-in-90 duration-300">
           <p className="text-xs font-semibold text-[#737373] tracking-wide">
             Kuis dimulai dalam
@@ -416,7 +441,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
         </div>
 
         {/* Result Card (py-4, enlarged Lottie, contextual message) */}
-        <div className="w-full max-w-lg bg-white rounded-[20px] border border-[#ECECEC] py-4 px-8 sm:px-10 shadow-2xl text-center space-y-4 animate-in fade-in zoom-in-95 duration-500 z-10 relative mx-4">
+        <div className="w-full max-w-lg bg-white rounded-[20px] border border-[#ECECEC] py-4 px-8 sm:px-10 shadow-2xl text-center space-y-3.5 animate-in fade-in zoom-in-95 duration-500 z-10 relative mx-4">
           {/* Conditional Lottie Animation Embed (Enlarged) */}
           <div className="w-44 h-44 sm:w-52 sm:h-52 mx-auto relative flex items-center justify-center overflow-hidden">
             {isPassed ? (
@@ -498,50 +523,58 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
     );
   }
 
-  // 3. ACTIVE QUIZ STAGE (FULL SIZE SVG BACKGROUND, CENTERED 2X2 GRID, TOP BAR, INSTANT CLICK)
+  // 3. ACTIVE QUIZ STAGE (FULL SIZE SVG BACKGROUND WITH DARK TINT, WHITE QUESTION TEXT, 60PX MARGIN)
   return (
     <div
-      className="min-h-screen w-full overflow-x-hidden flex flex-col justify-between font-sans text-[#2E2D2D] relative bg-cover bg-center bg-no-repeat selection:bg-blue-100"
+      className="fixed inset-0 w-screen h-screen overflow-hidden flex flex-col justify-between font-sans text-[#2E2D2D] relative bg-cover bg-center bg-no-repeat selection:bg-blue-100"
       style={{ backgroundImage: "url('/bg-konten-quiz.svg')" }}
     >
-      {/* TOP BAR (CANCEL, SUBJECT CHIP, SCORE POINTS, QUESTION COUNTER, BGM TOGGLE) */}
-      <header className="w-full max-w-5xl mx-auto px-6 sm:px-10 pt-6 flex items-center justify-between z-20">
-        {/* Cancel Button */}
+      {/* Dark Overlay for contrast */}
+      <div className="absolute inset-0 bg-slate-950/30 pointer-events-none z-0" />
+
+      {/* CELEBRATION LOTTIE ANIMATION RISING FROM BOTTOM ON CORRECT ANSWER */}
+      {showCelebrationLottie && (
+        <div className="fixed inset-x-0 bottom-0 flex items-end justify-center pointer-events-none z-[100] animate-in slide-in-from-bottom-12 duration-400 fade-in">
+          <div className="w-96 h-80 relative flex items-center justify-center">
+            <iframe
+              src="https://lottie.host/embed/522d1d2c-7fa8-443b-b605-b7a455444486/VVxd2YUFkE.lottie"
+              className="w-full h-full border-0 pointer-events-none"
+              title="Celebration Animation"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* TOP BAR (60PX MARGIN, MATCHING CIRCLE BACK BUTTON, ENLARGED UNIFIED CHIPS) */}
+      <header className="w-full px-6 md:px-[60px] pt-6 flex items-center justify-between z-20 shrink-0">
+        {/* Circle Back Button (Matching Main Website Style) */}
         <button
           type="button"
           onClick={() => setShowExitConfirmModal(true)}
-          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-[8px] bg-white/90 backdrop-blur-xs border border-[#ECECEC] text-[#2E2D2D] hover:text-rose-600 hover:bg-white shadow-2xs text-xs font-semibold transition-all cursor-pointer"
+          className="w-9 h-9 rounded-full bg-white/90 hover:bg-white border border-white/40 text-[#2E2D2D] hover:text-[#2563EB] shadow-xs transition-all cursor-pointer flex items-center justify-center"
+          aria-label="Kembali"
           title="Keluar Kuis"
         >
-          <X className="w-3.5 h-3.5" />
-          <span>Keluar</span>
+          <ArrowLeft className="w-4 h-4" />
         </button>
 
-        {/* Center: Subject Chip */}
-        <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/90 backdrop-blur-xs text-[#2563EB] border border-[#ECECEC] shadow-2xs">
+        {/* Right Area: Unified Height Chips (Mapel Gradient Chip, Question Counter, Sound Toggle) */}
+        <div className="flex items-center gap-3">
+          {/* Subject Gradient Chip (Enlarged, h-9) */}
+          <div className="h-9 px-4.5 rounded-full bg-gradient-to-r from-[#2563EB] to-[#4F46E5] text-white font-bold text-xs shadow-sm flex items-center border border-white/20">
             {targetQuizData.subject}
-          </span>
-        </div>
-
-        {/* Right: Score Points, Question Counter, and Music Mute Toggle */}
-        <div className="flex items-center gap-2.5">
-          {/* Score Points */}
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 backdrop-blur-xs border border-[#ECECEC] shadow-2xs text-xs font-bold text-[#2E2D2D]">
-            <Sparkles className="w-3.5 h-3.5 text-[#2563EB]" />
-            <span>{score} Pts</span>
           </div>
 
-          {/* Question Counter (No progress bar) */}
-          <span className="text-xs font-bold text-[#475569] bg-white/90 backdrop-blur-xs px-3 py-1 rounded-full border border-[#ECECEC] shadow-2xs">
+          {/* Question Counter Chip (Enlarged, h-9) */}
+          <div className="h-9 px-4 rounded-full bg-white/90 backdrop-blur-xs text-[#1E293B] font-bold text-xs shadow-xs flex items-center border border-white/40">
             {currentIndex + 1} / {questionsList.length}
-          </span>
+          </div>
 
-          {/* BGM Mute/Unmute Toggle */}
+          {/* BGM Mute/Unmute Toggle (h-9 w-9) */}
           <button
             type="button"
             onClick={() => setIsMuted(!isMuted)}
-            className="w-8 h-8 rounded-full bg-white/90 backdrop-blur-xs border border-[#ECECEC] shadow-2xs text-[#475569] hover:text-[#2563EB] flex items-center justify-center transition-colors cursor-pointer"
+            className="w-9 h-9 rounded-full bg-white/90 backdrop-blur-xs border border-white/40 shadow-xs text-[#1E293B] hover:text-[#2563EB] flex items-center justify-center transition-colors cursor-pointer"
             title={isMuted ? "Aktifkan Musik" : "Matikan Musik"}
           >
             {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
@@ -549,16 +582,16 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
         </div>
       </header>
 
-      {/* CENTER MAIN CONTENT: QUESTION TEXT & 2X2 ANSWER GRID WITH WHITE FRAMED CARDS */}
+      {/* CENTER MAIN CONTENT: WHITE QUESTION TEXT & 2X2 ANSWER GRID WITH HOVER COLOR SHIFT */}
       <main className="max-w-4xl w-full mx-auto px-6 sm:px-10 py-6 flex-1 flex flex-col justify-center items-center text-center z-10">
-        {/* Large Centered Question Text */}
+        {/* Large Centered White Question Text */}
         <div className="space-y-2 mb-8 max-w-3xl">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#1E293B] leading-snug tracking-tight">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-snug tracking-tight drop-shadow-md">
             {currentQuestion.text}
           </h1>
         </div>
 
-        {/* 2x2 Answer Grid with White Framed Cards & Click Animation */}
+        {/* 2x2 Answer Grid with White Framed Cards & Hover Color Shift Only */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-3xl">
           {currentQuestion.options.map((optionText, index) => {
             const isSelected = selectedOption === index;
@@ -573,11 +606,11 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
                 type="button"
                 disabled={isAnswerChecked || answeredMap[currentIndex] !== undefined}
                 onClick={() => handleSelectOptionDirect(index)}
-                className={`w-full min-h-[76px] p-4 sm:p-5 rounded-[16px] text-left flex items-center gap-3.5 transition-all duration-200 cursor-pointer shadow-xs ${
+                className={`w-full min-h-[76px] p-4 sm:p-5 rounded-[16px] text-left flex items-center gap-3.5 transition-colors duration-150 cursor-pointer shadow-xs ${
                   !isAnswerChecked
-                    ? "bg-white/95 backdrop-blur-xs border border-[#ECECEC] hover:border-[#2563EB]/60 hover:bg-white hover:-translate-y-0.5 active:scale-98"
+                    ? "bg-white/95 backdrop-blur-xs border border-[#ECECEC] hover:bg-[#EEF2FF] hover:border-[#2563EB] text-[#1E293B] hover:text-[#2563EB]"
                     : isSelectedCorrect || isRevealedCorrect
-                    ? "bg-[#10B981] text-white font-semibold border-transparent shadow-md scale-[1.01]"
+                    ? "bg-[#10B981] text-white font-semibold border-transparent shadow-md"
                     : isSelectedWrong
                     ? "bg-[#EF4444] text-white font-semibold border-transparent shadow-md"
                     : "bg-white/70 border border-[#ECECEC] text-[#94A3B8] opacity-50 cursor-default"
@@ -604,7 +637,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
                 <span
                   className={`text-xs sm:text-sm leading-relaxed flex-1 font-medium ${
                     !isAnswerChecked
-                      ? "text-[#1E293B]"
+                      ? "text-inherit"
                       : isSelectedCorrect || isRevealedCorrect || isSelectedWrong
                       ? "text-white font-semibold"
                       : "text-[#94A3B8]"
@@ -627,7 +660,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
       </main>
 
       {/* BOTTOM ACTION BAR (NEXT BUTTON APPEARS ONCE ANSWERED) */}
-      <footer className="w-full max-w-5xl mx-auto px-6 sm:px-10 pb-6 pt-2 flex items-center justify-center z-20 min-h-[56px]">
+      <footer className="w-full max-w-5xl mx-auto px-6 sm:px-10 pb-6 pt-2 flex items-center justify-center z-20 min-h-[56px] shrink-0">
         {isAnswerChecked && (
           <button
             type="button"

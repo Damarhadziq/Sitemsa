@@ -4,7 +4,7 @@ import { useState, useEffect, use, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, BarChart2 } from "lucide-react";
+import { ArrowLeft, BarChart2, X } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { useAdminStore } from "@/lib/admin-store";
 import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react";
@@ -2022,7 +2022,7 @@ export default function MateriDetailPage({
   const [copiedCode, setCopiedCode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
-  const [activeQuizModal, setActiveQuizModal] = useState<"none" | "barcode" | "link_confirm">("none");
+  const [activeQuizModal, setActiveQuizModal] = useState<"none" | "barcode" | "link_confirm" | "internal_ready">("none");
   const [isTocOpen, setIsTocOpen] = useState(false);
 
   // Compute smart back URL preserving category filter
@@ -2185,7 +2185,7 @@ export default function MateriDetailPage({
   };
 
   const handleStartQuizClick = (e: React.MouseEvent) => {
-    const qSource = material.quizSource;
+    const qSource = material?.quizSource;
     if (!qSource) return;
     if (qSource.type === "barcode") {
       e.preventDefault();
@@ -2193,6 +2193,9 @@ export default function MateriDetailPage({
     } else if (qSource.type === "external_link") {
       e.preventDefault();
       setActiveQuizModal("link_confirm");
+    } else if (qSource.type === "internal") {
+      e.preventDefault();
+      setActiveQuizModal("internal_ready");
     }
   };
 
@@ -2926,6 +2929,69 @@ export default function MateriDetailPage({
                 <span>Lanjutkan ke Link</span>
                 <HugeiconsIcon icon={ArrowRight01Icon} size={14} />
               </a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quiz Internal Ready Confirmation Modal */}
+      {activeQuizModal === "internal_ready" && material.quizSource && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans">
+          <div className="absolute inset-0" onClick={() => setActiveQuizModal("none")} />
+          <div className="bg-white rounded-[12px] max-w-md w-full border border-[#ECECEC] overflow-hidden shadow-xl animate-in zoom-in-95 duration-200 z-10 relative">
+            <div className="p-5 pb-4 bg-white flex items-center justify-between border-b border-[#ECECEC]">
+              <h3 className="text-base font-bold text-[#2E2D2D]">Siap memulai kuis</h3>
+              <button
+                type="button"
+                onClick={() => setActiveQuizModal("none")}
+                className="w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer"
+                aria-label="Tutup Modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-4">
+              <div>
+                <span className="text-[11px] font-bold text-[#2563EB] bg-blue-50 px-2.5 py-0.5 rounded-[4px] border border-blue-100 inline-block mb-2">
+                  {material.subject}
+                </span>
+                <h4 className="text-base font-bold text-[#2E2D2D] leading-snug">
+                  {material.quizSource.title}
+                </h4>
+              </div>
+
+              <div className="p-3.5 rounded-[8px] bg-slate-50 border border-[#ECECEC] space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-[#737373]">Mata pelajaran</span>
+                  <span className="font-semibold text-[#2E2D2D]">{material.subject}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[#737373]">Standar KKM</span>
+                  <span className="font-bold text-emerald-700">75%</span>
+                </div>
+              </div>
+
+              <p className="text-xs text-[#737373] leading-relaxed">
+                Pastikan Anda telah membaca dan memahami materi ini dengan baik sebelum memulai pengerjaan kuis.
+              </p>
+
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-[#ECECEC]">
+                <button
+                  type="button"
+                  onClick={() => setActiveQuizModal("none")}
+                  className="px-4 py-2 rounded-[8px] bg-white border border-[#ECECEC] text-[#2E2D2D] font-semibold text-xs hover:bg-slate-50 cursor-pointer"
+                >
+                  Batal
+                </button>
+                <Link
+                  href={material.quizSource.internalUrl || `/kuis/${material.id}`}
+                  onClick={() => setActiveQuizModal("none")}
+                  className="px-5 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs cursor-pointer shadow-xs"
+                >
+                  Mulai kuis
+                </Link>
+              </div>
             </div>
           </div>
         </div>

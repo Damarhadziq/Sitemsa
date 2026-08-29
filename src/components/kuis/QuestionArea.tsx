@@ -6,14 +6,9 @@ import Link from "next/link";
 import {
   ArrowLeft,
   ArrowRight,
-  Check,
-  X,
   RotateCcw,
   Sparkles,
-  Award,
-  BookOpen,
-  FileQuestion,
-  AlertTriangle,
+  X,
 } from "lucide-react";
 import { useAdminStore } from "@/lib/admin-store";
 import { ProgressService } from "@/services/progress.service";
@@ -21,7 +16,7 @@ import { addUserNotification } from "@/services/notification.service";
 import { recordModuleCompletion } from "@/services/weekly-target.service";
 import { getStudentProfile } from "@/services/student-profile.service";
 
-// Clean Web Audio API SFX (Subtle & Non-intrusive)
+// Clean Web Audio API SFX
 function playQuizSound(type: "pop" | "correct" | "wrong" | "tick" | "start") {
   if (typeof window === "undefined") return;
   try {
@@ -36,49 +31,49 @@ function playQuizSound(type: "pop" | "correct" | "wrong" | "tick" | "start") {
       const gain = ctx.createGain();
       osc.type = "sine";
       osc.frequency.setValueAtTime(400, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.06);
-      gain.gain.setValueAtTime(0.12, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.06);
+      osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.05);
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start();
-      osc.stop(ctx.currentTime + 0.06);
+      osc.stop(ctx.currentTime + 0.05);
     } else if (type === "tick") {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = "sine";
-      osc.frequency.setValueAtTime(600, ctx.currentTime);
-      gain.gain.setValueAtTime(0.15, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+      osc.frequency.setValueAtTime(540, ctx.currentTime);
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.07);
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start();
-      osc.stop(ctx.currentTime + 0.08);
+      osc.stop(ctx.currentTime + 0.07);
     } else if (type === "start") {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = "triangle";
       osc.frequency.setValueAtTime(523.25, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(1046.5, ctx.currentTime + 0.25);
-      gain.gain.setValueAtTime(0.2, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+      osc.frequency.exponentialRampToValueAtTime(1046.5, ctx.currentTime + 0.22);
+      gain.gain.setValueAtTime(0.18, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.22);
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start();
-      osc.stop(ctx.currentTime + 0.25);
+      osc.stop(ctx.currentTime + 0.22);
     } else if (type === "correct") {
       const now = ctx.currentTime;
       [523.25, 659.25, 783.99].forEach((freq, i) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = "triangle";
-        osc.frequency.setValueAtTime(freq, now + i * 0.07);
-        gain.gain.setValueAtTime(0.2, now + i * 0.07);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.2);
+        osc.frequency.setValueAtTime(freq, now + i * 0.06);
+        gain.gain.setValueAtTime(0.18, now + i * 0.06);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.18);
         osc.connect(gain);
         gain.connect(ctx.destination);
-        osc.start(now + i * 0.07);
-        osc.stop(now + i * 0.07 + 0.2);
+        osc.start(now + i * 0.06);
+        osc.stop(now + i * 0.06 + 0.18);
       });
     } else if (type === "wrong") {
       const now = ctx.currentTime;
@@ -86,16 +81,16 @@ function playQuizSound(type: "pop" | "correct" | "wrong" | "tick" | "start") {
       const gain = ctx.createGain();
       osc.type = "sine";
       osc.frequency.setValueAtTime(240, now);
-      osc.frequency.linearRampToValueAtTime(180, now + 0.18);
-      gain.gain.setValueAtTime(0.18, now);
-      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+      osc.frequency.linearRampToValueAtTime(180, now + 0.16);
+      gain.gain.setValueAtTime(0.16, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.16);
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start(now);
-      osc.stop(now + 0.18);
+      osc.stop(now + 0.16);
     }
   } catch {
-    // Audio context fallback
+    // Audio fallback
   }
 }
 
@@ -113,7 +108,7 @@ const DEFAULT_QUIZ_QUESTIONS = [
     ],
     correctAnswer: 0,
     explanation:
-      "Tegangan permukaan (surface tension) dan gaya kohesi molekul air menciptakan kapasitas kalor tinggi serta meniskus cembung pada kondisi tertentu.",
+      "Tegangan permukaan (surface tension) dan gaya kohesi antar molekul air menciptakan kapasitas kalor yang tinggi serta meniskus cembung pada kondisi spesifik.",
   },
   {
     id: "q2",
@@ -141,7 +136,7 @@ const DEFAULT_QUIZ_QUESTIONS = [
     ],
     correctAnswer: 0,
     explanation:
-      "Kompleksitas waktu terbaik Quick Sort adalah O(N log N) ketika pivot membagi array menjadi dua bagian yang seimbang.",
+      "Kompleksitas waktu terbaik Quick Sort adalah O(N log N) ketika pivot membagi data menjadi dua bagian yang seimbang.",
   },
 ];
 
@@ -161,6 +156,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
           title: byQuizId.title,
           subject: byQuizId.subject || "Informatika",
           passScore: byQuizId.passScore || 75,
+          moduleId: quizId,
           questions:
             byQuizId.questions && byQuizId.questions.length > 0
               ? byQuizId.questions.map((q, idx) => ({
@@ -185,6 +181,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
             title: subQuiz.title,
             subject: subQuiz.subject || byModule.subject,
             passScore: subQuiz.passScore || 75,
+            moduleId: byModule.id,
             questions: subQuiz.questions.map((q, idx) => ({
               id: q.id || `q-${idx}`,
               text: q.text,
@@ -201,14 +198,15 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
       title: "Evaluasi Pemahaman Materi",
       subject: "Informatika",
       passScore: 75,
+      moduleId: "1",
       questions: DEFAULT_QUIZ_QUESTIONS,
     };
   }, [quizId, quizzes, modules]);
 
   const questionsList = targetQuizData.questions;
 
-  // Stages: 'ready_modal' -> 'countdown' -> 'in_quiz' -> 'completed'
-  const [stage, setStage] = useState<"ready_modal" | "countdown" | "in_quiz" | "completed">("ready_modal");
+  // Stages: 'countdown' -> 'in_quiz' -> 'completed'
+  const [stage, setStage] = useState<"countdown" | "in_quiz" | "completed">("countdown");
   const [countdownValue, setCountdownValue] = useState(3);
   const [showExitConfirmModal, setShowExitConfirmModal] = useState(false);
 
@@ -219,13 +217,14 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
   const [correctCount, setCorrectCount] = useState(0);
   const [answeredMap, setAnsweredMap] = useState<Record<number, { isCorrect: boolean; selected: number }>>({});
 
-  // Neon Glow Vignette Flash State
+  // Diffuse Neon Glow Layer State with smooth in/out
   const [neonGlow, setNeonGlow] = useState<"correct" | "wrong" | null>(null);
 
   const currentQuestion = questionsList[currentIndex] || DEFAULT_QUIZ_QUESTIONS[0];
-  const progressPercent = Math.round(((Object.keys(answeredMap).length) / questionsList.length) * 100);
+  const answeredCount = Object.keys(answeredMap).length;
+  const progressPercent = Math.round((answeredCount / questionsList.length) * 100);
 
-  // 3-Second Countdown Timer
+  // 3-Second Smooth Countdown Timer
   useEffect(() => {
     if (stage === "countdown") {
       setCountdownValue(3);
@@ -236,7 +235,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
           if (prev <= 1) {
             clearInterval(timer);
             playQuizSound("start");
-            setTimeout(() => setStage("in_quiz"), 400);
+            setTimeout(() => setStage("in_quiz"), 450);
             return 0;
           }
           playQuizSound("tick");
@@ -250,19 +249,19 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
 
   // Select Option Handler with wave effect
   const handleSelectOption = (index: number) => {
-    if (isAnswerChecked) return;
+    if (isAnswerChecked || answeredMap[currentIndex] !== undefined) return;
     playQuizSound("pop");
     setSelectedOption(index);
   };
 
   // Check Answer Handler
   const handleCheckAnswer = () => {
-    if (selectedOption === null || isAnswerChecked) return;
+    if (selectedOption === null || isAnswerChecked || answeredMap[currentIndex] !== undefined) return;
 
     setIsAnswerChecked(true);
     const isCorrect = selectedOption === currentQuestion.correctAnswer;
 
-    // Trigger Neon Glow Vignette
+    // Trigger Diffuse Layered Neon Glow
     if (isCorrect) {
       playQuizSound("correct");
       setCorrectCount((prev) => prev + 1);
@@ -272,13 +271,13 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
       setNeonGlow("wrong");
     }
 
-    // Record answer
+    // Record answer permanently
     setAnsweredMap((prev) => ({
       ...prev,
       [currentIndex]: { isCorrect, selected: selectedOption },
     }));
 
-    // Fade out neon glow smoothly after 1.8s
+    // Fade out neon glow smoothly
     setTimeout(() => {
       setNeonGlow(null);
     }, 1800);
@@ -298,9 +297,10 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
     }
   };
 
-  // Jump to Question (if needed from sidebar)
+  // Jump Question in Sidebar (Only allowed to jump forward if unanswered, cannot re-edit answered)
   const handleJumpQuestion = (targetIdx: number) => {
     if (targetIdx === currentIndex) return;
+    // If the target is already answered, show it in read-only mode
     playQuizSound("pop");
     setNeonGlow(null);
     setCurrentIndex(targetIdx);
@@ -311,6 +311,12 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
       setSelectedOption(null);
       setIsAnswerChecked(false);
     }
+  };
+
+  // Exit Handler back to material
+  const handleExitQuiz = () => {
+    const returnPath = `/materi/${targetQuizData.moduleId || "1"}`;
+    router.push(returnPath);
   };
 
   // Finish Quiz & Record Progress
@@ -368,89 +374,34 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
     setStage("countdown");
   };
 
-  // 1. PRE-QUIZ READY MODAL (Before Start)
-  if (stage === "ready_modal") {
-    return (
-      <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200 font-sans">
-        <div className="bg-white rounded-[20px] max-w-md w-full p-6 sm:p-8 space-y-6 shadow-2xl border border-[#ECECEC] animate-in zoom-in-95 duration-200">
-          <div className="text-center space-y-3">
-            <div className="w-14 h-14 rounded-full bg-blue-50 text-[#2563EB] flex items-center justify-center mx-auto border border-blue-100">
-              <FileQuestion className="w-7 h-7 text-[#2563EB]" />
-            </div>
-            <div>
-              <span className="text-xs font-bold text-[#2563EB] bg-blue-50 px-3 py-1 rounded-full border border-blue-100 inline-block mb-2">
-                {targetQuizData.subject}
-              </span>
-              <h2 className="text-xl font-bold text-[#2E2D2D] tracking-tight">
-                {targetQuizData.title}
-              </h2>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-[12px] bg-slate-50 border border-[#ECECEC] space-y-2.5 text-xs text-[#2E2D2D]">
-            <div className="flex items-center justify-between">
-              <span className="text-[#737373] flex items-center gap-1.5 font-medium">
-                <BookOpen className="w-3.5 h-3.5 text-[#2563EB]" /> Total Pertanyaan
-              </span>
-              <span className="font-bold">{questionsList.length} Soal</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-[#737373] flex items-center gap-1.5 font-medium">
-                <Award className="w-3.5 h-3.5 text-emerald-600" /> Standar KKM
-              </span>
-              <span className="font-bold text-emerald-700">{targetQuizData.passScore}%</span>
-            </div>
-          </div>
-
-          <p className="text-xs text-[#737373] text-center leading-relaxed">
-            Pastikan Anda telah mempelajari materi terkait. Klik tombol <strong>&quot;Mulai Mengerjakan&quot;</strong> saat sudah siap.
-          </p>
-
-          <div className="flex items-center gap-3 pt-2">
-            <button
-              type="button"
-              onClick={() => router.push("/materi")}
-              className="w-1/2 py-2.5 px-4 rounded-[10px] bg-slate-100 hover:bg-slate-200 text-[#2E2D2D] font-semibold text-xs transition-colors cursor-pointer"
-            >
-              Kembali
-            </button>
-            <button
-              type="button"
-              onClick={() => setStage("countdown")}
-              className="w-1/2 py-2.5 px-4 rounded-[10px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs transition-all cursor-pointer shadow-xs active:scale-98"
-            >
-              Mulai Mengerjakan
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // 2. 3-SECOND COUNTDOWN OVERLAY
+  // 1. 3-SECOND SMOOTH COUNTDOWN OVERLAY
   if (stage === "countdown") {
     return (
       <div className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center font-sans">
-        <div className="text-center space-y-4 animate-in zoom-in-75 duration-300">
-          <p className="text-sm font-bold text-[#737373] uppercase tracking-widest">Kuis Dimulai Dalam</p>
-          <div className="w-28 h-28 rounded-full bg-blue-50 border-4 border-[#2563EB] flex items-center justify-center mx-auto shadow-xl shadow-blue-500/10">
-            <span className="text-5xl font-black text-[#2563EB] animate-pulse">
+        <div className="text-center space-y-4 animate-in zoom-in-90 duration-300">
+          <p className="text-xs font-semibold text-[#737373] tracking-wide">
+            Kuis dimulai dalam
+          </p>
+          <div className="w-24 h-24 rounded-full bg-blue-50 border-3 border-[#2563EB] flex items-center justify-center mx-auto shadow-lg shadow-blue-500/10">
+            <span className="text-4xl font-extrabold text-[#2563EB] animate-pulse">
               {countdownValue > 0 ? countdownValue : "Mulai!"}
             </span>
           </div>
-          <p className="text-xs font-semibold text-[#2E2D2D]">{targetQuizData.title}</p>
+          <p className="text-xs font-bold text-[#2E2D2D] max-w-xs mx-auto truncate px-4">
+            {targetQuizData.title}
+          </p>
         </div>
       </div>
     );
   }
 
-  // 3. RESULT COMPLETION SCREEN
+  // 2. RESULT COMPLETION SCREEN
   if (stage === "completed") {
     const accuracy = Math.round((correctCount / questionsList.length) * 100);
     const isPassed = accuracy >= targetQuizData.passScore;
 
     return (
-      <main className="flex-1 flex flex-col items-center justify-center p-6 w-full max-w-xl mx-auto my-auto font-sans">
+      <main className="flex-1 flex flex-col items-center justify-center p-6 w-full max-w-xl mx-auto my-auto font-sans bg-white">
         <div className="w-full bg-white rounded-[20px] border border-[#ECECEC] p-8 sm:p-10 shadow-xs text-center space-y-6 animate-in fade-in zoom-in-95 duration-200">
           <div className="w-16 h-16 rounded-full bg-blue-50 text-[#2563EB] flex items-center justify-center mx-auto border border-blue-100">
             <Sparkles className="w-8 h-8 text-[#2563EB]" />
@@ -506,9 +457,9 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
               <span>Ulangi Kuis</span>
             </button>
 
-            <Link href="/materi" className="w-full sm:flex-1">
+            <Link href={`/materi/${targetQuizData.moduleId || "1"}`} className="w-full sm:flex-1">
               <button className="w-full py-3 px-4 rounded-[12px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs">
-                <span>Kembali ke Pembelajaran</span>
+                <span>Kembali ke Materi</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </Link>
@@ -518,19 +469,19 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
     );
   }
 
-  // 4. ACTIVE QUIZ STAGE (TWO-COLUMN WITH LEFT SIDEBAR + NEON GLOW VIGNETTE)
+  // 3. ACTIVE QUIZ STAGE (WHITE CANVAS, FIXED TOP MARGIN, VERTICAL SIDEBAR LIST, RIGHT EXPLANATION)
   return (
-    <div className="min-h-screen bg-[#FAFAFC] flex font-sans text-[#2E2D2D] relative selection:bg-blue-100">
-      {/* FULLSCREEN NEON EDGE GLOW VIGNETTE */}
-      {neonGlow && (
-        <div
-          className={`pointer-events-none fixed inset-0 z-40 transition-opacity duration-300 ${
-            neonGlow === "correct"
-              ? "opacity-100 shadow-[inset_0_0_80px_rgba(16,185,129,0.3)] ring-8 ring-inset ring-emerald-500/40"
-              : "opacity-100 shadow-[inset_0_0_80px_rgba(244,63,94,0.3)] ring-8 ring-inset ring-rose-500/40"
-          }`}
-        />
-      )}
+    <div className="min-h-screen bg-white flex font-sans text-[#2E2D2D] relative selection:bg-blue-100">
+      {/* HIGH-DIFFUSE NEON GLOW LAYER (Smooth In/Out with High Blur Spread) */}
+      <div
+        className={`pointer-events-none fixed inset-0 z-40 transition-all duration-700 ease-in-out ${
+          neonGlow === "correct"
+            ? "opacity-100 shadow-[inset_0_0_120px_35px_rgba(16,185,129,0.32)] backdrop-blur-[1px]"
+            : neonGlow === "wrong"
+            ? "opacity-100 shadow-[inset_0_0_120px_35px_rgba(239,68,68,0.32)] backdrop-blur-[1px]"
+            : "opacity-0 shadow-none pointer-events-none"
+        }`}
+      />
 
       {/* LEFT SIDEBAR (Desktop Fixed, Mobile Responsive) */}
       <aside className="w-72 sm:w-80 bg-white border-r border-[#ECECEC] p-6 flex flex-col justify-between hidden md:flex shrink-0 h-screen sticky top-0 z-30">
@@ -551,23 +502,20 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
             </span>
           </div>
 
-          {/* Quiz Metadata */}
-          <div className="space-y-1">
-            <h3 className="text-base font-bold text-[#2E2D2D] leading-snug">
+          {/* Quiz Title (Bigger Text, No Subtitle/Helper) */}
+          <div>
+            <h2 className="text-lg sm:text-xl font-bold text-[#2E2D2D] leading-tight tracking-tight">
               {targetQuizData.title}
-            </h3>
-            <p className="text-[11px] text-[#737373]">
-              Pilih jawaban dan tekan tombol Periksa.
-            </p>
+            </h2>
           </div>
 
-          {/* Questions Grid Navigator */}
-          <div className="space-y-2.5 pt-2">
-            <span className="text-xs font-bold text-[#737373] block uppercase tracking-wider">
-              Daftar Soal
+          {/* Vertical Question List (Display Question Text with Ellipsis) */}
+          <div className="space-y-2 pt-1">
+            <span className="text-xs font-bold text-[#737373] block">
+              Daftar soal
             </span>
-            <div className="grid grid-cols-4 gap-2">
-              {questionsList.map((_, qIdx) => {
+            <div className="space-y-2 max-h-[calc(100vh-320px)] overflow-y-auto pr-1">
+              {questionsList.map((q, qIdx) => {
                 const isCurrent = qIdx === currentIndex;
                 const record = answeredMap[qIdx];
                 const isAnswered = record !== undefined;
@@ -576,18 +524,18 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
                   <button
                     key={qIdx}
                     type="button"
+                    disabled={isAnswered}
                     onClick={() => handleJumpQuestion(qIdx)}
-                    className={`h-9 rounded-[8px] text-xs font-bold transition-all cursor-pointer flex items-center justify-center ${
+                    className={`w-full text-left p-3 rounded-[10px] text-xs transition-all flex items-center gap-2.5 ${
                       isCurrent
-                        ? "bg-[#2563EB] text-white shadow-xs scale-105"
+                        ? "bg-blue-50 text-[#2563EB] border border-blue-200 font-bold shadow-2xs cursor-default"
                         : isAnswered
-                        ? record.isCorrect
-                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                          : "bg-rose-50 text-rose-700 border border-rose-200"
-                        : "bg-slate-50 text-[#737373] border border-[#ECECEC] hover:bg-slate-100"
+                        ? "bg-[#2563EB] text-white border border-[#2563EB] font-semibold cursor-not-allowed opacity-95"
+                        : "bg-white text-[#737373] border border-[#ECECEC] hover:bg-slate-50 font-medium cursor-pointer"
                     }`}
                   >
-                    {qIdx + 1}
+                    <span className="font-bold shrink-0">{qIdx + 1}.</span>
+                    <span className="truncate flex-1">{q.text}</span>
                   </button>
                 );
               })}
@@ -600,7 +548,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
           <div className="flex items-center justify-between text-xs font-bold">
             <span className="text-[#737373]">Progres</span>
             <span className="text-[#2563EB]">
-              {Object.keys(answeredMap).length}/{questionsList.length} Soal
+              {answeredCount}/{questionsList.length} Soal
             </span>
           </div>
           <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
@@ -612,10 +560,10 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
         </div>
       </aside>
 
-      {/* RIGHT MAIN CANVAS AREA */}
-      <main className="flex-1 flex flex-col justify-between min-h-screen pb-24 p-6 sm:p-12 max-w-3xl">
+      {/* RIGHT MAIN CANVAS AREA (Pure White, Top Margin) */}
+      <main className="flex-1 flex flex-col justify-between min-h-screen bg-white pt-10 sm:pt-14 pb-28 px-6 sm:px-12">
         {/* Mobile Top Header (with Back button) */}
-        <div className="flex md:hidden items-center justify-between pb-6 border-b border-[#ECECEC] mb-6">
+        <div className="flex md:hidden items-center justify-between pb-4 border-b border-[#ECECEC] mb-6">
           <button
             type="button"
             onClick={() => setShowExitConfirmModal(true)}
@@ -624,143 +572,121 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
-          <div className="text-right">
-            <span className="text-xs font-bold text-[#2563EB]">
-              Soal {currentIndex + 1} dari {questionsList.length}
-            </span>
-          </div>
+          <span className="text-xs font-bold text-[#2563EB]">
+            Soal {currentIndex + 1} dari {questionsList.length}
+          </span>
         </div>
 
-        {/* Question Area (Prominent Text, Left-Aligned) */}
-        <div className="space-y-6 text-left my-auto">
-          {/* Question Text as the biggest text replacing headline */}
-          <div className="space-y-2">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#1E293B] leading-snug tracking-tight">
-              {currentQuestion.text}
-            </h1>
-            <p className="text-xs sm:text-sm text-[#64748B] font-medium">
-              Pilih 1 jawaban yang tepat:
-            </p>
-          </div>
+        {/* Main Content Row: Question & Options on Left, Explanation on Desktop Right */}
+        <div className="w-full max-w-5xl flex flex-col lg:flex-row gap-8 items-start">
+          {/* Question & Options Column */}
+          <div className="flex-1 w-full space-y-6 text-left">
+            {/* Question Text as the biggest text replacing headline */}
+            <div className="space-y-1.5">
+              <h1 className="text-xl sm:text-2xl font-bold text-[#1E293B] leading-snug tracking-tight">
+                {currentQuestion.text}
+              </h1>
+              <p className="text-xs sm:text-sm text-[#64748B] font-medium">
+                Pilih 1 jawaban yang tepat:
+              </p>
+            </div>
 
-          {/* Options List (Vertical Stack with Ripple / Wave Effect) */}
-          <div className="space-y-3 pt-2">
-            {currentQuestion.options.map((optionText, index) => {
-              const isSelected = selectedOption === index;
-              const isCorrectOption = index === currentQuestion.correctAnswer;
-              const isSelectedWrong = isAnswerChecked && isSelected && !isCorrectOption;
-              const isSelectedCorrect = isAnswerChecked && isSelected && isCorrectOption;
-              const isRevealedCorrect = isAnswerChecked && isCorrectOption;
+            {/* Options List (Seamless Cards with Solid Primary Background on Submit) */}
+            <div className="space-y-3 pt-1">
+              {currentQuestion.options.map((optionText, index) => {
+                const isSelected = selectedOption === index;
+                const isCorrectOption = index === currentQuestion.correctAnswer;
+                const isSelectedWrong = isAnswerChecked && isSelected && !isCorrectOption;
+                const isSelectedCorrect = isAnswerChecked && isSelected && isCorrectOption;
+                const isRevealedCorrect = isAnswerChecked && isCorrectOption;
 
-              return (
-                <button
-                  key={index}
-                  type="button"
-                  disabled={isAnswerChecked}
-                  onClick={() => handleSelectOption(index)}
-                  className={`w-full p-4 sm:p-4.5 rounded-[16px] border text-left flex items-center gap-4 transition-all duration-200 relative overflow-hidden cursor-pointer ${
-                    !isAnswerChecked
-                      ? isSelected
-                        ? "bg-[#EEF2FF] border-[#2563EB] shadow-xs ring-1 ring-[#2563EB]/20"
-                        : "bg-white border-[#E2E8F0] hover:border-slate-300 hover:bg-slate-50/70"
-                    : isSelectedCorrect
-                    ? "bg-emerald-50/95 border-emerald-500 text-emerald-950"
-                    : isSelectedWrong
-                    ? "bg-rose-50/95 border-rose-500 text-rose-950"
-                    : isRevealedCorrect
-                    ? "bg-emerald-50/60 border-emerald-400 text-emerald-900"
-                    : "bg-white border-[#E2E8F0] opacity-50 cursor-default"
-                  }`}
-                >
-                  {/* Subtle selection wave highlight */}
-                  {isSelected && !isAnswerChecked && (
-                    <span className="absolute inset-0 bg-gradient-to-r from-blue-50/60 to-indigo-50/60 pointer-events-none animate-in fade-in duration-150" />
-                  )}
-
-                  {/* Radio Bullet Indicator */}
-                  <div className="shrink-0 relative z-10">
-                    {!isAnswerChecked ? (
-                      isSelected ? (
-                        <div className="w-5 h-5 rounded-full border-2 border-[#2563EB] flex items-center justify-center bg-white">
-                          <div className="w-2.5 h-2.5 rounded-full bg-[#2563EB]" />
-                        </div>
-                      ) : (
-                        <div className="w-5 h-5 rounded-full border-2 border-[#CBD5E1] bg-white" />
-                      )
-                    ) : isSelectedCorrect || isRevealedCorrect ? (
-                      <div className="w-5 h-5 rounded-full border-2 border-emerald-600 bg-emerald-600 flex items-center justify-center">
-                        <Check className="w-3 h-3 text-white stroke-[3]" />
-                      </div>
-                    ) : isSelectedWrong ? (
-                      <div className="w-5 h-5 rounded-full border-2 border-rose-600 bg-rose-600 flex items-center justify-center">
-                        <X className="w-3 h-3 text-white stroke-[3]" />
-                      </div>
-                    ) : (
-                      <div className="w-5 h-5 rounded-full border-2 border-[#CBD5E1] bg-white opacity-60" />
-                    )}
-                  </div>
-
-                  {/* Option Text */}
-                  <span
-                    className={`text-xs sm:text-sm leading-relaxed flex-1 relative z-10 ${
+                return (
+                  <button
+                    key={index}
+                    type="button"
+                    disabled={isAnswerChecked || answeredMap[currentIndex] !== undefined}
+                    onClick={() => handleSelectOption(index)}
+                    className={`w-full p-4 sm:p-4.5 rounded-[16px] text-left flex items-center gap-4 transition-all duration-200 relative overflow-hidden cursor-pointer ${
                       !isAnswerChecked
                         ? isSelected
-                          ? "text-[#1E293B] font-semibold"
-                          : "text-[#334155] font-medium"
+                          ? "bg-[#EEF2FF] shadow-xs ring-2 ring-[#2563EB]"
+                          : "bg-slate-50/80 hover:bg-slate-100/90 text-[#334155]"
                         : isSelectedCorrect || isRevealedCorrect
-                        ? "text-emerald-950 font-semibold"
+                        ? "bg-[#10B981] text-white shadow-sm font-semibold"
                         : isSelectedWrong
-                        ? "text-rose-950 font-semibold"
-                        : "text-[#64748B] font-medium"
+                        ? "bg-[#EF4444] text-white shadow-sm font-semibold"
+                        : "bg-slate-50 text-[#94A3B8] opacity-50 cursor-default"
                     }`}
                   >
-                    {optionText}
-                  </span>
-                </button>
-              );
-            })}
+                    {/* Radio Bullet Indicator */}
+                    <div className="shrink-0 relative z-10">
+                      {!isAnswerChecked ? (
+                        isSelected ? (
+                          <div className="w-5 h-5 rounded-full border-2 border-[#2563EB] flex items-center justify-center bg-white">
+                            <div className="w-2.5 h-2.5 rounded-full bg-[#2563EB]" />
+                          </div>
+                        ) : (
+                          <div className="w-5 h-5 rounded-full border-2 border-[#CBD5E1] bg-white" />
+                        )
+                      ) : isSelectedCorrect || isRevealedCorrect ? (
+                        <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center">
+                          <div className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
+                        </div>
+                      ) : isSelectedWrong ? (
+                        <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center">
+                          <div className="w-2.5 h-2.5 rounded-full bg-[#EF4444]" />
+                        </div>
+                      ) : (
+                        <div className="w-5 h-5 rounded-full border-2 border-[#CBD5E1] bg-white opacity-60" />
+                      )}
+                    </div>
+
+                    {/* Option Text */}
+                    <span
+                      className={`text-xs sm:text-sm leading-relaxed flex-1 relative z-10 ${
+                        !isAnswerChecked
+                          ? isSelected
+                            ? "text-[#1E293B] font-semibold"
+                            : "text-[#334155] font-medium"
+                          : isSelectedCorrect || isRevealedCorrect || isSelectedWrong
+                          ? "text-white"
+                          : "text-[#94A3B8]"
+                      }`}
+                    >
+                      {optionText}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Mobile Explanation (Shown beneath on small screens) */}
+            {isAnswerChecked && (
+              <div className="lg:hidden p-4 rounded-[14px] bg-slate-50 border border-[#ECECEC] text-xs leading-relaxed animate-in fade-in duration-200 mt-4 space-y-1">
+                <span className="font-bold text-[#2E2D2D] block">Pembahasan:</span>
+                <p className="text-[#475569]">{currentQuestion.explanation}</p>
+              </div>
+            )}
           </div>
 
-          {/* Explanation Card (Smooth inside fade-in without bouncing) */}
+          {/* DESKTOP RIGHT EXPLANATION PANEL (Clean, No Icon) */}
           {isAnswerChecked && (
-            <div
-              className={`p-4 rounded-[14px] border text-xs leading-relaxed animate-in fade-in duration-200 mt-5 ${
-                selectedOption === currentQuestion.correctAnswer
-                  ? "bg-emerald-50 border-emerald-200 text-emerald-900"
-                  : "bg-rose-50 border-rose-200 text-rose-900"
-              }`}
-            >
-              <div className="font-bold flex items-center gap-1.5 mb-1">
-                {selectedOption === currentQuestion.correctAnswer ? (
-                  <>
-                    <Check className="w-4 h-4 text-emerald-600" />
-                    <span>Jawaban Tepat!</span>
-                  </>
-                ) : (
-                  <>
-                    <X className="w-4 h-4 text-rose-600" />
-                    <span>Jawaban Belum Tepat</span>
-                  </>
-                )}
-              </div>
-              <p className="text-slate-700">
-                <strong className="font-bold">Pembahasan:</strong> {currentQuestion.explanation}
+            <div className="hidden lg:block w-80 shrink-0 p-5 rounded-[16px] bg-slate-50 border border-[#ECECEC] text-xs leading-relaxed animate-in fade-in slide-in-from-right-3 duration-300 space-y-2 sticky top-14">
+              <span className="font-bold text-sm text-[#2E2D2D] block">Pembahasan:</span>
+              <p className="text-[#475569] leading-relaxed">
+                {currentQuestion.explanation}
               </p>
             </div>
           )}
         </div>
 
-        {/* BOTTOM FIXED ACTION BAR (Right Side Control) */}
-        <div className="fixed bottom-0 right-0 left-0 md:left-72 lg:left-80 bg-white/95 backdrop-blur-md border-t border-[#ECECEC] py-3.5 px-6 sm:px-12 z-30 flex items-center justify-between">
-          <span className="text-xs font-bold text-[#737373]">
-            Soal {currentIndex + 1} dari {questionsList.length}
-          </span>
-
+        {/* BOTTOM FIXED ACTION BAR (Right-aligned action button only, no redundant counter text) */}
+        <div className="fixed bottom-0 right-0 left-0 md:left-72 lg:left-80 bg-white/95 backdrop-blur-md border-t border-[#ECECEC] py-3.5 px-6 sm:px-12 z-30 flex items-center justify-end">
           <div className="flex items-center gap-3">
             {!isAnswerChecked ? (
               <button
                 type="button"
-                disabled={selectedOption === null}
+                disabled={selectedOption === null || answeredMap[currentIndex] !== undefined}
                 onClick={handleCheckAnswer}
                 className="px-6 py-2.5 rounded-full bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed active:scale-98"
               >
@@ -780,7 +706,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
         </div>
       </main>
 
-      {/* CONFIRMATION MODAL KELUAR KUIS */}
+      {/* CONFIRMATION MODAL KELUAR KUIS (STANDARD MODAL DESIGN SYSTEM) */}
       {showExitConfirmModal && (
         <div
           onClick={() => setShowExitConfirmModal(false)}
@@ -788,32 +714,41 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-[16px] max-w-sm w-full p-6 space-y-4 shadow-2xl border border-[#ECECEC] animate-in zoom-in-95 duration-200 text-center"
+            className="bg-white rounded-[12px] max-w-sm w-full border border-[#ECECEC] overflow-hidden shadow-xl animate-in zoom-in-95 duration-200"
           >
-            <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto border border-rose-100">
-              <AlertTriangle className="w-6 h-6 text-rose-600" />
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-base font-bold text-[#2E2D2D]">Keluar dari Kuis?</h3>
-              <p className="text-xs text-[#737373] leading-relaxed">
-                Apakah Anda yakin ingin keluar? Progres pengerjaan saat ini tidak akan tersimpan.
-              </p>
-            </div>
-            <div className="flex items-center gap-2 pt-2">
+            {/* Headline Only Header with Close X button */}
+            <div className="p-5 pb-4 bg-white flex items-center justify-between border-b border-[#ECECEC]">
+              <h3 className="text-base font-bold text-[#2E2D2D]">Keluar dari kuis</h3>
               <button
-                type="button"
                 onClick={() => setShowExitConfirmModal(false)}
-                className="w-1/2 py-2.5 px-3 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-[#2E2D2D] font-semibold text-xs transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer"
+                aria-label="Tutup Modal"
               >
-                Lanjutkan Kuis
+                <X className="w-4 h-4" />
               </button>
-              <button
-                type="button"
-                onClick={() => router.push("/materi")}
-                className="w-1/2 py-2.5 px-3 rounded-[8px] bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs transition-colors cursor-pointer"
-              >
-                Ya, Keluar
-              </button>
+            </div>
+
+            <div className="p-5 space-y-4">
+              <p className="text-xs text-[#737373] leading-relaxed">
+                Apakah Anda yakin ingin keluar dari kuis? Progres pengerjaan saat ini tidak akan tersimpan.
+              </p>
+
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-[#ECECEC]">
+                <button
+                  type="button"
+                  onClick={() => setShowExitConfirmModal(false)}
+                  className="px-4 py-2 rounded-[8px] bg-white border border-[#ECECEC] text-[#2E2D2D] font-semibold text-xs hover:bg-slate-50 cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={handleExitQuiz}
+                  className="px-5 py-2 rounded-[8px] bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs cursor-pointer shadow-xs"
+                >
+                  Ya, keluar
+                </button>
+              </div>
             </div>
           </div>
         </div>

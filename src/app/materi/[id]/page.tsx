@@ -2193,7 +2193,7 @@ export default function MateriDetailPage({
     if (scrollProgress >= 75 && readingSeconds >= 15) {
       setIsMarkedDone(true);
       recordModuleCompletion(String(material.id));
-      showToast("Materi telah selesai dipelajari.");
+      showToast("Materi selesai dibaca");
 
       addUserNotification({
         type: 'materi',
@@ -2208,7 +2208,7 @@ export default function MateriDetailPage({
     if (isMarkedDone || !material) return;
     setIsMarkedDone(true);
     recordModuleCompletion(String(material.id));
-    showToast("Materi telah selesai dipelajari.");
+    showToast("Materi selesai dibaca");
     addUserNotification({
       type: 'materi',
       title: 'Materi Selesai Dipelajari',
@@ -2635,7 +2635,7 @@ export default function MateriDetailPage({
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    showToast(`Mengunduh file: ${material.attachment.fileName.replace(/_/g, " ")}`);
+                    showToast("File diunduh");
                   }}
                   className="inline-flex items-center justify-center gap-1.5 bg-white border border-[#ECECEC] hover:bg-[#F6F5FF] hover:border-[#2563EB]/40 text-[#2563EB] px-4 py-2.5 sm:py-2 rounded-[6px] text-xs font-semibold transition-all duration-200 shrink-0 w-full sm:w-auto"
                 >

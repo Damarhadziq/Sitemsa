@@ -24,6 +24,9 @@ function playSynthFallback(type: "correct" | "wrong" | "result" | "remedial" | "
       (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!AudioCtx) return;
     const ctx = new AudioCtx();
+    if (ctx.state === "suspended") {
+      ctx.resume().catch(() => {});
+    }
     const now = ctx.currentTime;
 
     if (type === "countdown") {
@@ -31,24 +34,24 @@ function playSynthFallback(type: "correct" | "wrong" | "result" | "remedial" | "
       const gain = ctx.createGain();
       osc.type = "sine";
       osc.frequency.setValueAtTime(540, now);
-      gain.gain.setValueAtTime(0.2, now);
-      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+      gain.gain.setValueAtTime(0.25, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start(now);
-      osc.stop(now + 0.1);
+      osc.stop(now + 0.12);
     } else if (type === "correct") {
       [523.25, 659.25, 783.99].forEach((freq, i) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = "triangle";
         osc.frequency.setValueAtTime(freq, now + i * 0.07);
-        gain.gain.setValueAtTime(0.2, now + i * 0.07);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.2);
+        gain.gain.setValueAtTime(0.25, now + i * 0.07);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.22);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start(now + i * 0.07);
-        osc.stop(now + i * 0.07 + 0.2);
+        osc.stop(now + i * 0.07 + 0.22);
       });
     } else if (type === "wrong" || type === "remedial") {
       const osc = ctx.createOscillator();
@@ -56,7 +59,7 @@ function playSynthFallback(type: "correct" | "wrong" | "result" | "remedial" | "
       osc.type = "sawtooth";
       osc.frequency.setValueAtTime(240, now);
       osc.frequency.linearRampToValueAtTime(140, now + 0.35);
-      gain.gain.setValueAtTime(0.25, now);
+      gain.gain.setValueAtTime(0.3, now);
       gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
       osc.connect(gain);
       gain.connect(ctx.destination);
@@ -68,7 +71,7 @@ function playSynthFallback(type: "correct" | "wrong" | "result" | "remedial" | "
         const gain = ctx.createGain();
         osc.type = "triangle";
         osc.frequency.setValueAtTime(freq, now + i * 0.08);
-        gain.gain.setValueAtTime(0.2, now + i * 0.08);
+        gain.gain.setValueAtTime(0.25, now + i * 0.08);
         gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.35);
         osc.connect(gain);
         gain.connect(ctx.destination);
@@ -126,36 +129,16 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
   const router = useRouter();
   const { quizzes, modules } = useAdminStore();
 
-  // Preloaded Audio Cache for Instant 0ms Latency Playback
-  const audioCacheRef = useRef<Record<string, HTMLAudioElement>>({});
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const soundNames = ["correct", "wrong", "result", "remedial", "countdown"];
-    soundNames.forEach((name) => {
-      try {
-        const audio = new Audio(`/audio/${name}.mp3`);
-        audio.preload = "auto";
-        audio.load();
-        audioCacheRef.current[name] = audio;
-      } catch {}
-    });
-  }, []);
-
   const playInstantSound = (type: "correct" | "wrong" | "result" | "remedial" | "countdown") => {
     if (typeof window === "undefined") return;
     try {
-      const audio = audioCacheRef.current[type];
-      if (audio) {
-        audio.currentTime = 0;
-        audio.volume = type === "result" || type === "remedial" ? 0.75 : 0.65;
-        const playPromise = audio.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(() => playSynthFallback(type));
-        }
-      } else {
-        const newAudio = new Audio(`/audio/${type}.mp3`);
-        newAudio.play().catch(() => playSynthFallback(type));
+      const audio = new Audio(`/audio/${type}.mp3`);
+      audio.volume = type === "result" || type === "remedial" ? 0.8 : 0.7;
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          playSynthFallback(type);
+        });
       }
     } catch {
       playSynthFallback(type);
@@ -546,13 +529,13 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
             : "filter-none scale-100 opacity-100"
         }`}
       >
-        {/* Full-window Background aligned to bottom to showcase the green hill */}
+        {/* Full-window SVG Background aligned to bottom to showcase the green hill */}
         <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden z-0">
           {/* eslint-disable-next-next/no-img-element */}
           <img
-            src="/bg-konten-quiz.png"
+            src="/bg-konten-quiz.svg"
             alt="Quiz Background"
-            className="w-full h-full object-cover object-bottom pointer-events-none select-none"
+            className="w-full h-full object-fill object-bottom pointer-events-none select-none"
           />
           {/* Dark Overlay for text contrast */}
           <div className="absolute inset-0 bg-slate-950/25 pointer-events-none" />

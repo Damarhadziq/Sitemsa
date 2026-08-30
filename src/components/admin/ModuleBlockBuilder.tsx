@@ -962,14 +962,10 @@ export function ModuleBlockBuilder({
     }
   }, []);
 
-  // Open Publish Modal trigger (Requires title and mandatory thumbnail)
+  // Open Publish Modal trigger (All forms including mandatory thumbnail are in PublishModal)
   const handleOpenPublishModal = () => {
     if (!moduleTitle.trim()) {
       alert('Judul materi tidak boleh kosong.');
-      return;
-    }
-    if (!hasValidThumbnail) {
-      setShowThumbnailModal(true);
       return;
     }
     setShowPublishModal(true);
@@ -2544,14 +2540,13 @@ export function ModuleBlockBuilder({
                 </div>
               )}
 
-              {/* 0. COVER / THUMBNAIL MATERI (RASIO 16:9) - Only for new modules */}
-              {!initialModule && (
+              {/* 0. COVER / THUMBNAIL MATERI (RASIO 16:9) - WAJIB */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label className="font-bold text-xs text-[#2E2D2D] block">
-                    Cover / Thumbnail Materi (16:9)
+                    Cover / Thumbnail Materi <span className="text-rose-500 font-bold">* (Wajib)</span>
                   </label>
-                  {moduleThumbnail && (
+                  {moduleThumbnail && !isUploadingThumbnail && (
                     <button
                       type="button"
                       onClick={() => thumbnailFileInputRef.current?.click()}
@@ -2622,12 +2617,17 @@ export function ModuleBlockBuilder({
                     <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
                       <Upload className="w-5 h-5 text-[#2563EB]" />
                     </div>
-                    <span>Upload Cover / Thumbnail Materi (16:9)</span>
+                    <span>Upload Cover / Thumbnail Materi (16:9) *</span>
                     <span className="text-[10px] text-[#737373] font-normal">Format: PNG, JPG, JPEG (Maks. 5MB)</span>
                   </button>
                 )}
+
+                {!moduleThumbnail && !isUploadingThumbnail && (
+                  <p className="text-[11px] text-rose-500 font-medium">
+                    * Cover materi wajib diunggah sebelum materi dapat dipublikasikan.
+                  </p>
+                )}
               </div>
-              )}
 
               {/* 1. JUDUL MATERI (READ-ONLY) */}
               <div className="space-y-1.5">

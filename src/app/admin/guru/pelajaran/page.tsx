@@ -187,11 +187,29 @@ export default function AdminGuruPelajaranPage() {
     return false;
   };
 
+  const isTeacherMatch = (teacherId?: string, teacherName?: string) => {
+    if (!user) return true;
+    if (user.role === 'superadmin') return true;
+
+    const uId = (user.id || '').toLowerCase().trim();
+    const uName = (user.name || '').toLowerCase().trim();
+
+    const tId = (teacherId || '').toLowerCase().trim();
+    const tName = (teacherName || '').toLowerCase().trim();
+
+    if (tId && uId && tId === uId) return true;
+    if (tName && uName) {
+      if (tName === uName) return true;
+      if (tName.includes(uName) || uName.includes(tName)) return true;
+    }
+    return false;
+  };
+
   const subjectModules = modules.filter(
-    (m) => isSubjectMatch(m.subject, currentSubject)
+    (m) => isSubjectMatch(m.subject, currentSubject) && isTeacherMatch(m.teacherId, m.teacherName)
   );
   const subjectQuizzes = quizzes.filter(
-    (q) => isSubjectMatch(q.subject, currentSubject)
+    (q) => isSubjectMatch(q.subject, currentSubject) && isTeacherMatch(q.teacherId, q.teacherName)
   );
 
   // Selected item ID from query param (null = Landing Overview mode)
@@ -383,6 +401,7 @@ export default function AdminGuruPelajaranPage() {
 
       setNewlyAddedMateriId(editingModule.id);
       setTimeout(() => setNewlyAddedMateriId(null), 3000);
+    } else {
       const currentTeacherId = user?.id || 't2';
       const currentTeacherName = user?.name || 'Mochammad Rizal D. D.';
       const fixedId = generateEntityId('mod', currentSubject, currentTeacherId);

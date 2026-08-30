@@ -94,9 +94,31 @@ export function AdminSidebar() {
     return false;
   };
 
-  // Filter modules & quizzes for active subject
-  const currentModules = modules.filter((m) => isSubjectMatch(m.subject, currentSubject));
-  const currentQuizzes = quizzes.filter((q) => isSubjectMatch(q.subject, currentSubject));
+  const isTeacherMatch = (teacherId?: string, teacherName?: string) => {
+    if (!user) return true;
+    if (user.role === 'superadmin') return true;
+
+    const uId = (user.id || '').toLowerCase().trim();
+    const uName = (user.name || '').toLowerCase().trim();
+
+    const tId = (teacherId || '').toLowerCase().trim();
+    const tName = (teacherName || '').toLowerCase().trim();
+
+    if (tId && uId && tId === uId) return true;
+    if (tName && uName) {
+      if (tName === uName) return true;
+      if (tName.includes(uName) || uName.includes(tName)) return true;
+    }
+    return false;
+  };
+
+  // Filter modules & quizzes for active subject & logged in teacher
+  const currentModules = modules.filter(
+    (m) => isSubjectMatch(m.subject, currentSubject) && isTeacherMatch(m.teacherId, m.teacherName)
+  );
+  const currentQuizzes = quizzes.filter(
+    (q) => isSubjectMatch(q.subject, currentSubject) && isTeacherMatch(q.teacherId, q.teacherName)
+  );
 
   const superadminNav = [
     { name: 'Dashboard', href: '/admin/superadmin', icon: LayoutDashboard },

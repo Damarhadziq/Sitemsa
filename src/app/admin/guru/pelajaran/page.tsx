@@ -364,6 +364,7 @@ export default function AdminGuruPelajaranPage() {
         duration: moduleData.duration || editingModule.duration,
         topics: moduleData.topics || editingModule.topics,
         thumbnail: moduleData.thumbnail !== undefined ? moduleData.thumbnail : editingModule.thumbnail,
+        blocks: blocks,
         isPublished: moduleData.isPublished ?? editingModule.isPublished,
         quizSource: moduleData.quizSource as any,
       });
@@ -397,6 +398,7 @@ export default function AdminGuruPelajaranPage() {
         topics: moduleData.topics || ['Materi Sintesa', 'Praktikum'],
         description: moduleData.description || 'Deskripsi materi pembelajaran.',
         thumbnail: moduleData.thumbnail,
+        blocks: blocks,
         teacherId: user?.id || 't-olr-1',
         teacherName: user?.name || 'Brilian Anugraheni',
         isPublished: moduleData.isPublished ?? true,

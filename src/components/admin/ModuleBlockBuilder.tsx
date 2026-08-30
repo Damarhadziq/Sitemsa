@@ -35,6 +35,7 @@ import {
 import { ModuleItem } from '@/lib/admin-store';
 import { getMaterialBlocksForModule, getMaterialDetailForModule } from '@/app/materi/[id]/page';
 import { Tooltip } from '@/components/ui/tooltip';
+import { StorageService } from '@/services/storage.service';
 
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -311,69 +312,36 @@ export function ModuleBlockBuilder({
   const [thumbnailUploadProgress, setThumbnailUploadProgress] = useState(0);
   const thumbnailFileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const handleThumbnailSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleThumbnailSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setIsUploadingThumbnail(true);
-      setThumbnailUploadProgress(20);
+      setThumbnailUploadProgress(25);
 
-      setTimeout(() => setThumbnailUploadProgress(50), 150);
-      setTimeout(() => setThumbnailUploadProgress(85), 350);
+      setTimeout(() => setThumbnailUploadProgress(60), 200);
+      setTimeout(() => setThumbnailUploadProgress(85), 450);
 
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const rawBase64 = event.target?.result as string;
-
-        // Optimize and compress image via canvas for persistent reliable storage
-        const img = new Image();
-        img.onload = () => {
-          const maxDim = 1280;
-          let width = img.width;
-          let height = img.height;
-
-          if (width > maxDim || height > maxDim) {
-            if (width > height) {
-              height = Math.round((height * maxDim) / width);
-              width = maxDim;
-            } else {
-              width = Math.round((width * maxDim) / height);
-              height = maxDim;
-            }
-          }
-
-          const canvas = document.createElement('canvas');
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            ctx.drawImage(img, 0, 0, width, height);
-            const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.85);
-            setThumbnailUploadProgress(100);
-            setTimeout(() => {
-              setModuleThumbnail(optimizedBase64);
-              setIsUploadingThumbnail(false);
-              setIsDirty(true);
-            }, 250);
-          } else {
-            setThumbnailUploadProgress(100);
-            setTimeout(() => {
-              setModuleThumbnail(rawBase64);
-              setIsUploadingThumbnail(false);
-              setIsDirty(true);
-            }, 250);
-          }
-        };
-        img.onerror = () => {
+      try {
+        const uploadedUrl = await StorageService.uploadImage(file, 'covers');
+        setThumbnailUploadProgress(100);
+        setTimeout(() => {
+          setModuleThumbnail(uploadedUrl);
+          setIsUploadingThumbnail(false);
+          setIsDirty(true);
+        }, 200);
+      } catch {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const rawBase64 = event.target?.result as string;
           setThumbnailUploadProgress(100);
           setTimeout(() => {
             setModuleThumbnail(rawBase64);
             setIsUploadingThumbnail(false);
             setIsDirty(true);
-          }, 250);
+          }, 200);
         };
-        img.src = rawBase64;
-      };
-      reader.readAsDataURL(file);
+        reader.readAsDataURL(file);
+      }
     }
     e.target.value = '';
   };

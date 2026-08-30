@@ -61,6 +61,7 @@ export interface ModuleItem {
   isPublished?: boolean;
   thumbnail?: string;
   content?: string;
+  blocks?: any[];
   quizSource?: {
     type: 'kuis_sitemsa' | 'link_eksternal' | 'qr_code';
     title: string;

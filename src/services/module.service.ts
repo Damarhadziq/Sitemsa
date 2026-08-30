@@ -51,6 +51,14 @@ export class ModuleService {
 
         data.forEach((item: any) => {
           const titleKey = `${(item.subject || '').toLowerCase().trim()}_${(item.title || '').toLowerCase().trim()}`;
+          let parsedBlocks = item.blocks;
+          if (!parsedBlocks && item.content) {
+            try {
+              const p = JSON.parse(item.content);
+              if (Array.isArray(p)) parsedBlocks = p;
+            } catch {}
+          }
+
           if (!uniqueMap.has(titleKey)) {
             uniqueMap.set(titleKey, {
               id: String(item.id),
@@ -62,6 +70,9 @@ export class ModuleService {
               duration: item.duration || '45 Menit',
               topics: Array.isArray(item.topics) ? item.topics : [],
               description: item.description || '',
+              thumbnail: item.thumbnail || item.image_url || undefined,
+              content: item.content || undefined,
+              blocks: parsedBlocks,
               isAiRecommended: Boolean(item.is_ai_recommended),
               isPublished: item.is_published !== undefined ? Boolean(item.is_published) : true,
               quizSource: item.quiz_source_type ? {
@@ -132,7 +143,7 @@ export class ModuleService {
 
     if (supabase) {
       try {
-        const { error: insErr } = await supabase.from('modules').upsert({
+        const payload: any = {
           id: newId,
           subject: data.subject,
           teacher_id: data.teacherId || 't-olr-1',
@@ -142,11 +153,18 @@ export class ModuleService {
           duration: data.duration || '30 Menit',
           topics: data.topics || [],
           description: data.description || '',
+          content: data.blocks ? JSON.stringify(data.blocks) : (data.content || data.description || ''),
           is_published: data.isPublished !== undefined ? data.isPublished : true,
-        }, { onConflict: 'id' });
+        };
+
+        if (data.thumbnail) {
+          payload.thumbnail = data.thumbnail;
+        }
+
+        const { error: insErr } = await supabase.from('modules').upsert(payload, { onConflict: 'id' });
 
         if (insErr) {
-          console.warn('Supabase full upsert note, trying minimal columns:', insErr.message);
+          console.warn('Supabase full upsert note, trying fallback columns:', insErr.message);
           const { error: minErr } = await supabase.from('modules').upsert({
             id: newId,
             subject: data.subject,
@@ -176,7 +194,7 @@ export class ModuleService {
 
     if (supabase) {
       try {
-        await supabase.from('modules').update({
+        const updatePayload: any = {
           subject: updates.subject,
           teacher_id: updates.teacherId,
           teacher_name: updates.teacherName,
@@ -191,7 +209,16 @@ export class ModuleService {
           quiz_source_title: updates.quizSource?.title,
           external_url: updates.quizSource?.externalUrl,
           qr_image_url: updates.quizSource?.qrImageUrl,
-        }).eq('id', id);
+        };
+
+        if (updates.blocks) {
+          updatePayload.content = JSON.stringify(updates.blocks);
+        }
+        if (updates.thumbnail !== undefined) {
+          updatePayload.thumbnail = updates.thumbnail;
+        }
+
+        await supabase.from('modules').update(updatePayload).eq('id', id);
       } catch (e) {
         console.warn('Failed to update module in Supabase:', e);
       }

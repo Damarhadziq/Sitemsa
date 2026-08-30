@@ -6,7 +6,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, BarChart2, X } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
-import { useAdminStore } from "@/lib/admin-store";
+import { useAdminStore, ModuleItem } from "@/lib/admin-store";
+import { ModuleService } from "@/services/module.service";
 import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react";
 import {
   ArrowLeft01Icon,
@@ -1872,6 +1873,22 @@ export default function MateriDetailPage({
   const fromParam = searchParams.get("from");
 
   const { modules, quizzes } = useAdminStore();
+  const [remoteModule, setRemoteModule] = useState<ModuleItem | null>(() => {
+    return ModuleService.getModuleById(id);
+  });
+
+  useEffect(() => {
+    const localMod = ModuleService.getModuleById(id);
+    if (localMod) {
+      setRemoteModule(localMod);
+    }
+    ModuleService.fetchFromSupabase().then((all) => {
+      const found = all.find((m) => m.id === id);
+      if (found) {
+        setRemoteModule(found);
+      }
+    });
+  }, [id]);
 
   const baseMaterial = useMemo(() => {
     return getMaterialDetailForModule(id) || MATERIAL_DATABASE[parseInt(id, 10) || 1] || MATERIAL_DATABASE[1];
@@ -1882,14 +1899,15 @@ export default function MateriDetailPage({
     const numId = parseInt(id, 10);
     const targetKey = !isNaN(numId) ? idToModuleKey[numId] : id;
 
-    const storeMod = modules.find(
-      (m) =>
-        m.id === id ||
-        (targetKey && m.id === targetKey) ||
-        (!isNaN(numId) && moduleKeyToId[m.id] === numId) ||
-        String(m.id) === String(baseMaterial.id) ||
-        m.title.toLowerCase().trim() === baseMaterial.title.toLowerCase().trim()
-    );
+    const storeMod =
+      modules.find(
+        (m) =>
+          m.id === id ||
+          (targetKey && m.id === targetKey) ||
+          (!isNaN(numId) && moduleKeyToId[m.id] === numId) ||
+          String(m.id) === String(baseMaterial.id) ||
+          m.title.toLowerCase().trim() === baseMaterial.title.toLowerCase().trim()
+      ) || remoteModule;
 
     if (!storeMod) return baseMaterial;
 
@@ -1898,7 +1916,7 @@ export default function MateriDetailPage({
       const dynamicSections: ContentSection[] = [];
       let dynamicStepByStep: any = undefined;
       let dynamicVideo: any = undefined;
-      let dynamicAttachment: any = baseMaterial.attachment;
+      let dynamicAttachment: any = undefined;
 
       storeMod.blocks.forEach((block: any, bIdx: number) => {
         if (block.type === 'text') {
@@ -1929,7 +1947,7 @@ export default function MateriDetailPage({
         } else if (block.type === 'code' && block.codeSnippet) {
           dynamicSections.push({
             id: `sec-code-${bIdx + 1}`,
-            title: '',
+            title: block.sectionTitle || '',
             paragraphs: [],
             codeSnippet: block.codeSnippet,
           });
@@ -2004,6 +2022,7 @@ export default function MateriDetailPage({
       updatedAt: storeMod.createdAt || baseMaterial.updatedAt,
       topics: storeMod.topics || baseMaterial.topics,
       imageUrl: storeMod.thumbnail || baseMaterial.imageUrl,
+      attachment: undefined,
       contentSections: storeMod.description ? [{ id: 'sec-1', title: storeMod.title, paragraphs: [storeMod.description] }] : baseMaterial.contentSections,
       quizSource: storeMod.quizSource ? {
         type: storeMod.quizSource.type === 'kuis_sitemsa' ? 'internal' : storeMod.quizSource.type === 'qr_code' ? 'barcode' : 'external_link',
@@ -2015,7 +2034,7 @@ export default function MateriDetailPage({
         internalUrl: `/kuis/${storeMod.id}`,
       } : undefined,
     };
-  }, [baseMaterial, modules, id]);
+  }, [baseMaterial, modules, remoteModule, id]);
 
   // Find linked quiz created by teacher / admin
   const activeQuizInfo = useMemo(() => {

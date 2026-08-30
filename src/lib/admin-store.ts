@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { addUserNotification } from '@/services/notification.service';
+import { generateEntityId } from '@/lib/id-generator';
 
 export interface SubjectItem {
   id: string;
@@ -1387,7 +1388,7 @@ export const useAdminStore = create<AdminStoreState>()(
 
       // Module Actions
       addModule: (moduleData) => {
-        const newId = `mod-${Date.now()}`;
+        const newId = (moduleData as any).id || generateEntityId('mod', moduleData.subject, moduleData.teacherId);
         set((state) => ({
           modules: [
             {
@@ -1438,7 +1439,7 @@ export const useAdminStore = create<AdminStoreState>()(
 
       // Quiz Actions
       addQuiz: (quizData) => {
-        const newId = `qz-${Date.now()}`;
+        const newId = (quizData as any).id || generateEntityId('quiz', quizData.subject, quizData.teacherId);
         set((state) => ({
           quizzes: [
             {

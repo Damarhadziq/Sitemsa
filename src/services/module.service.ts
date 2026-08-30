@@ -1,5 +1,6 @@
 import { dbStore, ModuleItem } from './data-store';
 import { supabase } from '@/lib/supabase';
+import { generateEntityId } from '@/lib/id-generator';
 
 const STORAGE_KEY = 'sintesa_modules_cache_v1';
 
@@ -112,7 +113,7 @@ export class ModuleService {
 
   static async createModule(data: Omit<ModuleItem, 'id' | 'createdAt'> & { id?: string }): Promise<ModuleItem> {
     this.ensureHydrated();
-    const newId = data.id || `mod-${Date.now()}`;
+    const newId = data.id || generateEntityId('mod', data.subject, data.teacherId);
     const newModule: ModuleItem = {
       id: newId,
       ...data,

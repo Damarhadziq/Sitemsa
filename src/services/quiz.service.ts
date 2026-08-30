@@ -1,5 +1,6 @@
 import { dbStore, QuizItem, QuizQuestion } from './data-store';
 import { supabase } from '@/lib/supabase';
+import { generateEntityId } from '@/lib/id-generator';
 
 const STORAGE_KEY = 'sintesa_quizzes_cache_v1';
 
@@ -139,9 +140,9 @@ export class QuizService {
 
   static async createQuiz(data: QuizCreateInput): Promise<QuizItem> {
     this.ensureHydrated();
-    const newId = `quiz-${Date.now()}`;
+    const newId = generateEntityId('quiz', data.subject, data.teacherId);
     const formattedQuestions: QuizQuestion[] = data.questions.map((q, idx) => ({
-      id: q.id || `q-${idx + 1}-${Date.now()}`,
+      id: q.id || generateEntityId('q', data.subject, data.teacherId),
       text: q.text,
       options: q.options,
       correctAnswer: q.correctAnswer,

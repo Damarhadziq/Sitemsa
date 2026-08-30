@@ -45,6 +45,7 @@ import { StudyAnalyticsService } from '@/services/analytics.service';
 import { ModuleService } from '@/services/module.service';
 import { QuizService } from '@/services/quiz.service';
 import { supabase } from '@/lib/supabase';
+import { generateEntityId } from '@/lib/id-generator';
 
 // Card More Dropdown Component (Profile Dropdown Style)
 // Card More Dropdown Component (Profile Dropdown Style)
@@ -370,8 +371,9 @@ export default function AdminGuruPelajaranPage() {
       setNewlyAddedMateriId(editingModule.id);
       setTimeout(() => setNewlyAddedMateriId(null), 3000);
     } else {
-      const fixedId = `mod-${Date.now()}`;
+      const fixedId = generateEntityId('mod', currentSubject, user?.id || 't1');
       addModule({
+        id: fixedId,
         subject: currentSubject,
         title: moduleData.title || 'Materi Baru',
         level: moduleData.level || 'Pemula',
@@ -384,7 +386,7 @@ export default function AdminGuruPelajaranPage() {
         isPublished: moduleData.isPublished ?? true,
         quizSource: moduleData.quizSource,
         blocks: blocks,
-      });
+      } as any);
 
       ModuleService.createModule({
         id: fixedId,
@@ -598,21 +600,21 @@ export default function AdminGuruPelajaranPage() {
       published: true,
       questions: [
         {
-          id: `q-imp-1-${Date.now()}`,
+          id: generateEntityId('q', currentSubject, user?.id || 't-1'),
           text: 'Manakah tipe data yang digunakan untuk menyimpan nilai kebenaran (True/False)?',
           options: ['Integer', 'String', 'Boolean', 'Float'],
           correctAnswer: 2,
           explanation: 'Boolean hanya memiliki 2 nilai yaitu true (benar) atau false (salah).',
         },
         {
-          id: `q-imp-2-${Date.now()}`,
+          id: generateEntityId('q', currentSubject, user?.id || 't-1'),
           text: 'Manakah operator yang digunakan untuk mengecek kesamaan nilai dan tipe data dalam JavaScript?',
           options: ['==', '=', '===', '!='],
           correctAnswer: 2,
           explanation: 'Operator === mengecek kesamaan nilai sekaligus tipe datanya (strict equality).',
         },
         {
-          id: `q-imp-3-${Date.now()}`,
+          id: generateEntityId('q', currentSubject, user?.id || 't-1'),
           text: 'Instruksi perulangan yang pasti mengeksekusi blok minimal satu kali adalah...',
           options: ['For Loop', 'Do-While Loop', 'While Loop', 'ForEach'],
           correctAnswer: 1,
@@ -647,7 +649,7 @@ export default function AdminGuruPelajaranPage() {
       teacherName: user?.name || 'Pak Budi Prasetyo, M.Kom.',
       published: true,
       questions: manualQuestions.map((q, idx) => ({
-        id: `q-man-${idx}-${Date.now()}`,
+        id: generateEntityId('q', currentSubject, user?.id || 't-1'),
         text: q.text || `Soal ${idx + 1}`,
         options: q.options,
         correctAnswer: q.correctAnswer,

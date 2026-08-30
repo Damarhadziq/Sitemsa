@@ -100,275 +100,7 @@ const getSubjectIcon = (subject?: string): IconSvgElement => {
   return ComputerIcon;
 };
 
-export const MODUL_DATA: ModulItem[] = [
-  // --- INFORMATIKA ---
-  {
-    id: 1,
-    subject: "Informatika",
-    title: "Variabel, Tipe Data & Operasi Logika",
-    level: "Pemula",
-    duration: "25 Menit",
-    topics: ["Variabel", "Tipe Data Primitif", "Operator Logika"],
-    description: "Pelajari konsep penyimpanan data dan eksekusi operasi logika dasar dalam pemrograman.",
-    icon: ComputerIcon,
-    isAiRecommended: true,
-    aiReason: "Fondasi Utama Informatika",
-  },
-  {
-    id: 2,
-    subject: "Informatika",
-    title: "Struktur Percabangan (If-Else & Switch)",
-    level: "Pemula",
-    duration: "30 Menit",
-    topics: ["Kondisi If-Else", "Nested If", "Switch Case"],
-    description: "Kuasai pengambilan keputusan dalam kode berdasarkan kondisi logika yang dievaluasi.",
-    icon: ComputerIcon,
-  },
-  {
-    id: 3,
-    subject: "Informatika",
-    title: "Perulangan & Iterasi Algoritma",
-    level: "Pemula",
-    duration: "35 Menit",
-    topics: ["For Loop", "While & Do-While", "Break & Continue"],
-    description: "Pahami teknik mengeksekusi instruksi berulang secara efisien menggunakan perulangan.",
-    icon: ComputerIcon,
-  },
-
-  // --- ELEKTRONIKA (PTE Dokumen Resmi) ---
-  {
-    id: 21,
-    subject: "Elektronika",
-    title: "Keselamatan dan Kesehatan Kerja serta Lingkungan Hidup (K3LH) dan Budaya Kerja Industri",
-    level: "Pemula",
-    duration: "35 Menit",
-    topics: ["Pengertian K3LH", "Budaya Kerja 5R/5S", "Potensi Bahaya Kelistrikan", "Alat Pelindung Diri (APD)"],
-    description: "Penerapan prinsip K3LH di bengkel elektronika, pencegahan kecelakaan kerja, budaya kerja industri (Ringkas, Rapi, Resik, Rawat, Rajin), serta penggunaan APD.",
-    icon: CpuIcon,
-    isAiRecommended: true,
-    aiReason: "K3LH & Budaya Kerja Industri (Fahrul Adiyansa)",
-  },
-  {
-    id: 22,
-    subject: "Elektronika",
-    title: "Penggunaan Perkakas Kerja Tangan Listrik dan Non Listrik",
-    level: "Pemula",
-    duration: "40 Menit",
-    topics: ["Perkakas Tangan Manual", "Ragam Tang & Obeng", "Power Tools Listrik", "Prosedur K3 & Perawatan"],
-    description: "Mengenal dan mengoperasikan ragam perkakas tangan manual (tang kombinasi, rivet, cucut) dan perkakas tangan bertenaga listrik (bor, gerinda, jigsaw) secara aman.",
-    icon: CpuIcon,
-    isAiRecommended: true,
-    aiReason: "Perkakas Tangan Listrik & Non Listrik (Anisa Susilawati)",
-  },
-  {
-    id: 23,
-    subject: "Elektronika",
-    title: "Gambar Teknik Listrik, Elektronika, dan Instrumentasi",
-    level: "Pemula",
-    duration: "45 Menit",
-    topics: ["Pengertian Gamtek", "Standarisasi Gambar", "Simbol Komponen Elektronika", "Diagram Skematik & Wiring"],
-    description: "Memahami bahasa visual gambar teknik, standarisasi ISO, pembacaan simbol komponen elektronika dan instrumentasi, serta perancangan diagram skematik.",
-    icon: CpuIcon,
-    isAiRecommended: true,
-    aiReason: "Gambar Teknik & Skematik (Banu Mahmuda H.)",
-  },
-  {
-    id: 24,
-    subject: "Elektronika",
-    title: "Alat Ukur Listrik, Elektronika, dan Instrumentasi",
-    level: "Pemula",
-    duration: "40 Menit",
-    topics: ["Voltmeter & Amperemeter", "Multimeter Analog & Digital", "Osiloskop", "Prosedur Pengukuran Aman"],
-    description: "Pengenalan fungsi dan cara pengoperasian alat ukur kelistrikan dan instrumentasi (Multitester, Osciloscope, Signal Generator) secara presisi.",
-    icon: CpuIcon,
-    isAiRecommended: true,
-    aiReason: "Alat Ukur & Kalibrasi (Tubagus Fauzan A.)",
-  },
-  {
-    id: 25,
-    subject: "Elektronika",
-    title: "Komponen Elektronika Pasif dan Aktif",
-    level: "Pemula",
-    duration: "35 Menit",
-    topics: ["Resistor & Kapasitor", "Induktor", "Dioda & Transistor", "IC (Integrated Circuit)"],
-    description: "Membedah karakteristik dan prinsip kerja komponen pasif (resistor, kapasitor, induktor) dan komponen aktif (dioda, transistor, IC) dalam rangkaian elektronika.",
-    icon: CpuIcon,
-    isAiRecommended: true,
-    aiReason: "Komponen Pasif & Aktif (Vella Pratika I. N.)",
-  },
-  {
-    id: 26,
-    subject: "Elektronika",
-    title: "Dasar Kelistrikan dan Hukum-Hukum Kelistrikan",
-    level: "Pemula",
-    duration: "40 Menit",
-    topics: ["Arus, Tegangan & Hambatan", "Hukum Ohm", "Hukum Kirchhoff I & II", "Daya dan Energi Listrik"],
-    description: "Konsep dasar besaran listrik, aplikasi perhitungan Hukum Ohm, analisis percabangan Hukum Kirchhoff, dan efisiensi konsumsi daya listrik.",
-    icon: CpuIcon,
-    isAiRecommended: true,
-    aiReason: "Hukum Ohm & Kirchhoff (Nova Milyard)",
-  },
-
-  // --- OTOMOTIF (Dokumen Resmi) ---
-  {
-    id: 11,
-    subject: "Otomotif",
-    title: "Sistem Pengisian Mobil Konvensional dan Elektronik/IC",
-    level: "Menengah",
-    duration: "45 Menit",
-    topics: ["Pengertian Sistem Pengisian", "Komponen Alternator", "Prinsip Kerja", "Troubleshooting Pengisian"],
-    description: "Memahami fungsi, komponen utama alternator, prinsip kerja pembangkitan arus, dan langkah pemecahan masalah sistem pengisian mobil konvensional serta elektronik.",
-    icon: Car01Icon,
-    isAiRecommended: true,
-    aiReason: "Sistem Pengisian Mobil (Ardyan Santoso)",
-  },
-  {
-    id: 12,
-    subject: "Otomotif",
-    title: "Sistem Transmisi Manual",
-    level: "Menengah",
-    duration: "40 Menit",
-    topics: ["Pengertian Transmisi Manual", "Komponen Transmisi", "Aliran Tenaga Gigi", "Troubleshooting Transmisi"],
-    description: "Mempelajari prinsip kerja sistem transmisi manual kendaraan, fungsi kopling dan sinkromes, serta diagnosis gangguan transmisi.",
-    icon: Car01Icon,
-    isAiRecommended: true,
-    aiReason: "Transmisi Manual (Satrio)",
-  },
-
-  // --- KEOLAHRAGAAN (Dokumen Resmi PJOK) ---
-  {
-    id: 18,
-    subject: "Keolahragaan",
-    title: "Keterampilan Gerak & Taktik Permainan Bola Basket",
-    level: "Pemula",
-    duration: "40 Menit",
-    topics: ["Pendahuluan Bola Basket", "Pola Penyerangan", "Pola Pertahanan", "Keterampilan Gerak"],
-    description: "Menguasai keterampilan teknik dasar, pola penyerangan cepat (fast break), pola pertahanan man-to-man dan zone defense pada bola basket.",
-    icon: Dumbbell01Icon,
-    isAiRecommended: true,
-    aiReason: "Taktik Bola Basket (Brilian Anugraheni)",
-  },
-  {
-    id: 19,
-    subject: "Keolahragaan",
-    title: "Keterampilan Gerak Permainan Bola Voli",
-    level: "Pemula",
-    duration: "35 Menit",
-    topics: ["Pengertian Bola Voli", "Passing Bawah & Atas", "Servis Bawah & Atas", "Smash & Block"],
-    description: "Mempelajari teknik dasar passing, servis, smash tajam, dan teknik bendungan (blocking) beregu dalam permainan bola voli.",
-    icon: Dumbbell01Icon,
-    isAiRecommended: true,
-    aiReason: "Teknik Bola Voli (Brilian Anugraheni)",
-  },
-  // --- BIMBINGAN KONSELING (Lengkap 7 Modul) ---
-  {
-    id: 7,
-    subject: "Bimbingan Konseling",
-    title: "Membangun Kepercayaan Diri untuk Mengembangkan Potensi Diri",
-    level: "Pemula",
-    duration: "30 Menit",
-    topics: ["Hakikat Percaya Diri", "Ciri Percaya Diri", "Faktor Pembentuk", "Strategi Pengembangan Diri"],
-    description: "Memahami konsep kepercayaan diri remaja, mengenali potensi personal, mengatasi rasa rendah diri, serta strategi membangun konsep diri yang optimis.",
-    icon: UserGroupIcon,
-    isAiRecommended: true,
-    aiReason: "Kepercayaan Diri (Innova Riskianugrah R.)",
-  },
-  {
-    id: 8,
-    subject: "Bimbingan Konseling",
-    title: "Yuk, Lawan Rasa Malas: Self-Management untuk Konsisten Belajar!",
-    level: "Pemula",
-    duration: "30 Menit",
-    topics: ["Prokrastinasi", "Penyebab & Dampak", "Self-Management", "Dukungan Kelompok"],
-    description: "Memahami pengertian prokrastinasi, penyebab dan dampaknya, serta penerapan strategi self-management dan simulasi Buaya Gigitan untuk konsisten belajar.",
-    icon: UserGroupIcon,
-    isAiRecommended: true,
-    aiReason: "Fondasi Self-Management (Dinda Riestia)",
-  },
-  {
-    id: 13,
-    subject: "Bimbingan Konseling",
-    title: "Talent Quest: Temukan Potensimu, Kembangkan Dirimu!",
-    level: "Pemula",
-    duration: "35 Menit",
-    topics: ["Potensi Diri", "Ragam Potensi", "Strength-Based", "Talent Quest Board"],
-    description: "Mengenal dan mengembangkan potensi diri melalui pendekatan strength-based, refleksi personal, dan simulasi permainan edukatif Talent Quest.",
-    icon: UserGroupIcon,
-    isAiRecommended: true,
-    aiReason: "Eksplorasi Minat & Bakat (Dinda Riestia)",
-  },
-  {
-    id: 14,
-    subject: "Bimbingan Konseling",
-    title: "Jati Diri Tanpa Kenakalan",
-    level: "Menengah",
-    duration: "40 Menit",
-    topics: ["Jati Diri Remaja", "Bentuk Kenakalan", "Norma Pergaulan", "Peer Pressure", "Mind Mapping"],
-    description: "Memahami pembentukan jati diri remaja, menyelaraskan norma pergaulan teman sebaya, mengatasi peer pressure, dan studi kasus problem-based learning.",
-    icon: UserGroupIcon,
-    aiReason: "Karakter & Jati Diri (Dinda Riestia)",
-  },
-  {
-    id: 15,
-    subject: "Bimbingan Konseling",
-    title: "Membangun Konsep Diri Positif",
-    level: "Pemula",
-    duration: "30 Menit",
-    topics: ["Pengertian Konsep Diri", "Self-Image", "Self-Esteem", "Ideal Self", "Faktor Lingkungan"],
-    description: "Memahami konsep diri remaja, 3 komponen utama (self-image, self-esteem, ideal self), faktor lingkungan, serta aktivitas refleksi diri telapak tangan.",
-    icon: UserGroupIcon,
-    isAiRecommended: true,
-    aiReason: "Pengembangan Konsep Diri (Erintan Tsuraya R.)",
-  },
-  {
-    id: 16,
-    subject: "Bimbingan Konseling",
-    title: "Personal Branding: Membangun Citra Diri Positif",
-    level: "Pemula",
-    duration: "35 Menit",
-    topics: ["Personal Branding", "Potensi Diri", "Unsur Branding", "Kesiapan PKL & Kerja"],
-    description: "Mengenali keunikan dan potensi diri, membangun citra profesional positif, serta persiapan menghadapi PKL dan dunia kerja bagi siswa SMK.",
-    icon: UserGroupIcon,
-    isAiRecommended: true,
-    aiReason: "Kesiapan Karir & Vokasi (Erintan Tsuraya R.)",
-  },
-  {
-    id: 17,
-    subject: "Bimbingan Konseling",
-    title: "Persiapan Magang dan Etika di Dunia Kerja",
-    level: "Menengah",
-    duration: "40 Menit",
-    topics: ["Persiapan Magang", "Soft Skills Vokasi", "Etika Kerja", "Tips Profesional"],
-    description: "Panduan komprehensif persiapan administratif, keterampilan, mental, dan penampilan serta etika profesional saat magang di industri.",
-    icon: UserGroupIcon,
-    aiReason: "Etika Magang & PKL (Erintan Tsuraya R.)",
-  },
-
-
-  // --- SENI TARI ---
-  {
-    id: 9,
-    subject: "Seni Tari",
-    title: "Konsep Koreografi dalam Seni Tari",
-    level: "Pemula",
-    duration: "30 Menit",
-    topics: ["Koreografi", "Wirama", "Wiraga", "Wirasa"],
-    description: "Mempelajari pengertian koreografi, unsur pendukung tari (wirama, wiraga, wirasa), sumber rangsang ide, serta elemen utama ruang, waktu, dan tenaga.",
-    icon: MusicNote01Icon,
-    isAiRecommended: true,
-    aiReason: "Fondasi Utama Seni Tari (Anita Dwi Ningtyas)",
-  },
-  {
-    id: 10,
-    subject: "Seni Tari",
-    title: "Koreografi: Eksplorasi Gerak Dalam Seni Tari",
-    level: "Pemula",
-    duration: "35 Menit",
-    topics: ["Eksplorasi Gerak", "Rangsang Kinestetik", "Transformasi Gerak", "Tempo & Level"],
-    description: "Memahami prinsip eksplorasi gerak tari, berbagai sumber rangsangan (visual, audio, kinestetik, gagasan), dan teknik pengembangan gerak dasar.",
-    icon: MusicNote01Icon,
-  },
-];
+export const MODUL_DATA: ModulItem[] = [];
 
 const CATEGORIES = [
   "Semua",
@@ -430,6 +162,25 @@ function MateriLandingContent() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [aiRecommendedModules, setAiRecommendedModules] = useState<ModulItem[]>([]);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const { modules } = useAdminStore();
+
+  const liveModulData = useMemo(() => {
+    if (!modules || modules.length === 0) return [];
+    return modules
+      .filter((m) => m.isPublished !== false)
+      .map((m) => ({
+        id: m.id,
+        subject: m.subject || "Informatika",
+        title: m.title,
+        level: (m.level as 'Pemula' | 'Menengah' | 'Mahir') || "Pemula",
+        duration: m.duration || "30 Menit",
+        topics: m.topics && m.topics.length > 0 ? m.topics : ["Materi Pembelajaran"],
+        description: stripHtml(m.description) || "Materi pembelajaran interaktif.",
+        icon: getSubjectIcon(m.subject || ""),
+        isAiRecommended: m.isAiRecommended,
+      }));
+  }, [modules]);
 
   // Sync category when URL query changes
   useEffect(() => {
@@ -458,11 +209,16 @@ function MateriLandingContent() {
 
   // Compute 3 Dynamic AI Recommendations (Popular for new users, adaptive based on access history for active users)
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || liveModulData.length === 0) {
+      if (liveModulData.length > 0) {
+        setAiRecommendedModules(liveModulData.slice(0, 3));
+      }
+      return;
+    }
     try {
       const key = getStudentScopedStorageKey('sintesa_user_views');
       const rawViews = localStorage.getItem(key);
-      const views: { id: number; subject: string; timestamp: number }[] = rawViews ? JSON.parse(rawViews) : [];
+      const views: { id: number | string; subject: string; timestamp: number }[] = rawViews ? JSON.parse(rawViews) : [];
 
       if (views && views.length > 0) {
         // Frequency analysis of viewed subjects
@@ -478,8 +234,8 @@ function MateriLandingContent() {
         const topSubject = sortedSubjects[0];
 
         // Retrieve modules matching the student's top learning path
-        const favoriteSubjectModules = MODUL_DATA.filter((m) => m.subject === topSubject);
-        const otherModules = MODUL_DATA.filter((m) => m.subject !== topSubject);
+        const favoriteSubjectModules = liveModulData.filter((m) => m.subject === topSubject);
+        const otherModules = liveModulData.filter((m) => m.subject !== topSubject);
 
         const recommendations: ModulItem[] = [];
 
@@ -507,60 +263,24 @@ function MateriLandingContent() {
 
         setAiRecommendedModules(recommendations.slice(0, 3));
       } else {
-        // Default for new users: Exactly top 3 most popular and highly-viewed modules across disciplines
-        const defaultTop3: ModulItem[] = [
-          {
-            ...MODUL_DATA.find((m) => m.id === 1)!, // Informatika: Variabel, Tipe Data
-            isAiRecommended: true,
-            aiReason: "Paling Banyak Dipelajari",
-          },
-          {
-            ...MODUL_DATA.find((m) => m.id === 9)!, // Seni Tari: Konsep Koreografi
-            isAiRecommended: true,
-            aiReason: "Pilihan & Terpopuler",
-          },
-          {
-            ...MODUL_DATA.find((m) => m.id === 4)!, // Elektronika: Sirkuit Resistor
-            isAiRecommended: true,
-            aiReason: "Terfavorit di Kelas 10",
-          },
-        ];
-        setAiRecommendedModules(defaultTop3.slice(0, 3));
+        // Default: Exactly top 3 published modules
+        const defaultTop3: ModulItem[] = liveModulData.slice(0, 3).map((m, idx) => ({
+          ...m,
+          isAiRecommended: true,
+          aiReason: idx === 0 ? "Paling Banyak Dipelajari" : idx === 1 ? "Pilihan & Terpopuler" : "Terfavorit di Kelas",
+        }));
+        setAiRecommendedModules(defaultTop3);
       }
     } catch {
-      // Fallback
-      setAiRecommendedModules(MODUL_DATA.filter((m) => [1, 9, 4].includes(Number(m.id))).slice(0, 3));
+      setAiRecommendedModules(liveModulData.slice(0, 3));
     }
-  }, []);
+  }, [liveModulData]);
 
-  // Synchronize dynamic modules from Supabase cloud without wiping local store
+  // Synchronize dynamic modules directly from Supabase cloud
   useEffect(() => {
     ModuleService.fetchFromSupabase().then((cloudModules) => {
-      if (cloudModules && cloudModules.length > 0) {
-        useAdminStore.setState((state) => {
-          const existing = state.modules || [];
-          const map = new Map(existing.map((m) => [m.id, m]));
-          cloudModules.forEach((c) => {
-            map.set(c.id, {
-              id: c.id,
-              subject: c.subject,
-              title: c.title,
-              level: c.level,
-              duration: c.duration,
-              topics: c.topics,
-              description: c.description,
-              teacherId: c.teacherId,
-              teacherName: c.teacherName,
-              isPublished: c.isPublished !== false,
-              createdAt: c.createdAt,
-              isAiRecommended: c.isAiRecommended,
-              quizSource: c.quizSource,
-              thumbnail: c.thumbnail,
-              blocks: c.blocks,
-            });
-          });
-          return { modules: Array.from(map.values()) };
-        });
+      if (cloudModules && Array.isArray(cloudModules)) {
+        useAdminStore.setState({ modules: cloudModules });
       }
     });
   }, []);
@@ -628,41 +348,6 @@ function MateriLandingContent() {
       } catch {}
     }
   };
-
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const { modules } = useAdminStore();
-
-  const liveModulData = useMemo(() => {
-    const uniqueMap = new Map<string, ModulItem>();
-
-    // 1. Seed with base system modules
-    MODUL_DATA.forEach((m) => {
-      const key = `${(m.subject || '').toLowerCase().trim()}_${(m.title || '').toLowerCase().trim()}`;
-      uniqueMap.set(key, m);
-    });
-
-    // 2. Merge dynamic teacher modules from admin store and Supabase
-    if (modules && modules.length > 0) {
-      modules
-        .filter((m) => m.isPublished !== false)
-        .forEach((m) => {
-          const key = `${(m.subject || '').toLowerCase().trim()}_${(m.title || '').toLowerCase().trim()}`;
-          uniqueMap.set(key, {
-            id: m.id,
-            subject: m.subject || "Informatika",
-            title: m.title,
-            level: m.level || "Pemula",
-            duration: m.duration || "30 Menit",
-            topics: m.topics && m.topics.length > 0 ? m.topics : ["Materi Pembelajaran"],
-            description: stripHtml(m.description) || "Materi pembelajaran interaktif.",
-            icon: getSubjectIcon(m.subject || ""),
-            isAiRecommended: m.isAiRecommended,
-          });
-        });
-    }
-
-    return Array.from(uniqueMap.values());
-  }, [modules]);
 
   // Filter modules
   const filteredModul = liveModulData.filter((item) => {
@@ -749,7 +434,7 @@ function MateriLandingContent() {
                 </div>
 
                 <div className="max-h-60 overflow-y-auto space-y-1">
-                  {(searchQuery.trim() ? filteredModul.slice(0, 4) : MODUL_DATA.slice(0, 4)).map((item) => (
+                  {(searchQuery.trim() ? filteredModul.slice(0, 4) : liveModulData.slice(0, 4)).map((item) => (
                     <Link
                       key={item.id}
                       href={`/materi/${item.id}?from=${encodeURIComponent(selectedCategory)}`}

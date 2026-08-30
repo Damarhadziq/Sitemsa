@@ -46,16 +46,8 @@ export class ModuleService {
         return dbStore.modules;
       }
 
-      if (data && Array.isArray(data) && data.length > 0) {
-        const uniqueMap = new Map<string, ModuleItem>();
-
-        // 1. Preserve local creations first
-        (dbStore.modules || []).forEach((m) => {
-          uniqueMap.set(m.id, m);
-        });
-
-        // 2. Merge data from Supabase
-        data.forEach((item: any) => {
+      if (data && Array.isArray(data)) {
+        const mapped: ModuleItem[] = data.map((item: any) => {
           let parsedBlocks = item.blocks;
           if (!parsedBlocks && item.content) {
             try {
@@ -65,34 +57,32 @@ export class ModuleService {
           }
 
           const idStr = String(item.id);
-          const existing = uniqueMap.get(idStr);
 
-          uniqueMap.set(idStr, {
+          return {
             id: idStr,
-            subject: item.subject || existing?.subject || 'Informatika',
-            teacherId: item.teacher_id || existing?.teacherId || 't2',
-            teacherName: item.teacher_name || existing?.teacherName || 'Guru Sitemsa',
-            title: item.title || existing?.title || 'Modul Pembelajaran',
-            level: (item.level as 'Pemula' | 'Menengah' | 'Mahir') || existing?.level || 'Pemula',
-            duration: item.duration || existing?.duration || '45 Menit',
-            topics: Array.isArray(item.topics) ? item.topics : existing?.topics || [],
-            description: item.description || existing?.description || '',
-            thumbnail: item.thumbnail || item.image_url || existing?.thumbnail || undefined,
-            content: item.content || existing?.content || undefined,
-            blocks: parsedBlocks || existing?.blocks,
-            isAiRecommended: Boolean(item.is_ai_recommended ?? existing?.isAiRecommended),
-            isPublished: item.is_published !== undefined ? Boolean(item.is_published) : existing?.isPublished ?? true,
+            subject: item.subject || 'Informatika',
+            teacherId: item.teacher_id || 't2',
+            teacherName: item.teacher_name || 'Guru Sitemsa',
+            title: item.title || 'Modul Pembelajaran',
+            level: (item.level as 'Pemula' | 'Menengah' | 'Mahir') || 'Pemula',
+            duration: item.duration || '30 Menit',
+            topics: Array.isArray(item.topics) ? item.topics : [],
+            description: item.description || '',
+            thumbnail: item.thumbnail || item.image_url || undefined,
+            content: item.content || undefined,
+            blocks: parsedBlocks,
+            isAiRecommended: Boolean(item.is_ai_recommended),
+            isPublished: item.is_published !== undefined ? Boolean(item.is_published) : true,
             quizSource: item.quiz_source_type ? {
               type: (item.quiz_source_type === 'KUIS_SITEMSA' ? 'kuis_sitemsa' : item.quiz_source_type === 'LINK_EKSTERNAL' ? 'link_eksternal' : 'qr_code') as any,
               title: item.quiz_source_title || 'Kuis Evaluasi',
               externalUrl: item.external_url || undefined,
               qrImageUrl: item.qr_image_url || undefined,
-            } : existing?.quizSource,
-            createdAt: item.created_at ? new Date(item.created_at).toISOString().split('T')[0] : existing?.createdAt || '2026-08-01',
-          });
+            } : undefined,
+            createdAt: item.created_at ? new Date(item.created_at).toISOString().split('T')[0] : '2026-08-01',
+          };
         });
 
-        const mapped = Array.from(uniqueMap.values());
         dbStore.modules = mapped;
         this.persist();
         return mapped;

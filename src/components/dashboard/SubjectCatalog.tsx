@@ -17,7 +17,6 @@ import { SubjectService } from '@/services/subject.service';
 import { ModuleService } from '@/services/module.service';
 import { ProgressService } from '@/services/progress.service';
 import { useAdminStore } from '@/lib/admin-store';
-import { MODUL_DATA } from '@/app/materi/page';
 
 interface SubjectDisplay {
   id: string | number;
@@ -61,7 +60,7 @@ const getActualModuleCount = (subjectName: string, storeModules: any[] = []): nu
     return uniqueTitles.size;
   }
 
-  return MODUL_DATA.filter((m) => normalizeSubName(m.subject) === norm).length;
+  return 0;
 };
 
 export function SubjectCatalog() {

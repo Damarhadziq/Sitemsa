@@ -7,6 +7,30 @@ export class StorageService {
    * If bucket is unavailable, gracefully returns optimized Base64 string.
    */
   static async uploadImage(file: File, folder: string = 'covers'): Promise<string> {
+    // 1. Try server-side upload endpoint (bypasses storage RLS and directly writes to sintesa_uploads bucket)
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', folder);
+      formData.append('bucket', 'sintesa_uploads');
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.url) {
+          console.log('✅ File uploaded successfully via /api/upload to sintesa_uploads:', json.url);
+          return json.url;
+        }
+      }
+    } catch (apiErr) {
+      console.warn('Upload via /api/upload failed, trying client upload:', apiErr);
+    }
+
+    // 2. Direct browser Supabase upload fallback
     if (supabase) {
       try {
         const ext = file.name.split('.').pop() || 'jpg';
@@ -46,7 +70,7 @@ export class StorageService {
       }
     }
 
-    // High-performance Base64 fallback
+    // 3. High-performance Base64 fallback
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = (e) => {

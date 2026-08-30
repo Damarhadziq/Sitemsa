@@ -59,6 +59,7 @@ export interface ModuleItem {
   createdAt: string;
   isAiRecommended?: boolean;
   isPublished?: boolean;
+  thumbnail?: string;
   content?: string;
   quizSource?: {
     type: 'kuis_sitemsa' | 'link_eksternal' | 'qr_code';

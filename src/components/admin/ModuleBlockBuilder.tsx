@@ -30,6 +30,7 @@ import {
   Hash,
   Code,
   Check,
+  Loader2,
 } from 'lucide-react';
 import { ModuleItem } from '@/lib/admin-store';
 import { getMaterialBlocksForModule, getMaterialDetailForModule } from '@/app/materi/[id]/page';
@@ -306,14 +307,73 @@ export function ModuleBlockBuilder({
     if (initialModule?.thumbnail) return initialModule.thumbnail;
     return '';
   });
+  const [isUploadingThumbnail, setIsUploadingThumbnail] = useState(false);
+  const [thumbnailUploadProgress, setThumbnailUploadProgress] = useState(0);
   const thumbnailFileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleThumbnailSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const objUrl = URL.createObjectURL(file);
-      setModuleThumbnail(objUrl);
-      setIsDirty(true);
+      setIsUploadingThumbnail(true);
+      setThumbnailUploadProgress(20);
+
+      setTimeout(() => setThumbnailUploadProgress(50), 150);
+      setTimeout(() => setThumbnailUploadProgress(85), 350);
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const rawBase64 = event.target?.result as string;
+
+        // Optimize and compress image via canvas for persistent reliable storage
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 1280;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const optimizedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+            setThumbnailUploadProgress(100);
+            setTimeout(() => {
+              setModuleThumbnail(optimizedBase64);
+              setIsUploadingThumbnail(false);
+              setIsDirty(true);
+            }, 250);
+          } else {
+            setThumbnailUploadProgress(100);
+            setTimeout(() => {
+              setModuleThumbnail(rawBase64);
+              setIsUploadingThumbnail(false);
+              setIsDirty(true);
+            }, 250);
+          }
+        };
+        img.onerror = () => {
+          setThumbnailUploadProgress(100);
+          setTimeout(() => {
+            setModuleThumbnail(rawBase64);
+            setIsUploadingThumbnail(false);
+            setIsDirty(true);
+          }, 250);
+        };
+        img.src = rawBase64;
+      };
+      reader.readAsDataURL(file);
     }
     e.target.value = '';
   };
@@ -1201,10 +1261,10 @@ export function ModuleBlockBuilder({
         >
           {!isAlreadyPublished && (
             <button
-              disabled={!isDirty || !moduleTitle.trim()}
+              disabled={!isDirty || !moduleTitle.trim() || isUploadingThumbnail}
               onClick={() => handleSaveModuleConfirm(false)}
               className={`px-4 py-2 rounded-[8px] text-xs font-semibold transition-colors ${
-                isDirty && moduleTitle.trim()
+                isDirty && moduleTitle.trim() && !isUploadingThumbnail
                   ? 'bg-slate-100 hover:bg-slate-200 text-[#2E2D2D] cursor-pointer'
                   : 'bg-slate-100 text-[#AAAAAA] cursor-not-allowed opacity-50'
               }`}
@@ -1213,15 +1273,22 @@ export function ModuleBlockBuilder({
             </button>
           )}
           <button
-            disabled={!moduleTitle.trim()}
+            disabled={!moduleTitle.trim() || isUploadingThumbnail}
             onClick={handleOpenPublishModal}
-            className={`px-5 py-2 rounded-[8px] text-xs font-semibold transition-colors ${
-              moduleTitle.trim()
+            className={`px-5 py-2 rounded-[8px] text-xs font-semibold transition-colors flex items-center gap-2 ${
+              moduleTitle.trim() && !isUploadingThumbnail
                 ? 'bg-[#2563EB] hover:bg-blue-700 text-white shadow-xs cursor-pointer active:scale-98'
                 : 'bg-slate-100 text-[#AAAAAA] cursor-not-allowed opacity-50 shadow-none'
             }`}
           >
-            {initialModule ? 'Update Materi' : 'Continue'}
+            {isUploadingThumbnail && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+            <span>
+              {isUploadingThumbnail
+                ? 'Memuat Cover...'
+                : initialModule
+                ? 'Update Materi'
+                : 'Continue'}
+            </span>
           </button>
         </div>
 
@@ -2480,8 +2547,31 @@ export function ModuleBlockBuilder({
                   )}
                 </div>
 
-                {moduleThumbnail ? (
-                  <div className="relative w-full aspect-video rounded-[10px] overflow-hidden border border-[#ECECEC] bg-slate-50 group/cover">
+                {isUploadingThumbnail ? (
+                  <div className="relative w-full aspect-video rounded-[10px] overflow-hidden bg-slate-950 border border-slate-800 flex flex-col items-center justify-center gap-3 p-4 shadow-inner">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse" />
+                    <div className="relative z-10 flex flex-col items-center gap-2.5">
+                      <div className="w-10 h-10 rounded-full bg-blue-600/30 border border-blue-400/50 flex items-center justify-center animate-pulse shadow-md">
+                        <Loader2 className="w-5 h-5 text-blue-400 animate-spin" />
+                      </div>
+                      <div className="text-center space-y-1">
+                        <p className="text-xs font-bold text-white tracking-wide">
+                          Memproses & Mengunggah Cover...
+                        </p>
+                        <p className="text-[11px] text-blue-300 font-semibold">
+                          {thumbnailUploadProgress}% Selesai
+                        </p>
+                      </div>
+                      <div className="w-48 max-w-full h-1.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+                        <div
+                          className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all duration-200"
+                          style={{ width: `${thumbnailUploadProgress}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : moduleThumbnail ? (
+                  <div className="relative w-full aspect-video rounded-[10px] overflow-hidden border border-[#ECECEC] bg-slate-50 group/cover animate-in fade-in duration-300">
                     {/* eslint-disable-next-next/no-img-element */}
                     <img
                       src={moduleThumbnail}
@@ -2874,16 +2964,21 @@ export function ModuleBlockBuilder({
               {!isAlreadyPublished && (
                 <button
                   type="button"
+                  disabled={isPublishing || isUploadingThumbnail}
                   onClick={() => {
                     handleSaveModuleConfirm(false);
                   }}
-                  className="px-4 py-2.5 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-[#2E2D2D] transition-colors cursor-pointer"
+                  className={`px-4 py-2.5 rounded-[8px] text-xs font-semibold transition-colors ${
+                    isPublishing || isUploadingThumbnail
+                      ? 'bg-slate-100 text-[#AAAAAA] cursor-not-allowed opacity-50'
+                      : 'bg-slate-100 hover:bg-slate-200 text-[#2E2D2D] cursor-pointer'
+                  }`}
                 >
                   Save as draft
                 </button>
               )}
               {(() => {
-                const isPublishEnabled = hasValidTextContent && moduleTopics.length > 0 && !isPublishing;
+                const isPublishEnabled = hasValidTextContent && moduleTopics.length > 0 && !isPublishing && !isUploadingThumbnail;
                 return (
                   <button
                     type="button"
@@ -3116,8 +3211,31 @@ export function ModuleBlockBuilder({
               </button>
             </div>
             <div className="px-5 pb-5 space-y-3">
-              {moduleThumbnail ? (
-                <div className="relative w-full aspect-video rounded-[10px] overflow-hidden border border-[#ECECEC] bg-slate-50 group/cover">
+              {isUploadingThumbnail ? (
+                <div className="relative w-full aspect-video rounded-[10px] overflow-hidden bg-slate-950 border border-slate-800 flex flex-col items-center justify-center gap-3 p-4 shadow-inner">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse" />
+                  <div className="relative z-10 flex flex-col items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-full bg-blue-600/30 border border-blue-400/50 flex items-center justify-center animate-pulse shadow-md">
+                      <Loader2 className="w-5 h-5 text-blue-400 animate-spin" />
+                    </div>
+                    <div className="text-center space-y-1">
+                      <p className="text-xs font-bold text-white tracking-wide">
+                        Memproses & Mengunggah Cover...
+                      </p>
+                      <p className="text-[11px] text-blue-300 font-semibold">
+                        {thumbnailUploadProgress}% Selesai
+                      </p>
+                    </div>
+                    <div className="w-48 max-w-full h-1.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+                      <div
+                        className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all duration-200"
+                        style={{ width: `${thumbnailUploadProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : moduleThumbnail ? (
+                <div className="relative w-full aspect-video rounded-[10px] overflow-hidden border border-[#ECECEC] bg-slate-50 group/cover animate-in fade-in duration-300">
                   <img
                     src={moduleThumbnail}
                     alt="Thumbnail Materi"
@@ -3160,16 +3278,23 @@ export function ModuleBlockBuilder({
                     <Upload className="w-5 h-5 text-[#2563EB]" />
                   </div>
                   <span>Upload Cover / Thumbnail Materi (16:9)</span>
+                  <span className="text-[10px] text-[#737373] font-normal">Format: PNG, JPG, JPEG (Maks. 5MB)</span>
                 </button>
               )}
             </div>
             <div className="px-5 pb-4 flex justify-end gap-2">
               <button
                 type="button"
+                disabled={isUploadingThumbnail}
                 onClick={() => setShowThumbnailModal(false)}
-                className="px-5 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-xs font-semibold text-white shadow-xs transition-colors cursor-pointer active:scale-98"
+                className={`px-5 py-2 rounded-[8px] text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                  isUploadingThumbnail
+                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    : 'bg-[#2563EB] hover:bg-blue-700 text-white shadow-xs cursor-pointer active:scale-98'
+                }`}
               >
-                Simpan
+                {isUploadingThumbnail && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                <span>{isUploadingThumbnail ? 'Memuat...' : 'Simpan'}</span>
               </button>
             </div>
           </div>

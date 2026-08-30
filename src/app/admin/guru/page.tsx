@@ -43,26 +43,42 @@ export default function AdminGuruDashboard() {
     { id: 3, text: 'Evaluasi Kuis' },
   ];
 
+  const isSubjectMatch = (mSub?: string, curSub?: string) => {
+    if (!mSub || !curSub) return false;
+    const a = mSub.toLowerCase().replace(/[^a-z]/g, '');
+    const b = curSub.toLowerCase().replace(/[^a-z]/g, '');
+    if (a === b) return true;
+    if ((a.includes('olahraga') || a.includes('keolahragaan') || a.includes('pjok') || a.includes('jasmani')) &&
+        (b.includes('olahraga') || b.includes('keolahragaan') || b.includes('pjok') || b.includes('jasmani'))) {
+      return true;
+    }
+    return false;
+  };
+
+  const isTeacherMatch = (teacherId?: string, teacherName?: string) => {
+    if (!user) return true;
+    if (user.role === 'superadmin') return true;
+
+    const uId = (user.id || '').toLowerCase().trim();
+    const uName = (user.name || '').toLowerCase().trim();
+
+    const tId = (teacherId || '').toLowerCase().trim();
+    const tName = (teacherName || '').toLowerCase().trim();
+
+    if (tId && uId && tId === uId) return true;
+    if (tName && uName) {
+      if (tName === uName) return true;
+      if (tName.includes(uName) || uName.includes(tName)) return true;
+    }
+    return false;
+  };
+
   const subjectModules = modules.filter(
-    (m) =>
-      m.subject === currentSubject &&
-      (!user ||
-        user.role === 'superadmin' ||
-        m.teacherId === user.id ||
-        m.teacherName?.toLowerCase() === user.name?.toLowerCase() ||
-        m.teacherName?.toLowerCase().includes(user.name?.toLowerCase()) ||
-        user.name?.toLowerCase().includes(m.teacherName?.toLowerCase()))
+    (m) => isSubjectMatch(m.subject, currentSubject) && isTeacherMatch(m.teacherId, m.teacherName)
   );
 
   const subjectQuizzes = quizzes.filter(
-    (q) =>
-      q.subject === currentSubject &&
-      (!user ||
-        user.role === 'superadmin' ||
-        q.teacherId === user.id ||
-        q.teacherName?.toLowerCase() === user.name?.toLowerCase() ||
-        q.teacherName?.toLowerCase().includes(user.name?.toLowerCase()) ||
-        user.name?.toLowerCase().includes(q.teacherName?.toLowerCase()))
+    (q) => isSubjectMatch(q.subject, currentSubject) && isTeacherMatch(q.teacherId, q.teacherName)
   );
 
   const subjectStudents = students.filter((s) => s.enrolledSubjects.includes(currentSubject));

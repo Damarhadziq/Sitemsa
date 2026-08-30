@@ -1868,31 +1868,43 @@ export default function MateriDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = use(params);
+  const resolvedParams = use(params);
+  const rawId = resolvedParams?.id || "";
+  const id = decodeURIComponent(rawId).trim();
+  const normalizedId = id.replace(/\s+/g, '-').toLowerCase();
+  const spaceId = id.replace(/-/g, ' ').toLowerCase();
+
   const searchParams = useSearchParams();
   const fromParam = searchParams.get("from");
 
   const { modules, quizzes } = useAdminStore();
   const [remoteModule, setRemoteModule] = useState<ModuleItem | null>(() => {
-    return ModuleService.getModuleById(id);
+    return ModuleService.getModuleById(id) || ModuleService.getModuleById(normalizedId);
   });
 
   useEffect(() => {
-    const localMod = ModuleService.getModuleById(id);
+    const localMod = ModuleService.getModuleById(id) || ModuleService.getModuleById(normalizedId);
     if (localMod) {
       setRemoteModule(localMod);
     }
     ModuleService.fetchFromSupabase().then((all) => {
-      const found = all.find((m) => m.id === id);
+      const found = all.find((m) => {
+        const mId = String(m.id || '').trim().toLowerCase();
+        return mId === id.toLowerCase() || mId === normalizedId || mId === spaceId;
+      });
       if (found) {
         setRemoteModule(found);
       }
     });
-  }, [id]);
+  }, [id, normalizedId, spaceId]);
 
   const baseMaterial = useMemo(() => {
-    return getMaterialDetailForModule(id) || MATERIAL_DATABASE[parseInt(id, 10) || 1] || MATERIAL_DATABASE[1];
-  }, [id]);
+    const fromStatic = getMaterialDetailForModule(id) || getMaterialDetailForModule(normalizedId);
+    if (fromStatic) return fromStatic;
+    const numId = parseInt(id, 10);
+    if (!isNaN(numId) && MATERIAL_DATABASE[numId]) return MATERIAL_DATABASE[numId];
+    return MATERIAL_DATABASE[1];
+  }, [id, normalizedId]);
 
   // Construct dynamic live material merging admin store changes
   const material = useMemo(() => {
@@ -1900,14 +1912,19 @@ export default function MateriDetailPage({
     const targetKey = !isNaN(numId) ? idToModuleKey[numId] : id;
 
     const storeMod =
-      modules.find(
-        (m) =>
-          m.id === id ||
+      modules.find((m) => {
+        const mId = String(m.id || '').trim().toLowerCase();
+        const mTitle = String(m.title || '').trim().toLowerCase();
+        return (
+          mId === id.toLowerCase() ||
+          mId === normalizedId ||
+          mId === spaceId ||
           (targetKey && m.id === targetKey) ||
           (!isNaN(numId) && moduleKeyToId[m.id] === numId) ||
-          String(m.id) === String(baseMaterial.id) ||
-          m.title.toLowerCase().trim() === baseMaterial.title.toLowerCase().trim()
-      ) || remoteModule;
+          mTitle === id.toLowerCase() ||
+          mTitle === spaceId
+        );
+      }) || remoteModule;
 
     if (!storeMod) return baseMaterial;
 
@@ -2631,37 +2648,39 @@ export default function MateriDetailPage({
                 </section>
               )}
 
-              {/* Attachment Download Block */}
-              <section className="bg-[#FAFAFA] border border-[#ECECEC] rounded-[12px] p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4">
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div className="w-10 h-10 rounded-[8px] bg-[#F4EFFF] text-[#2563EB] flex items-center justify-center shrink-0">
-                    <HugeiconsIcon icon={File01Icon} size={20} />
+              {/* Attachment Download Block (Only if material has attachments) */}
+              {material.attachment && material.attachment.fileName && (
+                <section className="bg-[#FAFAFA] border border-[#ECECEC] rounded-[12px] p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="w-10 h-10 rounded-[8px] bg-[#F4EFFF] text-[#2563EB] flex items-center justify-center shrink-0">
+                      <HugeiconsIcon icon={File01Icon} size={20} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p
+                        title={material.attachment.fileName}
+                        className="text-xs md:text-sm font-semibold text-[#2E2D2D] truncate"
+                      >
+                        {material.attachment.fileName.replace(/_/g, " ")}
+                      </p>
+                      <p className="text-[11px] text-[#737373] truncate">
+                        Modul Pelengkap • {material.attachment.fileSize || '2.0 MB'}
+                      </p>
+                    </div>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p
-                      title={material.attachment.fileName}
-                      className="text-xs md:text-sm font-semibold text-[#2E2D2D] truncate"
-                    >
-                      {material.attachment.fileName.replace(/_/g, " ")}
-                    </p>
-                    <p className="text-[11px] text-[#737373] truncate">
-                      Modul Pelengkap • {material.attachment.fileSize}
-                    </p>
-                  </div>
-                </div>
 
-                <a
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    showToast("File diunduh");
-                  }}
-                  className="inline-flex items-center justify-center gap-1.5 bg-white border border-[#ECECEC] hover:bg-[#F6F5FF] hover:border-[#2563EB]/40 text-[#2563EB] px-4 py-2.5 sm:py-2 rounded-[6px] text-xs font-semibold transition-all duration-200 shrink-0 w-full sm:w-auto"
-                >
-                  <HugeiconsIcon icon={Download01Icon} size={15} />
-                  <span>Unduh Modul PDF</span>
-                </a>
-              </section>
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      showToast("File diunduh");
+                    }}
+                    className="inline-flex items-center justify-center gap-1.5 bg-white border border-[#ECECEC] hover:bg-[#F6F5FF] hover:border-[#2563EB]/40 text-[#2563EB] px-4 py-2.5 sm:py-2 rounded-[6px] text-xs font-semibold transition-all duration-200 shrink-0 w-full sm:w-auto"
+                  >
+                    <HugeiconsIcon icon={Download01Icon} size={15} />
+                    <span>Unduh Modul PDF</span>
+                  </a>
+                </section>
+              )}
             </article>
 
             {/* Sticky Sidebar Navigation (4 Columns) */}

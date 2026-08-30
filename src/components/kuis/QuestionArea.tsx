@@ -288,8 +288,30 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
 
   // Background Looping Music Ref
   const bgmAudioRef = useRef<HTMLAudioElement | null>(null);
+  // Main scroll container ref for mobile smooth auto-scroll
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   const currentQuestion = questionsList[currentIndex] || DEFAULT_QUIZ_QUESTIONS[0];
+
+  // Auto-scroll down smoothly when student answers a question on mobile
+  useEffect(() => {
+    if (isAnswerChecked && scrollContainerRef.current) {
+      const el = scrollContainerRef.current;
+      setTimeout(() => {
+        el.scrollTo({
+          top: el.scrollHeight,
+          behavior: "smooth",
+        });
+      }, 100);
+    }
+  }, [isAnswerChecked]);
+
+  // Reset scroll to top when moving to next question
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: "instant" });
+    }
+  }, [currentIndex]);
 
   // Lock body scroll during entire quiz session to eliminate right scrollbar gutter
   useEffect(() => {
@@ -572,9 +594,12 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
     );
   }
 
-  // 2. ACTIVE QUIZ STAGE (SCROLLABLE CONTAINER WITH FIXED BACKGROUND FOR MOBILE COMFORT)
+  // 2. ACTIVE QUIZ STAGE (SCROLLABLE CONTAINER WITH FIXED 100% BACKGROUND FOR MOBILE & DESKTOP)
   return (
-    <div className="fixed inset-0 w-full h-full overflow-y-auto flex flex-col justify-between font-sans text-[#2E2D2D] relative bg-[#60a5fa] selection:bg-blue-100">
+    <div
+      ref={scrollContainerRef}
+      className="fixed inset-0 w-full h-full overflow-y-auto overflow-x-hidden flex flex-col font-sans text-[#2E2D2D] bg-[#60a5fa] selection:bg-blue-100 touch-pan-y"
+    >
       {/* FULL BLEED BACKDROP BLUR OVERLAY DURING COUNTDOWN (ZERO EDGE MISS AT BOTTOM) */}
       {stage === "countdown" && (
         <div className="fixed inset-0 w-full h-full backdrop-blur-xl bg-slate-950/25 z-40 pointer-events-none transition-all duration-500" />
@@ -588,13 +613,13 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
             : "filter-none scale-100 opacity-100"
         }`}
       >
-        {/* Fixed Full-window SVG Background aligned to bottom */}
+        {/* Fixed Full-window SVG Background: 100% full stretch flush to all edges */}
         <div className="fixed inset-0 w-full h-full pointer-events-none overflow-hidden z-0">
           {/* eslint-disable-next-next/no-img-element */}
           <img
             src="/bg-konten-quiz.svg"
             alt="Quiz Background"
-            className="w-full h-full object-cover object-bottom pointer-events-none select-none"
+            className="w-full h-full object-fill pointer-events-none select-none"
           />
           {/* Dark Overlay for text contrast */}
           <div className="absolute inset-0 bg-slate-950/25 pointer-events-none" />
@@ -648,17 +673,17 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
           </div>
         </header>
 
-        {/* CENTER MAIN CONTENT: WHITE QUESTION TEXT & 2X2 ANSWER GRID (LETTERS STAY AS A/B/C/D) */}
-        <main className="max-w-4xl w-full mx-auto px-6 sm:px-10 py-6 flex-1 flex flex-col justify-center items-center text-center z-10">
+        {/* CENTER MAIN CONTENT: WHITE QUESTION TEXT & 2X2 ANSWER GRID (NATURAL VERTICAL FLOW) */}
+        <main className="max-w-4xl w-full mx-auto px-4 sm:px-10 py-4 sm:py-6 flex-1 flex flex-col items-center text-center z-10 my-auto">
           {/* Large Centered White Question Text */}
-          <div className="space-y-2 mb-8 max-w-3xl">
+          <div className="space-y-2 mb-6 sm:mb-8 max-w-3xl">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-snug tracking-tight drop-shadow-md">
               {currentQuestion.text}
             </h1>
           </div>
 
           {/* 2x2 Answer Grid with White Framed Cards & Color Shift Only */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-3xl">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 w-full max-w-3xl">
             {currentQuestion.options.map((optionText, index) => {
               const isSelected = selectedOption === index;
               const isCorrectOption = index === currentQuestion.correctAnswer;
@@ -672,7 +697,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
                   type="button"
                   disabled={isAnswerChecked || answeredMap[currentIndex] !== undefined}
                   onClick={() => handleSelectOptionDirect(index)}
-                  className={`w-full min-h-[76px] p-4 sm:p-5 rounded-[16px] text-left flex items-center gap-3.5 transition-colors duration-150 cursor-pointer shadow-xs ${
+                  className={`w-full min-h-[72px] sm:min-h-[76px] p-4 sm:p-5 rounded-[16px] text-left flex items-center gap-3.5 transition-colors duration-150 cursor-pointer shadow-xs ${
                     !isAnswerChecked
                       ? "bg-white/95 backdrop-blur-xs border border-[#ECECEC] hover:bg-[#EEF2FF] hover:border-[#2563EB] text-[#1E293B] hover:text-[#2563EB]"
                       : isSelectedCorrect || isRevealedCorrect
@@ -716,7 +741,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
 
           {/* Explanation Banner (Smooth Inside Fade-in) */}
           {isAnswerChecked && (
-            <div className="w-full max-w-3xl mt-5 p-4 rounded-[14px] bg-white/95 backdrop-blur-xs border border-[#ECECEC] text-left text-xs leading-relaxed animate-in fade-in slide-in-from-bottom-2 duration-300 shadow-xs space-y-1">
+            <div className="w-full max-w-3xl mt-4 sm:mt-5 p-4 rounded-[14px] bg-white/95 backdrop-blur-xs border border-[#ECECEC] text-left text-xs leading-relaxed animate-in fade-in slide-in-from-bottom-2 duration-300 shadow-xs space-y-1">
               <span className="font-bold text-[#2E2D2D] block">Pembahasan:</span>
               <p className="text-[#475569]">{currentQuestion.explanation}</p>
             </div>
@@ -724,12 +749,12 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
         </main>
 
         {/* BOTTOM ACTION BAR (NEXT BUTTON APPEARS ONCE ANSWERED) */}
-        <footer className="w-full max-w-5xl mx-auto px-6 sm:px-10 pb-6 pt-2 flex items-center justify-center z-20 min-h-[56px] shrink-0">
+        <footer className="w-full max-w-5xl mx-auto px-6 sm:px-10 pb-8 sm:pb-6 pt-3 flex items-center justify-center z-20 min-h-[70px] shrink-0">
           {isAnswerChecked && (
             <button
               type="button"
               onClick={handleNextQuestion}
-              className="px-8 py-3 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all cursor-pointer animate-in fade-in zoom-in-95 duration-200 active:scale-98"
+              className="px-10 py-3.5 rounded-[10px] bg-[#2563EB] hover:bg-blue-700 text-white font-bold text-sm shadow-lg shadow-blue-500/25 transition-all cursor-pointer animate-in fade-in zoom-in-95 duration-200 active:scale-98"
             >
               {currentIndex + 1 < questionsList.length ? "Lanjut" : "Lihat Hasil"}
             </button>

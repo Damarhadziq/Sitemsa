@@ -81,27 +81,22 @@ export function AdminSidebar() {
   const [isMateriExpanded, setIsMateriExpanded] = useState(true);
   const [isKuisExpanded, setIsKuisExpanded] = useState(true);
 
-  // Filter modules & quizzes for active subject & logged in teacher
-  const currentModules = modules.filter(
-    (m) =>
-      m.subject === currentSubject &&
-      (!user ||
-        user.role === 'superadmin' ||
-        m.teacherId === user.id ||
-        m.teacherName?.toLowerCase() === user.name?.toLowerCase() ||
-        m.teacherName?.toLowerCase().includes(user.name?.toLowerCase()) ||
-        user.name?.toLowerCase().includes(m.teacherName?.toLowerCase()))
-  );
-  const currentQuizzes = quizzes.filter(
-    (q) =>
-      q.subject === currentSubject &&
-      (!user ||
-        user.role === 'superadmin' ||
-        q.teacherId === user.id ||
-        q.teacherName?.toLowerCase() === user.name?.toLowerCase() ||
-        q.teacherName?.toLowerCase().includes(user.name?.toLowerCase()) ||
-        user.name?.toLowerCase().includes(q.teacherName?.toLowerCase()))
-  );
+  // Flexible subject matcher
+  const isSubjectMatch = (mSub?: string, curSub?: string) => {
+    if (!mSub || !curSub) return false;
+    const a = mSub.toLowerCase().replace(/[^a-z]/g, '');
+    const b = curSub.toLowerCase().replace(/[^a-z]/g, '');
+    if (a === b) return true;
+    if ((a.includes('olahraga') || a.includes('keolahragaan') || a.includes('pjok') || a.includes('jasmani')) &&
+        (b.includes('olahraga') || b.includes('keolahragaan') || b.includes('pjok') || b.includes('jasmani'))) {
+      return true;
+    }
+    return false;
+  };
+
+  // Filter modules & quizzes for active subject
+  const currentModules = modules.filter((m) => isSubjectMatch(m.subject, currentSubject));
+  const currentQuizzes = quizzes.filter((q) => isSubjectMatch(q.subject, currentSubject));
 
   const superadminNav = [
     { name: 'Dashboard', href: '/admin/superadmin', icon: LayoutDashboard },
@@ -257,7 +252,7 @@ export function AdminSidebar() {
                                   <span className="truncate">{mod.title}</span>
                                 </div>
                                 {mod.isPublished === false && (
-                                  <span className="text-[9px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200 shrink-0">
+                                  <span className="text-[9px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded border border-amber-200 shrink-0">
                                     Draft
                                   </span>
                                 )}

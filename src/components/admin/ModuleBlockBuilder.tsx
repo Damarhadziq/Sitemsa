@@ -402,9 +402,26 @@ export function ModuleBlockBuilder({
   const [isLevelDropdownOpen, setIsLevelDropdownOpen] = useState(false);
   const [isQuizDropdownOpen, setIsQuizDropdownOpen] = useState(false);
 
-  // Blocks state: Populated with full database blocks if editing, or empty canvas for new material
+  // Blocks state: Populated with full database blocks if editing, or clean initial block with placeholders
   const [blocks, setBlocks] = useState<CanvasBlock[]>(() => {
-    if (!initialModule) return [];
+    if (!initialModule) {
+      return [
+        {
+          id: `blk-${Date.now()}`,
+          type: 'text',
+          sectionTitle: '',
+          textValue: '',
+          alignment: 'left',
+          elements: [
+            {
+              id: `el-${Date.now()}-1`,
+              type: 'paragraph',
+              text: '',
+            },
+          ],
+        },
+      ];
+    }
     if (initialModule.blocks && initialModule.blocks.length > 0) {
       return initialModule.blocks;
     }
@@ -416,8 +433,8 @@ export function ModuleBlockBuilder({
       {
         id: 'blk-1',
         type: 'text',
-        sectionTitle: initialModule.title,
-        textValue: initialModule.description,
+        sectionTitle: initialModule.title || '',
+        textValue: initialModule.description || '',
         alignment: 'left',
       },
     ];
@@ -526,14 +543,14 @@ export function ModuleBlockBuilder({
     };
 
     if (type === 'text') {
-      newBlock.sectionTitle = 'Heading';
-      newBlock.textValue = 'Tuliskan isi paragraf materi di sini....';
+      newBlock.sectionTitle = '';
+      newBlock.textValue = '';
       newBlock.alignment = 'left';
       newBlock.elements = [
         {
           id: `el-${newBlock.id}-1`,
           type: 'paragraph',
-          text: 'Tuliskan isi paragraf materi di sini....',
+          text: '',
         },
       ];
     } else if (type === 'image') {

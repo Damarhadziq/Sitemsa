@@ -2014,7 +2014,7 @@ export default function MateriDetailPage({
         contentSections: dynamicSections.length > 0 ? dynamicSections : (storeMod.description ? [{ id: 'sec-1', title: storeMod.title, paragraphs: [storeMod.description] }] : baseMaterial.contentSections),
         stepByStepSection: dynamicStepByStep || (dynamicSections.length > 0 ? undefined : baseMaterial.stepByStepSection),
         videoSection: dynamicVideo || (dynamicSections.length > 0 ? undefined : baseMaterial.videoSection),
-        attachment: dynamicAttachment,
+        attachment: dynamicAttachment || undefined,
         quizSource: storeMod.quizSource ? {
           type: storeMod.quizSource.type === 'kuis_sitemsa' ? 'internal' : storeMod.quizSource.type === 'qr_code' ? 'barcode' : 'external_link',
           title: storeMod.quizSource.title || 'Uji Pemahaman Materi',
@@ -2023,7 +2023,7 @@ export default function MateriDetailPage({
           qrImageUrl: storeMod.quizSource.qrImageUrl,
           externalPlatformName: 'Platform Eksternal',
           internalUrl: `/kuis/${storeMod.id}`,
-        } : (targetKey ? baseMaterial.quizSource : undefined),
+        } : undefined,
       };
     }
 

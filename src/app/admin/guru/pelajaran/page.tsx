@@ -47,6 +47,20 @@ import { QuizService } from '@/services/quiz.service';
 import { supabase } from '@/lib/supabase';
 import { generateEntityId } from '@/lib/id-generator';
 
+export function stripHtml(html?: string): string {
+  if (!html) return '';
+  return html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 // Card More Dropdown Component (Profile Dropdown Style)
 // Card More Dropdown Component (Profile Dropdown Style)
 function CardMoreDropdown({
@@ -1339,7 +1353,7 @@ export default function AdminGuruPelajaranPage() {
                                   </h4>
 
                                   <p className="text-xs text-[#737373] line-clamp-2 leading-relaxed">
-                                    {mod.description}
+                                    {stripHtml(mod.description)}
                                   </p>
                                 </div>
                               </div>

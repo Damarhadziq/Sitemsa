@@ -24,6 +24,20 @@ import {
   Dumbbell01Icon,
 } from "@hugeicons/core-free-icons";
 
+export function stripHtml(html?: string): string {
+  if (!html) return '';
+  return html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 export const getLevelBadgeClass = (level: string) => {
   switch (level) {
     case "Pemula":
@@ -580,7 +594,7 @@ function MateriLandingContent() {
             level: m.level || "Pemula",
             duration: m.duration || "30 Menit",
             topics: m.topics && m.topics.length > 0 ? m.topics : ["Materi Pembelajaran"],
-            description: m.description || "Materi pembelajaran interaktif.",
+            description: stripHtml(m.description) || "Materi pembelajaran interaktif.",
             icon: getSubjectIcon(m.subject || ""),
             isAiRecommended: m.isAiRecommended,
           });

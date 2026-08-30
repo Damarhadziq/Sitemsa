@@ -88,6 +88,20 @@ export interface CanvasBlock {
   steps?: { title: string; desc: string }[];
 }
 
+export function stripHtml(html?: string): string {
+  if (!html) return '';
+  return html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 interface ModuleBlockBuilderProps {
   initialModule?: ModuleItem | null;
   subjectName: string;
@@ -926,10 +940,11 @@ export function ModuleBlockBuilder({
     setModuleTopics(moduleTopics.filter((t) => t !== tagToRemove));
   };
 
-  // Check if canvas has valid non-empty text content
+  // Check if canvas has valid non-empty text content (HTML stripped)
   const hasValidTextContent = blocks.some(
-    (b) => b.type === 'text' && b.textValue && b.textValue.trim().length > 0
+    (b) => b.type === 'text' && stripHtml(b.textValue || '').length > 0
   );
+  const hasValidThumbnail = Boolean(moduleThumbnail && moduleThumbnail.trim().length > 0);
 
   const [isPublishing, setIsPublishing] = useState(false);
   const [isLottieLoaded, setIsLottieLoaded] = useState(false);
@@ -947,10 +962,14 @@ export function ModuleBlockBuilder({
     }
   }, []);
 
-  // Open Publish Modal trigger
+  // Open Publish Modal trigger (Requires title and mandatory thumbnail)
   const handleOpenPublishModal = () => {
     if (!moduleTitle.trim()) {
       alert('Judul materi tidak boleh kosong.');
+      return;
+    }
+    if (!hasValidThumbnail) {
+      setShowThumbnailModal(true);
       return;
     }
     setShowPublishModal(true);
@@ -960,6 +979,11 @@ export function ModuleBlockBuilder({
   const handleSaveModuleConfirm = (isPublish: boolean) => {
     if (!moduleTitle.trim()) {
       alert('Judul materi tidak boleh kosong.');
+      return;
+    }
+
+    if (isPublish && !hasValidThumbnail) {
+      setShowThumbnailModal(true);
       return;
     }
 
@@ -980,11 +1004,11 @@ export function ModuleBlockBuilder({
         new Promise((resolve) => setTimeout(resolve, 1400)),
       ]).then(() => {
         const firstTextBlock = blocks.find(
-          (b) => b.type === 'text' && b.textValue && b.textValue.trim().length > 0
+          (b) => b.type === 'text' && stripHtml(b.textValue || '').length > 0
         );
-        const textVal = firstTextBlock?.textValue?.trim() || '';
+        const textVal = stripHtml(firstTextBlock?.textValue || '');
         const autoDescription = textVal
-          ? textVal.slice(0, 140) + (textVal.length > 140 ? '...' : '')
+          ? (textVal.length > 140 ? textVal.slice(0, 140) + '...' : textVal)
           : 'Materi pembelajaran interaktif Sitemsa.';
 
         const finalTopics = moduleTopics && moduleTopics.length > 0 ? moduleTopics : ['Materi Pembelajaran', 'Praktikum'];
@@ -1017,11 +1041,11 @@ export function ModuleBlockBuilder({
       });
     } else {
       const firstTextBlock = blocks.find(
-        (b) => b.type === 'text' && b.textValue && b.textValue.trim().length > 0
+        (b) => b.type === 'text' && stripHtml(b.textValue || '').length > 0
       );
-      const textVal = firstTextBlock?.textValue?.trim() || '';
+      const textVal = stripHtml(firstTextBlock?.textValue || '');
       const autoDescription = textVal
-        ? textVal.slice(0, 140) + (textVal.length > 140 ? '...' : '')
+        ? (textVal.length > 140 ? textVal.slice(0, 140) + '...' : textVal)
         : 'Materi pembelajaran interaktif Sitemsa.';
 
       const finalTopics = moduleTopics && moduleTopics.length > 0 ? moduleTopics : ['Materi Pembelajaran', 'Praktikum'];
@@ -2969,37 +2993,46 @@ export function ModuleBlockBuilder({
                 </button>
               )}
               {(() => {
-                const isPublishEnabled = hasValidTextContent && moduleTopics.length > 0 && !isPublishing && !isUploadingThumbnail;
+                const isPublishEnabled = hasValidTextContent && moduleTopics.length > 0 && hasValidThumbnail && !isPublishing && !isUploadingThumbnail;
                 return (
-                  <button
-                    type="button"
-                    disabled={!isPublishEnabled}
-                    onClick={() => {
-                      if (!isPublishEnabled) return;
-                      handleSaveModuleConfirm(true);
-                    }}
-                    className={`px-6 py-2.5 rounded-[8px] text-xs font-bold transition-all flex items-center justify-center gap-2 ${
-                      isPublishEnabled
-                        ? 'bg-[#2563EB] hover:bg-blue-700 text-white shadow-xs cursor-pointer'
-                        : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
-                    }`}
-                    title={
-                      !hasValidTextContent
-                        ? 'Lengkapi minimal 1 section teks materi untuk mempublikasikannya'
-                        : moduleTopics.length === 0
-                        ? 'Wajib mengisi minimal 1 topik bahasan untuk mempublikasikan'
-                        : undefined
-                    }
-                  >
-                    {isPublishing ? (
-                      <>
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-white shrink-0" />
-                        <span>{initialModule ? 'Memperbarui Materi...' : 'Menerbitkan Materi...'}</span>
-                      </>
-                    ) : (
-                      <span>{initialModule ? 'Update Materi' : 'Publish Materi'}</span>
+                  <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3">
+                    {!hasValidThumbnail && (
+                      <span className="text-[11px] text-rose-500 font-semibold">
+                        ⚠️ Wajib upload cover materi (16:9)
+                      </span>
                     )}
-                  </button>
+                    <button
+                      type="button"
+                      disabled={!isPublishEnabled}
+                      onClick={() => {
+                        if (!isPublishEnabled) return;
+                        handleSaveModuleConfirm(true);
+                      }}
+                      className={`px-6 py-2.5 rounded-[8px] text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                        isPublishEnabled
+                          ? 'bg-[#2563EB] hover:bg-blue-700 text-white shadow-xs cursor-pointer'
+                          : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+                      }`}
+                      title={
+                        !hasValidThumbnail
+                          ? 'Wajib menambahkan gambar cover / thumbnail materi sebelum menerbitkan'
+                          : !hasValidTextContent
+                          ? 'Lengkapi minimal 1 section teks materi untuk mempublikasikannya'
+                          : moduleTopics.length === 0
+                          ? 'Wajib mengisi minimal 1 topik bahasan untuk mempublikasikan'
+                          : undefined
+                      }
+                    >
+                      {isPublishing ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin text-white shrink-0" />
+                          <span>{initialModule ? 'Memperbarui Materi...' : 'Menerbitkan Materi...'}</span>
+                        </>
+                      ) : (
+                        <span>{initialModule ? 'Update Materi' : 'Publish Materi'}</span>
+                      )}
+                    </button>
+                  </div>
                 );
               })()}
             </div>
@@ -3191,7 +3224,9 @@ export function ModuleBlockBuilder({
             className="relative w-full max-w-lg bg-white rounded-[16px] shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden"
           >
             <div className="p-5 pb-3 flex items-center justify-between">
-              <h3 className="text-base font-bold text-[#2E2D2D]">Cover Materi</h3>
+              <h3 className="text-base font-bold text-[#2E2D2D]">
+                Cover / Thumbnail Materi <span className="text-xs text-rose-500 font-semibold">(Wajib)</span>
+              </h3>
               <button
                 type="button"
                 onClick={() => setShowThumbnailModal(false)}
@@ -3268,24 +3303,30 @@ export function ModuleBlockBuilder({
                   <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
                     <Upload className="w-5 h-5 text-[#2563EB]" />
                   </div>
-                  <span>Upload Cover / Thumbnail Materi (16:9)</span>
+                  <span>Upload Cover / Thumbnail Materi (16:9) *</span>
                   <span className="text-[10px] text-[#737373] font-normal">Format: PNG, JPG, JPEG (Maks. 5MB)</span>
                 </button>
+              )}
+
+              {!moduleThumbnail && !isUploadingThumbnail && (
+                <p className="text-[11px] text-rose-500 font-medium animate-in fade-in duration-150">
+                  ⚠️ Gambar cover materi wajib diunggah sebelum materi dapat dipublikasikan.
+                </p>
               )}
             </div>
             <div className="px-5 pb-4 flex justify-end gap-2">
               <button
                 type="button"
-                disabled={isUploadingThumbnail}
+                disabled={isUploadingThumbnail || !moduleThumbnail}
                 onClick={() => setShowThumbnailModal(false)}
                 className={`px-5 py-2 rounded-[8px] text-xs font-semibold transition-colors flex items-center gap-1.5 ${
-                  isUploadingThumbnail
+                  isUploadingThumbnail || !moduleThumbnail
                     ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
                     : 'bg-[#2563EB] hover:bg-blue-700 text-white shadow-xs cursor-pointer active:scale-98'
                 }`}
               >
                 {isUploadingThumbnail && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                <span>{isUploadingThumbnail ? 'Memuat...' : 'Simpan'}</span>
+                <span>{isUploadingThumbnail ? 'Memuat...' : 'Simpan Cover'}</span>
               </button>
             </div>
           </div>

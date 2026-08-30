@@ -399,6 +399,7 @@ const ITEMS_PER_PAGE = 6;
 function MateriLandingContent() {
   const searchParams = useSearchParams();
   const kategoriParam = searchParams.get('kategori') || searchParams.get('bidang') || searchParams.get('subject');
+  const pageParam = searchParams.get('page');
 
   const [selectedCategory, setSelectedCategory] = useState<string>(() => {
     if (!kategoriParam) return "Semua";
@@ -408,14 +409,30 @@ function MateriLandingContent() {
     );
     return matchedCategory || "Semua";
   });
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState<number>(() => {
+    if (pageParam) {
+      const p = parseInt(pageParam, 10);
+      if (!isNaN(p) && p > 0) return p;
+    }
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = sessionStorage.getItem('sintesa_materi_page');
+        if (saved) {
+          const p = parseInt(saved, 10);
+          if (!isNaN(p) && p > 0) return p;
+        }
+      } catch {}
+    }
+    return 1;
+  });
+
   const [isLoading, setIsLoading] = useState(false);
   const [aiRecommendedModules, setAiRecommendedModules] = useState<ModulItem[]>([]);
 
   // Sync category when URL query changes
   useEffect(() => {
-    setCurrentPage(1);
     if (!kategoriParam) {
       setSelectedCategory("Semua");
       return;
@@ -428,6 +445,16 @@ function MateriLandingContent() {
 
     setSelectedCategory(matchedCategory || "Semua");
   }, [kategoriParam]);
+
+  // Sync page if URL search param specifically changes
+  useEffect(() => {
+    if (pageParam) {
+      const p = parseInt(pageParam, 10);
+      if (!isNaN(p) && p > 0 && p !== currentPage) {
+        setCurrentPage(p);
+      }
+    }
+  }, [pageParam]);
 
   // Compute 3 Dynamic AI Recommendations (Popular for new users, adaptive based on access history for active users)
   useEffect(() => {
@@ -553,13 +580,41 @@ function MateriLandingContent() {
     }, 200);
   };
 
+  const goToPage = (newPage: number) => {
+    triggerLoading();
+    setCurrentPage(newPage);
+    if (typeof window !== 'undefined') {
+      try {
+        sessionStorage.setItem('sintesa_materi_page', newPage.toString());
+        const params = new URLSearchParams(window.location.search);
+        if (newPage > 1) {
+          params.set('page', newPage.toString());
+        } else {
+          params.delete('page');
+        }
+        const qs = params.toString();
+        const newUrl = qs ? `/materi?${qs}` : '/materi';
+        window.history.replaceState(null, '', newUrl);
+      } catch {}
+      document.getElementById("daftar-materi-section")?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   const handleCategoryChange = (category: string) => {
     triggerLoading();
     setSelectedCategory(category);
     setCurrentPage(1);
     if (typeof window !== 'undefined') {
-      const newUrl = category === 'Semua' ? '/materi' : `/materi?kategori=${encodeURIComponent(category)}`;
-      window.history.replaceState(null, '', newUrl);
+      try {
+        sessionStorage.setItem('sintesa_materi_page', '1');
+        const params = new URLSearchParams();
+        if (category !== 'Semua') {
+          params.set('kategori', category);
+        }
+        const qs = params.toString();
+        const newUrl = qs ? `/materi?${qs}` : '/materi';
+        window.history.replaceState(null, '', newUrl);
+      } catch {}
     }
   };
 
@@ -567,6 +622,11 @@ function MateriLandingContent() {
     triggerLoading();
     setSearchQuery(query);
     setCurrentPage(1);
+    if (typeof window !== 'undefined') {
+      try {
+        sessionStorage.setItem('sintesa_materi_page', '1');
+      } catch {}
+    }
   };
 
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -928,12 +988,7 @@ function MateriLandingContent() {
               {/* Frameless Previous Arrow */}
               <button
                 type="button"
-                onClick={() => {
-                  const newPage = Math.max(currentPage - 1, 1);
-                  triggerLoading();
-                  setCurrentPage(newPage);
-                  document.getElementById("daftar-materi-section")?.scrollIntoView({ behavior: "smooth" });
-                }}
+                onClick={() => goToPage(Math.max(currentPage - 1, 1))}
                 disabled={currentPage === 1}
                 className="w-8 h-8 rounded-full bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-gray-100 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
                 aria-label="Halaman Sebelumnya"
@@ -965,9 +1020,7 @@ function MateriLandingContent() {
                         type="button"
                         onClick={() => {
                           const target = isLeft ? Math.max(1, currentPage - 3) : Math.min(totalPages, currentPage + 3);
-                          triggerLoading();
-                          setCurrentPage(target);
-                          document.getElementById("daftar-materi-section")?.scrollIntoView({ behavior: "smooth" });
+                          goToPage(target);
                         }}
                         title={isLeft ? "Lompat 3 Halaman ke Belakang" : "Lompat 3 Halaman ke Depan"}
                         className="w-8 h-8 rounded-full text-xs font-semibold text-[#8C8C8C] hover:text-[#2563EB] hover:bg-blue-50 flex items-center justify-center transition-colors cursor-pointer"
@@ -986,9 +1039,7 @@ function MateriLandingContent() {
                       type="button"
                       onClick={() => {
                         if (currentPage !== pageNum) {
-                          triggerLoading();
-                          setCurrentPage(pageNum);
-                          document.getElementById("daftar-materi-section")?.scrollIntoView({ behavior: "smooth" });
+                          goToPage(pageNum);
                         }
                       }}
                       className={`w-8 h-8 rounded-full text-xs font-semibold transition-all flex items-center justify-center cursor-pointer ${
@@ -1006,12 +1057,7 @@ function MateriLandingContent() {
               {/* Frameless Next Arrow */}
               <button
                 type="button"
-                onClick={() => {
-                  const newPage = Math.min(currentPage + 1, totalPages);
-                  triggerLoading();
-                  setCurrentPage(newPage);
-                  document.getElementById("daftar-materi-section")?.scrollIntoView({ behavior: "smooth" });
-                }}
+                onClick={() => goToPage(Math.min(currentPage + 1, totalPages))}
                 disabled={currentPage === totalPages}
                 className="w-8 h-8 rounded-full bg-transparent text-[#737373] hover:text-[#2E2D2D] hover:bg-gray-100 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
                 aria-label="Halaman Selanjutnya"

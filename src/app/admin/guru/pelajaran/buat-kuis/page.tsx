@@ -274,7 +274,7 @@ function BuatKuisContent() {
         }
       } else {
         // Create new quiz
-        addQuiz({
+        const newQuizId = addQuiz({
           subject,
           title: title.trim(),
           duration: duration || '15 Menit',
@@ -287,6 +287,7 @@ function BuatKuisContent() {
         });
 
         QuizService.createQuiz({
+          id: newQuizId,
           subject,
           title: title.trim(),
           duration: duration || '15 Menit',
@@ -297,6 +298,7 @@ function BuatKuisContent() {
           published,
         });
         quizzesClientService.create({
+          id: newQuizId,
           subject,
           title: title.trim(),
           duration: duration || '15 Menit',

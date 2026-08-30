@@ -13,6 +13,7 @@ export interface QuizQuestionInput {
 }
 
 export interface QuizCreateInput {
+  id?: string;
   subject: string;
   title: string;
   duration?: string;
@@ -140,7 +141,7 @@ export class QuizService {
 
   static async createQuiz(data: QuizCreateInput): Promise<QuizItem> {
     this.ensureHydrated();
-    const newId = generateEntityId('quiz', data.subject, data.teacherId);
+    const newId = data.id || generateEntityId('quiz', data.subject, data.teacherId);
     const formattedQuestions: QuizQuestion[] = data.questions.map((q, idx) => ({
       id: q.id || generateEntityId('q', data.subject, data.teacherId),
       text: q.text,

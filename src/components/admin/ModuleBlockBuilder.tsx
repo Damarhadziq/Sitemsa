@@ -2540,11 +2540,11 @@ export function ModuleBlockBuilder({
                 </div>
               )}
 
-              {/* 0. COVER / THUMBNAIL MATERI (RASIO 16:9) - WAJIB */}
+              {/* 0. COVER / THUMBNAIL MATERI (RASIO 16:9) */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label className="font-bold text-xs text-[#2E2D2D] block">
-                    Cover / Thumbnail Materi <span className="text-rose-500 font-bold">* (Wajib)</span>
+                    Cover / Thumbnail Materi <span className="text-rose-500 font-bold">*</span>
                   </label>
                   {moduleThumbnail && !isUploadingThumbnail && (
                     <button
@@ -2617,15 +2617,9 @@ export function ModuleBlockBuilder({
                     <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
                       <Upload className="w-5 h-5 text-[#2563EB]" />
                     </div>
-                    <span>Upload Cover / Thumbnail Materi (16:9) *</span>
+                    <span>Upload Cover / Thumbnail Materi (16:9)</span>
                     <span className="text-[10px] text-[#737373] font-normal">Format: PNG, JPG, JPEG (Maks. 5MB)</span>
                   </button>
-                )}
-
-                {!moduleThumbnail && !isUploadingThumbnail && (
-                  <p className="text-[11px] text-rose-500 font-medium">
-                    * Cover materi wajib diunggah sebelum materi dapat dipublikasikan.
-                  </p>
                 )}
               </div>
 
@@ -2703,7 +2697,9 @@ export function ModuleBlockBuilder({
               {!initialModule && (
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="font-bold text-xs text-[#2E2D2D] block">Topik Bahasan</label>
+                  <label className="font-bold text-xs text-[#2E2D2D] block">
+                    Topik Bahasan <span className="text-rose-500 font-bold">*</span>
+                  </label>
                   <span className={`text-[11px] font-semibold ${moduleTopics.length >= 4 ? 'text-amber-600' : 'text-[#737373]'}`}>
                     {moduleTopics.length}/4 Topik
                   </span>
@@ -2995,44 +2991,37 @@ export function ModuleBlockBuilder({
               {(() => {
                 const isPublishEnabled = hasValidTextContent && moduleTopics.length > 0 && hasValidThumbnail && !isPublishing && !isUploadingThumbnail;
                 return (
-                  <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3">
-                    {!hasValidThumbnail && (
-                      <span className="text-[11px] text-rose-500 font-semibold">
-                        ⚠️ Wajib upload cover materi (16:9)
-                      </span>
+                  <button
+                    type="button"
+                    disabled={!isPublishEnabled}
+                    onClick={() => {
+                      if (!isPublishEnabled) return;
+                      handleSaveModuleConfirm(true);
+                    }}
+                    className={`px-6 py-2.5 rounded-[8px] text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                      isPublishEnabled
+                        ? 'bg-[#2563EB] hover:bg-blue-700 text-white shadow-xs cursor-pointer'
+                        : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+                    }`}
+                    title={
+                      !hasValidThumbnail
+                        ? 'Wajib menambahkan gambar cover / thumbnail materi sebelum menerbitkan'
+                        : !hasValidTextContent
+                        ? 'Lengkapi minimal 1 section teks materi untuk mempublikasikannya'
+                        : moduleTopics.length === 0
+                        ? 'Wajib mengisi minimal 1 topik bahasan untuk mempublikasikan'
+                        : undefined
+                    }
+                  >
+                    {isPublishing ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-white shrink-0" />
+                        <span>{initialModule ? 'Memperbarui Materi...' : 'Menerbitkan Materi...'}</span>
+                      </>
+                    ) : (
+                      <span>{initialModule ? 'Update Materi' : 'Publish Materi'}</span>
                     )}
-                    <button
-                      type="button"
-                      disabled={!isPublishEnabled}
-                      onClick={() => {
-                        if (!isPublishEnabled) return;
-                        handleSaveModuleConfirm(true);
-                      }}
-                      className={`px-6 py-2.5 rounded-[8px] text-xs font-bold transition-all flex items-center justify-center gap-2 ${
-                        isPublishEnabled
-                          ? 'bg-[#2563EB] hover:bg-blue-700 text-white shadow-xs cursor-pointer'
-                          : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
-                      }`}
-                      title={
-                        !hasValidThumbnail
-                          ? 'Wajib menambahkan gambar cover / thumbnail materi sebelum menerbitkan'
-                          : !hasValidTextContent
-                          ? 'Lengkapi minimal 1 section teks materi untuk mempublikasikannya'
-                          : moduleTopics.length === 0
-                          ? 'Wajib mengisi minimal 1 topik bahasan untuk mempublikasikan'
-                          : undefined
-                      }
-                    >
-                      {isPublishing ? (
-                        <>
-                          <RefreshCw className="w-3.5 h-3.5 animate-spin text-white shrink-0" />
-                          <span>{initialModule ? 'Memperbarui Materi...' : 'Menerbitkan Materi...'}</span>
-                        </>
-                      ) : (
-                        <span>{initialModule ? 'Update Materi' : 'Publish Materi'}</span>
-                      )}
-                    </button>
-                  </div>
+                  </button>
                 );
               })()}
             </div>

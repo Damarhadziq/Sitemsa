@@ -1122,16 +1122,22 @@ export function ModuleBlockBuilder({
                 <button
                   type="button"
                   onClick={() => setShowThumbnailModal(true)}
-                  className="h-8 px-2 rounded-[6px] border border-[#ECECEC] bg-white hover:bg-slate-50 hover:border-blue-300 flex items-center gap-1.5 cursor-pointer transition-all group/thumb"
+                  className={`h-8 px-2.5 rounded-[6px] flex items-center gap-1.5 cursor-pointer transition-all ${
+                    moduleThumbnail
+                      ? 'bg-[#E8E7FF] text-[#2563EB] border border-[#2563EB]/25 font-bold shadow-2xs'
+                      : 'border border-[#ECECEC] bg-white text-[#737373] hover:text-[#2563EB] hover:bg-slate-50 hover:border-blue-300 font-semibold group/thumb'
+                  }`}
                 >
                   {moduleThumbnail ? (
-                    <div className="w-5 h-3.5 rounded-[3px] overflow-hidden border border-[#ECECEC] shrink-0">
+                    <div className="w-5 h-3.5 rounded-[3px] overflow-hidden border border-[#2563EB]/30 shrink-0">
                       <img src={moduleThumbnail} alt="" className="w-full h-full object-cover" />
                     </div>
                   ) : (
                     <ImageIcon className="w-3.5 h-3.5 text-[#737373] group-hover/thumb:text-[#2563EB]" />
                   )}
-                  <span className="text-[11px] font-semibold text-[#737373] group-hover/thumb:text-[#2563EB] hidden sm:inline">Cover</span>
+                  <span className={`text-[11px] hidden sm:inline ${moduleThumbnail ? 'font-bold text-[#2563EB]' : 'font-semibold text-[#737373] group-hover/thumb:text-[#2563EB]'}`}>
+                    Cover
+                  </span>
                 </button>
               </Tooltip>
 
@@ -1181,16 +1187,20 @@ export function ModuleBlockBuilder({
                 <button
                   type="button"
                   onClick={() => setShowTopicsModal(true)}
-                  className="h-8 px-2.5 rounded-[6px] border border-[#ECECEC] bg-white hover:bg-slate-50 hover:border-blue-300 flex items-center gap-1.5 cursor-pointer transition-all group/topics"
+                  className={`h-8 px-2.5 rounded-[6px] flex items-center gap-1.5 cursor-pointer transition-all ${
+                    moduleTopics.length > 0
+                      ? 'bg-[#E8E7FF] text-[#2563EB] border border-[#2563EB]/25 font-bold shadow-2xs'
+                      : 'border border-[#ECECEC] bg-white text-[#737373] hover:text-[#2563EB] hover:bg-slate-50 hover:border-blue-300 font-semibold group/topics'
+                  }`}
                 >
-                  <Hash className="w-3.5 h-3.5 text-[#737373] group-hover/topics:text-[#2563EB]" />
-                  <span className="text-[11px] font-semibold text-[#737373] group-hover/topics:text-[#2563EB] hidden sm:inline">
+                  <Hash className={`w-3.5 h-3.5 ${moduleTopics.length > 0 ? 'text-[#2563EB]' : 'text-[#737373] group-hover/topics:text-[#2563EB]'}`} />
+                  <span className={`text-[11px] hidden sm:inline ${moduleTopics.length > 0 ? 'font-bold text-[#2563EB]' : 'font-semibold text-[#737373] group-hover/topics:text-[#2563EB]'}`}>
                     {moduleTopics.length > 0 ? `${moduleTopics.length} Topik` : 'Topik'}
                   </span>
                 </button>
               </Tooltip>
 
-              {/* Evaluasi Button (Blue Chip if has evaluation, else Add with Document icon) */}
+              {/* Evaluasi Button (Consistent Filled / Empty State Without Checklist Symbol) */}
               <Tooltip content={evaluationType ? 'Pengaturan Evaluasi / Kuis' : 'Tambahkan Evaluasi / Kuis'} side="bottom">
                 <button
                   type="button"
@@ -1198,24 +1208,13 @@ export function ModuleBlockBuilder({
                   className={`h-8 px-2.5 rounded-[6px] flex items-center gap-1.5 cursor-pointer transition-all ${
                     evaluationType
                       ? 'bg-[#E8E7FF] text-[#2563EB] border border-[#2563EB]/25 font-bold shadow-2xs'
-                      : 'border border-[#ECECEC] bg-white text-[#737373] hover:text-[#2563EB] hover:bg-slate-50 hover:border-blue-300 font-semibold'
+                      : 'border border-[#ECECEC] bg-white text-[#737373] hover:text-[#2563EB] hover:bg-slate-50 hover:border-blue-300 font-semibold group/eval'
                   }`}
                 >
-                  {evaluationType ? (
-                    <>
-                      <FileText className="w-3.5 h-3.5 text-[#2563EB]" />
-                      <span className="text-[11px] font-bold text-[#2563EB] hidden sm:inline">
-                        Evaluasi ✓
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <FileText className="w-3.5 h-3.5 text-[#737373] group-hover:text-[#2563EB]" />
-                      <span className="text-[11px] font-semibold hidden sm:inline">
-                        Tambah Evaluasi
-                      </span>
-                    </>
-                  )}
+                  <FileText className={`w-3.5 h-3.5 ${evaluationType ? 'text-[#2563EB]' : 'text-[#737373] group-hover/eval:text-[#2563EB]'}`} />
+                  <span className={`text-[11px] hidden sm:inline ${evaluationType ? 'font-bold text-[#2563EB]' : 'font-semibold text-[#737373] group-hover/eval:text-[#2563EB]'}`}>
+                    {evaluationType ? 'Evaluasi' : 'Tambah Evaluasi'}
+                  </span>
                 </button>
               </Tooltip>
             </div>

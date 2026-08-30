@@ -169,8 +169,13 @@ export default function AdminGuruPelajaranPage() {
   const searchParams = useSearchParams();
   const itemIdParam = searchParams.get('item');
 
-  const { user, activeSubjectFilter } = useAuth();
+  const { user, role, activeSubjectFilter } = useAuth();
   const { modules, quizzes, addModule, updateModule, deleteModule, addQuiz, deleteQuiz } = useAdminStore();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const assignedSubjects = user?.assignedSubjects || ['Informatika'];
   const currentSubject = activeSubjectFilter || assignedSubjects[0] || 'Informatika';
@@ -188,7 +193,10 @@ export default function AdminGuruPelajaranPage() {
   };
 
   const isTeacherMatch = (teacherId?: string, teacherName?: string) => {
-    if (!user) return true;
+    if (!user) {
+      if (role === 'superadmin') return true;
+      return false;
+    }
     if (user.role === 'superadmin') return true;
 
     const uId = (user.id || '').toLowerCase().trim();
@@ -205,12 +213,12 @@ export default function AdminGuruPelajaranPage() {
     return false;
   };
 
-  const subjectModules = modules.filter(
+  const subjectModules = (mounted && user) ? modules.filter(
     (m) => isSubjectMatch(m.subject, currentSubject) && isTeacherMatch(m.teacherId, m.teacherName)
-  );
-  const subjectQuizzes = quizzes.filter(
+  ) : [];
+  const subjectQuizzes = (mounted && user) ? quizzes.filter(
     (q) => isSubjectMatch(q.subject, currentSubject) && isTeacherMatch(q.teacherId, q.teacherName)
-  );
+  ) : [];
 
   // Selected item ID from query param (null = Landing Overview mode)
   const selectedItemId = itemIdParam || null;

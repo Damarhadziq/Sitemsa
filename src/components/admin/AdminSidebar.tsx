@@ -95,7 +95,10 @@ export function AdminSidebar() {
   };
 
   const isTeacherMatch = (teacherId?: string, teacherName?: string) => {
-    if (!user) return true;
+    if (!user) {
+      if (role === 'superadmin') return true;
+      return false;
+    }
     if (user.role === 'superadmin') return true;
 
     const uId = (user.id || '').toLowerCase().trim();
@@ -112,13 +115,13 @@ export function AdminSidebar() {
     return false;
   };
 
-  // Filter modules & quizzes for active subject & logged in teacher
-  const currentModules = modules.filter(
+  // Filter modules & quizzes for active subject & logged in teacher (guarded against SSR/hydration flash)
+  const currentModules = (mounted && user) ? modules.filter(
     (m) => isSubjectMatch(m.subject, currentSubject) && isTeacherMatch(m.teacherId, m.teacherName)
-  );
-  const currentQuizzes = quizzes.filter(
+  ) : [];
+  const currentQuizzes = (mounted && user) ? quizzes.filter(
     (q) => isSubjectMatch(q.subject, currentSubject) && isTeacherMatch(q.teacherId, q.teacherName)
-  );
+  ) : [];
 
   const superadminNav = [
     { name: 'Dashboard', href: '/admin/superadmin', icon: LayoutDashboard },

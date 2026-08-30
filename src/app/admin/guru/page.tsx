@@ -21,13 +21,18 @@ import BorderGlow from '@/components/ui/BorderGlow';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminGuruDashboard() {
-  const { user, activeSubjectFilter } = useAuth();
+  const { user, role, activeSubjectFilter } = useAuth();
   const { modules, quizzes, students } = useAdminStore();
+  const [mounted, setMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [aiPrompt, setAiPrompt] = useState('');
 
   const assignedSubjects = user?.assignedSubjects || ['Informatika'];
   const currentSubject = activeSubjectFilter || assignedSubjects[0] || 'Informatika';
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     setIsLoading(true);
@@ -56,7 +61,10 @@ export default function AdminGuruDashboard() {
   };
 
   const isTeacherMatch = (teacherId?: string, teacherName?: string) => {
-    if (!user) return true;
+    if (!user) {
+      if (role === 'superadmin') return true;
+      return false;
+    }
     if (user.role === 'superadmin') return true;
 
     const uId = (user.id || '').toLowerCase().trim();
@@ -73,13 +81,13 @@ export default function AdminGuruDashboard() {
     return false;
   };
 
-  const subjectModules = modules.filter(
+  const subjectModules = (mounted && user) ? modules.filter(
     (m) => isSubjectMatch(m.subject, currentSubject) && isTeacherMatch(m.teacherId, m.teacherName)
-  );
+  ) : [];
 
-  const subjectQuizzes = quizzes.filter(
+  const subjectQuizzes = (mounted && user) ? quizzes.filter(
     (q) => isSubjectMatch(q.subject, currentSubject) && isTeacherMatch(q.teacherId, q.teacherName)
-  );
+  ) : [];
 
   const subjectStudents = students.filter((s) => s.enrolledSubjects.includes(currentSubject));
 

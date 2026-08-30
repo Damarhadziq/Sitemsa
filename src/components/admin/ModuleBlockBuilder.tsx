@@ -967,13 +967,15 @@ export function ModuleBlockBuilder({
           ? textVal.slice(0, 140) + (textVal.length > 140 ? '...' : '')
           : 'Materi pembelajaran interaktif Sitemsa.';
 
+        const finalTopics = moduleTopics && moduleTopics.length > 0 ? moduleTopics : ['Materi Pembelajaran', 'Praktikum'];
+
         onSave(
           {
             title: moduleTitle,
             subject: subjectName,
             level: moduleLevel,
             duration: moduleDuration,
-            topics: moduleTopics,
+            topics: finalTopics,
             description: autoDescription,
             isPublished: true,
             thumbnail: moduleThumbnail,
@@ -1002,13 +1004,15 @@ export function ModuleBlockBuilder({
         ? textVal.slice(0, 140) + (textVal.length > 140 ? '...' : '')
         : 'Materi pembelajaran interaktif Sitemsa.';
 
+      const finalTopics = moduleTopics && moduleTopics.length > 0 ? moduleTopics : ['Materi Pembelajaran', 'Praktikum'];
+
       onSave(
         {
           title: moduleTitle,
           subject: subjectName,
           level: moduleLevel,
           duration: moduleDuration,
-          topics: moduleTopics,
+          topics: finalTopics,
           description: autoDescription,
           isPublished: false,
           thumbnail: moduleThumbnail,
@@ -3271,7 +3275,11 @@ export function ModuleBlockBuilder({
       {/* TOPICS EDIT MODAL */}
       {showTopicsModal && (
         <div
-          onClick={() => setShowTopicsModal(false)}
+          onClick={() => {
+            if (moduleTopics.length >= 1) {
+              setShowTopicsModal(false);
+            }
+          }}
           className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200 font-sans"
         >
           <div
@@ -3282,7 +3290,11 @@ export function ModuleBlockBuilder({
               <h3 className="text-base font-bold text-[#2E2D2D]">Topik Bahasan</h3>
               <button
                 type="button"
-                onClick={() => setShowTopicsModal(false)}
+                onClick={() => {
+                  if (moduleTopics.length >= 1) {
+                    setShowTopicsModal(false);
+                  }
+                }}
                 className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#737373] hover:text-[#2E2D2D] flex items-center justify-center transition-colors cursor-pointer"
                 aria-label="Tutup Modal"
               >
@@ -3291,12 +3303,14 @@ export function ModuleBlockBuilder({
             </div>
             <div className="px-5 pb-5 space-y-3">
               <div className="flex items-center justify-between">
-                <span className={`text-[11px] font-semibold ${moduleTopics.length >= 4 ? 'text-amber-600' : 'text-[#737373]'}`}>
-                  {moduleTopics.length}/4 Topik
+                <span className={`text-[11px] font-semibold ${moduleTopics.length === 0 ? 'text-rose-600 font-bold' : moduleTopics.length >= 4 ? 'text-amber-600' : 'text-[#737373]'}`}>
+                  {moduleTopics.length}/4 Topik {moduleTopics.length === 0 && '(Wajib minimal 1)'}
                 </span>
               </div>
               <div
-                className="min-h-[44px] p-2 rounded-[8px] bg-white border border-[#ECECEC] focus-within:border-[#2563EB] flex flex-wrap items-center gap-2 transition-colors cursor-text"
+                className={`min-h-[44px] p-2 rounded-[8px] bg-white border ${
+                  moduleTopics.length === 0 ? 'border-rose-300 focus-within:border-rose-500' : 'border-[#ECECEC] focus-within:border-[#2563EB]'
+                } flex flex-wrap items-center gap-2 transition-colors cursor-text`}
                 onClick={() => tagInputRef.current?.focus()}
               >
                 {moduleTopics.map((topic) => (
@@ -3340,12 +3354,31 @@ export function ModuleBlockBuilder({
                   />
                 )}
               </div>
+
+              {moduleTopics.length === 0 && (
+                <p className="text-[11px] text-rose-500 font-medium animate-in fade-in duration-150">
+                  ⚠️ Minimal 1 topik bahasan harus ditambahkan sebelum menyimpan.
+                </p>
+              )}
             </div>
             <div className="px-5 pb-4 flex justify-end gap-2">
               <button
                 type="button"
-                onClick={() => setShowTopicsModal(false)}
-                className="px-5 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-xs font-semibold text-white shadow-xs transition-colors cursor-pointer active:scale-98"
+                disabled={moduleTopics.length === 0 && !tagInputText.trim()}
+                onClick={() => {
+                  if (tagInputText.trim()) {
+                    handleAddTopicTag();
+                    setIsDirty(true);
+                  }
+                  if (moduleTopics.length > 0 || tagInputText.trim()) {
+                    setShowTopicsModal(false);
+                  }
+                }}
+                className={`px-5 py-2 rounded-[8px] text-xs font-semibold transition-colors ${
+                  moduleTopics.length === 0 && !tagInputText.trim()
+                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    : 'bg-[#2563EB] hover:bg-blue-700 text-white shadow-xs cursor-pointer active:scale-98'
+                }`}
               >
                 Simpan
               </button>

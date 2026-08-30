@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useAdminStore } from '@/lib/admin-store';
+import { StudentMonitoringService } from '@/services/student-monitoring.service';
 import BorderGlow from '@/components/ui/BorderGlow';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -32,13 +33,18 @@ export default function AdminGuruDashboard() {
 
   useEffect(() => {
     setMounted(true);
+    StudentMonitoringService.fetchMonitoringData().catch(() => {});
+    const unsubscribe = StudentMonitoringService.subscribeToRealtime();
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
     setIsLoading(true);
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 250);
+    }, 200);
     return () => clearTimeout(timer);
   }, [currentSubject]);
 

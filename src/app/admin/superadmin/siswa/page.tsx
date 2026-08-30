@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Award, BookOpen, Clock, ChevronDown, Check } from 'lucide-react';
 import { useAdminStore } from '@/lib/admin-store';
+import { StudentMonitoringService } from '@/services/student-monitoring.service';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function SuperadminSiswaPage() {
@@ -13,10 +14,15 @@ export default function SuperadminSiswaPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    setIsLoading(true);
+    StudentMonitoringService.fetchMonitoringData().finally(() => {
       setIsLoading(false);
-    }, 250);
-    return () => clearTimeout(timer);
+    });
+
+    const unsubscribe = StudentMonitoringService.subscribeToRealtime();
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   const classesList = ['All', ...Array.from(new Set(students.map((s) => s.classGroup)))];
@@ -33,11 +39,15 @@ export default function SuperadminSiswaPage() {
 
   return (
     <div className="space-y-6 font-sans text-[#2E2D2D] bg-white">
-      {/* Big Page Title in Content */}
-      <div>
+      {/* Big Page Title in Content with Live Sync */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#2E2D2D]">
           Monitoring Siswa Global
         </h1>
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-700 text-xs font-semibold self-start sm:self-auto shadow-2xs">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span>Realtime Sync</span>
+        </div>
       </div>
 
       {/* Action Bar: Clean Search Bar & Custom Class Filter */}

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useAdminStore, StudentRecord } from '@/lib/admin-store';
+import { StudentMonitoringService } from '@/services/student-monitoring.service';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LoadingTimeoutBoundary } from '@/components/ui/LoadingTimeoutBoundary';
 
@@ -43,9 +44,21 @@ export default function AdminGuruMonitoringPage() {
 
   React.useEffect(() => {
     setIsLoading(true);
+    StudentMonitoringService.fetchMonitoringData().finally(() => {
+      setIsLoading(false);
+    });
+
+    const unsubscribe = StudentMonitoringService.subscribeToRealtime();
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  React.useEffect(() => {
+    setIsLoading(true);
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 250);
+    }, 200);
     return () => clearTimeout(timer);
   }, [currentSubject]);
 
@@ -201,11 +214,15 @@ export default function AdminGuruMonitoringPage() {
 
   return (
     <div className="space-y-6 font-sans text-[#2E2D2D] bg-white">
-      {/* Big Page Title in Content */}
-      <div>
+      {/* Big Page Title in Content with Live Status */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#2E2D2D]">
           Monitoring Siswa
         </h1>
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-700 text-xs font-semibold self-start sm:self-auto shadow-2xs">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span>Realtime Sync</span>
+        </div>
       </div>
 
       {exportToast.show && (

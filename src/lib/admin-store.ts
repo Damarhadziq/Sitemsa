@@ -197,6 +197,7 @@ interface AdminStoreState {
   deleteQuiz: (id: string) => void;
 
   // Actions - Students (Monitoring)
+  setStudents: (students: StudentRecord[]) => void;
   addStudentScore: (studentId: string, scoreRecord: StudentRecord['quizHistory'][0]) => void;
   updateStudentProgress: (studentId: string, subject: string, progress: number) => void;
 }
@@ -1489,6 +1490,8 @@ export const useAdminStore = create<AdminStoreState>()(
         }),
 
       // Student Actions
+      setStudents: (students) => set({ students }),
+
       addStudentScore: (studentId, scoreRecord) =>
         set((state) => ({
           students: state.students.map((s) =>

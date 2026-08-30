@@ -70,6 +70,11 @@ export class ProgressService {
     student.moduleProgress[subject] = Math.min(100, Math.max(0, progress));
     student.lastActive = 'Baru saja';
     this.persist();
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('sintesa-student-progress-updated', { detail: { studentId, subject, progress } }));
+    }
+
     return student;
   }
 
@@ -93,6 +98,10 @@ export class ProgressService {
     });
     student.lastActive = 'Baru saja';
     this.persist();
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('sintesa-student-quiz-recorded', { detail: { studentId, ...attempt } }));
+    }
 
     // Direct Supabase record insert
     if (supabase) {

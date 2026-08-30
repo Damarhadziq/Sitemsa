@@ -188,24 +188,10 @@ export default function AdminGuruPelajaranPage() {
   };
 
   const subjectModules = modules.filter(
-    (m) =>
-      isSubjectMatch(m.subject, currentSubject) &&
-      (!user ||
-        user.role === 'superadmin' ||
-        m.teacherId === user.id ||
-        m.teacherName?.toLowerCase() === user.name?.toLowerCase() ||
-        m.teacherName?.toLowerCase().includes(user.name?.toLowerCase()) ||
-        user.name?.toLowerCase().includes(m.teacherName?.toLowerCase()))
+    (m) => isSubjectMatch(m.subject, currentSubject)
   );
   const subjectQuizzes = quizzes.filter(
-    (q) =>
-      isSubjectMatch(q.subject, currentSubject) &&
-      (!user ||
-        user.role === 'superadmin' ||
-        q.teacherId === user.id ||
-        q.teacherName?.toLowerCase() === user.name?.toLowerCase() ||
-        q.teacherName?.toLowerCase().includes(user.name?.toLowerCase()) ||
-        user.name?.toLowerCase().includes(q.teacherName?.toLowerCase()))
+    (q) => isSubjectMatch(q.subject, currentSubject)
   );
 
   // Selected item ID from query param (null = Landing Overview mode)
@@ -215,46 +201,58 @@ export default function AdminGuruPelajaranPage() {
   const selectedModule = selectedItemId ? subjectModules.find((m) => m.id === selectedItemId) : null;
   const selectedQuiz = selectedItemId ? subjectQuizzes.find((q) => q.id === selectedItemId) : null;
 
-  // Live fetch from Supabase on mount to ensure IDs are 100% in sync with database
+  // Live fetch from Supabase on mount to ensure IDs are 100% in sync without wiping local creations
   useEffect(() => {
     ModuleService.fetchFromSupabase().then((cloudModules) => {
       if (cloudModules && cloudModules.length > 0) {
-        useAdminStore.setState({
-          modules: cloudModules.map((c) => ({
-            id: c.id,
-            subject: c.subject,
-            title: c.title,
-            level: c.level,
-            duration: c.duration,
-            topics: c.topics,
-            description: c.description,
-            teacherId: c.teacherId,
-            teacherName: c.teacherName,
-            isPublished: c.isPublished !== false,
-            createdAt: c.createdAt,
-            isAiRecommended: c.isAiRecommended,
-            quizSource: c.quizSource,
-          })),
+        useAdminStore.setState((state) => {
+          const existing = state.modules || [];
+          const map = new Map(existing.map((m) => [m.id, m]));
+          cloudModules.forEach((c) => {
+            map.set(c.id, {
+              id: c.id,
+              subject: c.subject,
+              title: c.title,
+              level: c.level,
+              duration: c.duration,
+              topics: c.topics,
+              description: c.description,
+              teacherId: c.teacherId,
+              teacherName: c.teacherName,
+              isPublished: c.isPublished !== false,
+              createdAt: c.createdAt,
+              isAiRecommended: c.isAiRecommended,
+              quizSource: c.quizSource,
+              thumbnail: c.thumbnail,
+              blocks: c.blocks,
+            });
+          });
+          return { modules: Array.from(map.values()) };
         });
       }
     });
 
     QuizService.fetchFromSupabase().then((cloudQuizzes) => {
       if (cloudQuizzes && cloudQuizzes.length > 0) {
-        useAdminStore.setState({
-          quizzes: cloudQuizzes.map((q) => ({
-            id: q.id,
-            subject: q.subject,
-            title: q.title,
-            duration: q.duration,
-            passScore: q.passScore,
-            questionCount: q.questionCount ?? (q.questions ? q.questions.length : 0),
-            questions: q.questions,
-            teacherId: q.teacherId || 't-1',
-            teacherName: q.teacherName || 'Pengajar Sitemsa',
-            createdAt: q.createdAt,
-            published: q.published !== false,
-          })),
+        useAdminStore.setState((state) => {
+          const existing = state.quizzes || [];
+          const map = new Map(existing.map((q) => [q.id, q]));
+          cloudQuizzes.forEach((q) => {
+            map.set(q.id, {
+              id: q.id,
+              subject: q.subject,
+              title: q.title,
+              duration: q.duration,
+              passScore: q.passScore,
+              questionCount: q.questionCount ?? (q.questions ? q.questions.length : 0),
+              questions: q.questions,
+              teacherId: q.teacherId || 't2',
+              teacherName: q.teacherName || 'Pengajar Sitemsa',
+              createdAt: q.createdAt,
+              published: q.published !== false,
+            });
+          });
+          return { quizzes: Array.from(map.values()) };
         });
       }
     });
@@ -385,8 +383,9 @@ export default function AdminGuruPelajaranPage() {
 
       setNewlyAddedMateriId(editingModule.id);
       setTimeout(() => setNewlyAddedMateriId(null), 3000);
-    } else {
-      const fixedId = generateEntityId('mod', currentSubject, user?.id || 't1');
+      const currentTeacherId = user?.id || 't2';
+      const currentTeacherName = user?.name || 'Mochammad Rizal D. D.';
+      const fixedId = generateEntityId('mod', currentSubject, currentTeacherId);
       addModule({
         id: fixedId,
         subject: currentSubject,
@@ -396,8 +395,8 @@ export default function AdminGuruPelajaranPage() {
         topics: moduleData.topics || ['Materi Sintesa', 'Praktikum'],
         description: moduleData.description || 'Deskripsi materi pembelajaran.',
         thumbnail: moduleData.thumbnail,
-        teacherId: user?.id || 't-olr-1',
-        teacherName: user?.name || 'Brilian Anugraheni',
+        teacherId: currentTeacherId,
+        teacherName: currentTeacherName,
         isPublished: moduleData.isPublished ?? true,
         quizSource: moduleData.quizSource,
         blocks: blocks,
@@ -413,8 +412,8 @@ export default function AdminGuruPelajaranPage() {
         description: moduleData.description || 'Deskripsi materi pembelajaran.',
         thumbnail: moduleData.thumbnail,
         blocks: blocks,
-        teacherId: user?.id || 't-olr-1',
-        teacherName: user?.name || 'Brilian Anugraheni',
+        teacherId: currentTeacherId,
+        teacherName: currentTeacherName,
         isPublished: moduleData.isPublished ?? true,
         quizSource: moduleData.quizSource as any,
       });

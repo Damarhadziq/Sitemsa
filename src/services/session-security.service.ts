@@ -1,7 +1,9 @@
 import { supabase } from '@/lib/supabase';
 import { AuthUser } from '@/lib/auth-context';
 
-export const INACTIVITY_LIMIT_MS = 30 * 60 * 1000; // 30 Menit (1,800,000 ms)
+export const ADMIN_INACTIVITY_LIMIT_MS = 30 * 60 * 1000; // 30 Menit untuk Pengelola / Guru
+export const STUDENT_INACTIVITY_LIMIT_MS = 7 * 24 * 60 * 60 * 1000; // 7 Hari (1 Minggu) untuk Siswa
+export const INACTIVITY_LIMIT_MS = ADMIN_INACTIVITY_LIMIT_MS;
 export const STORAGE_SESSION_ID_KEY = 'sintesa_session_id';
 export const STORAGE_LAST_ACTIVE_KEY = 'sintesa_last_active';
 export const STORAGE_USER_KEY = 'sintesa_user';
@@ -54,8 +56,20 @@ export class SessionSecurityService {
     localStorage.setItem(STORAGE_SESSION_ID_KEY, sessionId);
     localStorage.setItem(STORAGE_LAST_ACTIVE_KEY, now.toString());
 
-    // Set cookie for middleware/server visibility
-    document.cookie = `${STORAGE_SESSION_ID_KEY}=${sessionId}; path=/; max-age=604800; SameSite=Lax`;
+    // Role-isolated cookies
+    if (user.role === 'siswa') {
+      document.cookie = `${STORAGE_SESSION_ID_KEY}=${sessionId}; path=/; max-age=604800; SameSite=Lax`;
+      document.cookie = `auth_student=siswa; path=/; max-age=604800; SameSite=Lax`;
+      document.cookie = `auth=true; path=/; max-age=604800; SameSite=Lax`;
+      document.cookie = `sintesa_student_auth=true; path=/; max-age=604800; SameSite=Lax`;
+      document.cookie = `auth_admin=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0;`;
+    } else {
+      document.cookie = `${STORAGE_SESSION_ID_KEY}=${sessionId}; path=/; max-age=604800; SameSite=Lax`;
+      document.cookie = `auth_admin=${user.role || 'guru'}; path=/; max-age=604800; SameSite=Lax`;
+      document.cookie = `auth_student=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0;`;
+      document.cookie = `auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0;`;
+      document.cookie = `sintesa_student_auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0;`;
+    }
 
     // Sync to Supabase cloud table `active_sessions` for single-device concurrent enforcement
     if (supabase && user) {
@@ -80,7 +94,9 @@ export class SessionSecurityService {
 
   /**
    * Verify if current local session is still valid:
-   * 1. Check if user is inactive > 30 minutes
+   * 1. Check if user is inactive:
+   *    - Siswa: Inactivity > 1 Minggu (7 hari)
+   *    - Admin / Guru: Inactivity > 30 Menit
    * 2. Check if another device logged in with the same account (single device enforcement)
    */
   static async validateSession(
@@ -89,10 +105,13 @@ export class SessionSecurityService {
   ): Promise<{ valid: boolean; reason?: 'inactivity' | 'concurrent_device' }> {
     if (!user) return { valid: false };
 
-    // 1. Inactivity check (30 minutes)
+    // 1. Role-aware inactivity check
     const now = Date.now();
     const lastActive = this.getLastActiveTimestamp();
-    if (now - lastActive > INACTIVITY_LIMIT_MS) {
+    const isStudent = user.role === 'siswa';
+    const limit = isStudent ? STUDENT_INACTIVITY_LIMIT_MS : ADMIN_INACTIVITY_LIMIT_MS;
+
+    if (now - lastActive > limit) {
       return { valid: false, reason: 'inactivity' };
     }
 
@@ -106,8 +125,6 @@ export class SessionSecurityService {
           .maybeSingle();
 
         if (!error && data && data.session_id) {
-          // If the active session registered in Supabase does not match this device's session ID,
-          // it means a newer login took place on another device!
           if (data.session_id !== currentSessionId) {
             return { valid: false, reason: 'concurrent_device' };
           }

@@ -354,19 +354,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const handleSecurityLogout = (reason: 'inactivity' | 'concurrent_device') => {
-    const currentRole = user?.role;
+  const handleSecurityLogout = (reason: 'inactivity' | 'concurrent_device', targetUser?: AuthUser | null) => {
+    const activeUser = targetUser || user;
+    const currentRole = activeUser?.role;
     const isTeacherOrAdmin = currentRole === 'superadmin' || currentRole === 'guru';
     const isCurrentlyOnAdminPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
-
-    // Main website students/visitors should never be redirected to admin login
-    if (!isCurrentlyOnAdminPage && !isTeacherOrAdmin) {
-      return;
-    }
 
     authClientService.logout().catch(() => {});
     saveSession(null);
 
+    // Strict separation: Admin/Guru goes to /admin/login, Student goes to /login
     const targetUrl = (isCurrentlyOnAdminPage || isTeacherOrAdmin)
       ? `/admin/login?reason=${reason}`
       : `/login?reason=${reason}`;
@@ -388,31 +385,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (savedUserStr) {
       try {
         const parsed = JSON.parse(savedUserStr) as AuthUser;
-        const isCurrentlyOnAdminPage = window.location.pathname.startsWith('/admin');
-        const isTeacherOrAdmin = parsed.role === 'superadmin' || parsed.role === 'guru';
 
-        // Only enforce strict security validation for admin/guru or admin routes
-        if (isCurrentlyOnAdminPage || isTeacherOrAdmin) {
-          SessionSecurityService.validateSession(parsed, localSessionId).then(({ valid, reason }) => {
-            if (!valid && reason) {
-              console.warn(`Sesi admin dihentikan karena: ${reason}`);
-              handleSecurityLogout(reason);
-              setIsLoading(false);
-              return;
-            }
-
-            setUser(parsed);
-            SessionSecurityService.touchActivity(parsed, false);
-
-            if (parsed.role === 'guru' && parsed.assignedSubjects && parsed.assignedSubjects.length > 0) {
-              setActiveSubjectFilter(parsed.assignedSubjects[0]);
-            }
+        // Perform role-aware security validation (Siswa: 1 minggu, Admin/Guru: 30 menit)
+        SessionSecurityService.validateSession(parsed, localSessionId).then(({ valid, reason }) => {
+          if (!valid && reason) {
+            console.warn(`Sesi ${parsed.role} dihentikan karena: ${reason}`);
+            handleSecurityLogout(reason, parsed);
             setIsLoading(false);
-          });
-        } else {
+            return;
+          }
+
           setUser(parsed);
+          SessionSecurityService.touchActivity(parsed, false);
+
+          if (parsed.role === 'guru' && parsed.assignedSubjects && parsed.assignedSubjects.length > 0) {
+            setActiveSubjectFilter(parsed.assignedSubjects[0]);
+          }
           setIsLoading(false);
-        }
+        });
       } catch {
         saveSession(null);
         setIsLoading(false);
@@ -423,7 +413,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Continuous user activity listener to reset 30-minute inactivity timer
+  // Continuous user activity listener to reset inactivity timer
   useEffect(() => {
     if (!user || typeof window === 'undefined') return;
 
@@ -446,28 +436,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [user]);
 
-  // Periodic security validation (every 5 seconds & on window focus/visibility change for admin portal)
+  // Periodic security validation
   useEffect(() => {
     if (!user || typeof window === 'undefined') return;
 
     const isCurrentlyOnAdminPage = window.location.pathname.startsWith('/admin');
     const isTeacherOrAdmin = user.role === 'superadmin' || user.role === 'guru';
 
-    // Only run continuous cloud session check for admin/guru portal
-    if (!isCurrentlyOnAdminPage && !isTeacherOrAdmin) {
-      return;
-    }
-
     const runValidation = async () => {
       const currentSessionId = SessionSecurityService.getLocalSessionId();
       const { valid, reason } = await SessionSecurityService.validateSession(user, currentSessionId);
       if (!valid && reason) {
-        handleSecurityLogout(reason);
+        handleSecurityLogout(reason, user);
       }
     };
 
-    // Run interval check
-    const intervalId = setInterval(runValidation, 5000);
+    const checkIntervalMs = isCurrentlyOnAdminPage || isTeacherOrAdmin ? 5000 : 30000;
+    const intervalId = setInterval(runValidation, checkIntervalMs);
 
     // Run check on tab focus or visibility change
     const handleVisibilityChange = () => {

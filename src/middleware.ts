@@ -68,14 +68,17 @@ export function middleware(request: NextRequest) {
     pathname === '/lengkapi-profil';
 
   if (isAuthPage) {
-    if (studentCookie && (pathname === '/login' || pathname === '/signup' || pathname === '/register')) {
-      return NextResponse.redirect(new URL('/', request.url));
-    }
-    if (adminCookie && (adminCookie.value === 'superadmin' || adminCookie.value === 'guru') && pathname === '/login') {
-      if (adminCookie.value === 'superadmin') {
-        return NextResponse.redirect(new URL('/admin/superadmin', request.url));
+    const hasReasonParam = request.nextUrl.searchParams.has('reason');
+    if (!hasReasonParam) {
+      if (studentCookie && (pathname === '/login' || pathname === '/signup' || pathname === '/register')) {
+        return NextResponse.redirect(new URL('/', request.url));
       }
-      return NextResponse.redirect(new URL('/admin/guru', request.url));
+      if (adminCookie && (adminCookie.value === 'superadmin' || adminCookie.value === 'guru') && pathname === '/login') {
+        if (adminCookie.value === 'superadmin') {
+          return NextResponse.redirect(new URL('/admin/superadmin', request.url));
+        }
+        return NextResponse.redirect(new URL('/admin/guru', request.url));
+      }
     }
     return NextResponse.next();
   }

@@ -27,7 +27,7 @@ export default function LoginPage() {
       const params = new URLSearchParams(window.location.search);
       const reason = params.get('reason');
       if (reason === 'inactivity') {
-        setSecurityNotice('Sesi Anda telah berakhir karena tidak ada aktivitas selama 30 menit. Silakan masuk kembali.');
+        setSecurityNotice('Sesi Anda telah berakhir karena tidak ada aktivitas selama 1 minggu. Silakan masuk kembali.');
       } else if (reason === 'concurrent_device') {
         setSecurityNotice('Akun Anda telah masuk di perangkat lain. Anda telah otomatis dikeluarkan dari perangkat ini demi keamanan.');
       }

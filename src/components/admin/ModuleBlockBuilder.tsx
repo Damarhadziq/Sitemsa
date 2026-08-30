@@ -757,26 +757,46 @@ export function ModuleBlockBuilder({
   };
 
   // Native Image File Picker Handler
-  const handleImageFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const objectUrl = URL.createObjectURL(file);
+    try {
+      const uploadedUrl = await StorageService.uploadImage(file, 'images');
 
-    if (editingSectionImage) {
-      handleUpdateSectionElement(
-        editingSectionImage.blockId,
-        editingSectionImage.elIndex,
-        { imageUrl: objectUrl }
-      );
-      setEditingSectionImage(null);
-      setEditingImageId(null);
-      return;
-    }
+      if (editingSectionImage) {
+        handleUpdateSectionElement(
+          editingSectionImage.blockId,
+          editingSectionImage.elIndex,
+          { imageUrl: uploadedUrl }
+        );
+        setEditingSectionImage(null);
+        setEditingImageId(null);
+        return;
+      }
 
-    if (editingImageId) {
-      updateBlockById(editingImageId, { mediaUrl: objectUrl });
-      setEditingImageId(null);
+      if (editingImageId) {
+        updateBlockById(editingImageId, { mediaUrl: uploadedUrl });
+        setEditingImageId(null);
+      }
+    } catch {
+      const objectUrl = URL.createObjectURL(file);
+
+      if (editingSectionImage) {
+        handleUpdateSectionElement(
+          editingSectionImage.blockId,
+          editingSectionImage.elIndex,
+          { imageUrl: objectUrl }
+        );
+        setEditingSectionImage(null);
+        setEditingImageId(null);
+        return;
+      }
+
+      if (editingImageId) {
+        updateBlockById(editingImageId, { mediaUrl: objectUrl });
+        setEditingImageId(null);
+      }
     }
   };
 

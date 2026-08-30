@@ -492,26 +492,33 @@ function MateriLandingContent() {
     }
   }, []);
 
-  // Synchronize dynamic modules from Supabase cloud
+  // Synchronize dynamic modules from Supabase cloud without wiping local store
   useEffect(() => {
     ModuleService.fetchFromSupabase().then((cloudModules) => {
       if (cloudModules && cloudModules.length > 0) {
-        useAdminStore.setState({
-          modules: cloudModules.map((c) => ({
-            id: c.id,
-            subject: c.subject,
-            title: c.title,
-            level: c.level,
-            duration: c.duration,
-            topics: c.topics,
-            description: c.description,
-            teacherId: c.teacherId,
-            teacherName: c.teacherName,
-            isPublished: c.isPublished !== false,
-            createdAt: c.createdAt,
-            isAiRecommended: c.isAiRecommended,
-            quizSource: c.quizSource,
-          })),
+        useAdminStore.setState((state) => {
+          const existing = state.modules || [];
+          const map = new Map(existing.map((m) => [m.id, m]));
+          cloudModules.forEach((c) => {
+            map.set(c.id, {
+              id: c.id,
+              subject: c.subject,
+              title: c.title,
+              level: c.level,
+              duration: c.duration,
+              topics: c.topics,
+              description: c.description,
+              teacherId: c.teacherId,
+              teacherName: c.teacherName,
+              isPublished: c.isPublished !== false,
+              createdAt: c.createdAt,
+              isAiRecommended: c.isAiRecommended,
+              quizSource: c.quizSource,
+              thumbnail: c.thumbnail,
+              blocks: c.blocks,
+            });
+          });
+          return { modules: Array.from(map.values()) };
         });
       }
     });
@@ -552,30 +559,35 @@ function MateriLandingContent() {
   const { modules } = useAdminStore();
 
   const liveModulData = useMemo(() => {
+    const uniqueMap = new Map<string, ModulItem>();
+
+    // 1. Seed with base system modules
+    MODUL_DATA.forEach((m) => {
+      const key = `${(m.subject || '').toLowerCase().trim()}_${(m.title || '').toLowerCase().trim()}`;
+      uniqueMap.set(key, m);
+    });
+
+    // 2. Merge dynamic teacher modules from admin store and Supabase
     if (modules && modules.length > 0) {
-      const uniqueMap = new Map<string, ModulItem>();
       modules
         .filter((m) => m.isPublished !== false)
         .forEach((m) => {
           const key = `${(m.subject || '').toLowerCase().trim()}_${(m.title || '').toLowerCase().trim()}`;
-          if (!uniqueMap.has(key)) {
-            uniqueMap.set(key, {
-              id: m.id,
-              subject: m.subject || "Informatika",
-              title: m.title,
-              level: m.level || "Pemula",
-              duration: m.duration || "30 Menit",
-              topics: m.topics && m.topics.length > 0 ? m.topics : ["Materi Pembelajaran"],
-              description: m.description || "Materi pembelajaran interaktif.",
-              icon: getSubjectIcon(m.subject || ""),
-              isAiRecommended: m.isAiRecommended,
-            });
-          }
+          uniqueMap.set(key, {
+            id: m.id,
+            subject: m.subject || "Informatika",
+            title: m.title,
+            level: m.level || "Pemula",
+            duration: m.duration || "30 Menit",
+            topics: m.topics && m.topics.length > 0 ? m.topics : ["Materi Pembelajaran"],
+            description: m.description || "Materi pembelajaran interaktif.",
+            icon: getSubjectIcon(m.subject || ""),
+            isAiRecommended: m.isAiRecommended,
+          });
         });
-      return Array.from(uniqueMap.values());
     }
 
-    return MODUL_DATA;
+    return Array.from(uniqueMap.values());
   }, [modules]);
 
   // Filter modules

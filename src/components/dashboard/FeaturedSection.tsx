@@ -44,7 +44,7 @@ export function FeaturedSection() {
   return (
     <section className="mb-10 space-y-4">
       <div>
-        <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-[#1E293B] via-[#2563EB] to-[#6366F1] bg-clip-text text-transparent">
+        <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-[#1D4ED8] via-[#2563EB] to-[#EAB308] bg-clip-text text-transparent">
           Rekomendasi Pembelajaran untukmu
         </h2>
       </div>

@@ -20,16 +20,18 @@ import {
   X,
   CheckCircle2,
   Pencil,
+  Loader2,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useAdminStore } from '@/lib/admin-store';
+import { StorageService } from '@/services/storage.service';
 
 export function AdminSidebar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentItemParam = searchParams.get('item');
 
-  const { role, activeSubjectFilter, user, logout } = useAuth();
+  const { role, activeSubjectFilter, user, logout, updateUserProfile } = useAuth();
   const { modules, quizzes, subjects } = useAdminStore();
 
   const router = useRouter();
@@ -41,13 +43,20 @@ export function AdminSidebar() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   const profileRef = useRef<HTMLDivElement>(null);
 
   // Settings form states
-  const [settingsEmail, setSettingsEmail] = useState(user?.email || 'budi.guru@sintesa.id');
+  const [settingsEmail, setSettingsEmail] = useState(user?.email || '');
   const [settingsPhone, setSettingsPhone] = useState('0812-3456-7890');
   const [settingsSavedToast, setSettingsSavedToast] = useState(false);
+
+  useEffect(() => {
+    if (user?.email) {
+      setSettingsEmail(user.email);
+    }
+  }, [user?.email]);
 
   useEffect(() => {
     setMounted(true);
@@ -60,8 +69,28 @@ export function AdminSidebar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsUploadingAvatar(true);
+      try {
+        const url = await StorageService.uploadImage(file, 'avatars');
+        if (url) {
+          updateUserProfile({ avatar: url });
+        }
+      } catch (err) {
+        console.warn('Avatar upload error:', err);
+      } finally {
+        setIsUploadingAvatar(false);
+      }
+    }
+  };
+
   const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
+    if (settingsEmail && updateUserProfile) {
+      updateUserProfile({ email: settingsEmail });
+    }
     setSettingsSavedToast(true);
     setTimeout(() => {
       setSettingsSavedToast(false);
@@ -467,17 +496,17 @@ export function AdminSidebar() {
                   title="Update Foto Profil"
                   className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-[#2563EB] hover:bg-blue-700 text-white flex items-center justify-center cursor-pointer border-2 border-white transition-transform active:scale-95 shadow-xs"
                 >
-                  <Pencil className="w-3.5 h-3.5" />
+                  {isUploadingAvatar ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Pencil className="w-3.5 h-3.5" />
+                  )}
                   <input
                     type="file"
                     accept="image/*"
                     className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        alert(`Foto profil berhasil dipilih: ${file.name}`);
-                      }
-                    }}
+                    disabled={isUploadingAvatar}
+                    onChange={handleAvatarFileChange}
                   />
                 </label>
               </div>

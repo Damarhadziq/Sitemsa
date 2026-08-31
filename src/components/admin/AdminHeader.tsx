@@ -33,9 +33,15 @@ export function AdminHeader() {
   const profileRef = useRef<HTMLDivElement>(null);
 
   // Settings form states
-  const [settingsEmail, setSettingsEmail] = useState(user?.email || 'budi.guru@sintesa.id');
+  const [settingsEmail, setSettingsEmail] = useState(user?.email || '');
   const [settingsPhone, setSettingsPhone] = useState('0812-3456-7890');
   const [settingsSavedToast, setSettingsSavedToast] = useState(false);
+
+  useEffect(() => {
+    if (user?.email) {
+      setSettingsEmail(user.email);
+    }
+  }, [user?.email]);
 
   useEffect(() => {
     setMounted(true);

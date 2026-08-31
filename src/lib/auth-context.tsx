@@ -31,6 +31,7 @@ interface AuthContextType {
   loginAsStudent: () => void;
   loginWithCredentials: (email: string, password?: string) => boolean;
   logout: () => void;
+  updateUserProfile: (data: Partial<AuthUser>) => void;
   setTeacherSubjectFilter: (subject: string) => void;
   activeSubjectFilter: string;
 }
@@ -649,6 +650,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateUserProfile = (data: Partial<AuthUser>) => {
+    if (!user) return;
+    const updated: AuthUser = { ...user, ...data };
+    saveSession(updated);
+
+    // Sync to Supabase if connected
+    if (typeof window !== 'undefined' && updated.email) {
+      import('@/lib/supabase').then(({ supabase }) => {
+        if (supabase) {
+          Promise.resolve(
+            supabase
+              .from('users')
+              .upsert({
+                name: updated.name,
+                email: updated.email,
+                role: updated.role,
+                avatar: updated.avatar,
+                nip: updated.nip,
+              }, { onConflict: 'email' })
+          ).catch((err: any) => {
+            console.warn('Sync user profile to Supabase notice:', err);
+          });
+        }
+      });
+    }
+  };
+
   const setTeacherSubjectFilter = (subject: string) => {
     setActiveSubjectFilter(subject);
   };
@@ -664,6 +692,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loginAsStudent,
         loginWithCredentials,
         logout,
+        updateUserProfile,
         setTeacherSubjectFilter,
         activeSubjectFilter,
       }}

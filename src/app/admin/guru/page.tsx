@@ -455,9 +455,6 @@ export default function AdminGuruDashboard() {
                     <h4 className="text-sm font-bold text-[#2E2D2D]">
                       Semua Siswa Tuntas
                     </h4>
-                    <p className="text-xs text-[#737373] mt-1 max-w-xs leading-relaxed">
-                      Tidak ada siswa yang memerlukan bimbingan remidi saat ini.
-                    </p>
                   </div>
                 )}
               </div>

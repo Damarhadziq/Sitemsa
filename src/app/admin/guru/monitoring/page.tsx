@@ -325,9 +325,6 @@ export default function AdminGuruMonitoringPage() {
                           className="w-32 h-32 object-contain mb-3 select-none pointer-events-none"
                         />
                         <h4 className="text-sm font-bold text-[#2E2D2D]">Semua Siswa Tuntas</h4>
-                        <p className="text-xs text-[#737373] mt-1 max-w-xs leading-relaxed">
-                          Tidak ada siswa yang memerlukan perhatian pada mata pelajaran {currentSubject}.
-                        </p>
                       </div>
                     </td>
                   </tr>

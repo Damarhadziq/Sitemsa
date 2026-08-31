@@ -44,13 +44,15 @@ export function FeaturedSection() {
   return (
     <section className="mb-10 space-y-4">
       <div>
-        <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-[#1D4ED8] via-[#2563EB] to-[#EAB308] bg-clip-text text-transparent">
-          Rekomendasi Pembelajaran untukmu
+        <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight">
+          <span className="inline-block bg-gradient-to-r from-[#2563EB] via-[#0284C7] via-[#D97706] to-[#EAB308] bg-clip-text text-transparent">
+            Rekomendasi Pembelajaran untukmu
+          </span>
         </h2>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-5">
-        {featuredCards.map((card) => {
+        {featuredCards.map((card, index) => {
           const { id, subject, title, linkUrl, indicatorType, metadata } = card;
 
           return (
@@ -62,6 +64,7 @@ export function FeaturedSection() {
               glowIntensity={1.2}
               coneSpread={28}
               looping={true}
+              initialAngleOffset={index * 120}
               colors={['#2563EB', '#6366F1', '#a855f7']}
               className="w-full h-full hover:-translate-y-1 transition-transform duration-200"
             >

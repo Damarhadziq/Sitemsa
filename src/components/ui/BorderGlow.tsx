@@ -21,6 +21,7 @@ interface BorderGlowProps {
   coneSpread?: number;
   animated?: boolean;
   looping?: boolean;
+  initialAngleOffset?: number;
   colors?: string[];
   fillOpacity?: number;
 }
@@ -107,6 +108,7 @@ export default function BorderGlow({
   coneSpread = 25,
   animated = false,
   looping = false,
+  initialAngleOffset = 0,
   colors = ['#2563EB', '#6366F1', '#a855f7'],
   fillOpacity = 0.3,
 }: BorderGlowProps) {
@@ -177,7 +179,7 @@ export default function BorderGlow({
     });
   }, [animated, looping]);
 
-  // Continuous looping circling glow and beam animation
+  // Continuous looping circling glow and beam animation with initial offset
   useEffect(() => {
     if (!looping || !cardRef.current) return;
     const card = cardRef.current;
@@ -185,9 +187,9 @@ export default function BorderGlow({
     card.style.setProperty('--edge-proximity', '100');
 
     let animationFrameId: number;
-    const speed = 0.09; // degrees per ms -> 360 deg in ~4s
+    const speed = 0.085; // degrees per ms -> 360 deg in ~4.2s
     let lastTime = performance.now();
-    let currentAngle = 0;
+    let currentAngle = initialAngleOffset % 360;
 
     const loop = (now: number) => {
       const delta = now - lastTime;
@@ -202,7 +204,7 @@ export default function BorderGlow({
       cancelAnimationFrame(animationFrameId);
       card.classList.remove('sweep-active');
     };
-  }, [looping]);
+  }, [looping, initialAngleOffset]);
 
   const glowVars = buildGlowVars(glowColor, glowIntensity);
 

@@ -159,12 +159,13 @@ export default function AdminGuruMonitoringPage() {
 
       filteredStudents.forEach((std, idx) => {
         const progress = std.moduleProgress?.[currentSubject] || 0;
-        const subjectQuizzes = std.quizHistory?.filter((q) => q.subject === currentSubject) || [];
+        const subjectQuizzes = std.quizHistory?.filter((q) => q.subject.toLowerCase() === currentSubject.toLowerCase()) || [];
+        const hasQuizzes = subjectQuizzes.length > 0;
         const totalScore = subjectQuizzes.reduce((acc, q) => acc + q.score, 0);
-        const avgScore = subjectQuizzes.length > 0
-          ? Math.round(totalScore / subjectQuizzes.length)
-          : (progress > 0 ? Math.round(progress * 0.9) : 0);
-        const isPassed = avgScore >= 75;
+        const avgScore = hasQuizzes ? Math.round(totalScore / subjectQuizzes.length) : null;
+        const status = hasQuizzes
+          ? (avgScore !== null && avgScore >= 75 ? 'Tuntas' : 'Perlu Bimbingan')
+          : (progress > 0 ? 'Membaca Materi' : 'Belum Mulai');
 
         tableHtml += `
           <tr>
@@ -174,8 +175,8 @@ export default function AdminGuruMonitoringPage() {
             <td>${std.classGroup || '-'}</td>
             <td>${currentSubject}</td>
             <td>${progress}%</td>
-            <td>${avgScore}</td>
-            <td>${isPassed ? 'Tuntas' : 'Belum Tuntas'}</td>
+            <td>${hasQuizzes && avgScore !== null ? avgScore : '—'}</td>
+            <td>${status}</td>
           </tr>
         `;
       });
@@ -214,15 +215,11 @@ export default function AdminGuruMonitoringPage() {
 
   return (
     <div className="space-y-6 font-sans text-[#2E2D2D] bg-white">
-      {/* Big Page Title in Content with Live Status */}
+      {/* Big Page Title in Content */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#2E2D2D]">
           Monitoring Siswa
         </h1>
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-700 text-xs font-semibold self-start sm:self-auto shadow-2xs">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>Realtime Sync</span>
-        </div>
       </div>
 
       {exportToast.show && (
@@ -334,14 +331,13 @@ export default function AdminGuruMonitoringPage() {
                       Math.round((progress / 100) * totalSubjectModules)
                     );
 
-                    const subjectQuizzes = std.quizHistory.filter((q) => q.subject === currentSubject);
+                    const subjectQuizzes = std.quizHistory.filter(
+                      (q) => q.subject.toLowerCase() === currentSubject.toLowerCase()
+                    );
+                    const hasQuizzes = subjectQuizzes.length > 0;
                     const totalScore = subjectQuizzes.reduce((acc, q) => acc + q.score, 0);
-                    const avgScore = subjectQuizzes.length > 0
-                      ? Math.round(totalScore / subjectQuizzes.length)
-                      : (progress > 0 ? Math.round(progress * 0.9) : 0);
-
-                    const latestQuiz = subjectQuizzes[0];
-                    const isPassed = latestQuiz ? latestQuiz.status === 'Lulus' : avgScore >= 75;
+                    const avgScore = hasQuizzes ? Math.round(totalScore / subjectQuizzes.length) : null;
+                    const isPassed = hasQuizzes ? (avgScore !== null && avgScore >= 75) : false;
 
                     return (
                       <tr key={std.id} className="hover:bg-slate-50 transition-colors">
@@ -370,24 +366,34 @@ export default function AdminGuruMonitoringPage() {
 
                       {/* Nilai kalkulasi */}
                       <td className="py-4 px-6">
-                        <span className="font-bold text-[#2E2D2D] text-xs">
-                          {avgScore} <span className="text-[10px] text-[#737373] font-normal">/ 100</span>
-                        </span>
+                        {hasQuizzes && avgScore !== null ? (
+                          <span className="font-bold text-[#2E2D2D] text-xs">
+                            {avgScore} <span className="text-[10px] text-[#737373] font-normal">/ 100</span>
+                          </span>
+                        ) : (
+                          <span className="font-medium text-[#737373] text-xs">—</span>
+                        )}
                       </td>
 
                       {/* Status evaluasi */}
                       <td className="py-4 px-6">
-                        {subjectQuizzes.length === 0 && progress === 0 ? (
-                          <span className="inline-flex items-center text-[11px] bg-slate-100 text-slate-600 font-semibold px-2.5 py-0.5 rounded-[4px]">
-                            Belum mulai
-                          </span>
-                        ) : isPassed ? (
-                          <span className="inline-flex items-center text-[11px] bg-emerald-50 text-emerald-700 font-semibold px-2.5 py-0.5 rounded-[4px]">
-                            Tuntas / lulus
+                        {hasQuizzes ? (
+                          isPassed ? (
+                            <span className="inline-flex items-center text-[11px] bg-emerald-50 text-emerald-700 font-semibold px-2.5 py-0.5 rounded-[4px]">
+                              Tuntas / lulus
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center text-[11px] bg-amber-50 text-amber-700 font-semibold px-2.5 py-0.5 rounded-[4px]">
+                              Perlu bimbingan
+                            </span>
+                          )
+                        ) : readCount > 0 || progress > 0 ? (
+                          <span className="inline-flex items-center text-[11px] bg-blue-50 text-blue-700 font-semibold px-2.5 py-0.5 rounded-[4px]">
+                            Membaca materi
                           </span>
                         ) : (
-                          <span className="inline-flex items-center text-[11px] bg-amber-50 text-amber-700 font-semibold px-2.5 py-0.5 rounded-[4px]">
-                            Perlu bimbingan
+                          <span className="inline-flex items-center text-[11px] bg-slate-100 text-slate-600 font-semibold px-2.5 py-0.5 rounded-[4px]">
+                            Belum mulai
                           </span>
                         )}
                       </td>
@@ -493,6 +499,26 @@ export default function AdminGuruMonitoringPage() {
             </div>
 
             <div className="p-6 pt-0 space-y-4">
+              {/* Material Reading Progress Card */}
+              {(() => {
+                const modalProgress = selectedStudentModal.moduleProgress[currentSubject] || 0;
+                const modalReadCount = Math.min(
+                  totalSubjectModules,
+                  Math.round((modalProgress / 100) * totalSubjectModules)
+                );
+                return (
+                  <div className="p-4 rounded-[8px] bg-slate-50 border border-[#ECECEC] flex items-center justify-between text-xs">
+                    <div>
+                      <p className="font-bold text-[#2E2D2D]">Kemajuan Membaca Materi</p>
+                      <p className="text-[11px] text-[#737373] mt-0.5">
+                        {modalReadCount} dari {totalSubjectModules} materi telah dipelajari
+                      </p>
+                    </div>
+                    <span className="font-bold text-[#2563EB] text-sm">{modalProgress}%</span>
+                  </div>
+                );
+              })()}
+
               <div>
                 <h4 className="text-xs font-bold text-[#2E2D2D] mb-2">
                   Riwayat kuis ujian & evaluasi mapel {currentSubject}
@@ -500,11 +526,11 @@ export default function AdminGuruMonitoringPage() {
 
                 <div className="space-y-2">
                   {selectedStudentModal.quizHistory
-                    .filter((q) => q.subject === currentSubject)
+                    .filter((q) => q.subject.toLowerCase() === currentSubject.toLowerCase())
                     .map((q) => (
                       <div
                         key={q.id}
-                        className="p-4 rounded-[8px] bg-slate-50 flex items-center justify-between text-xs"
+                        className="p-4 rounded-[8px] bg-slate-50 flex items-center justify-between text-xs border border-[#ECECEC]"
                       >
                         <div>
                           <p className="font-bold text-[#2E2D2D]">{q.quizTitle}</p>
@@ -518,8 +544,8 @@ export default function AdminGuruMonitoringPage() {
                             <span
                               className={`text-[10px] font-bold px-2.5 py-0.5 rounded-[4px] ${
                                 q.status === 'Lulus'
-                                  ? 'bg-emerald-50 text-emerald-700'
-                                  : 'bg-amber-50 text-amber-700'
+                                    ? 'bg-emerald-50 text-emerald-700'
+                                    : 'bg-amber-50 text-amber-700'
                               }`}
                             >
                               {q.status}
@@ -529,8 +555,15 @@ export default function AdminGuruMonitoringPage() {
                       </div>
                     ))}
 
-                  {selectedStudentModal.quizHistory.filter((q) => q.subject === currentSubject).length === 0 && (
-                    <p className="text-xs text-[#737373] py-4 text-center">Belum ada riwayat ujian kuis.</p>
+                  {selectedStudentModal.quizHistory.filter(
+                    (q) => q.subject.toLowerCase() === currentSubject.toLowerCase()
+                  ).length === 0 && (
+                    <div className="p-5 rounded-[8px] bg-slate-50 border border-[#ECECEC] text-center space-y-1">
+                      <p className="font-bold text-[#2E2D2D] text-xs">Belum Ada Riwayat Kuis</p>
+                      <p className="text-[11px] text-[#737373]">
+                        Siswa telah membaca materi dan belum mengerjakan kuis evaluasi pada mapel {currentSubject}.
+                      </p>
+                    </div>
                   )}
                 </div>
               </div>
@@ -538,7 +571,7 @@ export default function AdminGuruMonitoringPage() {
               <div className="pt-4 flex justify-end">
                 <button
                   onClick={() => setSelectedStudentModal(null)}
-                  className="px-4 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs"
+                  className="px-4 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs cursor-pointer"
                 >
                   Tutup rincian
                 </button>

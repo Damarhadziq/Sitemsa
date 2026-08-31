@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
@@ -20,7 +20,7 @@ export default function AdminLoginPage() {
       const params = new URLSearchParams(window.location.search);
       const reason = params.get('reason');
       if (reason === 'inactivity') {
-        setSecurityNotice('Sesi Anda telah berakhir karena tidak ada aktivitas selama 30 menit. Silakan masuk kembali.');
+        setSecurityNotice('Sesi Anda telah berakhir karena tidak ada aktivitas. Silakan masuk kembali.');
       } else if (reason === 'concurrent_device') {
         setSecurityNotice('Akun Anda telah masuk di perangkat lain. Anda telah otomatis dikeluarkan dari perangkat ini demi keamanan.');
       }
@@ -112,7 +112,7 @@ export default function AdminLoginPage() {
             {/* Security Notice / Inactivity / Device Notice Alert */}
             {securityNotice && (
               <div className="p-3 rounded-[8px] bg-amber-50 text-amber-800 text-xs font-medium border border-amber-200 animate-in fade-in duration-200 flex items-start gap-2">
-                <span className="shrink-0 font-bold">⚠️</span>
+                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                 <span className="leading-relaxed">{securityNotice}</span>
               </div>
             )}

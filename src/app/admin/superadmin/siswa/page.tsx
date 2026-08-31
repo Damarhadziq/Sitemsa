@@ -39,15 +39,11 @@ export default function SuperadminSiswaPage() {
 
   return (
     <div className="space-y-6 font-sans text-[#2E2D2D] bg-white">
-      {/* Big Page Title in Content with Live Sync */}
+      {/* Big Page Title in Content */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#2E2D2D]">
           Monitoring Siswa Global
         </h1>
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-700 text-xs font-semibold self-start sm:self-auto shadow-2xs">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>Realtime Sync</span>
-        </div>
       </div>
 
       {/* Action Bar: Clean Search Bar & Custom Class Filter */}
@@ -193,11 +189,22 @@ export default function SuperadminSiswaPage() {
                             <Award className="w-4 h-4" />
                           </div>
                           <div>
-                            <span className="font-bold text-[#2E2D2D] text-sm">{avgScore}</span>
-                            <span className="text-[10px] text-[#737373]"> / 100</span>
-                            <p className="text-[10px] text-[#737373]">
-                              {std.quizHistory.length} Ujian kuis selesai
-                            </p>
+                            {std.quizHistory.length > 0 ? (
+                              <>
+                                <span className="font-bold text-[#2E2D2D] text-sm">{avgScore}</span>
+                                <span className="text-[10px] text-[#737373]"> / 100</span>
+                                <p className="text-[10px] text-[#737373]">
+                                  {std.quizHistory.length} Ujian kuis selesai
+                                </p>
+                              </>
+                            ) : (
+                              <>
+                                <span className="font-bold text-[#737373] text-sm">—</span>
+                                <p className="text-[10px] text-[#737373]">
+                                  Belum ada kuis selesai
+                                </p>
+                              </>
+                            )}
                           </div>
                         </div>
                       </td>

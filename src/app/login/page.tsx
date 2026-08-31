@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarImage, AvatarFallback, AvatarGroup } from '@/components/ui/avatar';
@@ -27,7 +27,7 @@ export default function LoginPage() {
       const params = new URLSearchParams(window.location.search);
       const reason = params.get('reason');
       if (reason === 'inactivity') {
-        setSecurityNotice('Sesi Anda telah berakhir karena tidak ada aktivitas selama 1 minggu. Silakan masuk kembali.');
+        setSecurityNotice('Sesi Anda telah berakhir karena tidak ada aktivitas. Silakan masuk kembali.');
       } else if (reason === 'concurrent_device') {
         setSecurityNotice('Akun Anda telah masuk di perangkat lain. Anda telah otomatis dikeluarkan dari perangkat ini demi keamanan.');
       }
@@ -223,7 +223,7 @@ export default function LoginPage() {
               {/* Security Notice / Inactivity / Device Notice Alert */}
               {securityNotice && (
                 <div className="bg-amber-50 text-amber-800 p-3 rounded-[10px] text-xs font-medium border border-amber-200 mb-3 sm:mb-4 animate-in fade-in flex items-start gap-2">
-                  <span className="shrink-0 font-bold">⚠️</span>
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                   <span className="leading-relaxed">{securityNotice}</span>
                 </div>
               )}

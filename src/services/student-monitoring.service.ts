@@ -35,23 +35,19 @@ export class StudentMonitoringService {
     const localRegistered = getRegisteredStudents();
     const studentMap = new Map<string, StudentRecord>();
 
-    // Seed default / base students
-    [...SEED_STUDENTS, ...localRegistered].forEach((s) => {
+    // Add local registered students with clean 0/empty progress initial state
+    localRegistered.forEach((s) => {
       const cleanEmail = s.email.toLowerCase().trim();
       studentMap.set(cleanEmail, {
         id: s.id || `usr-std-${cleanEmail}`,
-        nisn: s.nisn || '0054321987',
+        nisn: s.nisn || '-',
         name: s.name || cleanEmail.split('@')[0],
         email: s.email,
         classGroup: s.grade || 'X PPLG 1',
         avatar: s.avatar || `https://i.pravatar.cc/150?u=${cleanEmail}`,
-        lastActive: 'Aktif hari ini',
+        lastActive: 'Aktif',
         enrolledSubjects: allSubjects,
-        moduleProgress: {
-          Informatika: 75,
-          Elektronika: 60,
-          Otomotif: 40,
-        },
+        moduleProgress: {},
         quizHistory: [],
       });
     });
@@ -77,7 +73,7 @@ export class StudentMonitoringService {
             } else {
               studentMap.set(cleanEmail, {
                 id: u.id || `usr-std-${cleanEmail}`,
-                nisn: u.nip || '0054321999',
+                nisn: u.nip || '-',
                 name: u.name || cleanEmail.split('@')[0],
                 email: u.email,
                 classGroup: 'X PPLG 1',
@@ -138,7 +134,7 @@ export class StudentMonitoringService {
             const target =
               Array.from(studentMap.values()).find(
                 (s) => s.id === studentId || s.email.toLowerCase() === String(studentId).toLowerCase()
-              ) || Array.from(studentMap.values())[0];
+              );
 
             if (target) {
               const attemptId = att.id || `att-${target.id}-${att.quiz_id}`;
@@ -155,11 +151,6 @@ export class StudentMonitoringService {
                 });
               }
 
-              // Update subject progress
-              if (att.subject) {
-                const cur = target.moduleProgress[att.subject] || 0;
-                target.moduleProgress[att.subject] = Math.max(cur, att.score);
-              }
               target.lastActive = 'Baru saja';
             }
           });

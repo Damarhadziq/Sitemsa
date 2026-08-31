@@ -322,7 +322,7 @@ export function Navbar() {
             >
               <HugeiconsIcon icon={BellIcon} size={20} />
               {notifications.some((n) => !n.isRead) && (
-                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-[#2563EB] border-2 border-white animate-pulse" />
+                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-[#2563EB] border-2 border-white" />
               )}
             </button>
 
@@ -344,7 +344,7 @@ export function Navbar() {
                     textSizeClass="text-[11px]"
                   />
                   {isProfileIncomplete && (
-                    <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-amber-500 border-2 border-white shadow-xs animate-pulse" />
+                    <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-amber-500 border-2 border-white shadow-xs" />
                   )}
                 </button>
 

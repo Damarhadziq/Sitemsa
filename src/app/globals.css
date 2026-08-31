@@ -249,18 +249,21 @@ html.hide-mobile-bottom-nav .mobile-bottom-nav {
   position: absolute;
   top: -50%;
   left: 0;
-  width: 90px;
+  width: 125px;
   height: 200%;
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(37, 99, 235, 0.4) 25%,
-    #2563EB 50%,
-    #60A5FA 70%,
-    rgba(99, 102, 241, 0.5) 85%,
+    rgba(37, 99, 235, 0.25) 15%,
+    rgba(99, 102, 241, 0.8) 35%,
+    #2563EB 48%,
+    #38BDF8 52%,
+    #60A5FA 62%,
+    #A855F7 78%,
     transparent 100%
   );
-  animation: cleanBorderSweep 3.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  filter: drop-shadow(0 0 6px rgba(37, 99, 235, 0.85)) drop-shadow(0 0 12px rgba(99, 102, 241, 0.65));
+  animation: cleanBorderSweep 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   pointer-events: none;
   z-index: 0;
 }

@@ -42,10 +42,10 @@ export function FeaturedSection() {
   }, []);
 
   return (
-    <section className="mb-10 space-y-4">
+    <section className="mb-10 space-y-3.5">
       <div>
-        <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight">
-          <span className="inline-block bg-gradient-to-r from-[#2563EB] via-[#0284C7] via-[#D97706] to-[#EAB308] bg-clip-text text-transparent">
+        <h2 className="text-base md:text-lg font-bold tracking-tight">
+          <span className="inline-block bg-gradient-to-r from-[#1E40AF] via-[#2563EB] via-[#60A5FA] to-[#93C5FD] bg-clip-text text-transparent">
             Rekomendasi Pembelajaran untukmu
           </span>
         </h2>

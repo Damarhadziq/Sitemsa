@@ -58,6 +58,21 @@ export class ModuleService {
 
           const idStr = String(item.id);
 
+          // Only construct quizSource if it is genuinely configured
+          let validQuizSource: any = undefined;
+          if (
+            item.quiz_source_type &&
+            item.quiz_source_type !== 'NONE' &&
+            (item.quiz_source_title || item.external_url || item.qr_image_url)
+          ) {
+            validQuizSource = {
+              type: (item.quiz_source_type === 'KUIS_SITEMSA' ? 'kuis_sitemsa' : item.quiz_source_type === 'LINK_EKSTERNAL' ? 'link_eksternal' : 'qr_code') as any,
+              title: item.quiz_source_title || 'Kuis Evaluasi',
+              externalUrl: item.external_url || undefined,
+              qrImageUrl: item.qr_image_url || undefined,
+            };
+          }
+
           return {
             id: idStr,
             subject: item.subject || 'Informatika',
@@ -73,12 +88,7 @@ export class ModuleService {
             blocks: parsedBlocks,
             isAiRecommended: Boolean(item.is_ai_recommended),
             isPublished: item.is_published !== undefined ? Boolean(item.is_published) : true,
-            quizSource: item.quiz_source_type ? {
-              type: (item.quiz_source_type === 'KUIS_SITEMSA' ? 'kuis_sitemsa' : item.quiz_source_type === 'LINK_EKSTERNAL' ? 'link_eksternal' : 'qr_code') as any,
-              title: item.quiz_source_title || 'Kuis Evaluasi',
-              externalUrl: item.external_url || undefined,
-              qrImageUrl: item.qr_image_url || undefined,
-            } : undefined,
+            quizSource: validQuizSource,
             createdAt: item.created_at ? new Date(item.created_at).toISOString().split('T')[0] : '2026-08-01',
           };
         });
@@ -164,10 +174,13 @@ export class ModuleService {
           description: data.description || 'Deskripsi materi',
           is_published: data.isPublished !== undefined ? data.isPublished : true,
           is_ai_recommended: Boolean(data.isAiRecommended),
-          quiz_source_type: data.quizSource?.type || 'KUIS_SITEMSA',
-          quiz_source_title: data.quizSource?.title,
-          external_url: data.quizSource?.externalUrl,
-          qr_image_url: data.quizSource?.qrImageUrl,
+          quiz_source_type: data.quizSource?.type || null,
+          quiz_source_title: data.quizSource?.title || null,
+          external_url: data.quizSource?.externalUrl || null,
+          qr_image_url: data.quizSource?.qrImageUrl || null,
+          thumbnail: data.thumbnail || null,
+          image_url: data.thumbnail || null,
+          content: data.blocks ? JSON.stringify(data.blocks) : (data.content || data.description || ''),
         };
 
         const { error: insErr } = await supabase.from('modules').upsert(payload, { onConflict: 'id' });
@@ -203,17 +216,16 @@ export class ModuleService {
           description: updates.description,
           is_ai_recommended: updates.isAiRecommended,
           is_published: updates.isPublished,
-          quiz_source_type: updates.quizSource?.type,
-          quiz_source_title: updates.quizSource?.title,
-          external_url: updates.quizSource?.externalUrl,
-          qr_image_url: updates.quizSource?.qrImageUrl,
+          quiz_source_type: updates.quizSource?.type || null,
+          quiz_source_title: updates.quizSource?.title || null,
+          external_url: updates.quizSource?.externalUrl || null,
+          qr_image_url: updates.quizSource?.qrImageUrl || null,
+          thumbnail: updates.thumbnail !== undefined ? updates.thumbnail : null,
+          image_url: updates.thumbnail !== undefined ? updates.thumbnail : null,
         };
 
         if (updates.blocks) {
           updatePayload.content = JSON.stringify(updates.blocks);
-        }
-        if (updates.thumbnail !== undefined) {
-          updatePayload.thumbnail = updates.thumbnail;
         }
 
         await supabase.from('modules').update(updatePayload).eq('id', id);

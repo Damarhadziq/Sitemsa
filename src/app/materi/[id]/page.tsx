@@ -1915,10 +1915,12 @@ export default function MateriDetailPage({
       modules.find((m) => {
         const mId = String(m.id || '').trim().toLowerCase();
         const mTitle = String(m.title || '').trim().toLowerCase();
+        const mUuid = toDeterministicUUID(m.id).toLowerCase();
         return (
           mId === id.toLowerCase() ||
           mId === normalizedId ||
           mId === spaceId ||
+          mUuid === id.toLowerCase() ||
           (targetKey && m.id === targetKey) ||
           (!isNaN(numId) && moduleKeyToId[m.id] === numId) ||
           mTitle === id.toLowerCase() ||
@@ -1927,6 +1929,21 @@ export default function MateriDetailPage({
       }) || remoteModule;
 
     if (!storeMod) return baseMaterial;
+
+    const hasConfiguredQuizSource = Boolean(
+      storeMod.quizSource &&
+      (storeMod.quizSource.title || storeMod.quizSource.externalUrl || storeMod.quizSource.qrImageUrl)
+    );
+
+    const resolvedQuizSource = hasConfiguredQuizSource && storeMod.quizSource ? {
+      type: storeMod.quizSource.type === 'kuis_sitemsa' ? 'internal' : storeMod.quizSource.type === 'qr_code' ? 'barcode' : 'external_link',
+      title: storeMod.quizSource.title || 'Uji Pemahaman Materi',
+      description: 'Ikuti kuis evaluasi untuk menguji pemahaman materi ini.',
+      externalUrl: storeMod.quizSource.externalUrl,
+      qrImageUrl: storeMod.quizSource.qrImageUrl,
+      externalPlatformName: 'Platform Eksternal',
+      internalUrl: `/kuis/${toDeterministicUUID(storeMod.id)}`,
+    } : undefined;
 
     // If storeMod has blocks, build contentSections, stepByStepSection, videoSection, attachment
     if (storeMod.blocks && storeMod.blocks.length > 0) {
@@ -2015,15 +2032,7 @@ export default function MateriDetailPage({
         stepByStepSection: dynamicStepByStep || (dynamicSections.length > 0 ? undefined : baseMaterial.stepByStepSection),
         videoSection: dynamicVideo || (dynamicSections.length > 0 ? undefined : baseMaterial.videoSection),
         attachment: dynamicAttachment || undefined,
-        quizSource: storeMod.quizSource ? {
-          type: storeMod.quizSource.type === 'kuis_sitemsa' ? 'internal' : storeMod.quizSource.type === 'qr_code' ? 'barcode' : 'external_link',
-          title: storeMod.quizSource.title || 'Uji Pemahaman Materi',
-          description: 'Ikuti kuis evaluasi untuk menguji pemahaman materi ini.',
-          externalUrl: storeMod.quizSource.externalUrl,
-          qrImageUrl: storeMod.quizSource.qrImageUrl,
-          externalPlatformName: 'Platform Eksternal',
-          internalUrl: `/kuis/${toDeterministicUUID(storeMod.id)}`,
-        } : undefined,
+        quizSource: resolvedQuizSource,
       };
     }
 
@@ -2041,32 +2050,22 @@ export default function MateriDetailPage({
       imageUrl: storeMod.thumbnail || baseMaterial.imageUrl,
       attachment: undefined,
       contentSections: storeMod.description ? [{ id: 'sec-1', title: storeMod.title, paragraphs: [storeMod.description] }] : baseMaterial.contentSections,
-      quizSource: storeMod.quizSource ? {
-        type: storeMod.quizSource.type === 'kuis_sitemsa' ? 'internal' : storeMod.quizSource.type === 'qr_code' ? 'barcode' : 'external_link',
-        title: storeMod.quizSource.title || 'Uji Pemahaman Materi',
-        description: 'Ikuti kuis evaluasi untuk menguji pemahaman materi ini.',
-        externalUrl: storeMod.quizSource.externalUrl,
-        qrImageUrl: storeMod.quizSource.qrImageUrl,
-        externalPlatformName: 'Platform Eksternal',
-        internalUrl: `/kuis/${toDeterministicUUID(storeMod.id)}`,
-      } : undefined,
+      quizSource: resolvedQuizSource,
     };
   }, [baseMaterial, modules, remoteModule, id]);
 
   // Find linked quiz created by teacher / admin
   const activeQuizInfo = useMemo(() => {
     const cleanId = String(id || "").toLowerCase();
-    const cleanSubject = String(material.subject || "").toLowerCase();
     const cleanTitle = String(material.title || "").toLowerCase();
 
-    // 1. By moduleId or ID or Subject in quizzes
+    // Specific match only
     const byQuiz = quizzes.find(
       (q) =>
         (q.moduleId && (q.moduleId === id || q.moduleId.toLowerCase() === cleanId || toDeterministicUUID(q.moduleId) === cleanId)) ||
         q.id === id ||
         toDeterministicUUID(q.id) === cleanId ||
-        (q.subject && q.subject.toLowerCase() === cleanSubject) ||
-        (q.title && q.title.toLowerCase().includes(cleanTitle))
+        (q.title && cleanTitle && q.title.toLowerCase().trim() === cleanTitle)
     );
 
     const title =

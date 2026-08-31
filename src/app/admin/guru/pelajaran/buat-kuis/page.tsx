@@ -281,8 +281,8 @@ function BuatKuisContent() {
           passScore: Number(passScore) || 75,
           questionCount: questions.length,
           questions,
-          teacherId: user?.id || 't-1',
-          teacherName: user?.name || 'Pak Budi Prasetyo, M.Kom.',
+          teacherId: user?.id || 't2',
+          teacherName: user?.name || 'Damar Hadziq H.',
           published,
         });
 
@@ -293,8 +293,8 @@ function BuatKuisContent() {
           duration: duration || '15 Menit',
           passScore: Number(passScore) || 75,
           questions,
-          teacherId: user?.id || 't-1',
-          teacherName: user?.name || 'Pengajar Sitemsa',
+          teacherId: user?.id || 't2',
+          teacherName: user?.name || 'Damar Hadziq H.',
           published,
         });
         quizzesClientService.create({

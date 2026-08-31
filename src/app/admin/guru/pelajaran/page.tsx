@@ -196,6 +196,19 @@ export default function AdminGuruPelajaranPage() {
         (b.includes('olahraga') || b.includes('keolahragaan') || b.includes('pjok') || b.includes('jasmani'))) {
       return true;
     }
+    if ((a.includes('konseling') || a.includes('bk')) && (b.includes('konseling') || b.includes('bk'))) {
+      return true;
+    }
+    if ((a.includes('tari') || a.includes('senitari')) && (b.includes('tari') || b.includes('senitari'))) {
+      return true;
+    }
+    if (a.includes('otomotif') && b.includes('otomotif')) {
+      return true;
+    }
+    if (a.includes('elektronika') && b.includes('elektronika')) {
+      return true;
+    }
+    if (a.includes(b) || b.includes(a)) return true;
     return false;
   };
 

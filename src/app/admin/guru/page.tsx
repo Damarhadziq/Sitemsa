@@ -95,13 +95,39 @@ export default function AdminGuruDashboard() {
     (q) => isSubjectMatch(q.subject, currentSubject) && isTeacherMatch(q.teacherId, q.teacherName)
   ) : [];
 
-  const subjectStudents = students.filter((s) => s.enrolledSubjects.includes(currentSubject));
+  const subjectStudents = students.filter((s) => {
+    const hasProgress = (s.moduleProgress?.[currentSubject] ?? 0) > 0;
+    const hasQuiz = s.quizHistory?.some(
+      (q) => isSubjectMatch(q.subject, currentSubject)
+    );
+    const isEnrolled = s.enrolledSubjects?.some(
+      (sub) => isSubjectMatch(sub, currentSubject)
+    );
+    return hasProgress || hasQuiz || isEnrolled;
+  });
+
+  // Calculate students needing remedial for this subject (score < 75 or status === 'Perlu Bimbingan')
+  const subjectRemedialStudents = subjectStudents
+    .map((s) => {
+      const subjectQuizzes = (s.quizHistory || []).filter((q) => isSubjectMatch(q.subject, currentSubject));
+      const failedQuizzes = subjectQuizzes.filter((q) => q.score < 75 || q.status === 'Perlu Bimbingan');
+      if (failedQuizzes.length === 0) return null;
+      const latestFailed = failedQuizzes[0];
+      return {
+        student: s,
+        quizTitle: latestFailed.quizTitle || 'Kuis Evaluasi',
+        score: latestFailed.score,
+        maxScore: latestFailed.maxScore || 100,
+        passScore: 75,
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => item !== null);
 
   let totalScore = 0;
   let scoreCount = 0;
   subjectStudents.forEach((s) => {
-    s.quizHistory
-      .filter((q) => q.subject === currentSubject)
+    (s.quizHistory || [])
+      .filter((q) => isSubjectMatch(q.subject, currentSubject))
       .forEach((q) => {
         totalScore += q.score;
         scoreCount++;
@@ -384,48 +410,56 @@ export default function AdminGuruDashboard() {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2.5">
                     <h3 className="text-base font-semibold text-[#2E2D2D]">Monitoring Siswa</h3>
-                    <span className="text-[11px] font-semibold text-white bg-[#2563EB] px-2.5 py-0.5 rounded-[4px]">
-                      2 Perhatian
-                    </span>
+                    {subjectRemedialStudents.length > 0 ? (
+                      <span className="text-[11px] font-semibold text-rose-700 bg-rose-50 border border-rose-200/60 px-2.5 py-0.5 rounded-[4px]">
+                        {subjectRemedialStudents.length} Perhatian
+                      </span>
+                    ) : (
+                      <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2.5 py-0.5 rounded-[4px]">
+                        Semua Tuntas
+                      </span>
+                    )}
                   </div>
                   <Link href="/admin/guru/monitoring" className="text-xs font-semibold text-[#2563EB] hover:underline">
                     Lihat Semua
                   </Link>
                 </div>
 
-                <div className="divide-y divide-[#ECECEC]">
-                  {/* Item 1: Quiz Remedial */}
-                  <div className="py-3.5 first:pt-0 last:pb-0 flex items-center justify-between">
-                    <div className="space-y-1.5">
-                      <p className="font-semibold text-[#2E2D2D] text-sm">Rian Hidayat</p>
-                      <div className="flex items-center gap-3 text-xs text-[#737373]">
-                        <span className="flex items-center gap-1 text-rose-600">
-                          <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
-                          Skor kuis 60 (Di bawah target pass 75)
+                {subjectRemedialStudents.length > 0 ? (
+                  <div className="divide-y divide-[#ECECEC]">
+                    {subjectRemedialStudents.slice(0, 3).map((item) => (
+                      <div key={item.student.id} className="py-3.5 first:pt-0 last:pb-0 flex items-center justify-between">
+                        <div className="space-y-1">
+                          <p className="font-semibold text-[#2E2D2D] text-sm">{item.student.name}</p>
+                          <div className="flex items-center gap-1.5 text-xs text-[#737373]">
+                            <span className="flex items-center gap-1 text-rose-600 font-medium">
+                              <AlertTriangle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                              Skor kuis {item.score} (Di bawah target pass 75)
+                            </span>
+                          </div>
+                        </div>
+                        <span className="text-[11px] font-semibold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-[6px] shrink-0">
+                          Remidi
                         </span>
                       </div>
-                    </div>
-                    <span className="text-[11px] font-semibold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-[6px]">
-                      Remidi
-                    </span>
+                    ))}
                   </div>
-
-                  {/* Item 2: Module Progress Behind Target */}
-                  <div className="py-3.5 first:pt-0 last:pb-0 flex items-center justify-between">
-                    <div className="space-y-1.5">
-                      <p className="font-semibold text-[#2E2D2D] text-sm">Andi Pratama</p>
-                      <div className="flex items-center gap-3 text-xs text-[#737373]">
-                        <span className="flex items-center gap-1 text-amber-600">
-                          <Clock className="w-3.5 h-3.5 text-amber-500" />
-                          Progress Modul 40% (Belum Selesai)
-                        </span>
-                      </div>
-                    </div>
-                    <span className="text-[11px] font-semibold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-[6px]">
-                      Tertinggal
-                    </span>
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-center py-6 px-4">
+                    {/* eslint-disable-next-next/no-img-element */}
+                    <img
+                      src="/svg/empty-monitoring.svg"
+                      alt="Semua Siswa Tuntas"
+                      className="w-32 h-32 object-contain mb-3 select-none pointer-events-none"
+                    />
+                    <h4 className="text-sm font-bold text-[#2E2D2D]">
+                      Semua Siswa Tuntas
+                    </h4>
+                    <p className="text-xs text-[#737373] mt-1 max-w-xs leading-relaxed">
+                      Tidak ada siswa yang memerlukan bimbingan remidi saat ini.
+                    </p>
                   </div>
-                </div>
+                )}
               </div>
             </div>
 

@@ -317,9 +317,17 @@ export default function AdminGuruMonitoringPage() {
                 {paginatedStudents.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="py-12 text-center text-xs text-[#737373]">
-                      <div className="flex flex-col items-center justify-center gap-1.5">
-                        <p className="font-bold text-[#2E2D2D] text-sm">Belum Ada Data Siswa</p>
-                        <p className="text-[#737373] text-xs">Belum ada siswa yang mulai mempelajari materi mata pelajaran {currentSubject}.</p>
+                      <div className="flex flex-col items-center justify-center text-center py-6 px-4">
+                        {/* eslint-disable-next-next/no-img-element */}
+                        <img
+                          src="/svg/empty-monitoring.svg"
+                          alt="Semua Siswa Tuntas"
+                          className="w-32 h-32 object-contain mb-3 select-none pointer-events-none"
+                        />
+                        <h4 className="text-sm font-bold text-[#2E2D2D]">Semua Siswa Tuntas</h4>
+                        <p className="text-xs text-[#737373] mt-1 max-w-xs leading-relaxed">
+                          Tidak ada siswa yang memerlukan perhatian pada mata pelajaran {currentSubject}.
+                        </p>
                       </div>
                     </td>
                   </tr>

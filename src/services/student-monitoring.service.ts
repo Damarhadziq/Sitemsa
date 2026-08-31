@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { useAdminStore, StudentRecord } from '@/lib/admin-store';
-import { getRegisteredStudents, SEED_STUDENTS } from './student-profile.service';
+import { getRegisteredStudents, isDummyStudent } from './student-profile.service';
 import { ProgressService } from './progress.service';
 
 export interface QuizAttemptRow {
@@ -160,7 +160,7 @@ export class StudentMonitoringService {
       }
     }
 
-    const finalStudents = Array.from(studentMap.values());
+    const finalStudents = Array.from(studentMap.values()).filter((s) => !isDummyStudent(s));
     this.cachedStudents = finalStudents;
 
     // Update global store

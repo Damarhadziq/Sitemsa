@@ -1,5 +1,6 @@
 import { dbStore, StudentRecord } from './data-store';
 import { supabase } from '@/lib/supabase';
+import { isDummyStudent } from './student-profile.service';
 
 const STORAGE_KEY = 'sintesa_students_progress_data';
 
@@ -11,7 +12,11 @@ export class ProgressService {
         if (stored) {
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            dbStore.students = parsed;
+            const cleaned = parsed.filter((s: any) => !isDummyStudent(s));
+            dbStore.students = cleaned;
+            if (cleaned.length !== parsed.length) {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned));
+            }
           }
         }
       } catch (e) {

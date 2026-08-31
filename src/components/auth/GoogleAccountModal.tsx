@@ -15,24 +15,10 @@ export interface GoogleAccountOption {
 const DEFAULT_GOOGLE_ACCOUNTS: GoogleAccountOption[] = [
   {
     id: 'g-1',
-    name: 'Budi Santoso',
-    email: 'budisantoso.dev@gmail.com',
+    name: 'Siswa Sitemsa',
+    email: 'siswa@belajar.id',
     avatar: 'https://i.pravatar.cc/150?img=12',
-    grade: 'XI PPLG 1',
-  },
-  {
-    id: 'g-2',
-    name: 'Muhammad Rizky Pratama',
-    email: 'm.rizkypratama@gmail.com',
-    avatar: 'https://i.pravatar.cc/150?img=33',
-    grade: 'X TJKT 2',
-  },
-  {
-    id: 'g-3',
-    name: 'Siti Rahmawati',
-    email: 'sitirahmawati.id@gmail.com',
-    avatar: 'https://i.pravatar.cc/150?img=47',
-    grade: 'XII Elektronika',
+    grade: 'X PPLG 1',
   },
 ];
 

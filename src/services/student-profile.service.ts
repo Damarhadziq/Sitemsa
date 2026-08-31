@@ -64,6 +64,24 @@ export const SEED_STUDENTS: RegisteredStudent[] = [
   },
 ];
 
+export const DUMMY_BLACKLIST_EMAILS = new Set([
+  'budi.siswa@sitemsa.sch.id',
+  'budisantoso.dev@gmail.com',
+  'm.rizkypratama@gmail.com',
+  'sitirahmawati.id@gmail.com',
+]);
+
+export const isDummyStudent = (s: any): boolean => {
+  if (!s) return true;
+  const email = (s.email || '').toLowerCase().trim();
+  const name = (s.name || '').toLowerCase().trim();
+  const id = (s.id || '').toLowerCase().trim();
+  if (DUMMY_BLACKLIST_EMAILS.has(email)) return true;
+  if (name === 'budi santoso' || name === 'muhammad rizky pratama' || name === 'siti rahmawati') return true;
+  if (id === 'usr-std-2' || id === 'usr-std-3' || id === 'usr-std-4' || id === 'usr-std-5') return true;
+  return false;
+};
+
 export const VALID_STUDENT_CREDENTIALS = SEED_STUDENTS.map((s) => ({
   email: s.email,
   password: s.password,
@@ -79,7 +97,7 @@ export const VALID_STUDENT_CREDENTIALS = SEED_STUDENTS.map((s) => ({
 }));
 
 /**
- * Get all registered students from localStorage (seeded with default accounts)
+ * Get all registered students from localStorage (purging any legacy dummy accounts)
  */
 export const getRegisteredStudents = (): RegisteredStudent[] => {
   if (typeof window === 'undefined') return SEED_STUDENTS;
@@ -94,19 +112,12 @@ export const getRegisteredStudents = (): RegisteredStudent[] => {
       localStorage.setItem(REGISTERED_STUDENTS_KEY, JSON.stringify(SEED_STUDENTS));
       return SEED_STUDENTS;
     }
-    // Ensure all default seed students exist in parsed list
-    const existingEmails = new Set(parsed.map((p: RegisteredStudent) => p.email?.toLowerCase().trim()));
-    let needsUpdate = false;
-    SEED_STUDENTS.forEach((seed) => {
-      if (!existingEmails.has(seed.email.toLowerCase().trim())) {
-        parsed.push(seed);
-        needsUpdate = true;
-      }
-    });
-    if (needsUpdate) {
-      localStorage.setItem(REGISTERED_STUDENTS_KEY, JSON.stringify(parsed));
+    // Purge any legacy dummy accounts from the stored list
+    const cleaned = parsed.filter((p: RegisteredStudent) => !isDummyStudent(p));
+    if (cleaned.length !== parsed.length) {
+      localStorage.setItem(REGISTERED_STUDENTS_KEY, JSON.stringify(cleaned));
     }
-    return parsed;
+    return cleaned;
   } catch {
     return SEED_STUDENTS;
   }

@@ -80,7 +80,7 @@ export class StudyAnalyticsService {
       moduleTitle: data.moduleTitle,
       subject: data.subject,
       studentId: data.studentId || 'std-1',
-      studentName: data.studentName || 'Budi Santoso',
+      studentName: data.studentName || 'Siswa Sitemsa',
       durationSeconds: data.durationSeconds,
       durationMinutes,
       timestamp: now.getTime(),

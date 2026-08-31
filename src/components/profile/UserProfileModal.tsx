@@ -249,14 +249,9 @@ export function UserProfileModal({
                 </div>
 
                 <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-xs font-bold text-[#2E2D2D]">
-                      Email Siswa
-                    </label>
-                    <span className="text-[10px] font-semibold text-[#737373] bg-[#F5F5F5] px-2 py-0.5 rounded-[4px]">
-                      Tidak dapat diubah
-                    </span>
-                  </div>
+                  <label className="block text-xs font-bold text-[#2E2D2D]">
+                    Email Siswa
+                  </label>
                   <input
                     type="email"
                     value={email}

@@ -10,19 +10,27 @@ import {
   Award01Icon,
   SparklesIcon,
 } from "@hugeicons/core-free-icons";
-import Image from "next/image";
 import Link from "next/link";
 import {
   getFeaturedModules,
   FeaturedModuleCard,
   FEATURED_CARDS_DATA,
 } from "@/services/featured.service";
+import { ModuleService } from "@/services/module.service";
 
 export function FeaturedSection() {
-  const [featuredCards, setFeaturedCards] = useState<FeaturedModuleCard[]>(FEATURED_CARDS_DATA.slice(0, 3));
+  const [featuredCards, setFeaturedCards] = useState<FeaturedModuleCard[]>(() => getFeaturedModules());
 
   useEffect(() => {
+    // Initial fetch from local store
     setFeaturedCards(getFeaturedModules());
+
+    // Live sync from Supabase
+    ModuleService.fetchFromSupabase().then((mods) => {
+      if (mods && mods.length > 0) {
+        setFeaturedCards(getFeaturedModules(mods));
+      }
+    }).catch(() => {});
 
     const handleStorageUpdate = () => {
       setFeaturedCards(getFeaturedModules());
@@ -49,7 +57,7 @@ export function FeaturedSection() {
 
           return (
             <Link
-              key={id}
+              key={`${id}-${title}`}
               href={linkUrl}
               className="bg-white rounded-[10px] p-[10px] md:p-4 flex flex-col justify-between border border-[#ECECEC] hover:border-[#2563EB]/40 hover:shadow-xs transition-all duration-200 group cursor-pointer block"
             >
@@ -66,24 +74,13 @@ export function FeaturedSection() {
 
                 {/* DYNAMIC METADATA & INDICATOR CONDITION RENDERING */}
                 <div className="flex items-center text-[11px] text-[#737373] pt-0.5">
-                  {/* Condition 1: Social Proof (Avatar Stack + Count) */}
+                  {/* Condition 1: Social Proof */}
                   {indicatorType === "social_proof" && (
                     <div className="flex items-center gap-2">
                       <div className="flex -space-x-1.5 shrink-0">
-                        {(metadata.avatarIds || [12, 15, 23]).map((avatarId) => (
-                          <div
-                            key={avatarId}
-                            className="w-4 h-4 sm:w-5 sm:h-5 rounded-full border border-white bg-gray-200 overflow-hidden relative"
-                          >
-                            <Image
-                              src={`https://i.pravatar.cc/100?img=${avatarId}`}
-                              alt="Siswa"
-                              fill
-                              unoptimized
-                              className="object-cover"
-                            />
-                          </div>
-                        ))}
+                        <div className="w-5 h-5 rounded-full bg-blue-600 border border-white flex items-center justify-center text-[9px] font-bold text-white">S1</div>
+                        <div className="w-5 h-5 rounded-full bg-indigo-600 border border-white flex items-center justify-center text-[9px] font-bold text-white">S2</div>
+                        <div className="w-5 h-5 rounded-full bg-emerald-600 border border-white flex items-center justify-center text-[9px] font-bold text-white">S3</div>
                       </div>
                       <span className="leading-tight text-[10.5px] sm:text-xs">
                         {metadata.socialCopy || `${metadata.completedCount || 125} siswa baru saja menyelesaikan ini.`}

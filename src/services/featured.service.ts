@@ -35,13 +35,17 @@ export interface FeaturedModuleCard {
   };
 }
 
+import { dbStore, ModuleItem } from './data-store';
+import { ModuleService } from './module.service';
+import { getStudentScopedStorageKey } from '@/services/student-profile.service';
+
 export const FEATURED_CARDS_DATA: FeaturedModuleCard[] = [
   {
-    id: 7,
-    moduleId: 'mod-bk-1',
-    subject: 'Bimbingan Konseling',
-    title: 'Yuk, Lawan Rasa Malas: Self-Management untuk Konsisten Belajar!',
-    linkUrl: '/materi/7',
+    id: 1,
+    moduleId: 'mod-1',
+    subject: 'Informatika',
+    title: 'Pengenalan Algoritma & Logika Pemrograman',
+    linkUrl: '/materi/1?from=Informatika',
     indicatorType: 'social_proof',
     metadata: {
       completedCount: 142,
@@ -50,15 +54,15 @@ export const FEATURED_CARDS_DATA: FeaturedModuleCard[] = [
     },
   },
   {
-    id: 8,
-    moduleId: 'mod-bk-2',
+    id: 7,
+    moduleId: 'mod-bk-1',
     subject: 'Bimbingan Konseling',
-    title: 'Talent Quest: Temukan Potensimu, Kembangkan Dirimu!',
-    linkUrl: '/materi/8',
+    title: 'Yuk, Lawan Rasa Malas: Self-Management untuk Konsisten Belajar!',
+    linkUrl: '/materi/7?from=Bimbingan%20Konseling',
     indicatorType: 'rating_duration',
     metadata: {
       rating: 4.9,
-      readTime: '35 Menit baca.',
+      readTime: '30 Menit baca.',
     },
   },
   {
@@ -66,61 +70,95 @@ export const FEATURED_CARDS_DATA: FeaturedModuleCard[] = [
     moduleId: 'mod-tari-1',
     subject: 'Seni Tari',
     title: 'Konsep Koreografi dalam Seni Tari',
-    linkUrl: '/materi/9',
+    linkUrl: '/materi/9?from=Seni%20Tari',
     indicatorType: 'teacher_pick',
     metadata: {
-      teacherName: 'Ibu Vivi Riska Wardani',
+      teacherName: 'Guru Sitemsa',
       recommendationNote: 'Rekomendasi Guru Pengampu',
-    },
-  },
-  {
-    id: 17,
-    moduleId: 'mod-bk-4',
-    subject: 'Bimbingan Konseling',
-    title: 'Membangun Konsep Diri Positif',
-    linkUrl: '/materi/17',
-    indicatorType: 'trending',
-    metadata: {
-      trendingText: 'Sedang tren di kelas 11',
-      targetGrade: 'Kelas 11',
-    },
-  },
-  {
-    id: 10,
-    moduleId: 'mod-tari-2',
-    subject: 'Seni Tari',
-    title: 'Koreografi: Eksplorasi Gerak Dalam Seni Tari',
-    linkUrl: '/materi/10',
-    indicatorType: 'quiz_certified',
-    metadata: {
-      quizScoreAvg: 96,
-      quizQuestionsCount: 10,
-      quizCopy: 'Tersedia Kuis Interaktif • Skor Rata-rata 96%',
     },
   },
 ];
 
-import { getStudentScopedStorageKey } from '@/services/student-profile.service';
+export function mapModuleToFeaturedCard(mod: ModuleItem, index: number): FeaturedModuleCard {
+  const indicatorTypes: FeaturedIndicatorType[] = [
+    'teacher_pick',
+    'social_proof',
+    'rating_duration',
+    'quiz_certified',
+    'trending',
+  ];
 
-const STORAGE_KEY = 'sintesa_featured_condition_filter';
-
-export const getFeaturedModules = (filter?: string): FeaturedModuleCard[] => {
-  if (typeof window === 'undefined') return FEATURED_CARDS_DATA.slice(0, 3);
-  try {
-    // Dynamic contextual resolution: can prioritize by user view history if available
-    const key = getStudentScopedStorageKey('sintesa_user_views');
-    const rawViews = localStorage.getItem(key);
-    if (rawViews) {
-      const views: { id: number; subject: string; timestamp: number }[] = JSON.parse(rawViews);
-      if (views.length > 0) {
-        const topSubject = views[0].subject;
-        const matching = FEATURED_CARDS_DATA.filter((c) => c.subject === topSubject);
-        const others = FEATURED_CARDS_DATA.filter((c) => c.subject !== topSubject);
-        return [...matching, ...others].slice(0, 3);
-      }
-    }
-  } catch {
-    // Fallback
+  let indicatorType: FeaturedIndicatorType = indicatorTypes[index % indicatorTypes.length];
+  if (mod.isAiRecommended) {
+    indicatorType = 'teacher_pick';
+  } else if (mod.quizSource?.title) {
+    indicatorType = 'quiz_certified';
   }
-  return FEATURED_CARDS_DATA.slice(0, 3);
+
+  const numericId = parseInt(String(mod.id).replace(/\D/g, ''), 10) || (index + 1);
+
+  return {
+    id: numericId,
+    moduleId: String(mod.id),
+    subject: mod.subject || 'Informatika',
+    title: mod.title || 'Modul Pembelajaran',
+    linkUrl: `/materi/${mod.id}?from=${encodeURIComponent(mod.subject || 'Informatika')}`,
+    indicatorType,
+    metadata: {
+      completedCount: 100 + ((index * 19) % 75),
+      avatarIds: [12, 15, 23],
+      socialCopy: `${100 + ((index * 19) % 75)} siswa baru saja menyelesaikan ini.`,
+      rating: 4.8 + ((index % 3) * 0.1),
+      readTime: mod.duration || '30 Menit baca.',
+      trendingText: `Sedang tren di bidang ${mod.subject}`,
+      targetGrade: 'Kelas 10',
+      quizScoreAvg: 95,
+      quizCopy: `Tersedia Kuis • ${mod.quizSource?.title || 'Uji Pemahaman'}`,
+      teacherName: mod.teacherName || 'Guru Pengampu',
+      recommendationNote: 'Rekomendasi Guru Pengampu',
+    },
+  };
+}
+
+export const getFeaturedModules = (customModules?: ModuleItem[]): FeaturedModuleCard[] => {
+  const allModules: ModuleItem[] = customModules || ModuleService.getAllModules() || dbStore.modules || [];
+  const published = allModules.filter((m) => m.isPublished !== false);
+
+  if (published.length === 0) {
+    return FEATURED_CARDS_DATA.slice(0, 3);
+  }
+
+  // Prioritize AI recommended modules, then user's recent subject view
+  let userTopSubject = '';
+  if (typeof window !== 'undefined') {
+    try {
+      const key = getStudentScopedStorageKey('sintesa_user_views');
+      const rawViews = localStorage.getItem(key);
+      if (rawViews) {
+        const views = JSON.parse(rawViews);
+        if (Array.isArray(views) && views.length > 0) {
+          userTopSubject = views[0].subject;
+        }
+      }
+    } catch {}
+  }
+
+  const sorted = [...published].sort((a, b) => {
+    if (a.isAiRecommended && !b.isAiRecommended) return -1;
+    if (!a.isAiRecommended && b.isAiRecommended) return 1;
+    if (userTopSubject && a.subject === userTopSubject && b.subject !== userTopSubject) return -1;
+    if (userTopSubject && a.subject !== userTopSubject && b.subject === userTopSubject) return 1;
+    return 0;
+  });
+
+  const cards = sorted.map((mod, idx) => mapModuleToFeaturedCard(mod, idx));
+
+  if (cards.length >= 3) {
+    return cards.slice(0, 3);
+  }
+
+  // If fewer than 3, pad with base fallback cards so there are always at least 3 cards
+  const needed = 3 - cards.length;
+  const fallbacks = FEATURED_CARDS_DATA.filter((f) => !cards.some((c) => c.title === f.title)).slice(0, needed);
+  return [...cards, ...fallbacks].slice(0, 3);
 };

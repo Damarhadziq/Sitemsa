@@ -200,6 +200,14 @@ export function Navbar() {
     router.push(`/materi/${id}`);
   };
 
+  const isProfileIncomplete = Boolean(
+    isLoggedIn &&
+    (!studentProfile.nisn?.trim() ||
+     !studentProfile.school?.trim() ||
+     !studentProfile.grade?.trim() ||
+     !studentProfile.name?.trim())
+  );
+
   return (
     <>
       <header
@@ -326,7 +334,7 @@ export function Navbar() {
                 <button
                   type="button"
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className={`w-9 h-9 rounded-full transition-all duration-200 flex items-center justify-center shrink-0 p-[1px] ${
+                  className={`w-9 h-9 rounded-full transition-all duration-200 flex items-center justify-center shrink-0 p-[1px] relative ${
                     isProfileOpen ? "ring-2 ring-[#2563EB]" : "hover:ring-2 hover:ring-[#2563EB]/50"
                   }`}
                   aria-label="Profil Pengguna"
@@ -337,6 +345,9 @@ export function Navbar() {
                     sizeClass="w-full h-full"
                     textSizeClass="text-[11px]"
                   />
+                  {isProfileIncomplete && (
+                    <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-amber-500 border-2 border-white shadow-xs animate-pulse" />
+                  )}
                 </button>
 
                 {/* Profile Dropdown Menu */}
@@ -359,10 +370,17 @@ export function Navbar() {
                       <button
                         type="button"
                         onClick={() => openProfileModalTab("profile")}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#2E2D2D] hover:bg-[#F6F5FF] hover:text-[#2563EB] rounded-[6px] transition-colors text-left cursor-pointer"
+                        className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-[#2E2D2D] hover:bg-[#F6F5FF] hover:text-[#2563EB] rounded-[6px] transition-colors text-left cursor-pointer"
                       >
-                        <HugeiconsIcon icon={UserIcon} size={16} />
-                        Profil Saya
+                        <div className="flex items-center gap-2.5">
+                          <HugeiconsIcon icon={UserIcon} size={16} />
+                          <span>Profil Saya</span>
+                        </div>
+                        {isProfileIncomplete && (
+                          <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-[4px]">
+                            Lengkapi
+                          </span>
+                        )}
                       </button>
 
                       <button

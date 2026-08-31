@@ -339,7 +339,7 @@ export default function AdminGuruPelajaranPage() {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     setToastExiting(false);
     setToast({ message, type });
-    toastTimerRef.current = setTimeout(() => dismissToast(), 4000);
+    toastTimerRef.current = setTimeout(() => dismissToast(), 2000);
   };
 
   // ADD QUIZ CHOICE MODAL STATES

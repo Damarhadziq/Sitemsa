@@ -126,7 +126,7 @@ export function UserProfileModal({
     const updated = saveStudentProfile({ name, email, school, nisn, grade, avatar, bio });
     setSavedProfile(updated);
     setIsSavedToast(true);
-    setTimeout(() => setIsSavedToast(false), 3000);
+    setTimeout(() => setIsSavedToast(false), 2000);
   };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {

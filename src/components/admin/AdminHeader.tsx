@@ -88,7 +88,7 @@ export function AdminHeader() {
     setTimeout(() => {
       setSettingsSavedToast(false);
       setShowSettingsModal(false);
-    }, 1200);
+    }, 2000);
   };
 
   return (

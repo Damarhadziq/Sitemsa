@@ -79,7 +79,7 @@ export function AdminSidebar() {
         if (url) {
           await updateUserProfile({ avatar: url });
           setToastMessage('Foto profil berhasil diubah');
-          setTimeout(() => setToastMessage(null), 3000);
+          setTimeout(() => setToastMessage(null), 2000);
         }
       } catch (err) {
         console.warn('Avatar upload error:', err);
@@ -96,7 +96,7 @@ export function AdminSidebar() {
     }
     setShowSettingsModal(false);
     setToastMessage('Profil berhasil diperbarui');
-    setTimeout(() => setToastMessage(null), 3000);
+    setTimeout(() => setToastMessage(null), 2000);
   };
 
   const availableSubjects =

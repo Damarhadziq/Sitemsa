@@ -2183,7 +2183,7 @@ export default function MateriDetailPage({
     setToastMessage(msg);
     setTimeout(() => {
       setToastMessage((current) => (current === msg ? null : current));
-    }, 4000);
+    }, 2000);
   };
 
   useEffect(() => {

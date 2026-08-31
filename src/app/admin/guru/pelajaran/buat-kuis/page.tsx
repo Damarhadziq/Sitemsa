@@ -116,26 +116,26 @@ function BuatKuisContent() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Realtime Form Validation Checks (Min 5 Questions Required)
+  // Realtime Form Validation Checks
   const isTitleValid = title.trim().length > 0;
   const isPassScoreValid = passScore !== '' && !isNaN(Number(passScore)) && Number(passScore) > 0;
-  const hasMinQuestions = questions.length >= 5;
+  const hasQuestions = questions.length > 0;
   const allQuestionsHaveText = questions.every((q) => q.text.trim().length > 0);
+  const allQuestionsHaveAllOptions = questions.every((q) =>
+    q.options.length >= 2 && q.options.every((opt) => opt.trim().length > 0)
+  );
   const allQuestionsValidKeys = questions.every(
-    (q) => q.options[q.correctAnswer] && q.options[q.correctAnswer].trim().length > 0
+    (q) => q.options[q.correctAnswer] !== undefined && q.options[q.correctAnswer].trim().length > 0
   );
-  const allQuestionsHaveExplanation = questions.every(
-    (q) => q.explanation && q.explanation.trim().length > 0
-  );
-  
-  // Entire form mandatory completeness condition (including minimum 5 questions)
+
+  // Entire form mandatory completeness condition: title + each question has title & options with selected answer
   const isFormComplete =
     isTitleValid &&
     isPassScoreValid &&
-    hasMinQuestions &&
+    hasQuestions &&
     allQuestionsHaveText &&
-    allQuestionsValidKeys &&
-    allQuestionsHaveExplanation;
+    allQuestionsHaveAllOptions &&
+    allQuestionsValidKeys;
 
   // Question Helper Functions
   const handleAddQuestion = () => {
@@ -371,10 +371,10 @@ function BuatKuisContent() {
 
           <button
             type="button"
-            disabled={!isFormComplete || questions.length < 5}
+            disabled={!isFormComplete}
             onClick={() => setShowPublishModal(true)}
             className={`px-5 py-2 rounded-[8px] text-xs font-semibold transition-all ${
-              isFormComplete && questions.length >= 5
+              isFormComplete
                 ? 'bg-[#2563EB] hover:bg-blue-700 text-white cursor-pointer active:scale-98 shadow-xs'
                 : 'bg-slate-100 text-[#AAAAAA] cursor-not-allowed opacity-50 shadow-none'
             }`}
@@ -694,81 +694,6 @@ function BuatKuisContent() {
                   >
                     {isPassScoreValid ? `${passScore}%` : 'Belum diisi'}
                   </span>
-                </div>
-              </div>
-
-              {/* Status Validation Checklist (Realtime with non-full capital title) */}
-              <div className="pt-4 border-t border-[#F1F5F9] space-y-2.5">
-                <span className="text-xs font-bold text-[#2E2D2D] block">
-                  Kelengkapan Formulir
-                </span>
-
-                <div className="space-y-2 text-xs font-medium">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[#737373]">Judul Kuis</span>
-                    <span
-                      className={`font-semibold ${
-                        isTitleValid ? 'text-emerald-600' : 'text-amber-600'
-                      }`}
-                    >
-                      {isTitleValid ? 'Terisi' : 'Belum Diisi'}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-[#737373]">Batas KKM</span>
-                    <span
-                      className={`font-semibold ${
-                        isPassScoreValid ? 'text-emerald-600' : 'text-amber-600'
-                      }`}
-                    >
-                      {isPassScoreValid ? 'Terisi' : 'Belum Diisi'}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-[#737373]">Minimal 5 Soal</span>
-                    <span
-                      className={`font-semibold ${
-                        hasMinQuestions ? 'text-emerald-600' : 'text-amber-600'
-                      }`}
-                    >
-                      {hasMinQuestions ? `${questions.length} Soal (Terpenuhi)` : `${questions.length}/5 Soal`}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-[#737373]">Teks Soal Lengkap</span>
-                    <span
-                      className={`font-semibold ${
-                        allQuestionsHaveText ? 'text-emerald-600' : 'text-amber-600'
-                      }`}
-                    >
-                      {allQuestionsHaveText ? 'Lengkap' : 'Ada Soal Kosong'}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-[#737373]">Kunci Jawaban</span>
-                    <span
-                      className={`font-semibold ${
-                        allQuestionsValidKeys ? 'text-emerald-600' : 'text-amber-600'
-                      }`}
-                    >
-                      {allQuestionsValidKeys ? 'Valid' : 'Belum Valid'}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-[#737373]">Pembahasan Soal</span>
-                    <span
-                      className={`font-semibold ${
-                        allQuestionsHaveExplanation ? 'text-emerald-600' : 'text-amber-600'
-                      }`}
-                    >
-                      {allQuestionsHaveExplanation ? 'Lengkap' : 'Ada yang Kosong'}
-                    </span>
-                  </div>
                 </div>
               </div>
             </div>

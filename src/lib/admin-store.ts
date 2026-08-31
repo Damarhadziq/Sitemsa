@@ -911,6 +911,12 @@ export const useAdminStore = create<AdminStoreState>()(
           ),
         }));
 
+        if (typeof window !== 'undefined') {
+          import('@/services/module.service').then(({ ModuleService }) => {
+            ModuleService.createModule({ ...moduleData, id: newId } as any).catch(() => {});
+          });
+        }
+
         try {
           addUserNotification({
             type: 'materi',
@@ -923,14 +929,23 @@ export const useAdminStore = create<AdminStoreState>()(
         return newId;
       },
 
-      updateModule: (id, updatedFields) =>
+      updateModule: (id, updatedFields) => {
         set((state) => ({
           modules: state.modules.map((m) => (m.id === id ? { ...m, ...updatedFields } : m)),
-        })),
+        }));
 
-      deleteModule: (id) =>
+        if (typeof window !== 'undefined') {
+          import('@/services/module.service').then(({ ModuleService }) => {
+            ModuleService.updateModule(id, updatedFields as any).catch(() => {});
+          });
+        }
+      },
+
+      deleteModule: (id) => {
+        let deletedModTitle: string | undefined;
         set((state) => {
           const mod = state.modules.find((m) => m.id === id);
+          if (mod) deletedModTitle = mod.title;
           return {
             modules: state.modules.filter((m) => m.id !== id),
             subjects: mod
@@ -941,7 +956,14 @@ export const useAdminStore = create<AdminStoreState>()(
                 )
               : state.subjects,
           };
-        }),
+        });
+
+        if (typeof window !== 'undefined') {
+          import('@/services/module.service').then(({ ModuleService }) => {
+            ModuleService.deleteModule(id, deletedModTitle).catch(() => {});
+          });
+        }
+      },
 
       // Quiz Actions
       addQuiz: (quizData) => {
@@ -962,6 +984,12 @@ export const useAdminStore = create<AdminStoreState>()(
           ),
         }));
 
+        if (typeof window !== 'undefined') {
+          import('@/services/quiz.service').then(({ QuizService }) => {
+            QuizService.createQuiz({ ...quizData, id: newId } as any).catch(() => {});
+          });
+        }
+
         try {
           addUserNotification({
             type: 'pengingat',
@@ -974,14 +1002,23 @@ export const useAdminStore = create<AdminStoreState>()(
         return newId;
       },
 
-      updateQuiz: (id, updatedFields) =>
+      updateQuiz: (id, updatedFields) => {
         set((state) => ({
           quizzes: state.quizzes.map((q) => (q.id === id ? { ...q, ...updatedFields } : q)),
-        })),
+        }));
 
-      deleteQuiz: (id) =>
+        if (typeof window !== 'undefined') {
+          import('@/services/quiz.service').then(({ QuizService }) => {
+            QuizService.updateQuiz(id, updatedFields as any).catch(() => {});
+          });
+        }
+      },
+
+      deleteQuiz: (id) => {
+        let deletedQuizTitle: string | undefined;
         set((state) => {
           const qz = state.quizzes.find((q) => q.id === id);
+          if (qz) deletedQuizTitle = qz.title;
           return {
             quizzes: state.quizzes.filter((q) => q.id !== id),
             subjects: qz
@@ -992,7 +1029,14 @@ export const useAdminStore = create<AdminStoreState>()(
                 )
               : state.subjects,
           };
-        }),
+        });
+
+        if (typeof window !== 'undefined') {
+          import('@/services/quiz.service').then(({ QuizService }) => {
+            QuizService.deleteQuiz(id).catch(() => {});
+          });
+        }
+      },
 
       // Student Actions
       setStudents: (students) => set({ students }),

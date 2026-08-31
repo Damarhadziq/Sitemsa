@@ -41,6 +41,7 @@ import { quizzesClientService } from '@/services/client/quizzes.client';
 import { toDeterministicUUID } from '@/lib/uuid';
 import ModuleBlockBuilder, { CanvasBlock } from '@/components/admin/ModuleBlockBuilder';
 import { ModuleInfoModal } from '@/components/admin/ModuleInfoModal';
+import { QuizInfoModal } from '@/components/admin/QuizInfoModal';
 import { Tooltip } from '@/components/ui/tooltip';
 import { StudyAnalyticsService } from '@/services/analytics.service';
 import { ModuleService } from '@/services/module.service';
@@ -178,6 +179,11 @@ export default function AdminGuruPelajaranPage() {
     setMounted(true);
   }, []);
 
+  const [selectedInfoQuiz, setSelectedInfoQuiz] = useState<any | null>(null);
+  const [showDetailQuizInfoModal, setShowDetailQuizInfoModal] = useState(false);
+  const [selectedInfoModule, setSelectedInfoModule] = useState<ModuleItem | null>(null);
+  const [showDetailInfoModal, setShowDetailInfoModal] = useState(false);
+
   const assignedSubjects = user?.assignedSubjects || ['Informatika'];
   const currentSubject = activeSubjectFilter || assignedSubjects[0] || 'Informatika';
 
@@ -193,12 +199,15 @@ export default function AdminGuruPelajaranPage() {
     return false;
   };
 
-  const isTeacherMatch = (teacherId?: string, teacherName?: string) => {
+  const isTeacherMatch = (teacherId?: string, teacherName?: string, subject?: string) => {
     if (!user) {
       if (role === 'superadmin') return true;
       return false;
     }
     if (user.role === 'superadmin') return true;
+
+    // Any module/quiz belonging to currentSubject is visible for teachers of this subject
+    if (subject && isSubjectMatch(subject, currentSubject)) return true;
 
     const uId = (user.id || '').toLowerCase().trim();
     const uName = (user.name || '').toLowerCase().trim();
@@ -211,14 +220,15 @@ export default function AdminGuruPelajaranPage() {
       if (tName === uName) return true;
       if (tName.includes(uName) || uName.includes(tName)) return true;
     }
+    if (!tName || tName === 'guru sitemsa' || tName === 'pengajar' || tName.includes('guru') || tName.includes('pengajar')) return true;
     return false;
   };
 
   const subjectModules = (mounted && user) ? modules.filter(
-    (m) => isSubjectMatch(m.subject, currentSubject) && isTeacherMatch(m.teacherId, m.teacherName)
+    (m) => isSubjectMatch(m.subject, currentSubject) && isTeacherMatch(m.teacherId, m.teacherName, m.subject)
   ) : [];
   const subjectQuizzes = (mounted && user) ? quizzes.filter(
-    (q) => isSubjectMatch(q.subject, currentSubject) && isTeacherMatch(q.teacherId, q.teacherName)
+    (q) => isSubjectMatch(q.subject, currentSubject) && isTeacherMatch(q.teacherId, q.teacherName, q.subject)
   ) : [];
 
   // Selected item ID from query param (null = Landing Overview mode)
@@ -302,8 +312,6 @@ export default function AdminGuruPelajaranPage() {
   const [newlyAddedMateriId, setNewlyAddedMateriId] = useState<string | null>(null);
   const [newlyAddedQuizId, setNewlyAddedQuizId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showDetailInfoModal, setShowDetailInfoModal] = useState(false);
-  const [selectedInfoModule, setSelectedInfoModule] = useState<ModuleItem | null>(null);
   const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const dismissToast = () => {
@@ -1252,7 +1260,8 @@ export default function AdminGuruPelajaranPage() {
                                     <CardMoreDropdown
                                       itemType="kuis"
                                       onInfo={() => {
-                                        showToast(<>Kuis: <strong className="text-[#2E2D2D]">{qz.title}</strong> • {qz.questions.length} Soal • Batas KKM {qz.passScore}%</>, 'info');
+                                        setSelectedInfoQuiz(qz);
+                                        setShowDetailQuizInfoModal(true);
                                       }}
                                       onEdit={() => router.push(`/admin/guru/pelajaran/buat-kuis?id=${qz.id}`)}
                                       onDelete={() => handleDeleteModuleItem(qz.id, qz.title, 'kuis')}
@@ -1441,7 +1450,8 @@ export default function AdminGuruPelajaranPage() {
                                     <CardMoreDropdown
                                       itemType="kuis"
                                       onInfo={() => {
-                                        showToast(<>Kuis: <strong className="text-[#2E2D2D]">{qz.title}</strong> • {qz.questions.length} Soal • Batas KKM {qz.passScore}%</>, 'info');
+                                        setSelectedInfoQuiz(qz);
+                                        setShowDetailQuizInfoModal(true);
                                       }}
                                       onEdit={() => router.push(`/admin/guru/pelajaran/buat-kuis?id=${qz.id}`)}
                                       onDelete={() => handleDeleteModuleItem(qz.id, qz.title, 'kuis')}
@@ -2450,6 +2460,27 @@ export default function AdminGuruPelajaranPage() {
           teacherAvatar={user?.avatar}
           publishDate={(selectedModule || selectedInfoModule)!.createdAt || '20 Agustus 2026, 08:30 WIB'}
           lastUpdate="22 Agustus 2026, 13:45 WIB"
+        />
+      )}
+
+      {/* QUIZ INFO MODAL */}
+      {(selectedQuiz || selectedInfoQuiz) && (
+        <QuizInfoModal
+          isOpen={showDetailQuizInfoModal}
+          onClose={() => {
+            setShowDetailQuizInfoModal(false);
+            setSelectedInfoQuiz(null);
+          }}
+          title={(selectedQuiz || selectedInfoQuiz)!.title}
+          subject={(selectedQuiz || selectedInfoQuiz)!.subject}
+          questionCount={(selectedQuiz || selectedInfoQuiz)!.questions ? (selectedQuiz || selectedInfoQuiz)!.questions.length : ((selectedQuiz || selectedInfoQuiz)!.questionCount || 0)}
+          passScore={(selectedQuiz || selectedInfoQuiz)!.passScore || 75}
+          duration={(selectedQuiz || selectedInfoQuiz)!.duration || '15 Menit'}
+          teacherName={(selectedQuiz || selectedInfoQuiz)!.teacherName || user?.name || 'Guru Sitemsa'}
+          teacherRole={user?.role === 'superadmin' ? 'Superadmin Kurikulum Sitemsa' : `Guru Pengampu ${(selectedQuiz || selectedInfoQuiz)!.subject}`}
+          teacherAvatar={user?.avatar}
+          publishDate={(selectedQuiz || selectedInfoQuiz)!.createdAt || '20 Agustus 2026'}
+          published={(selectedQuiz || selectedInfoQuiz)!.published !== false}
         />
       )}
 

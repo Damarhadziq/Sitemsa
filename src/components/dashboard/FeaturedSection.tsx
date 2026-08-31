@@ -41,97 +41,113 @@ export function FeaturedSection() {
   }, []);
 
   return (
-    <section className="mb-8 bg-[#F4EFFF] rounded-[12px] p-5 lg:p-6">
-      <div className="flex items-center justify-between mb-5">
-        <h2 className="text-base md:text-lg font-semibold text-[#2E2D2D]">
-          Rekomendasi Pembelajaran untukmu
-        </h2>
+    <section className="mb-10 space-y-3.5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-1">
+        <div className="flex items-center gap-2">
+          <h2 className="text-base md:text-lg font-bold text-[#2E2D2D] tracking-tight">
+            Rekomendasi Pembelajaran untukmu
+          </h2>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-[#E8E7FF] text-[#2563EB] border border-[#2563EB]/15 select-none">
+            <HugeiconsIcon icon={SparklesIcon} size={12} className="text-[#2563EB]" />
+            Pilihan AI
+          </span>
+        </div>
         <span className="text-xs text-[#737373] hidden sm:inline">
           Disesuaikan dengan minat dan aktivitas belajarmu
         </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-5">
         {featuredCards.map((card) => {
           const { id, subject, title, linkUrl, indicatorType, metadata } = card;
 
           return (
-            <Link
+            <div
               key={`${id}-${title}`}
-              href={linkUrl}
-              className="bg-white rounded-[10px] p-[10px] md:p-4 flex flex-col justify-between border border-[#ECECEC] hover:border-[#2563EB]/40 hover:shadow-xs transition-all duration-200 group cursor-pointer block"
+              className="recommendation-glow-wrapper group"
             >
-              <div>
-                {/* Subject Badge */}
-                <span className="inline-block bg-[#E8E7FF] text-[#2563EB] px-2 py-0.5 rounded-[4px] text-[10px] sm:text-[11px] font-semibold mb-2">
-                  {subject}
-                </span>
+              <Link
+                href={linkUrl}
+                className="recommendation-card-inner p-4 sm:p-5 cursor-pointer block"
+              >
+                {/* Subtle Light-Theme Animated Shimmer Reflection */}
+                <div className="recommendation-card-shimmer" />
 
-                {/* Title */}
-                <h3 className="text-xs sm:text-sm font-semibold text-[#2E2D2D] mb-2.5 leading-snug group-hover:text-[#2563EB] transition-colors duration-200 line-clamp-2">
-                  {title}
-                </h3>
+                {/* Card Content Body */}
+                <div className="relative z-10 flex flex-col justify-between h-full space-y-3.5">
+                  <div>
+                    {/* Subject Badge */}
+                    <span className="inline-block bg-[#E8E7FF] text-[#2563EB] px-2.5 py-0.5 rounded-[5px] text-[10px] sm:text-[11px] font-bold mb-2">
+                      {subject}
+                    </span>
 
-                {/* DYNAMIC METADATA & INDICATOR CONDITION RENDERING */}
-                <div className="flex items-center text-[11px] text-[#737373] pt-0.5">
-                  {/* Condition 1: Social Proof */}
-                  {indicatorType === "social_proof" && (
-                    <div className="flex items-center gap-2">
-                      <div className="flex -space-x-1.5 shrink-0">
-                        <div className="w-5 h-5 rounded-full bg-blue-600 border border-white flex items-center justify-center text-[9px] font-bold text-white">S1</div>
-                        <div className="w-5 h-5 rounded-full bg-indigo-600 border border-white flex items-center justify-center text-[9px] font-bold text-white">S2</div>
-                        <div className="w-5 h-5 rounded-full bg-emerald-600 border border-white flex items-center justify-center text-[9px] font-bold text-white">S3</div>
+                    {/* Title */}
+                    <h3 className="text-xs sm:text-sm font-bold text-[#2E2D2D] leading-snug group-hover:text-[#2563EB] transition-colors duration-200 line-clamp-2">
+                      {title}
+                    </h3>
+                  </div>
+
+                  {/* DYNAMIC METADATA & INDICATOR CONDITION RENDERING */}
+                  <div className="flex items-center text-[11px] text-[#737373] pt-2 border-t border-[#ECECEC]/70">
+                    {/* Condition 1: Social Proof */}
+                    {indicatorType === "social_proof" && (
+                      <div className="flex items-center gap-2">
+                        <div className="flex -space-x-1.5 shrink-0">
+                          <div className="w-5 h-5 rounded-full bg-blue-600 border border-white flex items-center justify-center text-[9px] font-bold text-white">S1</div>
+                          <div className="w-5 h-5 rounded-full bg-indigo-600 border border-white flex items-center justify-center text-[9px] font-bold text-white">S2</div>
+                          <div className="w-5 h-5 rounded-full bg-emerald-600 border border-white flex items-center justify-center text-[9px] font-bold text-white">S3</div>
+                        </div>
+                        <span className="leading-tight text-[10.5px] sm:text-xs">
+                          {metadata.socialCopy || `${metadata.completedCount || 125} siswa baru saja menyelesaikan ini.`}
+                        </span>
                       </div>
-                      <span className="leading-tight text-[10.5px] sm:text-xs">
-                        {metadata.socialCopy || `${metadata.completedCount || 125} siswa baru saja menyelesaikan ini.`}
-                      </span>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Condition 2: Rating & Reading Duration */}
-                  {indicatorType === "rating_duration" && (
-                    <div className="flex items-center gap-2.5 text-[10.5px] sm:text-xs">
-                      <div className="flex items-center gap-1">
-                        <HugeiconsIcon icon={StarIcon} size={13} className="text-[#FFCE03]" />
-                        <span className="font-medium text-[#2E2D2D]">{metadata.rating || 4.9}/5</span>
+                    {/* Condition 2: Rating & Reading Duration */}
+                    {indicatorType === "rating_duration" && (
+                      <div className="flex items-center gap-2.5 text-[10.5px] sm:text-xs">
+                        <div className="flex items-center gap-1">
+                          <HugeiconsIcon icon={StarIcon} size={13} className="text-[#FFCE03]" />
+                          <span className="font-semibold text-[#2E2D2D]">{metadata.rating || 4.9}/5</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <HugeiconsIcon icon={Clock01Icon} size={13} className="text-[#737373]" />
+                          <span>{metadata.readTime || "10 Menit baca."}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <HugeiconsIcon icon={Clock01Icon} size={13} className="text-[#737373]" />
-                        <span>{metadata.readTime || "10 Menit baca."}</span>
+                    )}
+
+                    {/* Condition 3: Trending Flame / Class Hot Pick */}
+                    {indicatorType === "trending" && (
+                      <div className="flex items-center gap-1.5 text-[10.5px] sm:text-xs">
+                        <HugeiconsIcon icon={FireIcon} size={13} className="text-[#FFCE03]" />
+                        <span>{metadata.trendingText || `Sedang tren di ${metadata.targetGrade || "kelas 10"}`}</span>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Condition 3: Trending Flame / Class Hot Pick */}
-                  {indicatorType === "trending" && (
-                    <div className="flex items-center gap-1.5 text-[10.5px] sm:text-xs">
-                      <HugeiconsIcon icon={FireIcon} size={13} className="text-[#FFCE03]" />
-                      <span>{metadata.trendingText || `Sedang tren di ${metadata.targetGrade || "kelas 10"}`}</span>
-                    </div>
-                  )}
+                    {/* Condition 4: Quiz Certified & High Score */}
+                    {indicatorType === "quiz_certified" && (
+                      <div className="flex items-center gap-1.5 text-[10.5px] sm:text-xs">
+                        <HugeiconsIcon icon={Award01Icon} size={13} className="text-[#2563EB]" />
+                        <span className="text-[#475569] font-medium truncate">
+                          {metadata.quizCopy || `Tersedia Kuis Interaktif • Skor Rata-rata ${metadata.quizScoreAvg || 95}%`}
+                        </span>
+                      </div>
+                    )}
 
-                  {/* Condition 4: Quiz Certified & High Score */}
-                  {indicatorType === "quiz_certified" && (
-                    <div className="flex items-center gap-1.5 text-[10.5px] sm:text-xs">
-                      <HugeiconsIcon icon={Award01Icon} size={13} className="text-[#2563EB]" />
-                      <span className="text-[#475569] font-medium truncate">
-                        {metadata.quizCopy || `Tersedia Kuis Interaktif • Skor Rata-rata ${metadata.quizScoreAvg || 95}%`}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Condition 5: Teacher Recommendation */}
-                  {indicatorType === "teacher_pick" && (
-                    <div className="flex items-center gap-1.5 text-[10.5px] sm:text-xs">
-                      <HugeiconsIcon icon={SparklesIcon} size={13} className="text-[#8B5CF6]" />
-                      <span className="text-[#475569] font-medium">
-                        {metadata.recommendationNote || "Rekomendasi Guru Pengampu"}
-                      </span>
-                    </div>
-                  )}
+                    {/* Condition 5: Teacher Recommendation */}
+                    {indicatorType === "teacher_pick" && (
+                      <div className="flex items-center gap-1.5 text-[10.5px] sm:text-xs">
+                        <HugeiconsIcon icon={SparklesIcon} size={13} className="text-[#8B5CF6]" />
+                        <span className="text-[#475569] font-medium">
+                          {metadata.recommendationNote || "Rekomendasi Guru Pengampu"}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </Link>
+              </Link>
+            </div>
           );
         })}
       </div>

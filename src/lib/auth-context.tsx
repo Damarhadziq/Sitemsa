@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { authClientService } from '@/services/client/auth.client';
+import { supabase } from '@/lib/supabase';
 import {
   SessionSecurityService,
   INACTIVITY_LIMIT_MS,
@@ -420,6 +421,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setActiveSubjectFilter(parsed.assignedSubjects[0]);
           }
           setIsLoading(false);
+
+          // Background sync user avatar & profile from Supabase users table
+          if (supabase && parsed.email) {
+            Promise.resolve(
+              supabase
+                .from('users')
+                .select('name, avatar, nip')
+                .eq('email', parsed.email.toLowerCase().trim())
+                .maybeSingle()
+            )
+              .then(({ data: cloudUser }: any) => {
+                if (cloudUser && cloudUser.avatar && cloudUser.avatar !== parsed.avatar) {
+                  setUser((prev) => (prev ? { ...prev, avatar: cloudUser.avatar, name: cloudUser.name || prev.name } : prev));
+                  const currentSaved = localStorage.getItem('sintesa_user');
+                  if (currentSaved) {
+                    try {
+                      const u = JSON.parse(currentSaved);
+                      u.avatar = cloudUser.avatar;
+                      if (cloudUser.name) u.name = cloudUser.name;
+                      localStorage.setItem('sintesa_user', JSON.stringify(u));
+                    } catch {}
+                  }
+                }
+              })
+              .catch(() => {});
+          }
         });
       } catch {
         saveSession(null);
@@ -578,7 +605,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return false;
       }
 
-      const teacher = TEACHER_USERS[cleanEmail];
+      const teacher = { ...TEACHER_USERS[cleanEmail] };
+
+      // Restore custom profile / avatar from local persistent store
+      if (typeof window !== 'undefined') {
+        try {
+          const rawProfiles = localStorage.getItem('sintesa_custom_profiles_v1');
+          if (rawProfiles) {
+            const profilesMap = JSON.parse(rawProfiles);
+            const custom = profilesMap[cleanEmail];
+            if (custom) {
+              if (custom.avatar) teacher.avatar = custom.avatar;
+              if (custom.name) teacher.name = custom.name;
+              if (custom.nip) teacher.nip = custom.nip;
+            }
+          }
+        } catch {}
+      }
+
+      // Asynchronously sync latest cloud profile if available
+      if (supabase) {
+        Promise.resolve(
+          supabase
+            .from('users')
+            .select('name, avatar, nip')
+            .eq('email', cleanEmail)
+            .maybeSingle()
+        )
+          .then(({ data: cloudUser }: any) => {
+            if (cloudUser) {
+              const currentSaved = localStorage.getItem('sintesa_user');
+              if (currentSaved) {
+                try {
+                  const u = JSON.parse(currentSaved);
+                  if (cloudUser.avatar) u.avatar = cloudUser.avatar;
+                  if (cloudUser.name) u.name = cloudUser.name;
+                  if (cloudUser.nip) u.nip = cloudUser.nip;
+                  localStorage.setItem('sintesa_user', JSON.stringify(u));
+                } catch {}
+              }
+            }
+          })
+          .catch(() => {});
+      }
+
       saveSession(teacher);
       const targetUrl = teacher.role === 'superadmin' ? '/admin/superadmin' : '/admin/guru';
       if (typeof window !== 'undefined') {
@@ -671,6 +741,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const updated: AuthUser = { ...user, ...data };
     saveSession(updated);
 
+    // Save to persistent profile overrides map so even after logout, re-logging in restores custom avatar
+    if (typeof window !== 'undefined' && updated.email) {
+      try {
+        const rawProfiles = localStorage.getItem('sintesa_custom_profiles_v1');
+        const profilesMap = rawProfiles ? JSON.parse(rawProfiles) : {};
+        profilesMap[updated.email.toLowerCase().trim()] = {
+          name: updated.name,
+          avatar: updated.avatar,
+          nip: updated.nip,
+        };
+        localStorage.setItem('sintesa_custom_profiles_v1', JSON.stringify(profilesMap));
+      } catch (err) {
+        console.warn('Local profile cache save error:', err);
+      }
+    }
+
     // Sync to Supabase if connected
     if (typeof window !== 'undefined' && updated.email) {
       import('@/lib/supabase').then(({ supabase }) => {
@@ -680,7 +766,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               .from('users')
               .upsert({
                 name: updated.name,
-                email: updated.email,
+                email: updated.email.toLowerCase().trim(),
                 role: updated.role,
                 avatar: updated.avatar,
                 nip: updated.nip,

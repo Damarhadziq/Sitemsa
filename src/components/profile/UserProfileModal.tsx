@@ -13,6 +13,7 @@ import {
   ArrowLeft01Icon,
   Logout01Icon,
 } from "@hugeicons/core-free-icons";
+import { ExternalLink } from "lucide-react";
 import {
   getStudentProfile,
   saveStudentProfile,
@@ -20,6 +21,7 @@ import {
   StudentProfile,
   DEFAULT_DUMMY_STUDENT,
 } from "@/services/student-profile.service";
+import { StorageService } from "@/services/storage.service";
 import { InitialsAvatar } from "@/components/ui/InitialsAvatar";
 
 export type ProfileTab = "profile" | "history" | "settings";
@@ -129,209 +131,236 @@ export function UserProfileModal({
     setTimeout(() => setIsSavedToast(false), 2000);
   };
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === "string") {
-          setAvatar(reader.result);
+      const localPreview = URL.createObjectURL(file);
+      setAvatar(localPreview);
+
+      try {
+        const uploadedUrl = await StorageService.uploadImage(file, 'avatars');
+        if (uploadedUrl) {
+          setAvatar(uploadedUrl);
+          const updated = saveStudentProfile({ avatar: uploadedUrl });
+          setSavedProfile(updated);
         }
-      };
-      reader.readAsDataURL(file);
+      } catch (err) {
+        console.warn('Student avatar upload notice:', err);
+      }
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 flex items-end justify-center md:items-center p-0 md:p-4 animate-in fade-in duration-200 overscroll-contain font-sans">
-      {/* Hidden avatar file input */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleAvatarChange}
-        accept="image/*"
-        className="hidden"
-      />
-
-      {/* Backdrop listener */}
-      <div className="absolute inset-0" onClick={onClose} />
-
-      {/* Mobile Bottom Sheet & Desktop Modal Dialog Box */}
-      <div className="relative w-full max-w-2xl bg-white border-t md:border border-[#ECECEC] rounded-t-[20px] rounded-b-none md:rounded-[16px] overflow-hidden flex flex-col max-h-[85vh] md:max-h-[85vh] z-10 animate-in slide-in-from-bottom duration-300 md:animate-in md:fade-in md:zoom-in-95 md:duration-150">
-        {/* Drag Handle Indicator for Mobile Bottom Sheet */}
-        <div className="w-12 h-1.5 bg-[#D4D4D4] rounded-full mx-auto mt-2.5 mb-1 md:hidden shrink-0" />
-
-        {/* Modal Header (Pure White, Seamless Spacing) */}
-        <div className="pt-3 md:pt-5 px-6 pb-1 bg-white flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2">
-            {activeTab === "history" && historySubView !== "overview" && (
-              <button
-                type="button"
-                onClick={() => setHistorySubView("overview")}
-                className="p-1 rounded-[6px] text-[#2E2D2D] hover:text-[#2563EB] hover:bg-[#F6F5FF] transition-colors shrink-0 cursor-pointer flex items-center justify-center"
-                aria-label="Kembali"
-                title="Kembali"
-              >
-                <HugeiconsIcon icon={ArrowLeft01Icon} size={20} />
-              </button>
-            )}
-            <h2 className="text-base md:text-lg font-bold text-[#2E2D2D]">
-              {activeTab === "profile" && "Profil Saya"}
-              {activeTab === "history" && (
-                historySubView === "overview"
-                  ? "Riwayat Belajar"
-                  : historySubView === "all-materials"
-                  ? "Semua Materi Dipelajari"
-                  : "Semua Hasil Nilai Kuis"
-              )}
-              {activeTab === "settings" && "Pengaturan"}
-            </h2>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="hidden md:flex w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#737373] hover:text-[#2E2D2D] items-center justify-center transition-colors shrink-0 cursor-pointer"
-            aria-label="Tutup Modal"
-          >
-            <HugeiconsIcon icon={Cancel01Icon} size={16} />
-          </button>
+    <>
+      {/* Floating Top-Right Toast Notification identical to Admin */}
+      {isSavedToast && (
+        <div className="fixed top-6 right-6 z-[120] bg-[#2563EB] text-white px-4 py-3 rounded-[10px] shadow-lg flex items-center gap-2.5 text-xs font-semibold animate-in fade-in slide-in-from-top-3 duration-200">
+          <HugeiconsIcon icon={CheckmarkCircle02Icon} size={16} className="text-white" />
+          <span>Profil berhasil diperbarui</span>
         </div>
+      )}
 
-        {/* Scrollable Content Body (Tighter Top Spacing) */}
-        <div className="flex-1 overflow-y-auto px-6 pb-6 pt-3 space-y-5">
-          {/* TAB 1: PROFIL SAYA (Editable Form - Full Width Layout) */}
-          {activeTab === "profile" && (
-            <form onSubmit={handleSaveProfile} className="space-y-5">
-              {/* Toast Notification */}
-              {isSavedToast && (
-                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-[10px] flex items-center gap-2 text-xs font-semibold text-emerald-700 animate-in fade-in duration-200">
-                  <HugeiconsIcon icon={CheckmarkCircle02Icon} size={16} />
-                  Data profil berhasil diperbarui!
-                </div>
-              )}
+      <div className="fixed inset-0 z-50 bg-black/80 flex items-end justify-center md:items-center p-0 md:p-4 animate-in fade-in duration-200 overscroll-contain font-sans">
+        {/* Hidden avatar file input */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleAvatarChange}
+          accept="image/*"
+          className="hidden"
+        />
 
-              {/* Avatar Header Row */}
-              <div className="flex items-center gap-4 p-4 bg-[#FAFAFA] border border-[#ECECEC] rounded-[12px]">
-                <InitialsAvatar
-                  name={name}
-                  avatar={avatar}
-                  sizeClass="w-16 h-16"
-                  textSizeClass="text-lg"
-                />
-                <div className="space-y-1">
-                  <h3 className="text-sm font-bold text-[#2E2D2D]">{name}</h3>
-                  <p className="text-xs text-[#737373]">{email}</p>
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="mt-1 px-3 py-1.5 bg-white border border-[#ECECEC] hover:bg-gray-50 text-[11px] font-semibold text-[#2E2D2D] rounded-[8px] transition-colors inline-flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <HugeiconsIcon icon={Camera01Icon} size={13} />
-                    Ubah Foto Profil
-                  </button>
-                </div>
-              </div>
+        {/* Backdrop listener */}
+        <div className="absolute inset-0" onClick={onClose} />
 
-              {/* Form Fields Grid with White Background & Border #ECECEC */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-[#2E2D2D]">
-                    Nama Lengkap
-                  </label>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-white border border-[#ECECEC] rounded-[10px] px-3.5 py-2.5 text-xs text-[#2E2D2D] focus:outline-none focus:border-[#2563EB] transition-colors font-medium"
-                    required
-                  />
-                </div>
+        {/* Mobile Bottom Sheet & Desktop Modal Dialog Box */}
+        <div className="relative w-full max-w-2xl bg-white border-t md:border border-[#ECECEC] rounded-t-[20px] rounded-b-none md:rounded-[16px] overflow-hidden flex flex-col max-h-[85vh] md:max-h-[85vh] z-10 animate-in slide-in-from-bottom duration-300 md:animate-in md:fade-in md:zoom-in-95 md:duration-150">
+          {/* Drag Handle Indicator for Mobile Bottom Sheet */}
+          <div className="w-12 h-1.5 bg-[#D4D4D4] rounded-full mx-auto mt-2.5 mb-1 md:hidden shrink-0" />
 
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-[#2E2D2D]">
-                    Email Siswa
-                  </label>
-                  <input
-                    type="email"
-                    value={email}
-                    disabled
-                    readOnly
-                    className="w-full bg-[#FAFAFA] border border-[#ECECEC] text-[#737373] cursor-not-allowed rounded-[10px] px-3.5 py-2.5 text-xs font-medium focus:outline-none select-none"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-[#2E2D2D]">
-                    Sekolah / Instansi
-                  </label>
-                  <input
-                    type="text"
-                    value={school}
-                    onChange={(e) => setSchool(e.target.value)}
-                    className="w-full bg-white border border-[#ECECEC] rounded-[10px] px-3.5 py-2.5 text-xs text-[#2E2D2D] focus:outline-none focus:border-[#2563EB] transition-colors font-medium"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-[#2E2D2D]">
-                    NISN / Nomor Induk
-                  </label>
-                  <input
-                    type="text"
-                    value={nisn}
-                    onChange={(e) => setNisn(e.target.value)}
-                    className="w-full bg-white border border-[#ECECEC] rounded-[10px] px-3.5 py-2.5 text-xs text-[#2E2D2D] focus:outline-none focus:border-[#2563EB] transition-colors font-mono font-medium"
-                    required
-                  />
-                </div>
-
-                <div className="sm:col-span-2 space-y-1.5">
-                  <label className="block text-xs font-bold text-[#2E2D2D]">
-                    Kelas &amp; Jurusan
-                  </label>
-                  <input
-                    type="text"
-                    value={grade}
-                    onChange={(e) => setGrade(e.target.value)}
-                    className="w-full bg-white border border-[#ECECEC] rounded-[10px] px-3.5 py-2.5 text-xs text-[#2E2D2D] focus:outline-none focus:border-[#2563EB] transition-colors font-medium"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Action Buttons: Simpan Perubahan active ONLY if modified */}
-              <div className="pt-2 flex items-center justify-end gap-2.5">
+          {/* Modal Header (Pure White, Seamless Spacing) */}
+          <div className="pt-3 md:pt-5 px-6 pb-1 bg-white flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2">
+              {activeTab === "history" && historySubView !== "overview" && (
                 <button
                   type="button"
-                  onClick={() => {
-                    setName(savedProfile.name);
-                    setEmail(savedProfile.email);
-                    setSchool(savedProfile.school);
-                    setNisn(savedProfile.nisn);
-                    setGrade(savedProfile.grade);
-                    onClose();
-                  }}
-                  className="px-4 py-2.5 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-[#2E2D2D] text-xs font-semibold cursor-pointer transition-colors"
+                  onClick={() => setHistorySubView("overview")}
+                  className="p-1 rounded-[6px] text-[#2E2D2D] hover:text-[#2563EB] hover:bg-[#F6F5FF] transition-colors shrink-0 cursor-pointer flex items-center justify-center"
+                  aria-label="Kembali"
+                  title="Kembali"
                 >
-                  Batal
+                  <HugeiconsIcon icon={ArrowLeft01Icon} size={20} />
                 </button>
+              )}
+              <h2 className="text-base md:text-lg font-bold text-[#2E2D2D]">
+                {activeTab === "profile" && "Profil Saya"}
+                {activeTab === "history" && (
+                  historySubView === "overview"
+                    ? "Riwayat Belajar"
+                    : historySubView === "all-materials"
+                    ? "Semua Materi Dipelajari"
+                    : "Semua Hasil Nilai Kuis"
+                )}
+                {activeTab === "settings" && "Pengaturan"}
+              </h2>
+            </div>
 
-                <button
-                  type="submit"
-                  disabled={!hasChanges}
-                  className={`px-5 py-2.5 rounded-[8px] text-xs font-bold transition-all ${
-                    hasChanges
-                      ? 'bg-[#2563EB] hover:bg-blue-700 text-white cursor-pointer active:scale-98'
-                      : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
-                  }`}
-                >
-                  Simpan Perubahan
-                </button>
-              </div>
-            </form>
-          )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="hidden md:flex w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#737373] hover:text-[#2E2D2D] items-center justify-center transition-colors shrink-0 cursor-pointer"
+              aria-label="Tutup Modal"
+            >
+              <HugeiconsIcon icon={Cancel01Icon} size={16} />
+            </button>
+          </div>
+
+          {/* Scrollable Content Body (Tighter Top Spacing) */}
+          <div className="flex-1 overflow-y-auto px-6 pb-6 pt-3 space-y-5">
+            {/* TAB 1: PROFIL SAYA (Editable Form - Full Width Layout) */}
+            {activeTab === "profile" && (
+              <form onSubmit={handleSaveProfile} className="space-y-5">
+                {/* Avatar Header Row */}
+                <div className="flex items-center gap-4 p-4 bg-[#FAFAFA] border border-[#ECECEC] rounded-[12px]">
+                  <InitialsAvatar
+                    name={name}
+                    avatar={avatar}
+                    sizeClass="w-16 h-16"
+                    textSizeClass="text-lg"
+                  />
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-bold text-[#2E2D2D]">{name}</h3>
+                    <p className="text-xs text-[#737373]">{email}</p>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="mt-1 px-3 py-1.5 bg-white border border-[#ECECEC] hover:bg-gray-50 text-[11px] font-semibold text-[#2E2D2D] rounded-[8px] transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <HugeiconsIcon icon={Camera01Icon} size={13} />
+                      Ubah Foto Profil
+                    </button>
+                  </div>
+                </div>
+
+                {/* Form Fields Grid with White Background & Border #ECECEC */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold text-[#2E2D2D]">
+                      Nama Lengkap
+                    </label>
+                    <input
+                      type="text"
+                      value={name}
+                      placeholder="Masukkan nama lengkap"
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full bg-white border border-[#ECECEC] rounded-[10px] px-3.5 py-2.5 text-xs text-[#2E2D2D] focus:outline-none focus:border-[#2563EB] transition-colors font-medium"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold text-[#2E2D2D]">
+                      Email Siswa
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      disabled
+                      readOnly
+                      className="w-full bg-[#FAFAFA] border border-[#ECECEC] text-[#737373] cursor-not-allowed rounded-[10px] px-3.5 py-2.5 text-xs font-medium focus:outline-none select-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold text-[#2E2D2D]">
+                      Sekolah / Instansi
+                    </label>
+                    <input
+                      type="text"
+                      value="SMK Negeri 1 Semarang"
+                      disabled
+                      readOnly
+                      className="w-full bg-[#FAFAFA] border border-[#ECECEC] text-[#737373] cursor-not-allowed rounded-[10px] px-3.5 py-2.5 text-xs font-medium focus:outline-none select-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-bold text-[#2E2D2D]">
+                        NISN / Nomor Induk
+                      </label>
+                      <a
+                        href="https://nisn.data.kemdikbud.go.id/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] text-[#2563EB] hover:underline font-semibold inline-flex items-center gap-1"
+                        title="Cek keabsahan data di Portal Resmi Kemendikbud"
+                      >
+                        <span>Cek Kemendikbud</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                    <input
+                      type="text"
+                      value={nisn}
+                      maxLength={10}
+                      placeholder="Masukkan 10 digit NISN"
+                      onChange={(e) => setNisn(e.target.value.replace(/\D/g, ''))}
+                      className="w-full bg-white border border-[#ECECEC] rounded-[10px] px-3.5 py-2.5 text-xs text-[#2E2D2D] focus:outline-none focus:border-[#2563EB] transition-colors font-mono font-medium"
+                    />
+                    {nisn && nisn.length > 0 && nisn.length !== 10 && (
+                      <p className="text-[10px] text-amber-600 font-medium">
+                        * Format NISN resmi Kemendikbud terdiri dari 10 digit angka ({nisn.length}/10)
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="sm:col-span-2 space-y-1.5">
+                    <label className="block text-xs font-bold text-[#2E2D2D]">
+                      Kelas &amp; Jurusan
+                    </label>
+                    <input
+                      type="text"
+                      value={grade}
+                      placeholder="Contoh: X PPLG 1 / XI Otomotif 2"
+                      onChange={(e) => setGrade(e.target.value)}
+                      className="w-full bg-white border border-[#ECECEC] rounded-[10px] px-3.5 py-2.5 text-xs text-[#2E2D2D] focus:outline-none focus:border-[#2563EB] transition-colors font-medium"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Action Buttons: Simpan Perubahan active ONLY if modified */}
+                <div className="pt-2 flex items-center justify-end gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setName(savedProfile.name);
+                      setEmail(savedProfile.email);
+                      setSchool('SMK Negeri 1 Semarang');
+                      setNisn(savedProfile.nisn);
+                      setGrade(savedProfile.grade);
+                      onClose();
+                    }}
+                    className="px-4 py-2.5 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-[#2E2D2D] text-xs font-semibold cursor-pointer transition-colors"
+                  >
+                    Batal
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={!hasChanges}
+                    className={`px-5 py-2.5 rounded-[8px] text-xs font-bold transition-all ${
+                      hasChanges
+                        ? 'bg-[#2563EB] hover:bg-blue-700 text-white cursor-pointer active:scale-98'
+                        : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+                    }`}
+                  >
+                    Simpan Perubahan
+                  </button>
+                </div>
+              </form>
+            )}
 
           {/* TAB 2: RIWAYAT BELAJAR & NILAI KUIS */}
           {activeTab === "history" && (
@@ -516,5 +545,6 @@ export function UserProfileModal({
         </div>
       </div>
     </div>
+    </>
   );
 }

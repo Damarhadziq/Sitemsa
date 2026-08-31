@@ -144,10 +144,10 @@ export const registerStudent = (data: {
     name: data.name.trim() || (existingIdx >= 0 ? students[existingIdx].name : cleanEmail.split('@')[0]),
     email: cleanEmail,
     password: data.password || (existingIdx >= 0 ? students[existingIdx].password : 'SiswaSitemsa#2026'),
-    school: data.school || (existingIdx >= 0 ? students[existingIdx].school : 'SMK Negeri 1 Semarang'),
+    school: 'SMK Negeri 1 Semarang',
     nisn: data.nisn || (existingIdx >= 0 ? students[existingIdx].nisn : ''),
-    grade: data.grade || (existingIdx >= 0 ? students[existingIdx].grade : 'X PPLG 1'),
-    avatar: data.avatar || (existingIdx >= 0 ? students[existingIdx].avatar : `https://i.pravatar.cc/150?u=${cleanEmail}`),
+    grade: data.grade !== undefined ? data.grade : (existingIdx >= 0 ? (students[existingIdx].grade || '') : ''),
+    avatar: data.avatar || (existingIdx >= 0 ? (students[existingIdx].avatar || '') : ''),
     registeredAt: Date.now(),
   };
 
@@ -169,9 +169,9 @@ export const registerStudent = (data: {
     id: studentObj.id,
     name: studentObj.name,
     email: studentObj.email,
-    school: studentObj.school || 'SMK Negeri 1 Semarang',
+    school: 'SMK Negeri 1 Semarang',
     nisn: studentObj.nisn || '',
-    grade: studentObj.grade || 'X',
+    grade: studentObj.grade || '',
     avatar: studentObj.avatar || '',
     token: `std_tok_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
     loggedInAt: Date.now(),
@@ -414,6 +414,7 @@ export const saveStudentProfile = (profile: Partial<StudentProfile>): StudentPro
   const updated: StudentProfile = {
     ...current,
     ...profile,
+    school: 'SMK Negeri 1 Semarang',
     loggedInAt: Date.now(),
   };
 
@@ -425,19 +426,27 @@ export const saveStudentProfile = (profile: Partial<StudentProfile>): StudentPro
     window.dispatchEvent(new CustomEvent('sintesa-student-auth-changed', { detail: { isAuthenticated: true, user: updated } }));
 
     // Sync / Upsert updates directly to Supabase database public.users
-    if (supabase) {
+    if (supabase && updated.email) {
       Promise.resolve(
         supabase
           .from('users')
           .upsert({
             name: updated.name,
-            email: updated.email,
+            email: updated.email.toLowerCase().trim(),
             role: 'siswa',
-            avatar: updated.avatar,
-            nip: updated.nisn,
+            avatar: updated.avatar || null,
+            nisn: updated.nisn || null,
+            class_group: updated.grade || null,
+            nip: updated.nisn || null,
+            status: 'Aktif',
+            updated_at: new Date().toISOString(),
           }, { onConflict: 'email' })
-      ).then(() => {
-        console.log('✅ Akun siswa berhasil disinkronisasi ke Supabase users:', updated.email);
+      ).then(({ error }: any) => {
+        if (error) {
+          console.warn('Upsert to users notice:', error.message);
+        } else {
+          console.log('✅ Akun siswa berhasil disinkronisasi ke Supabase users:', updated.email);
+        }
       }).catch((err) => {
         console.warn('Sync student account to Supabase notice:', err);
       });
@@ -457,7 +466,7 @@ export const syncStudentProfileFromSupabase = async (targetEmail?: string) => {
 
   try {
     const current = getStudentProfile();
-    const queryEmail = targetEmail || current.email || 'siswa@belajar.id';
+    const queryEmail = (targetEmail || current.email || 'siswa@belajar.id').toLowerCase().trim();
 
     const { data, error } = await supabase
       .from('users')
@@ -470,7 +479,9 @@ export const syncStudentProfileFromSupabase = async (targetEmail?: string) => {
         ...current,
         name: data.name || current.name,
         avatar: data.avatar || current.avatar,
-        nisn: data.nip || current.nisn,
+        nisn: data.nisn || data.nip || current.nisn,
+        grade: data.class_group || current.grade || '',
+        school: 'SMK Negeri 1 Semarang',
         email: data.email || current.email,
       };
       localStorage.setItem(STUDENT_PROFILE_STORAGE_KEY, JSON.stringify(merged));

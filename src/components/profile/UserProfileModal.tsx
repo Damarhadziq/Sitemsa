@@ -57,7 +57,6 @@ export function UserProfileModal({
   const [name, setName] = useState(DEFAULT_DUMMY_STUDENT.name);
   const [email, setEmail] = useState(DEFAULT_DUMMY_STUDENT.email);
   const [school, setSchool] = useState(DEFAULT_DUMMY_STUDENT.school);
-  const [nisn, setNisn] = useState(DEFAULT_DUMMY_STUDENT.nisn);
   const [grade, setGrade] = useState(DEFAULT_DUMMY_STUDENT.grade);
   const [avatar, setAvatar] = useState(DEFAULT_DUMMY_STUDENT.avatar);
   const [bio, setBio] = useState(DEFAULT_DUMMY_STUDENT.bio || "");
@@ -69,12 +68,11 @@ export function UserProfileModal({
     if (isOpen) {
       const p = getStudentProfile();
       setSavedProfile(p);
-      setName(p.name);
-      setEmail(p.email);
-      setSchool(p.school);
-      setNisn(p.nisn);
-      setGrade(p.grade);
-      setAvatar(p.avatar);
+      setName(p.name || "");
+      setEmail(p.email || "");
+      setSchool(p.school || "SMK Negeri 1 Semarang");
+      setGrade(p.grade || "");
+      setAvatar(p.avatar || "");
       setBio(p.bio || "");
     }
   }, [isOpen]);
@@ -82,8 +80,6 @@ export function UserProfileModal({
   // Track if any field has changed compared to saved profile
   const hasChanges =
     name !== savedProfile.name ||
-    school !== savedProfile.school ||
-    nisn !== savedProfile.nisn ||
     grade !== savedProfile.grade ||
     avatar !== savedProfile.avatar ||
     bio !== (savedProfile.bio || "");
@@ -125,7 +121,7 @@ export function UserProfileModal({
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
     if (!hasChanges) return;
-    const updated = saveStudentProfile({ name, email, school, nisn, grade, avatar, bio });
+    const updated = saveStudentProfile({ name, email, school: 'SMK Negeri 1 Semarang', grade, avatar, bio });
     setSavedProfile(updated);
     setIsSavedToast(true);
     setTimeout(() => setIsSavedToast(false), 2000);
@@ -285,37 +281,6 @@ export function UserProfileModal({
                   </div>
 
                   <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <label className="block text-xs font-bold text-[#2E2D2D]">
-                        NISN / Nomor Induk
-                      </label>
-                      <a
-                        href="https://nisn.data.kemdikbud.go.id/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[10px] text-[#2563EB] hover:underline font-semibold inline-flex items-center gap-1"
-                        title="Cek keabsahan data di Portal Resmi Kemendikbud"
-                      >
-                        <span>Cek Kemendikbud</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                    </div>
-                    <input
-                      type="text"
-                      value={nisn}
-                      maxLength={10}
-                      placeholder="Masukkan 10 digit NISN"
-                      onChange={(e) => setNisn(e.target.value.replace(/\D/g, ''))}
-                      className="w-full bg-white border border-[#ECECEC] rounded-[10px] px-3.5 py-2.5 text-xs text-[#2E2D2D] focus:outline-none focus:border-[#2563EB] transition-colors font-mono font-medium"
-                    />
-                    {nisn && nisn.length > 0 && nisn.length !== 10 && (
-                      <p className="text-[10px] text-amber-600 font-medium">
-                        * Format NISN resmi Kemendikbud terdiri dari 10 digit angka ({nisn.length}/10)
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="sm:col-span-2 space-y-1.5">
                     <label className="block text-xs font-bold text-[#2E2D2D]">
                       Kelas &amp; Jurusan
                     </label>
@@ -338,7 +303,6 @@ export function UserProfileModal({
                       setName(savedProfile.name);
                       setEmail(savedProfile.email);
                       setSchool('SMK Negeri 1 Semarang');
-                      setNisn(savedProfile.nisn);
                       setGrade(savedProfile.grade);
                       onClose();
                     }}

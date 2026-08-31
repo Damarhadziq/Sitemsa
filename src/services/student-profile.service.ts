@@ -7,7 +7,7 @@ export interface StudentProfile {
   name: string;
   email: string;
   school: string;
-  nisn: string;
+  nisn?: string;
   grade: string;
   avatar: string;
   bio?: string;
@@ -32,37 +32,21 @@ const STUDENT_PROFILE_STORAGE_KEY = 'sintesa_student_profile_v1';
 const STUDENT_SESSION_KEY = 'sintesa_student_session_v1';
 const REGISTERED_STUDENTS_KEY = 'sintesa_registered_students_v1';
 
-export const OFFICIAL_DUMMY_STUDENT: StudentProfile = {
-  id: 'usr-student-1',
-  name: 'Siswa Sitemsa',
-  email: 'siswa@belajar.id',
+export const EMPTY_STUDENT_PROFILE: StudentProfile = {
+  id: '',
+  name: '',
+  email: '',
   school: 'SMK Negeri 1 Semarang',
-  nisn: '0054321987',
-  grade: 'X PPLG 1',
-  avatar: 'https://i.pravatar.cc/150?img=12',
-  bio: 'Siswa SMK Negeri 1 Semarang',
-  phone: '081234567890',
+  grade: '',
+  avatar: '',
+  bio: '',
+  phone: '',
 };
 
-// Aliases for compatibility
-export const DEFAULT_DUMMY_STUDENT = OFFICIAL_DUMMY_STUDENT;
+export const OFFICIAL_DUMMY_STUDENT: StudentProfile = EMPTY_STUDENT_PROFILE;
+export const DEFAULT_DUMMY_STUDENT = EMPTY_STUDENT_PROFILE;
 
-/**
- * Pre-seeded student credentials for quick testing and default logins
- */
-export const SEED_STUDENTS: RegisteredStudent[] = [
-  {
-    id: 'usr-std-1',
-    name: 'Siswa Sitemsa',
-    email: 'siswa@belajar.id',
-    password: 'SiswaSitemsa#2026',
-    school: 'SMK Negeri 1 Semarang',
-    nisn: '0054321987',
-    grade: 'X PPLG 1',
-    avatar: 'https://i.pravatar.cc/150?img=12',
-    registeredAt: Date.now(),
-  },
-];
+export const SEED_STUDENTS: RegisteredStudent[] = [];
 
 export const DUMMY_BLACKLIST_EMAILS = new Set([
   'budi.siswa@sitemsa.sch.id',
@@ -77,8 +61,8 @@ export const isDummyStudent = (s: any): boolean => {
   const name = (s.name || '').toLowerCase().trim();
   const id = (s.id || '').toLowerCase().trim();
   if (DUMMY_BLACKLIST_EMAILS.has(email)) return true;
-  if (name === 'budi santoso' || name === 'muhammad rizky pratama' || name === 'siti rahmawati') return true;
-  if (id === 'usr-std-2' || id === 'usr-std-3' || id === 'usr-std-4' || id === 'usr-std-5') return true;
+  if (name === 'budi santoso' || name === 'muhammad rizky pratama' || name === 'siti rahmawati' || name === 'siswa sitemsa') return true;
+  if (id === 'usr-std-2' || id === 'usr-std-3' || id === 'usr-std-4' || id === 'usr-std-5' || id === 'usr-student-1') return true;
   return false;
 };
 
@@ -372,17 +356,20 @@ export const logoutStudent = async (): Promise<void> => {
       localStorage.removeItem(STUDENT_PROFILE_STORAGE_KEY);
       localStorage.removeItem('sintesa_user');
       localStorage.removeItem('sintesa_last_active');
+      localStorage.removeItem('sintesa_session_id');
 
       document.cookie = 'sintesa_student_auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0;';
       document.cookie = 'auth_student=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0;';
       document.cookie = 'auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0;';
       document.cookie = 'auth_admin=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0;';
+      document.cookie = 'sintesa_session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0;';
 
       if (supabase) {
         await supabase.auth.signOut().catch(() => {});
       }
 
       window.dispatchEvent(new CustomEvent('sintesa-student-auth-changed', { detail: { isAuthenticated: false } }));
+      window.dispatchEvent(new CustomEvent('sintesa-student-profile-updated', { detail: EMPTY_STUDENT_PROFILE }));
     } catch (e) {
       console.error(e);
     }
@@ -393,15 +380,19 @@ export const logoutStudent = async (): Promise<void> => {
  * Get current student profile
  */
 export const getStudentProfile = (): StudentProfile => {
-  if (typeof window === 'undefined') return OFFICIAL_DUMMY_STUDENT;
+  if (typeof window === 'undefined') return EMPTY_STUDENT_PROFILE;
   try {
     const raw = localStorage.getItem(STUDENT_SESSION_KEY) || localStorage.getItem(STUDENT_PROFILE_STORAGE_KEY);
     if (!raw) {
-      return OFFICIAL_DUMMY_STUDENT;
+      return EMPTY_STUDENT_PROFILE;
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (parsed && (parsed.email || parsed.name)) {
+      return parsed;
+    }
+    return EMPTY_STUDENT_PROFILE;
   } catch {
-    return OFFICIAL_DUMMY_STUDENT;
+    return EMPTY_STUDENT_PROFILE;
   }
 };
 

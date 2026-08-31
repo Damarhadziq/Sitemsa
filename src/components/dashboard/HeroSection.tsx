@@ -1,19 +1,30 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getStudentProfile, DEFAULT_DUMMY_STUDENT } from '@/services/student-profile.service';
+import { getStudentProfile } from '@/services/student-profile.service';
 import { getWeeklyTarget } from '@/services/weekly-target.service';
 
 export function HeroSection() {
-  const [firstName, setFirstName] = useState(DEFAULT_DUMMY_STUDENT.name.split(' ')[0]);
+  const [firstName, setFirstName] = useState('');
+  const [greeting, setGreeting] = useState('Selamat Datang');
   const [weeklyTarget, setWeeklyTarget] = useState(getWeeklyTarget());
 
   useEffect(() => {
     const updateData = () => {
       const p = getStudentProfile();
-      setFirstName(p.name ? p.name.split(' ')[0] : 'Siswa');
+      if (p && p.name && p.name.trim()) {
+        setFirstName(p.name.trim().split(' ')[0]);
+      } else {
+        setFirstName('');
+      }
       setWeeklyTarget(getWeeklyTarget());
     };
+
+    const hour = new Date().getHours();
+    if (hour >= 4 && hour < 11) setGreeting('Selamat Pagi');
+    else if (hour >= 11 && hour < 15) setGreeting('Selamat Siang');
+    else if (hour >= 15 && hour < 18) setGreeting('Selamat Sore');
+    else setGreeting('Selamat Malam');
 
     updateData();
     window.addEventListener('sintesa-student-profile-updated', updateData);
@@ -32,7 +43,7 @@ export function HeroSection() {
       {/* Left Greeting */}
       <div>
         <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#2E2D2D] tracking-tight leading-tight">
-          Selamat Pagi, {firstName}!
+          {greeting}{firstName ? `, ${firstName}!` : '!'}
         </h1>
       </div>
 

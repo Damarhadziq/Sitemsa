@@ -202,9 +202,7 @@ export function Navbar() {
 
   const isProfileIncomplete = Boolean(
     isLoggedIn &&
-    (!studentProfile.nisn?.trim() ||
-     !studentProfile.school?.trim() ||
-     !studentProfile.grade?.trim() ||
+    (!studentProfile.grade?.trim() ||
      !studentProfile.name?.trim())
   );
 
@@ -400,6 +398,15 @@ export function Navbar() {
                       onClick={async () => {
                         setIsLoggingOut(true);
                         setIsProfileOpen(false);
+                        setStudentProfile({
+                          id: '',
+                          name: '',
+                          email: '',
+                          school: 'SMK Negeri 1 Semarang',
+                          grade: '',
+                          avatar: '',
+                        });
+                        setIsLoggedIn(false);
                         window.dispatchEvent(new Event('sintesa-logging-out'));
                         await logoutStudent();
                         logout();

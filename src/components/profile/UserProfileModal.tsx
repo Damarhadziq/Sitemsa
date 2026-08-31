@@ -62,6 +62,8 @@ export function UserProfileModal({
   const [bio, setBio] = useState(DEFAULT_DUMMY_STUDENT.bio || "");
   const [historySubView, setHistorySubView] = useState<"overview" | "all-materials" | "all-quizzes">("overview");
   const [isSavedToast, setIsSavedToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("Profil berhasil diperbarui");
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   // Load from persistent store when modal is opened
   useEffect(() => {
@@ -123,6 +125,7 @@ export function UserProfileModal({
     if (!hasChanges) return;
     const updated = saveStudentProfile({ name, email, school: 'SMK Negeri 1 Semarang', grade, avatar, bio });
     setSavedProfile(updated);
+    setToastMessage("Profil berhasil diperbarui");
     setIsSavedToast(true);
     setTimeout(() => setIsSavedToast(false), 2000);
   };
@@ -132,16 +135,22 @@ export function UserProfileModal({
     if (file) {
       const localPreview = URL.createObjectURL(file);
       setAvatar(localPreview);
+      setIsUploadingAvatar(true);
 
       try {
         const uploadedUrl = await StorageService.uploadImage(file, 'avatars');
         if (uploadedUrl) {
           setAvatar(uploadedUrl);
-          const updated = saveStudentProfile({ avatar: uploadedUrl });
+          const updated = saveStudentProfile({ avatar: uploadedUrl, email, name, grade, school: 'SMK Negeri 1 Semarang' });
           setSavedProfile(updated);
+          setToastMessage("Foto profil berhasil diperbarui");
+          setIsSavedToast(true);
+          setTimeout(() => setIsSavedToast(false), 2000);
         }
       } catch (err) {
         console.warn('Student avatar upload notice:', err);
+      } finally {
+        setIsUploadingAvatar(false);
       }
     }
   };
@@ -152,7 +161,7 @@ export function UserProfileModal({
       {isSavedToast && (
         <div className="fixed top-6 right-6 z-[120] bg-[#2563EB] text-white px-4 py-3 rounded-[10px] shadow-lg flex items-center gap-2.5 text-xs font-semibold animate-in fade-in slide-in-from-top-3 duration-200">
           <HugeiconsIcon icon={CheckmarkCircle02Icon} size={16} className="text-white" />
-          <span>Profil berhasil diperbarui</span>
+          <span>{toastMessage}</span>
         </div>
       )}
 

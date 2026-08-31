@@ -185,9 +185,6 @@ export const getStudentScopedStorageKey = (baseKey: string): string => {
   return baseKey;
 };
 
-/**
- * Sync logged in Google student profile from URL params or active Supabase session
- */
 export const syncFromUrlParamsOrSupabase = async () => {
   if (typeof window === 'undefined') return;
   try {
@@ -197,10 +194,13 @@ export const syncFromUrlParamsOrSupabase = async () => {
     const avatar = params.get('avatar');
 
     if (email) {
+      const cleanEmail = email.toLowerCase().trim();
+      const existing = getStudentProfile();
       registerStudent({
-        name: name || email.split('@')[0],
-        email: email,
-        avatar: avatar || undefined,
+        name: name || existing.name || cleanEmail.split('@')[0],
+        email: cleanEmail,
+        avatar: avatar || existing.avatar || undefined,
+        grade: existing.grade || '',
       });
       // Clean up URL parameters cleanly
       const url = new URL(window.location.href);
@@ -208,6 +208,7 @@ export const syncFromUrlParamsOrSupabase = async () => {
       url.searchParams.delete('email');
       url.searchParams.delete('avatar');
       window.history.replaceState({}, document.title, url.pathname + (url.search ? url.search : ''));
+      await syncStudentProfileFromSupabase(cleanEmail);
       return;
     }
 
@@ -215,15 +216,40 @@ export const syncFromUrlParamsOrSupabase = async () => {
       const { data } = await supabase.auth.getSession();
       if (data?.session?.user) {
         const u = data.session.user;
-        const uName = u.user_metadata?.full_name || u.user_metadata?.name || u.email?.split('@')[0] || 'Siswa Sitemsa';
-        const uEmail = u.email || '';
-        const uAvatar = u.user_metadata?.avatar_url || u.user_metadata?.picture || '';
+        const uEmail = (u.email || '').toLowerCase().trim();
         if (uEmail) {
+          const currentProfile = getStudentProfile();
+
+          // Check if already in Supabase users table
+          let cloudAvatar = currentProfile.avatar;
+          let cloudName = currentProfile.name;
+          let cloudGrade = currentProfile.grade;
+
+          try {
+            const { data: cloudUser } = await supabase
+              .from('users')
+              .select('*')
+              .eq('email', uEmail)
+              .maybeSingle();
+
+            if (cloudUser) {
+              if (cloudUser.avatar) cloudAvatar = cloudUser.avatar;
+              if (cloudUser.name) cloudName = cloudUser.name;
+              if (cloudUser.class_group) cloudGrade = cloudUser.class_group;
+            }
+          } catch {}
+
+          const finalAvatar = cloudAvatar || u.user_metadata?.avatar_url || u.user_metadata?.picture || '';
+          const finalName = cloudName || u.user_metadata?.full_name || u.user_metadata?.name || uEmail.split('@')[0] || 'Siswa Sitemsa';
+
           registerStudent({
-            name: uName,
+            name: finalName,
             email: uEmail,
-            avatar: uAvatar,
+            avatar: finalAvatar,
+            grade: cloudGrade || '',
           });
+
+          await syncStudentProfileFromSupabase(uEmail);
         }
       }
     }

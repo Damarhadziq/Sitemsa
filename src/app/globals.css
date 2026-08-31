@@ -192,88 +192,60 @@ html.hide-mobile-bottom-nav .mobile-bottom-nav {
   display: none !important;
 }
 
-/* Horizontal Whoosh Sweep: Vertical Border Beam + Ambient Aura + Card Shimmer */
-@keyframes horizontalWhooshBeam {
+/* Clean Horizontal Border Glow & Synchronized Card Shimmer (No Leak / Crisp Border) */
+@keyframes cleanBorderSweep {
   0% {
-    transform: translateX(-150%) skewX(-18deg);
+    transform: translateX(-150%) skewX(-15deg);
     opacity: 0;
   }
   15% {
     opacity: 1;
   }
-  60% {
-    transform: translateX(300%) skewX(-18deg);
+  65% {
+    transform: translateX(350%) skewX(-15deg);
     opacity: 1;
   }
-  65%, 100% {
-    transform: translateX(300%) skewX(-18deg);
+  70%, 100% {
+    transform: translateX(350%) skewX(-15deg);
     opacity: 0;
   }
 }
 
-@keyframes horizontalWhooshGlow {
+@keyframes cleanShimmerSweep {
   0% {
-    transform: translateX(-150%) skewX(-18deg);
-    opacity: 0;
-  }
-  15% {
-    opacity: 0.85;
-  }
-  60% {
-    transform: translateX(300%) skewX(-18deg);
-    opacity: 0.85;
-  }
-  65%, 100% {
-    transform: translateX(300%) skewX(-18deg);
-    opacity: 0;
-  }
-}
-
-@keyframes horizontalWhooshShimmer {
-  0% {
-    transform: translateX(-150%) skewX(-18deg);
+    transform: translateX(-150%) skewX(-15deg);
     opacity: 0;
   }
   15% {
     opacity: 1;
   }
-  60% {
-    transform: translateX(300%) skewX(-18deg);
+  65% {
+    transform: translateX(350%) skewX(-15deg);
     opacity: 1;
   }
-  65%, 100% {
-    transform: translateX(300%) skewX(-18deg);
+  70%, 100% {
+    transform: translateX(350%) skewX(-15deg);
     opacity: 0;
   }
 }
 
-.whoosh-card-wrapper {
+.clean-glow-card {
   position: relative;
-  border-radius: 14px;
+  border-radius: 12px;
   padding: 1.5px;
   background: #ECECEC;
+  overflow: hidden; /* Fully contained, zero leaking */
   display: block;
-  isolation: isolate;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.whoosh-card-wrapper:hover {
+.clean-glow-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 28px -6px rgba(37, 99, 235, 0.16), 0 8px 16px -6px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 8px 24px -4px rgba(37, 99, 235, 0.12);
 }
 
-/* 1. Vertical Border Glow Beam moving horizontally */
-.whoosh-border-layer {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.whoosh-border-layer::before {
-  content: "";
+/* 1. Vertical glowing laser highlight that sweeps horizontally on the border */
+.clean-border-highlight {
   position: absolute;
   top: -50%;
   left: 0;
@@ -282,51 +254,22 @@ html.hide-mobile-bottom-nav .mobile-bottom-nav {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(37, 99, 235, 0.3) 25%,
+    rgba(37, 99, 235, 0.4) 25%,
     #2563EB 50%,
     #60A5FA 70%,
-    #A855F7 85%,
+    rgba(99, 102, 241, 0.5) 85%,
     transparent 100%
   );
-  animation: horizontalWhooshBeam 3.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  animation-delay: var(--whoosh-delay, 0s);
-}
-
-/* 2. Soft Ambient Aura Glow extending outside border */
-.whoosh-glow-layer {
-  position: absolute;
-  inset: -6px;
-  border-radius: 18px;
-  overflow: visible;
+  animation: cleanBorderSweep 3.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   pointer-events: none;
   z-index: 0;
 }
 
-.whoosh-glow-layer::before {
-  content: "";
-  position: absolute;
-  top: -25%;
-  left: 0;
-  width: 100px;
-  height: 150%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(37, 99, 235, 0.3) 20%,
-    rgba(99, 102, 241, 0.85) 50%,
-    rgba(56, 189, 248, 0.6) 75%,
-    transparent 100%
-  );
-  filter: blur(12px);
-  animation: horizontalWhooshGlow 3.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  animation-delay: var(--whoosh-delay, 0s);
-}
-
-/* 3. Inner Card Content Container */
-.whoosh-card-inner {
+/* 2. Inner card container */
+.clean-card-inner {
   position: relative;
   background: #FFFFFF;
-  border-radius: 12.5px;
+  border-radius: 10.5px;
   overflow: hidden;
   height: 100%;
   width: 100%;
@@ -336,30 +279,22 @@ html.hide-mobile-bottom-nav .mobile-bottom-nav {
   z-index: 1;
 }
 
-/* 4. Synchronized Background Shimmer Sweep */
-.whoosh-card-shimmer {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-  z-index: 1;
-}
-
-.whoosh-card-shimmer::before {
-  content: "";
+/* 3. Synchronized matching light shimmer inside card */
+.clean-card-shimmer {
   position: absolute;
   top: 0;
   left: 0;
-  width: 140px;
+  width: 120px;
   height: 100%;
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(37, 99, 235, 0.03) 20%,
-    rgba(99, 102, 241, 0.1) 50%,
-    rgba(168, 85, 247, 0.04) 80%,
+    rgba(37, 99, 235, 0.03) 25%,
+    rgba(99, 102, 241, 0.08) 50%,
+    rgba(168, 85, 247, 0.03) 75%,
     transparent 100%
   );
-  animation: horizontalWhooshShimmer 3.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  animation-delay: var(--whoosh-delay, 0s);
+  animation: cleanShimmerSweep 3.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+  z-index: 1;
 }

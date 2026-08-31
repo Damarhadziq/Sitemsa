@@ -52,28 +52,23 @@ export function FeaturedSection() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-5">
-        {featuredCards.map((card, index) => {
+        {featuredCards.map((card) => {
           const { id, subject, title, linkUrl, indicatorType, metadata } = card;
-          const whooshDelay = `${(index * 1.2).toFixed(1)}s`;
 
           return (
             <div
               key={`${id}-${title}`}
-              className="whoosh-card-wrapper group"
-              style={{ '--whoosh-delay': whooshDelay } as React.CSSProperties}
+              className="clean-glow-card group"
             >
-              {/* Vertical Laser Beam that Sweeps Horizontally Across the Border */}
-              <div className="whoosh-border-layer" />
-
-              {/* Ambient Glowing Aura Following the Beam */}
-              <div className="whoosh-glow-layer" />
+              {/* Vertical Laser Highlight Sweeping Horizontally on Border */}
+              <div className="clean-border-highlight" />
 
               <Link
                 href={linkUrl}
-                className="whoosh-card-inner p-4 sm:p-5 cursor-pointer block"
+                className="clean-card-inner p-4 sm:p-5 cursor-pointer block"
               >
-                {/* Synchronized Inner Background Shimmer */}
-                <div className="whoosh-card-shimmer" />
+                {/* Synchronized Matching Light Shimmer */}
+                <div className="clean-card-shimmer" />
 
                 {/* Card Content Body */}
                 <div className="relative z-10 flex flex-col justify-between h-full space-y-3.5">

@@ -54,26 +54,26 @@ export function FeaturedSection() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-5">
         {featuredCards.map((card, index) => {
           const { id, subject, title, linkUrl, indicatorType, metadata } = card;
+          const whooshDelay = `${(index * 1.2).toFixed(1)}s`;
 
           return (
-            <BorderGlow
+            <div
               key={`${id}-${title}`}
-              backgroundColor="#FFFFFF"
-              borderRadius={12}
-              glowRadius={22}
-              glowIntensity={1.2}
-              coneSpread={28}
-              looping={true}
-              initialAngleOffset={index * 120}
-              colors={['#2563EB', '#6366F1', '#a855f7']}
-              className="w-full h-full hover:-translate-y-1 transition-transform duration-200"
+              className="whoosh-card-wrapper group"
+              style={{ '--whoosh-delay': whooshDelay } as React.CSSProperties}
             >
+              {/* Vertical Laser Beam that Sweeps Horizontally Across the Border */}
+              <div className="whoosh-border-layer" />
+
+              {/* Ambient Glowing Aura Following the Beam */}
+              <div className="whoosh-glow-layer" />
+
               <Link
                 href={linkUrl}
-                className="relative p-4 sm:p-5 flex flex-col justify-between h-full w-full cursor-pointer block overflow-hidden group"
+                className="whoosh-card-inner p-4 sm:p-5 cursor-pointer block"
               >
-                {/* Subtle Light-Theme Animated Shimmer Reflection */}
-                <div className="recommendation-card-shimmer" />
+                {/* Synchronized Inner Background Shimmer */}
+                <div className="whoosh-card-shimmer" />
 
                 {/* Card Content Body */}
                 <div className="relative z-10 flex flex-col justify-between h-full space-y-3.5">
@@ -149,7 +149,7 @@ export function FeaturedSection() {
                   </div>
                 </div>
               </Link>
-            </BorderGlow>
+            </div>
           );
         })}
       </div>

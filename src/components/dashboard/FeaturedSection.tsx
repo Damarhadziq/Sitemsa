@@ -41,20 +41,11 @@ export function FeaturedSection() {
   }, []);
 
   return (
-    <section className="mb-10 space-y-3.5">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-1">
-        <div className="flex items-center gap-2">
-          <h2 className="text-base md:text-lg font-bold text-[#2E2D2D] tracking-tight">
-            Rekomendasi Pembelajaran untukmu
-          </h2>
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-[#E8E7FF] text-[#2563EB] border border-[#2563EB]/15 select-none">
-            <HugeiconsIcon icon={SparklesIcon} size={12} className="text-[#2563EB]" />
-            Pilihan AI
-          </span>
-        </div>
-        <span className="text-xs text-[#737373] hidden sm:inline">
-          Disesuaikan dengan minat dan aktivitas belajarmu
-        </span>
+    <section className="mb-10 space-y-4">
+      <div>
+        <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-[#1E293B] via-[#2563EB] to-[#6366F1] bg-clip-text text-transparent">
+          Rekomendasi Pembelajaran untukmu
+        </h2>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-5">

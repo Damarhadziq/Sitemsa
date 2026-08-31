@@ -192,16 +192,13 @@ html.hide-mobile-bottom-nav .mobile-bottom-nav {
   display: none !important;
 }
 
-/* Continuous Looping Border Glow & Light-Theme Shimmer for Recommendation Cards */
-@keyframes continuousBorderGlow {
+/* Continuous Circling Border Beam & Light-Theme Shimmer for Recommendation Cards */
+@keyframes rotateLaserBeam {
   0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
+    transform: translate(-50%, -50%) rotate(0deg);
   }
   100% {
-    background-position: 0% 50%;
+    transform: translate(-50%, -50%) rotate(360deg);
   }
 }
 
@@ -218,17 +215,62 @@ html.hide-mobile-bottom-nav .mobile-bottom-nav {
   position: relative;
   border-radius: 14px;
   padding: 1.5px;
-  background: linear-gradient(135deg, #2563EB, #6366F1, #A855F7, #38BDF8, #2563EB);
-  background-size: 300% 300%;
-  animation: continuousBorderGlow 5s ease infinite;
-  box-shadow: 0 0 16px -2px rgba(37, 99, 235, 0.22), 0 0 28px -6px rgba(99, 102, 241, 0.16);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  background: #ECECEC;
+  overflow: hidden;
   display: block;
+  isolation: isolate;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .recommendation-glow-wrapper:hover {
   transform: translateY(-2px);
-  box-shadow: 0 0 22px -1px rgba(37, 99, 235, 0.35), 0 0 36px -4px rgba(99, 102, 241, 0.28);
+  box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.14), 0 8px 16px -6px rgba(99, 102, 241, 0.1);
+}
+
+/* Circling Laser Beam that travels around the border */
+.recommendation-glow-wrapper::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 250%;
+  height: 250%;
+  background: conic-gradient(
+    transparent 0deg,
+    transparent 270deg,
+    rgba(37, 99, 235, 0.4) 300deg,
+    rgba(99, 102, 241, 0.9) 325deg,
+    #2563EB 345deg,
+    #60A5FA 355deg,
+    #A855F7 360deg
+  );
+  animation: rotateLaserBeam 4s linear infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Ambient glow trail behind the laser */
+.recommendation-glow-wrapper::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 250%;
+  height: 250%;
+  background: conic-gradient(
+    transparent 0deg,
+    transparent 270deg,
+    rgba(37, 99, 235, 0.3) 300deg,
+    rgba(99, 102, 241, 0.7) 325deg,
+    #2563EB 345deg,
+    #60A5FA 355deg,
+    #A855F7 360deg
+  );
+  animation: rotateLaserBeam 4s linear infinite;
+  filter: blur(10px);
+  opacity: 0.6;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .recommendation-card-inner {
@@ -241,6 +283,7 @@ html.hide-mobile-bottom-nav .mobile-bottom-nav {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  z-index: 1;
 }
 
 .recommendation-card-shimmer {
@@ -251,8 +294,8 @@ html.hide-mobile-bottom-nav .mobile-bottom-nav {
     90deg,
     transparent 0%,
     rgba(37, 99, 235, 0.03) 25%,
-    rgba(99, 102, 241, 0.08) 50%,
-    rgba(168, 85, 247, 0.04) 75%,
+    rgba(99, 102, 241, 0.07) 50%,
+    rgba(168, 85, 247, 0.03) 75%,
     transparent 100%
   );
   width: 100%;

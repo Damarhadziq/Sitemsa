@@ -83,9 +83,17 @@ export class ModuleService {
           };
         });
 
-        dbStore.modules = mapped;
+        // Merge cloud modules with locally saved modules so freshly created items are NEVER wiped out
+        const mergedMap = new Map<string, ModuleItem>();
+        // First set existing local modules
+        (dbStore.modules || []).forEach((m) => mergedMap.set(m.id, m));
+        // Then override/add cloud modules
+        mapped.forEach((m) => mergedMap.set(m.id, m));
+
+        const finalMerged = Array.from(mergedMap.values());
+        dbStore.modules = finalMerged;
         this.persist();
-        return mapped;
+        return finalMerged;
       }
     } catch (e) {
       console.warn('Supabase modules exception:', e);
@@ -127,12 +135,17 @@ export class ModuleService {
       createdAt: new Date().toISOString().split('T')[0],
       isPublished: data.isPublished !== undefined ? data.isPublished : true,
     };
-    dbStore.modules.unshift(newModule);
 
-    // Automatically update subject module count
-    const subject = dbStore.subjects.find((s) => s.name.toLowerCase() === newModule.subject.toLowerCase());
-    if (subject) {
-      subject.totalModules = (subject.totalModules || 0) + 1;
+    // Upsert into local dbStore
+    const existingIdx = dbStore.modules.findIndex((m) => m.id === newId);
+    if (existingIdx >= 0) {
+      dbStore.modules[existingIdx] = newModule;
+    } else {
+      dbStore.modules.unshift(newModule);
+      const subject = dbStore.subjects.find((s) => s.name.toLowerCase() === newModule.subject.toLowerCase());
+      if (subject) {
+        subject.totalModules = (subject.totalModules || 0) + 1;
+      }
     }
 
     this.persist();
@@ -142,35 +155,24 @@ export class ModuleService {
         const payload: any = {
           id: newId,
           subject: data.subject,
-          teacher_id: data.teacherId || 't-olr-1',
+          teacher_id: data.teacherId || 't2',
           teacher_name: data.teacherName || 'Guru Sitemsa',
           title: data.title,
           level: data.level || 'Pemula',
           duration: data.duration || '30 Menit',
           topics: data.topics || [],
-          description: data.description || '',
-          content: data.blocks ? JSON.stringify(data.blocks) : (data.content || data.description || ''),
+          description: data.description || 'Deskripsi materi',
           is_published: data.isPublished !== undefined ? data.isPublished : true,
+          is_ai_recommended: Boolean(data.isAiRecommended),
+          quiz_source_type: data.quizSource?.type || 'KUIS_SITEMSA',
+          quiz_source_title: data.quizSource?.title,
+          external_url: data.quizSource?.externalUrl,
+          qr_image_url: data.quizSource?.qrImageUrl,
         };
 
-        if (data.thumbnail) {
-          payload.thumbnail = data.thumbnail;
-        }
-
         const { error: insErr } = await supabase.from('modules').upsert(payload, { onConflict: 'id' });
-
         if (insErr) {
-          console.warn('Supabase full upsert note, trying fallback columns:', insErr.message);
-          const { error: minErr } = await supabase.from('modules').upsert({
-            id: newId,
-            subject: data.subject,
-            teacher_id: data.teacherId || 't-olr-1',
-            teacher_name: data.teacherName || 'Guru Sitemsa',
-            title: data.title,
-          }, { onConflict: 'id' });
-          if (minErr) {
-            console.error('Supabase minimal upsert note:', minErr.message);
-          }
+          console.warn('Supabase module upsert note:', insErr.message);
         }
       } catch (e) {
         console.warn('Failed to upsert module to Supabase:', e);

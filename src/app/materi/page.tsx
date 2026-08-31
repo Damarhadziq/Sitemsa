@@ -280,7 +280,11 @@ function MateriLandingContent() {
   useEffect(() => {
     ModuleService.fetchFromSupabase().then((cloudModules) => {
       if (cloudModules && Array.isArray(cloudModules)) {
-        useAdminStore.setState({ modules: cloudModules });
+        useAdminStore.setState((state) => {
+          const map = new Map((state.modules || []).map((m) => [m.id, m]));
+          cloudModules.forEach((m) => map.set(m.id, m));
+          return { modules: Array.from(map.values()) };
+        });
       }
     });
   }, []);

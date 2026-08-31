@@ -248,15 +248,23 @@ ALTER TABLE public.team_members ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Allow public read on subjects" ON public.subjects;
 CREATE POLICY "Allow public read on subjects" ON public.subjects FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Allow public write on subjects" ON public.subjects;
+CREATE POLICY "Allow public write on subjects" ON public.subjects FOR ALL USING (true) WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Allow public read on modules" ON public.modules;
 CREATE POLICY "Allow public read on modules" ON public.modules FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Allow public write on modules" ON public.modules;
+CREATE POLICY "Allow public write on modules" ON public.modules FOR ALL USING (true) WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Allow public read on quizzes" ON public.quizzes;
 CREATE POLICY "Allow public read on quizzes" ON public.quizzes FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Allow public write on quizzes" ON public.quizzes;
+CREATE POLICY "Allow public write on quizzes" ON public.quizzes FOR ALL USING (true) WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Allow public read on articles" ON public.articles;
 CREATE POLICY "Allow public read on articles" ON public.articles FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Allow public write on articles" ON public.articles;
+CREATE POLICY "Allow public write on articles" ON public.articles FOR ALL USING (true) WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Allow public read on users" ON public.users;
 CREATE POLICY "Allow public read on users" ON public.users FOR SELECT USING (true);

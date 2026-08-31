@@ -89,10 +89,15 @@ export class QuizService {
           }
         });
 
-        const mapped = Array.from(uniqueMap.values());
-        dbStore.quizzes = mapped;
+        // Merge cloud quizzes with locally saved quizzes
+        const mergedMap = new Map<string, QuizItem>();
+        (dbStore.quizzes || []).forEach((q) => mergedMap.set(q.id, q));
+        Array.from(uniqueMap.values()).forEach((q) => mergedMap.set(q.id, q));
+
+        const finalMerged = Array.from(mergedMap.values());
+        dbStore.quizzes = finalMerged;
         this.persist();
-        return mapped;
+        return finalMerged;
       }
     } catch (e) {
       console.warn('Supabase quizzes exception:', e);

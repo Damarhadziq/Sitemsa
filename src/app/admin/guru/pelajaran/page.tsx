@@ -38,6 +38,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useAdminStore, ModuleItem, QuizQuestion } from '@/lib/admin-store';
 import { modulesClientService } from '@/services/client/modules.client';
 import { quizzesClientService } from '@/services/client/quizzes.client';
+import { toDeterministicUUID } from '@/lib/uuid';
 import ModuleBlockBuilder, { CanvasBlock } from '@/components/admin/ModuleBlockBuilder';
 import { ModuleInfoModal } from '@/components/admin/ModuleInfoModal';
 import { Tooltip } from '@/components/ui/tooltip';
@@ -897,7 +898,7 @@ export default function AdminGuruPelajaranPage() {
                   <Tooltip content="Salin Tautan Kuis" side="bottom">
                     <button
                       onClick={() => {
-                        const link = `${window.location.origin}/kuis/${selectedQuiz.id}`;
+                        const link = `${window.location.origin}/kuis/${toDeterministicUUID(selectedQuiz.id)}`;
                         navigator.clipboard.writeText(link);
                         setIsCopied(true);
                         showToast(<>Tautan kuis <span className="font-bold">{selectedQuiz.title}</span> berhasil disalin!</>, 'success');

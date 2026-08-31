@@ -38,6 +38,7 @@ import { recordModuleCompletion, isModuleCompletedByStudent } from "@/services/w
 import { addUserNotification } from "@/services/notification.service";
 import { StudyAnalyticsService } from "@/services/analytics.service";
 import { getStudentScopedStorageKey, getStudentProfile } from "@/services/student-profile.service";
+import { toDeterministicUUID } from "@/lib/uuid";
 
 export type QuizSourceType = "internal" | "barcode" | "external_link";
 
@@ -153,7 +154,7 @@ const MATERIAL_DATABASE: Record<number, MaterialDetail> = {
       type: "internal",
       title: "Kuis Evaluasi Informatika",
       description: "Uji pemahaman variabel dan logika pemrograman.",
-      internalUrl: "/kuis/1",
+      internalUrl: `/kuis/${toDeterministicUUID(1)}`,
     },
   },
   9: {
@@ -186,7 +187,7 @@ const MATERIAL_DATABASE: Record<number, MaterialDetail> = {
       type: "internal",
       title: "Kuis Evaluasi Koreografi Tari",
       description: "Uji pemahaman konsep wiraga, wirama, dan wirasa.",
-      internalUrl: "/kuis/9",
+      internalUrl: `/kuis/${toDeterministicUUID(9)}`,
     },
   },
   11: {
@@ -277,7 +278,7 @@ const MATERIAL_DATABASE: Record<number, MaterialDetail> = {
       type: "internal",
       title: "Kuis Evaluasi: Sistem Pengisian Mobil Konvensional dan Elektronik/IC",
       description: "Uji pemahaman materi Sistem Pengisian Mobil Konvensional dan Elektronik/IC yang disusun oleh Ardyan Santoso.",
-      internalUrl: "/kuis/11",
+      internalUrl: `/kuis/${toDeterministicUUID(11)}`,
     },
   },
   12: {
@@ -366,7 +367,7 @@ const MATERIAL_DATABASE: Record<number, MaterialDetail> = {
       type: "internal",
       title: "Kuis Evaluasi: Sistem Transmisi Manual",
       description: "Uji pemahaman materi Sistem Transmisi Manual yang disusun oleh Satrio.",
-      internalUrl: "/kuis/12",
+      internalUrl: `/kuis/${toDeterministicUUID(12)}`,
     },
   },
   18: {
@@ -453,7 +454,7 @@ const MATERIAL_DATABASE: Record<number, MaterialDetail> = {
       type: "internal",
       title: "Kuis Evaluasi: Keterampilan Gerak & Taktik Permainan Bola Basket",
       description: "Uji pemahaman materi Keterampilan Gerak & Taktik Permainan Bola Basket yang disusun oleh Brilian Anugraheni.",
-      internalUrl: "/kuis/18",
+      internalUrl: `/kuis/${toDeterministicUUID(18)}`,
     },
   },
   19: {
@@ -531,7 +532,7 @@ const MATERIAL_DATABASE: Record<number, MaterialDetail> = {
       type: "internal",
       title: "Kuis Evaluasi: Keterampilan Gerak Permainan Bola Voli",
       description: "Uji pemahaman materi Keterampilan Gerak Permainan Bola Voli yang disusun oleh Brilian Anugraheni.",
-      internalUrl: "/kuis/19",
+      internalUrl: `/kuis/${toDeterministicUUID(19)}`,
     },
   },
   7: {
@@ -605,7 +606,7 @@ const MATERIAL_DATABASE: Record<number, MaterialDetail> = {
       type: "internal",
       title: "Kuis Evaluasi: Membangun Kepercayaan Diri untuk Mengembangkan Potensi Diri",
       description: "Uji pemahaman materi Membangun Kepercayaan Diri untuk Mengembangkan Potensi Diri yang disusun oleh Innova Riskianugrah R..",
-      internalUrl: "/kuis/7",
+      internalUrl: `/kuis/${toDeterministicUUID(7)}`,
     },
   },
 
@@ -717,7 +718,7 @@ const MATERIAL_DATABASE: Record<number, MaterialDetail> = {
       type: "internal",
       title: "Evaluasi Bimbingan Konseling",
       description: "Uji pemahaman materi self-management dan strategi mengatasi prokrastinasi.",
-      internalUrl: "/kuis/7",
+      internalUrl: `/kuis/${toDeterministicUUID(8)}`,
     },
     prevMaterial: { id: 6, title: "Pemrograman Dasar Arduino & Sensor" },
     nextMaterial: { id: 8, title: "Talent Quest: Temukan Potensimu, Kembangkan Dirimu!" },
@@ -823,7 +824,7 @@ const MATERIAL_DATABASE: Record<number, MaterialDetail> = {
       type: "internal",
       title: "Evaluasi Potensi Diri",
       description: "Kuis refleksi pemahaman potensi dan arah pengembangan diri.",
-      internalUrl: "/kuis/8",
+      internalUrl: `/kuis/${toDeterministicUUID(13)}`,
     },
     prevMaterial: { id: 7, title: "Yuk, Lawan Rasa Malas: Self-Management untuk Konsisten Belajar!" },
     nextMaterial: { id: 16, title: "Jati Diri Tanpa Kenakalan" },
@@ -850,7 +851,6 @@ const MATERIAL_DATABASE: Record<number, MaterialDetail> = {
           "Jati diri adalah keseluruhan ciri khas, nilai, dan prinsip yang dipegang seseorang sehingga membedakannya dari orang lain, sekaligus menjadi pedoman dalam bersikap dan bertindak. Pada masa remaja, pencarian jati diri berlangsung sangat intens, salah satunya melalui interaksi dan pergaulan dengan teman sebaya.",
           "Remaja yang memiliki jati diri kuat akan lebih mampu bertahan pada nilai-nilai yang diyakininya meskipun mendapat tekanan dari lingkungan pergaulan.",
         ],
-        callout: "Remaja yang memiliki jati diri kuat akan lebih mampu bertahan pada nilai-nilai yang diyakininya meskipun mendapat tekanan dari lingkungan pergaulan.",
       },
       {
         id: "pengertian-bentuk-kenakalan",
@@ -2022,7 +2022,7 @@ export default function MateriDetailPage({
           externalUrl: storeMod.quizSource.externalUrl,
           qrImageUrl: storeMod.quizSource.qrImageUrl,
           externalPlatformName: 'Platform Eksternal',
-          internalUrl: `/kuis/${storeMod.id}`,
+          internalUrl: `/kuis/${toDeterministicUUID(storeMod.id)}`,
         } : undefined,
       };
     }
@@ -2048,7 +2048,7 @@ export default function MateriDetailPage({
         externalUrl: storeMod.quizSource.externalUrl,
         qrImageUrl: storeMod.quizSource.qrImageUrl,
         externalPlatformName: 'Platform Eksternal',
-        internalUrl: `/kuis/${storeMod.id}`,
+        internalUrl: `/kuis/${toDeterministicUUID(storeMod.id)}`,
       } : undefined,
     };
   }, [baseMaterial, modules, remoteModule, id]);
@@ -2062,8 +2062,9 @@ export default function MateriDetailPage({
     // 1. By moduleId or ID or Subject in quizzes
     const byQuiz = quizzes.find(
       (q) =>
-        (q.moduleId && (q.moduleId === id || q.moduleId.toLowerCase() === cleanId)) ||
+        (q.moduleId && (q.moduleId === id || q.moduleId.toLowerCase() === cleanId || toDeterministicUUID(q.moduleId) === cleanId)) ||
         q.id === id ||
+        toDeterministicUUID(q.id) === cleanId ||
         (q.subject && q.subject.toLowerCase() === cleanSubject) ||
         (q.title && q.title.toLowerCase().includes(cleanTitle))
     );
@@ -2080,7 +2081,7 @@ export default function MateriDetailPage({
     return {
       title,
       passScore,
-      quizId: byQuiz?.id || material.id,
+      quizId: toDeterministicUUID(byQuiz?.id || material.id || id),
     };
   }, [quizzes, material, id]);
 
@@ -3061,7 +3062,7 @@ export default function MateriDetailPage({
                   Batal
                 </button>
                 <Link
-                  href={material.quizSource.internalUrl || `/kuis/${encodeURIComponent(id)}`}
+                  href={material.quizSource.internalUrl || `/kuis/${toDeterministicUUID(id)}`}
                   onClick={() => setActiveQuizModal("none")}
                   className="px-5 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs cursor-pointer shadow-xs transition-colors"
                 >

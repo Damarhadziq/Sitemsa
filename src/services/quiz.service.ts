@@ -1,6 +1,7 @@
 import { dbStore, QuizItem, QuizQuestion } from './data-store';
 import { supabase } from '@/lib/supabase';
 import { generateEntityId } from '@/lib/id-generator';
+import { toDeterministicUUID } from '@/lib/uuid';
 
 const STORAGE_KEY = 'sintesa_quizzes_cache_v1';
 
@@ -121,7 +122,8 @@ export class QuizService {
 
   static getQuizById(id: string, role?: string): QuizItem | null {
     this.ensureHydrated();
-    const quiz = dbStore.quizzes.find((q) => q.id === id);
+    const cleanId = String(id || '').trim().toLowerCase();
+    const quiz = dbStore.quizzes.find((q) => q.id === id || toDeterministicUUID(q.id) === cleanId || String(q.id).toLowerCase() === cleanId);
     if (!quiz) return null;
 
     // Mask answers for student roles to prevent cheat inspection
@@ -208,7 +210,8 @@ export class QuizService {
 
   static async updateQuiz(id: string, updates: Partial<Omit<QuizItem, 'questions'>> & { questions?: QuizQuestionInput[] }): Promise<QuizItem | null> {
     this.ensureHydrated();
-    const idx = dbStore.quizzes.findIndex((q) => q.id === id);
+    const cleanId = String(id || '').trim().toLowerCase();
+    const idx = dbStore.quizzes.findIndex((q) => q.id === id || toDeterministicUUID(q.id) === cleanId || String(q.id).toLowerCase() === cleanId);
     if (idx !== -1) {
       const current = dbStore.quizzes[idx];
       const newQuestions: QuizQuestion[] = updates.questions
@@ -232,6 +235,7 @@ export class QuizService {
 
     if (supabase) {
       try {
+        const actualId = idx !== -1 ? dbStore.quizzes[idx].id : id;
         await supabase.from('quizzes').update({
           ...(updates.title && { title: updates.title }),
           ...(updates.subject && { subject: updates.subject }),
@@ -239,7 +243,7 @@ export class QuizService {
           ...(updates.passScore !== undefined && { pass_score: updates.passScore }),
           ...(updates.questions && { questions: updates.questions }),
           ...(updates.published !== undefined && { published: updates.published }),
-        }).eq('id', id);
+        }).eq('id', actualId);
       } catch (e) {
         console.warn('Failed to update quiz in Supabase:', e);
       }
@@ -250,9 +254,13 @@ export class QuizService {
 
   static async deleteQuiz(id: string): Promise<boolean> {
     this.ensureHydrated();
-    const quiz = dbStore.quizzes.find((q) => q.id === id);
-    if (quiz) {
-      dbStore.quizzes = dbStore.quizzes.filter((q) => q.id !== id);
+    const cleanId = String(id || '').trim().toLowerCase();
+    const idx = dbStore.quizzes.findIndex((q) => q.id === id || toDeterministicUUID(q.id) === cleanId || String(q.id).toLowerCase() === cleanId);
+    let deletedId = id;
+    if (idx !== -1) {
+      const quiz = dbStore.quizzes[idx];
+      deletedId = quiz.id;
+      dbStore.quizzes.splice(idx, 1);
       // Decrement subject count
       const subject = dbStore.subjects.find((s) => s.name.toLowerCase() === quiz.subject.toLowerCase());
       if (subject && subject.totalQuizzes > 0) {
@@ -263,12 +271,12 @@ export class QuizService {
 
     if (supabase) {
       try {
-        await supabase.from('quizzes').delete().eq('id', id);
+        await supabase.from('quizzes').delete().eq('id', deletedId);
       } catch (e) {
         console.warn('Failed to delete quiz in Supabase:', e);
       }
     }
 
-    return true;
+    return idx !== -1;
   }
 }

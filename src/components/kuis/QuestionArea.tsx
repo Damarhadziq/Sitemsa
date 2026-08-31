@@ -14,6 +14,7 @@ import { ProgressService } from "@/services/progress.service";
 import { addUserNotification } from "@/services/notification.service";
 import { recordModuleCompletion } from "@/services/weekly-target.service";
 import { getStudentProfile } from "@/services/student-profile.service";
+import { toDeterministicUUID } from "@/lib/uuid";
 
 // High-fidelity countdown sound for every tick (3, 2, 1, and Mulai!)
 function playCountdownTick(val: number) {
@@ -198,17 +199,20 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
     const cleanQuizId = quizId ? decodeURIComponent(quizId).trim() : "";
 
     if (cleanQuizId) {
-      // 1. By Module ID first (exact material navigation)
+      // 1. By Module ID first (exact material navigation or deterministic UUID match)
       const byModule = modules.find(
         (m) =>
           m.id === cleanQuizId ||
+          toDeterministicUUID(m.id) === cleanQuizId.toLowerCase() ||
           String(m.id).toLowerCase() === cleanQuizId.toLowerCase() ||
           m.id.replace(/\s+/g, "-").toLowerCase() === cleanQuizId.replace(/\s+/g, "-").toLowerCase()
       );
 
       if (byModule) {
         const subQuiz = quizzes.find(
-          (q) => q.subject.toLowerCase() === byModule.subject.toLowerCase()
+          (q) =>
+            (q.moduleId && (q.moduleId === byModule.id || toDeterministicUUID(q.moduleId) === cleanQuizId.toLowerCase())) ||
+            q.subject.toLowerCase() === byModule.subject.toLowerCase()
         );
         if (subQuiz && subQuiz.questions && subQuiz.questions.length > 0) {
           return {
@@ -235,9 +239,13 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
         };
       }
 
-      // 2. By ID or Title in quizzes
+      // 2. By ID, UUID, or Title in quizzes
       const byQuizId = quizzes.find(
-        (q) => q.id === cleanQuizId || q.title.toLowerCase().includes(cleanQuizId.toLowerCase())
+        (q) =>
+          q.id === cleanQuizId ||
+          toDeterministicUUID(q.id) === cleanQuizId.toLowerCase() ||
+          (q.moduleId && (q.moduleId === cleanQuizId || toDeterministicUUID(q.moduleId) === cleanQuizId.toLowerCase())) ||
+          q.title.toLowerCase().includes(cleanQuizId.toLowerCase())
       );
       if (byQuizId) {
         return {

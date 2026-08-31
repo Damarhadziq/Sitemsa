@@ -119,9 +119,11 @@ export function AdminHeader() {
     <header className="h-16 bg-white border-b border-[#ECECEC] px-6 flex items-center justify-between font-sans sticky top-0 z-30">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-4 right-4 z-50 bg-[#2563EB] text-white text-xs font-semibold px-4 py-2.5 rounded-[8px] shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-200">
-          <CheckCircle2 className="w-4 h-4" />
-          <span>{toastMessage}</span>
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-2.5 px-4 py-2.5 rounded-[10px] bg-white/95 backdrop-blur-md border border-[#ECECEC] shadow-[0_14px_32px_-8px_rgba(0,0,0,0.14)] font-sans animate-in slide-in-from-top-4 fade-in duration-200">
+          <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
+          </div>
+          <p className="text-xs font-semibold text-[#2E2D2D]">{toastMessage}</p>
         </div>
       )}
 

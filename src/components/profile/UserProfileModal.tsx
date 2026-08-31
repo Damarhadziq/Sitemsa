@@ -13,7 +13,7 @@ import {
   ArrowLeft01Icon,
   Logout01Icon,
 } from "@hugeicons/core-free-icons";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, CheckCircle2 } from "lucide-react";
 import {
   getStudentProfile,
   saveStudentProfile,
@@ -157,11 +157,13 @@ export function UserProfileModal({
 
   return (
     <>
-      {/* Floating Top-Right Toast Notification identical to Admin */}
+      {/* FLOATING TOAST NOTIFICATION - Identical to Web Admin */}
       {isSavedToast && (
-        <div className="fixed top-6 right-6 z-[120] bg-[#2563EB] text-white px-4 py-3 rounded-[10px] shadow-lg flex items-center gap-2.5 text-xs font-semibold animate-in fade-in slide-in-from-top-3 duration-200">
-          <HugeiconsIcon icon={CheckmarkCircle02Icon} size={16} className="text-white" />
-          <span>{toastMessage}</span>
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-2.5 px-4 py-2.5 rounded-[10px] bg-white/95 backdrop-blur-md border border-[#ECECEC] shadow-[0_14px_32px_-8px_rgba(0,0,0,0.14)] font-sans animate-in slide-in-from-top-4 fade-in duration-200">
+          <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
+          </div>
+          <p className="text-xs font-semibold text-[#2E2D2D]">{toastMessage}</p>
         </div>
       )}
 

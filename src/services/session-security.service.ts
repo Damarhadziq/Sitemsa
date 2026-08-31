@@ -95,9 +95,9 @@ export class SessionSecurityService {
   /**
    * Verify if current local session is still valid:
    * 1. Check if user is inactive:
-   *    - Siswa: Inactivity > 1 Minggu (7 hari)
-   *    - Admin / Guru: Inactivity > 30 Menit
-   * 2. Check if another device logged in with the same account (single device enforcement)
+   *    - Siswa / Web Utama: Inactivity > 1 Minggu (7 hari)
+   *    - Pengelola / Guru (/admin): Inactivity > 30 Menit
+   * 2. Check if another device logged in with the same account (single device enforcement for admin)
    */
   static async validateSession(
     user: AuthUser | null,
@@ -105,18 +105,26 @@ export class SessionSecurityService {
   ): Promise<{ valid: boolean; reason?: 'inactivity' | 'concurrent_device' }> {
     if (!user) return { valid: false };
 
-    // 1. Role-aware inactivity check — STRICTLY ENFORCED ONLY ON /admin ROUTES
     const isCurrentlyOnAdminPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
-    if (isCurrentlyOnAdminPage) {
-      const now = Date.now();
-      const lastActive = this.getLastActiveTimestamp();
+    const isAdminOrTeacher = user.role === 'superadmin' || user.role === 'guru' || isCurrentlyOnAdminPage;
+    const now = Date.now();
+    const lastActive = this.getLastActiveTimestamp();
+
+    // 1. Role-aware inactivity check
+    if (isAdminOrTeacher) {
+      // 30 Menit untuk Pengelola / Guru di Web Admin
       if (now - lastActive > ADMIN_INACTIVITY_LIMIT_MS) {
+        return { valid: false, reason: 'inactivity' };
+      }
+    } else {
+      // 7 Hari (1 Minggu) untuk Siswa di Web Utama
+      if (now - lastActive > STUDENT_INACTIVITY_LIMIT_MS) {
         return { valid: false, reason: 'inactivity' };
       }
     }
 
-    // 2. Single Device Concurrent Login Check via Supabase
-    if (supabase && user && currentSessionId) {
+    // 2. Single Device Concurrent Login Check for Admin/Guru via Supabase
+    if (isAdminOrTeacher && supabase && currentSessionId) {
       try {
         const { data, error } = await supabase
           .from('active_sessions')

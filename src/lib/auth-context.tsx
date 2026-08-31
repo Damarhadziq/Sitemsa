@@ -6,6 +6,8 @@ import { authClientService } from '@/services/client/auth.client';
 import { supabase } from '@/lib/supabase';
 import {
   SessionSecurityService,
+  ADMIN_INACTIVITY_LIMIT_MS,
+  STUDENT_INACTIVITY_LIMIT_MS,
   INACTIVITY_LIMIT_MS,
   STORAGE_SESSION_ID_KEY,
   STORAGE_USER_KEY,
@@ -358,21 +360,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const handleSecurityLogout = (reason: 'inactivity' | 'concurrent_device', targetUser?: AuthUser | null) => {
     const isCurrentlyOnAdminPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
-
-    // Inactivity timeout ONLY applies when the user is currently on an /admin route!
-    if (reason === 'inactivity' && !isCurrentlyOnAdminPage) {
-      return;
-    }
-
     const activeUser = targetUser || user;
     const currentRole = activeUser?.role;
-    const isTeacherOrAdmin = currentRole === 'superadmin' || currentRole === 'guru';
+    const isTeacherOrAdmin = currentRole === 'superadmin' || currentRole === 'guru' || isCurrentlyOnAdminPage;
+
+    // Inactivity timeout guard:
+    // - Admin: 30 minutes on /admin routes
+    // - Siswa: 7 days on public/main routes
+    if (reason === 'inactivity') {
+      const now = Date.now();
+      const lastActive = SessionSecurityService.getLastActiveTimestamp();
+      const limit = isTeacherOrAdmin ? ADMIN_INACTIVITY_LIMIT_MS : (7 * 24 * 60 * 60 * 1000);
+      if (now - lastActive <= limit) {
+        return; // Session is still within valid timeframe
+      }
+    }
 
     authClientService.logout().catch(() => {});
     saveSession(null);
 
     // Strict separation: Admin/Guru goes to /admin/login, Student goes to /login
-    const targetUrl = (isCurrentlyOnAdminPage || isTeacherOrAdmin)
+    const targetUrl = isTeacherOrAdmin
       ? `/admin/login?reason=${reason}`
       : `/login?reason=${reason}`;
 
@@ -394,20 +402,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const parsed = JSON.parse(savedUserStr) as AuthUser;
 
-        // Perform security validation (Inactivity is strictly for /admin pages)
+        // Perform security validation:
+        // - Admin: 30 Menit tidak aktif
+        // - Siswa: 7 Hari tidak aktif
         SessionSecurityService.validateSession(parsed, localSessionId).then(({ valid, reason }) => {
           const isCurrentlyOnAdminPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+          const isTeacherOrAdmin = parsed.role === 'superadmin' || parsed.role === 'guru' || isCurrentlyOnAdminPage;
+
           if (!valid && reason) {
-            if (reason === 'inactivity' && !isCurrentlyOnAdminPage) {
-              // Inactivity timeout is ignored on public/main web pages
-              setUser(parsed);
-              SessionSecurityService.touchActivity(parsed, false);
-              if (parsed.role === 'guru' && parsed.assignedSubjects && parsed.assignedSubjects.length > 0) {
-                setActiveSubjectFilter(parsed.assignedSubjects[0]);
+            if (reason === 'inactivity') {
+              const now = Date.now();
+              const lastActive = SessionSecurityService.getLastActiveTimestamp();
+              const limit = isTeacherOrAdmin ? ADMIN_INACTIVITY_LIMIT_MS : (7 * 24 * 60 * 60 * 1000);
+              if (now - lastActive <= limit) {
+                // Not expired according to 7-day student rule
+                setUser(parsed);
+                SessionSecurityService.touchActivity(parsed, false);
+                if (parsed.role === 'guru' && parsed.assignedSubjects && parsed.assignedSubjects.length > 0) {
+                  setActiveSubjectFilter(parsed.assignedSubjects[0]);
+                }
+                setIsLoading(false);
+                return;
               }
-              setIsLoading(false);
-              return;
             }
+
             console.warn(`Sesi ${parsed.role} dihentikan karena: ${reason}`);
             handleSecurityLogout(reason, parsed);
             setIsLoading(false);

@@ -65,7 +65,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'rizal.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19980202 202401 1 002',
-    avatar: 'https://i.pravatar.cc/150?img=13',
+    avatar: '',
     assignedSubjects: ['Informatika'],
   },
   'sulthon.guru@sitemsa.sch.id': {
@@ -74,7 +74,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'sulthon.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19980303 202401 1 003',
-    avatar: 'https://i.pravatar.cc/150?img=19',
+    avatar: '',
     assignedSubjects: ['Informatika'],
   },
   'lovyca.guru@sitemsa.sch.id': {
@@ -83,7 +83,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'lovyca.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19980404 202401 2 004',
-    avatar: 'https://i.pravatar.cc/150?img=25',
+    avatar: '',
     assignedSubjects: ['Informatika'],
   },
 
@@ -94,7 +94,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'innova.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19980505 202401 2 005',
-    avatar: 'https://i.pravatar.cc/150?img=16',
+    avatar: '',
     assignedSubjects: ['Bimbingan Konseling', 'Bimbingan dan Konseling'],
   },
   'fateka.guru@sitemsa.sch.id': {
@@ -103,7 +103,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'fateka.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19980606 202401 1 006',
-    avatar: 'https://i.pravatar.cc/150?img=18',
+    avatar: '',
     assignedSubjects: ['Bimbingan Konseling', 'Bimbingan dan Konseling'],
   },
   'erintan.guru@sitemsa.sch.id': {
@@ -112,7 +112,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'erintan.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19940822 202012 2 009',
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80',
+    avatar: '',
     assignedSubjects: ['Bimbingan Konseling', 'Bimbingan dan Konseling'],
   },
   'erintan@sintesa.id': {
@@ -121,7 +121,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'erintan.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19940822 202012 2 009',
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80',
+    avatar: '',
     assignedSubjects: ['Bimbingan Konseling', 'Bimbingan dan Konseling'],
   },
   'dinda.guru@sitemsa.sch.id': {
@@ -130,7 +130,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'dinda.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19930514 201903 2 008',
-    avatar: 'https://i.pravatar.cc/150?img=32',
+    avatar: '',
     assignedSubjects: ['Bimbingan Konseling', 'Bimbingan dan Konseling'],
   },
   'dinda@sintesa.id': {
@@ -139,7 +139,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'dinda.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19930514 201903 2 008',
-    avatar: 'https://i.pravatar.cc/150?img=32',
+    avatar: '',
     assignedSubjects: ['Bimbingan Konseling', 'Bimbingan dan Konseling'],
   },
 
@@ -150,7 +150,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'ardyan.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19980707 202401 1 007',
-    avatar: 'https://i.pravatar.cc/150?img=17',
+    avatar: '',
     assignedSubjects: ['Otomotif'],
   },
   'satrio.guru@sitemsa.sch.id': {
@@ -159,7 +159,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'satrio.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19980808 202401 1 008',
-    avatar: 'https://i.pravatar.cc/150?img=23',
+    avatar: '',
     assignedSubjects: ['Otomotif'],
   },
   'agam.guru@sitemsa.sch.id': {
@@ -168,7 +168,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'agam.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19980909 202401 1 009',
-    avatar: 'https://i.pravatar.cc/150?img=27',
+    avatar: '',
     assignedSubjects: ['Otomotif'],
   },
 
@@ -179,7 +179,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'banu.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19981010 202401 1 010',
-    avatar: 'https://i.pravatar.cc/150?img=14',
+    avatar: '',
     assignedSubjects: ['Elektronika'],
   },
   'anisa.guru@sitemsa.sch.id': {
@@ -188,7 +188,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'anisa.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19981111 202401 2 011',
-    avatar: 'https://i.pravatar.cc/150?img=21',
+    avatar: '',
     assignedSubjects: ['Elektronika'],
   },
   'nova.guru@sitemsa.sch.id': {
@@ -197,7 +197,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'nova.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19981212 202401 1 012',
-    avatar: 'https://i.pravatar.cc/150?img=26',
+    avatar: '',
     assignedSubjects: ['Elektronika'],
   },
   'vella.guru@sitemsa.sch.id': {
@@ -206,7 +206,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'vella.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19981313 202401 2 013',
-    avatar: 'https://i.pravatar.cc/150?img=32',
+    avatar: '',
     assignedSubjects: ['Elektronika'],
   },
   'fahrul.guru@sitemsa.sch.id': {
@@ -215,7 +215,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'fahrul.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19981414 202401 1 014',
-    avatar: 'https://i.pravatar.cc/150?img=33',
+    avatar: '',
     assignedSubjects: ['Elektronika'],
   },
   'tubagus.guru@sitemsa.sch.id': {
@@ -224,7 +224,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'tubagus.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19981515 202401 1 015',
-    avatar: 'https://i.pravatar.cc/150?img=15',
+    avatar: '',
     assignedSubjects: ['Elektronika'],
   },
 
@@ -235,7 +235,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'brilian.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19981616 202401 2 016',
-    avatar: 'https://i.pravatar.cc/150?img=29',
+    avatar: '',
     assignedSubjects: ['Keolahragaan', 'Olahraga & Kesehatan', 'Pendidikan Jasmani'],
   },
   'luthfi.guru@sitemsa.sch.id': {
@@ -244,7 +244,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'luthfi.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19981717 202401 1 017',
-    avatar: 'https://i.pravatar.cc/150?img=31',
+    avatar: '',
     assignedSubjects: ['Keolahragaan', 'Olahraga & Kesehatan', 'Pendidikan Jasmani'],
   },
   'rinal.guru@sitemsa.sch.id': {
@@ -253,7 +253,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'rinal.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19981818 202401 1 018',
-    avatar: 'https://i.pravatar.cc/150?img=34',
+    avatar: '',
     assignedSubjects: ['Keolahragaan', 'Olahraga & Kesehatan', 'Pendidikan Jasmani'],
   },
 
@@ -264,7 +264,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'vivi.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19981919 202401 2 019',
-    avatar: 'https://i.pravatar.cc/150?img=12',
+    avatar: '',
     assignedSubjects: ['Seni Tari', 'Seni & Desain'],
   },
   'anita.guru@sitemsa.sch.id': {
@@ -273,7 +273,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'anita.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19982020 202401 2 020',
-    avatar: 'https://i.pravatar.cc/150?img=20',
+    avatar: '',
     assignedSubjects: ['Seni Tari', 'Seni & Desain'],
   },
   'meliana.guru@sitemsa.sch.id': {
@@ -282,7 +282,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'meliana.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19982121 202401 2 021',
-    avatar: '/images/meliana.jpg',
+    avatar: '',
     assignedSubjects: ['Seni Tari', 'Seni & Desain'],
   },
   'ivangka.guru@sitemsa.sch.id': {
@@ -291,7 +291,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'ivangka.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19982222 202401 2 022',
-    avatar: 'https://i.pravatar.cc/150?img=28',
+    avatar: '',
     assignedSubjects: ['Seni Tari', 'Seni & Desain'],
   },
   'hasnita.guru@sitemsa.sch.id': {
@@ -300,7 +300,7 @@ const TEACHER_USERS: Record<string, AuthUser> = {
     email: 'ivangka.guru@sitemsa.sch.id',
     role: 'guru',
     nip: '19982222 202401 2 022',
-    avatar: 'https://i.pravatar.cc/150?img=28',
+    avatar: '',
     assignedSubjects: ['Seni Tari', 'Seni & Desain'],
   },
 };
@@ -310,7 +310,7 @@ const STUDENT_USER: AuthUser = {
   name: 'Andi Pratama',
   email: 'siswa@sitemsa.sch.id',
   role: 'siswa',
-  avatar: 'https://i.pravatar.cc/150?img=12',
+  avatar: '',
 };
 
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds

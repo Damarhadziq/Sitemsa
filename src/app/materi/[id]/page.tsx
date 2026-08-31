@@ -1903,7 +1903,11 @@ export default function MateriDetailPage({
     if (fromStatic) return fromStatic;
     const numId = parseInt(id, 10);
     if (!isNaN(numId) && MATERIAL_DATABASE[numId]) return MATERIAL_DATABASE[numId];
-    return MATERIAL_DATABASE[1];
+    return {
+      ...MATERIAL_DATABASE[1],
+      imageUrl: '',
+      quizSource: undefined,
+    };
   }, [id, normalizedId]);
 
   // Construct dynamic live material merging admin store changes
@@ -2455,13 +2459,19 @@ export default function MateriDetailPage({
 
               {/* Main Feature Image / Hero Thumbnail (16:9 Aspect Ratio) */}
               <figure>
-                <div className="relative w-full aspect-video rounded-[12px] overflow-hidden border border-[#ECECEC] bg-[#FAFAFA]">
-                  {/* eslint-disable-next-next/no-img-element */}
-                  <img
-                    src={material.imageUrl}
-                    alt={material.title}
-                    className="w-full h-full object-cover"
-                  />
+                <div className="relative w-full aspect-video rounded-[12px] overflow-hidden border border-[#ECECEC] bg-slate-100">
+                  {material.imageUrl ? (
+                    // eslint-disable-next-next/no-img-element
+                    <img
+                      src={material.imageUrl}
+                      alt={material.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-slate-200/80 animate-pulse flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-full bg-slate-300/60 animate-pulse" />
+                    </div>
+                  )}
                 </div>
               </figure>
 

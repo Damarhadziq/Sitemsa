@@ -25,6 +25,7 @@ import {
 import { useAuth } from '@/lib/auth-context';
 import { useAdminStore } from '@/lib/admin-store';
 import { StorageService } from '@/services/storage.service';
+import { InitialsAvatar } from '@/components/ui/InitialsAvatar';
 
 export function AdminSidebar() {
   const pathname = usePathname();
@@ -407,12 +408,22 @@ export function AdminSidebar() {
             className="w-full p-2 rounded-[10px] hover:bg-slate-50 border border-transparent hover:border-[#ECECEC] flex items-center transition-all cursor-pointer group text-left"
           >
             <div className="flex items-center gap-2.5 min-w-0">
-              <img
-                src={mounted ? (user?.avatar || 'https://i.pravatar.cc/150?img=60') : 'https://i.pravatar.cc/150?img=60'}
-                alt={user?.name || 'Profil'}
-                className="w-8 h-8 rounded-full object-cover border border-[#ECECEC] shrink-0"
-                suppressHydrationWarning
-              />
+              {!mounted ? (
+                <div className="w-8 h-8 rounded-full bg-slate-200/80 animate-pulse shrink-0" />
+              ) : user?.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user?.name || 'Profil'}
+                  className="w-8 h-8 rounded-full object-cover border border-[#ECECEC] shrink-0"
+                  suppressHydrationWarning
+                />
+              ) : (
+                <InitialsAvatar
+                  name={user?.name || 'Guru'}
+                  sizeClass="w-8 h-8"
+                  textSizeClass="text-xs"
+                />
+              )}
               <div className="truncate min-w-0">
                 <p className="text-xs font-bold text-[#2E2D2D] truncate group-hover:text-[#2563EB] transition-colors leading-tight">
                   {user?.name || 'Pak Budi Prasetyo'}
@@ -487,12 +498,19 @@ export function AdminSidebar() {
             {/* Profile Avatar Centered + Name & Role */}
             <div className="flex flex-col items-center text-center pt-2 pb-1 space-y-3">
               <div className="relative">
-                {/* eslint-disable-next-next/no-img-element */}
-                <img
-                  src={user?.avatar || 'https://i.pravatar.cc/150?img=60'}
-                  alt={user?.name || 'Profil'}
-                  className="w-20 h-20 rounded-full object-cover border-2 border-[#2563EB]"
-                />
+                {user?.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt={user?.name || 'Profil'}
+                    className="w-20 h-20 rounded-full object-cover border-2 border-[#2563EB]"
+                  />
+                ) : (
+                  <InitialsAvatar
+                    name={user?.name || 'Guru'}
+                    sizeClass="w-20 h-20"
+                    textSizeClass="text-xl"
+                  />
+                )}
                 <label
                   title="Update Foto Profil"
                   className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-[#2563EB] hover:bg-blue-700 text-white flex items-center justify-center cursor-pointer border-2 border-white transition-transform active:scale-95 shadow-xs"

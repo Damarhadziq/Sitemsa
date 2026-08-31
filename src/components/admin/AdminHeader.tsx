@@ -17,20 +17,23 @@ import {
   BookMarked,
   Sparkles,
   Pencil,
+  Loader2,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useAdminStore } from '@/lib/admin-store';
+import { InitialsAvatar } from '@/components/ui/InitialsAvatar';
+import { StorageService } from '@/services/storage.service';
 
 export function AdminHeader() {
-  const { user, role, logout, activeSubjectFilter, setTeacherSubjectFilter } = useAuth();
+  const { user, role, logout, activeSubjectFilter, setTeacherSubjectFilter, updateUserProfile } = useAuth();
   const { subjects } = useAdminStore();
 
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
-
-  const profileRef = useRef<HTMLDivElement>(null);
 
   // Settings form states
   const [settingsEmail, setSettingsEmail] = useState(user?.email || '');
@@ -38,13 +41,15 @@ export function AdminHeader() {
   const [settingsSavedToast, setSettingsSavedToast] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     if (user?.email) {
       setSettingsEmail(user.email);
     }
   }, [user?.email]);
 
+  const profileRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    setMounted(true);
     function handleClickOutside(event: MouseEvent) {
       if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
         setShowProfileMenu(false);
@@ -53,6 +58,25 @@ export function AdminHeader() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsUploadingAvatar(true);
+      try {
+        const url = await StorageService.uploadImage(file, 'avatars');
+        if (url && updateUserProfile) {
+          await updateUserProfile({ avatar: url });
+          setToastMessage('Foto profil berhasil diubah');
+          setTimeout(() => setToastMessage(null), 2000);
+        }
+      } catch (err) {
+        console.warn('Avatar upload error:', err);
+      } finally {
+        setIsUploadingAvatar(false);
+      }
+    }
+  };
 
   const isAnyModalOpen = showProfileModal || showSettingsModal;
 
@@ -93,6 +117,14 @@ export function AdminHeader() {
 
   return (
     <header className="h-16 bg-white border-b border-[#ECECEC] px-6 flex items-center justify-between font-sans sticky top-0 z-30">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-4 right-4 z-50 bg-[#2563EB] text-white text-xs font-semibold px-4 py-2.5 rounded-[8px] shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-200">
+          <CheckCircle2 className="w-4 h-4" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       {/* LEFT: Static Subject Indicator Badge */}
       <div className="h-9 px-3 rounded-[8px] bg-white border border-[#ECECEC] text-xs font-semibold text-[#2E2D2D] flex items-center gap-2 select-none">
         <BookOpen className="w-4 h-4 text-[#2563EB]" />
@@ -108,13 +140,22 @@ export function AdminHeader() {
             className="h-9 px-2.5 rounded-full bg-white border border-[#ECECEC] hover:border-blue-200 flex items-center gap-1.5 transition-all duration-200 ease-in-out active:scale-[0.95] cursor-pointer"
             title="Menu Akun"
           >
-            {/* eslint-disable-next-next/no-img-element */}
-            <img
-              src={mounted ? (user?.avatar || 'https://i.pravatar.cc/150?img=60') : 'https://i.pravatar.cc/150?img=60'}
-              alt={user?.name || 'Profil'}
-              className="w-6 h-6 rounded-full object-cover border border-[#ECECEC]"
-              suppressHydrationWarning
-            />
+            {!mounted ? (
+              <div className="w-6 h-6 rounded-full bg-slate-200/80 animate-pulse shrink-0" />
+            ) : user?.avatar ? (
+              <img
+                src={user.avatar}
+                alt={user?.name || 'Profil'}
+                className="w-6 h-6 rounded-full object-cover border border-[#ECECEC]"
+                suppressHydrationWarning
+              />
+            ) : (
+              <InitialsAvatar
+                name={user?.name || 'Guru'}
+                sizeClass="w-6 h-6"
+                textSizeClass="text-[10px]"
+              />
+            )}
             <ChevronDown className="w-3.5 h-3.5 text-[#737373]" />
           </button>
 
@@ -168,12 +209,12 @@ export function AdminHeader() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md space-y-5 relative animate-in fade-in zoom-in-95 duration-200"
+            className="bg-white w-full max-w-sm rounded-[16px] border border-[#ECECEC] p-6 relative animate-in zoom-in-95 duration-150 text-center"
           >
             {/* Top-Right Close Button */}
             <button
               onClick={() => setShowProfileModal(false)}
-              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#737373] hover:text-[#2E2D2D] flex items-center justify-center cursor-pointer transition-colors shrink-0 absolute right-4 top-4"
+              className="absolute top-4 right-4 p-1 rounded-full text-[#737373] hover:text-[#2E2D2D] hover:bg-slate-100 transition-colors cursor-pointer"
               aria-label="Tutup Modal"
             >
               <X className="w-4 h-4" />
@@ -182,12 +223,23 @@ export function AdminHeader() {
             {/* Profile Avatar Centered + Pencil Edit Icon + Name & Role */}
             <div className="flex flex-col items-center text-center pt-2 pb-1 space-y-3">
               <div className="relative">
-                {/* eslint-disable-next-next/no-img-element */}
-                <img
-                  src={user?.avatar || 'https://i.pravatar.cc/150?img=60'}
-                  alt={user?.name || 'Profil'}
-                  className="w-20 h-20 rounded-full object-cover border-2 border-[#2563EB]"
-                />
+                {isUploadingAvatar ? (
+                  <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center border-2 border-[#2563EB]">
+                    <Loader2 className="w-6 h-6 text-[#2563EB] animate-spin" />
+                  </div>
+                ) : user?.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt={user?.name || 'Profil'}
+                    className="w-20 h-20 rounded-full object-cover border-2 border-[#2563EB]"
+                  />
+                ) : (
+                  <InitialsAvatar
+                    name={user?.name || 'Guru'}
+                    sizeClass="w-20 h-20"
+                    textSizeClass="text-xl"
+                  />
+                )}
                 <label
                   title="Update Foto Profil"
                   className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-[#2563EB] hover:bg-blue-700 text-white flex items-center justify-center cursor-pointer border-2 border-white transition-transform active:scale-95 shadow-xs"
@@ -197,12 +249,7 @@ export function AdminHeader() {
                     type="file"
                     accept="image/*"
                     className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        alert(`Foto profil berhasil dipilih: ${file.name}`);
-                      }
-                    }}
+                    onChange={handleAvatarFileChange}
                   />
                 </label>
               </div>

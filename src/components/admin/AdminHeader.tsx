@@ -280,13 +280,12 @@ export function AdminHeader() {
 
             <div className="space-y-1">
               <h3 className="text-base font-bold text-[#2E2D2D]">Pengaturan Akun Pengajar</h3>
-              <p className="text-xs text-[#737373]">Perbarui preferensi kontak dan informasi akun Anda.</p>
             </div>
 
             {settingsSavedToast && (
               <div className="p-3 rounded-[8px] bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold flex items-center gap-2 animate-in fade-in duration-150">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Pengaturan berhasil diperbarui!</span>
+                <span>Profil berhasil diperbarui!</span>
               </div>
             )}
 

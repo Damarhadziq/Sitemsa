@@ -60,15 +60,19 @@ export function FeaturedSection() {
               key={`${id}-${title}`}
               className="clean-glow-card group"
             >
-              {/* Vertical Laser Highlight Sweeping Horizontally on Border */}
-              <div className="clean-border-highlight" />
+              {/* Glowing Border Laser Track */}
+              <div className="clean-border-track">
+                <div className="clean-border-laser" />
+              </div>
 
               <Link
                 href={linkUrl}
                 className="clean-card-inner p-4 sm:p-5 cursor-pointer block"
               >
                 {/* Synchronized Matching Light Shimmer */}
-                <div className="clean-card-shimmer" />
+                <div className="clean-inner-shimmer-track">
+                  <div className="clean-inner-shimmer-bar" />
+                </div>
 
                 {/* Card Content Body */}
                 <div className="relative z-10 flex flex-col justify-between h-full space-y-3.5">

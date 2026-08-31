@@ -20,6 +20,7 @@ interface BorderGlowProps {
   glowIntensity?: number;
   coneSpread?: number;
   animated?: boolean;
+  looping?: boolean;
   colors?: string[];
   fillOpacity?: number;
 }
@@ -105,6 +106,7 @@ export default function BorderGlow({
   glowIntensity = 1.0,
   coneSpread = 25,
   animated = false,
+  looping = false,
   colors = ['#2563EB', '#6366F1', '#a855f7'],
   fillOpacity = 0.3,
 }: BorderGlowProps) {
@@ -138,6 +140,7 @@ export default function BorderGlow({
   }, [getCenterOfElement]);
 
   const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (looping) return;
     const card = cardRef.current;
     if (!card) return;
 
@@ -150,10 +153,11 @@ export default function BorderGlow({
 
     card.style.setProperty('--edge-proximity', `${(edge * 100).toFixed(3)}`);
     card.style.setProperty('--cursor-angle', `${angle.toFixed(3)}deg`);
-  }, [getEdgeProximity, getCursorAngle]);
+  }, [getEdgeProximity, getCursorAngle, looping]);
 
+  // One-shot intro sweep animation
   useEffect(() => {
-    if (!animated || !cardRef.current) return;
+    if (!animated || looping || !cardRef.current) return;
     const card = cardRef.current;
     const angleStart = 110;
     const angleEnd = 465;
@@ -171,7 +175,34 @@ export default function BorderGlow({
       onUpdate: v => card.style.setProperty('--edge-proximity', `${v}`),
       onEnd: () => card.classList.remove('sweep-active'),
     });
-  }, [animated]);
+  }, [animated, looping]);
+
+  // Continuous looping circling glow and beam animation
+  useEffect(() => {
+    if (!looping || !cardRef.current) return;
+    const card = cardRef.current;
+    card.classList.add('sweep-active');
+    card.style.setProperty('--edge-proximity', '100');
+
+    let animationFrameId: number;
+    const speed = 0.09; // degrees per ms -> 360 deg in ~4s
+    let lastTime = performance.now();
+    let currentAngle = 0;
+
+    const loop = (now: number) => {
+      const delta = now - lastTime;
+      lastTime = now;
+      currentAngle = (currentAngle + delta * speed) % 360;
+      card.style.setProperty('--cursor-angle', `${currentAngle.toFixed(2)}deg`);
+      animationFrameId = requestAnimationFrame(loop);
+    };
+
+    animationFrameId = requestAnimationFrame(loop);
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      card.classList.remove('sweep-active');
+    };
+  }, [looping]);
 
   const glowVars = buildGlowVars(glowColor, glowIntensity);
 

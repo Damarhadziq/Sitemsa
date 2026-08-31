@@ -11,6 +11,7 @@ import {
   SparklesIcon,
 } from "@hugeicons/core-free-icons";
 import Link from "next/link";
+import BorderGlow from "@/components/ui/BorderGlow";
 import {
   getFeaturedModules,
   FeaturedModuleCard,
@@ -53,13 +54,20 @@ export function FeaturedSection() {
           const { id, subject, title, linkUrl, indicatorType, metadata } = card;
 
           return (
-            <div
+            <BorderGlow
               key={`${id}-${title}`}
-              className="recommendation-glow-wrapper group"
+              backgroundColor="#FFFFFF"
+              borderRadius={12}
+              glowRadius={22}
+              glowIntensity={1.2}
+              coneSpread={28}
+              looping={true}
+              colors={['#2563EB', '#6366F1', '#a855f7']}
+              className="w-full h-full hover:-translate-y-1 transition-transform duration-200"
             >
               <Link
                 href={linkUrl}
-                className="recommendation-card-inner p-4 sm:p-5 cursor-pointer block"
+                className="relative p-4 sm:p-5 flex flex-col justify-between h-full w-full cursor-pointer block overflow-hidden group"
               >
                 {/* Subtle Light-Theme Animated Shimmer Reflection */}
                 <div className="recommendation-card-shimmer" />
@@ -138,7 +146,7 @@ export function FeaturedSection() {
                   </div>
                 </div>
               </Link>
-            </div>
+            </BorderGlow>
           );
         })}
       </div>

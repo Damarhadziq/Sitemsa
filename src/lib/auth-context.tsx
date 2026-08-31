@@ -356,10 +356,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const handleSecurityLogout = (reason: 'inactivity' | 'concurrent_device', targetUser?: AuthUser | null) => {
+    const isCurrentlyOnAdminPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+
+    // Inactivity timeout ONLY applies when the user is currently on an /admin route!
+    if (reason === 'inactivity' && !isCurrentlyOnAdminPage) {
+      return;
+    }
+
     const activeUser = targetUser || user;
     const currentRole = activeUser?.role;
     const isTeacherOrAdmin = currentRole === 'superadmin' || currentRole === 'guru';
-    const isCurrentlyOnAdminPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
 
     authClientService.logout().catch(() => {});
     saveSession(null);
@@ -387,9 +393,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const parsed = JSON.parse(savedUserStr) as AuthUser;
 
-        // Perform role-aware security validation (Siswa: 1 minggu, Admin/Guru: 30 menit)
+        // Perform security validation (Inactivity is strictly for /admin pages)
         SessionSecurityService.validateSession(parsed, localSessionId).then(({ valid, reason }) => {
+          const isCurrentlyOnAdminPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
           if (!valid && reason) {
+            if (reason === 'inactivity' && !isCurrentlyOnAdminPage) {
+              // Inactivity timeout is ignored on public/main web pages
+              setUser(parsed);
+              SessionSecurityService.touchActivity(parsed, false);
+              if (parsed.role === 'guru' && parsed.assignedSubjects && parsed.assignedSubjects.length > 0) {
+                setActiveSubjectFilter(parsed.assignedSubjects[0]);
+              }
+              setIsLoading(false);
+              return;
+            }
             console.warn(`Sesi ${parsed.role} dihentikan karena: ${reason}`);
             handleSecurityLogout(reason, parsed);
             setIsLoading(false);
@@ -437,12 +454,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [user]);
 
-  // Periodic security validation
+  // Periodic security validation (STRICTLY ACTIVE ONLY WHEN ON /admin ROUTES)
   useEffect(() => {
     if (!user || typeof window === 'undefined') return;
 
     const isCurrentlyOnAdminPage = window.location.pathname.startsWith('/admin');
-    const isTeacherOrAdmin = user.role === 'superadmin' || user.role === 'guru';
+    if (!isCurrentlyOnAdminPage) return;
 
     const runValidation = async () => {
       const currentSessionId = SessionSecurityService.getLocalSessionId();
@@ -452,8 +469,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    const checkIntervalMs = isCurrentlyOnAdminPage || isTeacherOrAdmin ? 5000 : 30000;
-    const intervalId = setInterval(runValidation, checkIntervalMs);
+    const intervalId = setInterval(runValidation, 5000);
 
     // Run check on tab focus or visibility change
     const handleVisibilityChange = () => {

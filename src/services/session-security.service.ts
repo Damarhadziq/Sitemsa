@@ -105,14 +105,14 @@ export class SessionSecurityService {
   ): Promise<{ valid: boolean; reason?: 'inactivity' | 'concurrent_device' }> {
     if (!user) return { valid: false };
 
-    // 1. Role-aware inactivity check
-    const now = Date.now();
-    const lastActive = this.getLastActiveTimestamp();
-    const isStudent = user.role === 'siswa';
-    const limit = isStudent ? STUDENT_INACTIVITY_LIMIT_MS : ADMIN_INACTIVITY_LIMIT_MS;
-
-    if (now - lastActive > limit) {
-      return { valid: false, reason: 'inactivity' };
+    // 1. Role-aware inactivity check — STRICTLY ENFORCED ONLY ON /admin ROUTES
+    const isCurrentlyOnAdminPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+    if (isCurrentlyOnAdminPage) {
+      const now = Date.now();
+      const lastActive = this.getLastActiveTimestamp();
+      if (now - lastActive > ADMIN_INACTIVITY_LIMIT_MS) {
+        return { valid: false, reason: 'inactivity' };
+      }
     }
 
     // 2. Single Device Concurrent Login Check via Supabase

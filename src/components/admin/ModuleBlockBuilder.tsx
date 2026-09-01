@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   X,
   Plus,
@@ -32,7 +32,8 @@ import {
   Check,
   Loader2,
 } from 'lucide-react';
-import { ModuleItem } from '@/lib/admin-store';
+import { ModuleItem, QuizItem, useAdminStore } from '@/lib/admin-store';
+import { QuizService } from '@/services/quiz.service';
 import { getMaterialBlocksForModule, getMaterialDetailForModule } from '@/app/materi/[id]/page';
 import { Tooltip } from '@/components/ui/tooltip';
 import { StorageService } from '@/services/storage.service';
@@ -575,6 +576,24 @@ export function ModuleBlockBuilder({
   const [isLevelDropdownOpen, setIsLevelDropdownOpen] = useState(false);
   const [isQuizDropdownOpen, setIsQuizDropdownOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const { quizzes } = useAdminStore();
+
+  useEffect(() => {
+    QuizService.fetchFromSupabase().catch(() => {});
+  }, []);
+
+  const availableQuizzes: QuizItem[] = useMemo(() => {
+    const cleanSubject = (subjectName || '').toLowerCase().trim();
+    // 1. Quizzes matching this subject that are published
+    const subjectQuizzes = (quizzes || []).filter(
+      (q: QuizItem) =>
+        q.published !== false &&
+        (!cleanSubject || q.subject?.toLowerCase().trim() === cleanSubject)
+    );
+    if (subjectQuizzes.length > 0) return subjectQuizzes;
+    return (quizzes || []).filter((q: QuizItem) => q.published !== false);
+  }, [quizzes, subjectName]);
 
   const showToast = (msg: string, _type: 'info' | 'error' | 'success' = 'info') => {
     setToastMessage(msg);
@@ -3119,33 +3138,40 @@ export function ModuleBlockBuilder({
 
                           {isQuizDropdownOpen && (
                             <div
-                              className="absolute left-0 bottom-full mb-1.5 w-full bg-white/95 backdrop-blur-md border border-[#ECECEC] rounded-[12px] shadow-xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-0.5"
+                              className="absolute left-0 bottom-full mb-1.5 w-full bg-white/95 backdrop-blur-md border border-[#ECECEC] rounded-[12px] shadow-xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-0.5 max-h-56 overflow-y-auto"
                             >
-                              {[
-                                'Kuis 1: Daspro & Variabel Python (3 Soal)',
-                                'Kuis 2: Rangkaian Listrik Seri & Paralel (5 Soal)',
-                                'Kuis 3: Logika & Algoritma Lanjutan (4 Soal)',
-                              ].map((quizName) => {
-                                const isSelected = evalTitle === quizName;
-                                return (
-                                  <button
-                                    key={quizName}
-                                    type="button"
-                                    onClick={() => {
-                                      setEvalTitle(quizName);
-                                      setIsQuizDropdownOpen(false);
-                                    }}
-                                    className={`w-full px-3 py-2.5 rounded-[8px] text-left text-xs font-semibold flex items-center justify-between transition-all cursor-pointer ${
-                                      isSelected
-                                        ? 'bg-blue-50/80 text-[#2563EB] font-bold'
-                                        : 'text-[#2E2D2D] hover:bg-slate-50'
-                                    }`}
-                                  >
-                                    <span>{quizName}</span>
-                                    {isSelected && <CheckCircle2 className="w-4 h-4 text-[#2563EB]" />}
-                                  </button>
-                                );
-                              })}
+                              {availableQuizzes.length === 0 ? (
+                                <div className="p-3 text-center text-xs text-slate-400 italic">
+                                  Belum ada kuis yang diterbitkan.
+                                </div>
+                              ) : (
+                                availableQuizzes.map((quiz: QuizItem) => {
+                                  const questionCount = quiz.questions ? quiz.questions.length : (quiz.questionCount || 0);
+                                  const isSelected = evalTitle === quiz.title;
+                                  return (
+                                    <button
+                                      key={quiz.id}
+                                      type="button"
+                                      onClick={() => {
+                                        setEvalTitle(quiz.title);
+                                        setIsQuizDropdownOpen(false);
+                                        setIsDirty(true);
+                                      }}
+                                      className={`w-full px-3 py-2 rounded-[8px] text-left text-xs font-semibold flex items-center justify-between transition-all cursor-pointer ${
+                                        isSelected
+                                          ? 'bg-blue-50/80 text-[#2563EB] font-bold'
+                                          : 'text-[#2E2D2D] hover:bg-slate-50'
+                                      }`}
+                                    >
+                                      <div className="truncate pr-2">
+                                        <p className="truncate font-semibold">{quiz.title}</p>
+                                        <p className="text-[10px] text-[#737373] font-normal">{quiz.subject} • {questionCount} Soal • KKM {quiz.passScore || 75}</p>
+                                      </div>
+                                      {isSelected && <CheckCircle2 className="w-4 h-4 text-[#2563EB] shrink-0" />}
+                                    </button>
+                                  );
+                                })
+                              )}
                             </div>
                           )}
                         </div>
@@ -3794,33 +3820,39 @@ export function ModuleBlockBuilder({
                         </button>
 
                         {isQuizDropdownOpen && (
-                          <div className="absolute left-0 bottom-full mb-1.5 w-full bg-white border border-[#ECECEC] rounded-[12px] shadow-xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-0.5 font-sans">
-                            {[
-                              'Kuis 1: Daspro & Variabel Python (3 Soal)',
-                              'Kuis 2: Rangkaian Listrik Seri & Paralel (5 Soal)',
-                              'Kuis 3: Logika & Algoritma Lanjutan (4 Soal)',
-                            ].map((quizName) => {
-                              const isSelected = evalTitle === quizName;
-                              return (
-                                <button
-                                  key={quizName}
-                                  type="button"
-                                  onClick={() => {
-                                    setEvalTitle(quizName);
-                                    setIsQuizDropdownOpen(false);
-                                    setIsDirty(true);
-                                  }}
-                                  className={`w-full px-3 py-2.5 rounded-[8px] text-left text-xs flex items-center justify-between transition-all cursor-pointer ${
-                                    isSelected
-                                      ? 'text-[#2563EB] font-bold'
-                                      : 'text-[#2E2D2D] hover:bg-slate-50 font-medium'
-                                  }`}
-                                >
-                                  <span>{quizName}</span>
-                                  {isSelected && <Check className="w-4 h-4 text-[#2563EB]" />}
-                                </button>
-                              );
-                            })}
+                          <div className="absolute left-0 bottom-full mb-1.5 w-full bg-white border border-[#ECECEC] rounded-[12px] shadow-xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-0.5 font-sans max-h-56 overflow-y-auto">
+                            {availableQuizzes.length === 0 ? (
+                              <div className="p-3 text-center text-xs text-slate-400 italic">
+                                Belum ada kuis yang diterbitkan.
+                              </div>
+                            ) : (
+                              availableQuizzes.map((quiz: QuizItem) => {
+                                const questionCount = quiz.questions ? quiz.questions.length : (quiz.questionCount || 0);
+                                const isSelected = evalTitle === quiz.title;
+                                return (
+                                  <button
+                                    key={quiz.id}
+                                    type="button"
+                                    onClick={() => {
+                                      setEvalTitle(quiz.title);
+                                      setIsQuizDropdownOpen(false);
+                                      setIsDirty(true);
+                                    }}
+                                    className={`w-full px-3 py-2 rounded-[8px] text-left text-xs flex items-center justify-between transition-all cursor-pointer ${
+                                      isSelected
+                                        ? 'text-[#2563EB] font-bold bg-blue-50/80'
+                                        : 'text-[#2E2D2D] hover:bg-slate-50 font-medium'
+                                    }`}
+                                  >
+                                    <div className="truncate pr-2">
+                                      <p className="truncate font-semibold">{quiz.title}</p>
+                                      <p className="text-[10px] text-[#737373] font-normal">{quiz.subject} • {questionCount} Soal • KKM {quiz.passScore || 75}</p>
+                                    </div>
+                                    {isSelected && <Check className="w-4 h-4 text-[#2563EB] shrink-0" />}
+                                  </button>
+                                );
+                              })
+                            )}
                           </div>
                         )}
                       </div>

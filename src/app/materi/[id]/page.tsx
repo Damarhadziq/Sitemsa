@@ -1675,7 +1675,7 @@ function SmartParagraph({ text }: { text: string }) {
       .replace(/font-weight\s*:\s*[^;"]+;?/gi, '');
     return (
       <div
-        className="prose-content text-xs md:text-sm font-medium text-[#4A4A4A] leading-relaxed text-justify [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:my-1.5 [&_ol]:space-y-1 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-1.5 [&_ul]:space-y-1 [&_li]:pl-1 [&_li]:text-justify [&_p]:mb-2 last:[&_p]:mb-0"
+        className="prose-content text-xs md:text-sm font-medium text-[#4A4A4A] leading-relaxed text-justify [&_ol]:pl-6 [&_ol]:my-1.5 [&_ol]:space-y-1 [&_ol:not(.list-alpha):not([type='a']):not([type='A'])]:list-decimal [&_ol.list-alpha]:list-[lower-alpha] [&_ol[type='a']]:list-[lower-alpha] [&_ol[type='A']]:list-[upper-alpha] [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-1.5 [&_ul]:space-y-1 [&_li]:pl-1 [&_li]:text-justify [&_p]:mb-2 last:[&_p]:mb-0"
         dangerouslySetInnerHTML={{ __html: cleanHtml }}
       />
     );

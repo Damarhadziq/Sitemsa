@@ -40,6 +40,59 @@ import { StorageService } from '@/services/storage.service';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
+import { wrappingInputRule } from '@tiptap/core';
+import OrderedList from '@tiptap/extension-ordered-list';
+
+const CustomOrderedList = OrderedList.extend({
+  addAttributes() {
+    return {
+      type: {
+        default: '1',
+        parseHTML: (element) => element.getAttribute('type') || (element.classList.contains('list-alpha') ? 'a' : '1'),
+        renderHTML: (attributes) => {
+          if (attributes.type === 'a') {
+            return {
+              type: 'a',
+              class: 'list-alpha pl-6 my-1 space-y-1',
+              style: 'list-style-type: lower-alpha !important;',
+            };
+          }
+          if (attributes.type === 'A') {
+            return {
+              type: 'A',
+              class: 'list-alpha pl-6 my-1 space-y-1',
+              style: 'list-style-type: upper-alpha !important;',
+            };
+          }
+          return {
+            type: '1',
+            class: 'list-decimal pl-6 my-1 space-y-1',
+            style: 'list-style-type: decimal !important;',
+          };
+        },
+      },
+    };
+  },
+  addInputRules() {
+    return [
+      wrappingInputRule({
+        find: /^(\d+)\.\s$/,
+        type: this.type,
+        getAttributes: () => ({ type: '1' }),
+      }),
+      wrappingInputRule({
+        find: /^([a-z])[\.\)]\s$/,
+        type: this.type,
+        getAttributes: () => ({ type: 'a' }),
+      }),
+      wrappingInputRule({
+        find: /^([A-Z])[\.\)]\s$/,
+        type: this.type,
+        getAttributes: () => ({ type: 'A' }),
+      }),
+    ];
+  },
+});
 
 export type BlockType = 'text' | 'image' | 'video' | 'attachment' | 'steps' | 'callout' | 'code';
 export type TestType = 'link_eksternal' | 'qr_code' | 'kuis_sitemsa';
@@ -216,14 +269,10 @@ function TiptapTextEditor({
     extensions: [
       StarterKit.configure({
         bold: false,
+        orderedList: false,
         bulletList: {
           HTMLAttributes: {
             class: 'list-disc pl-6 my-1 space-y-1',
-          },
-        },
-        orderedList: {
-          HTMLAttributes: {
-            class: 'list-decimal pl-6 my-1 space-y-1',
           },
         },
         listItem: {
@@ -237,6 +286,7 @@ function TiptapTextEditor({
           },
         },
       }),
+      CustomOrderedList,
       Placeholder.configure({
         placeholder: placeholder || 'Tuliskan teks paragraf di sini...',
         emptyEditorClass: 'is-editor-empty',
@@ -251,12 +301,21 @@ function TiptapTextEditor({
         if (text === ' ') {
           const $from = view.state.doc.resolve(from);
           const lineText = $from.parent.textContent;
-          const match = lineText.match(/^([a-zA-Z])[\.\)]$/);
-          if (match) {
+          const numMatch = lineText.match(/^(\d+)[\.\)]$/);
+          if (numMatch) {
             const start = from - lineText.length;
             const tr = view.state.tr.delete(start, to);
             view.dispatch(tr);
-            editor?.commands.toggleOrderedList();
+            editor?.commands.wrapInList('orderedList', { type: '1' });
+            return true;
+          }
+          const alphaMatch = lineText.match(/^([a-zA-Z])[\.\)]$/);
+          if (alphaMatch) {
+            const isUpper = alphaMatch[1] === alphaMatch[1].toUpperCase() && alphaMatch[1] !== alphaMatch[1].toLowerCase();
+            const start = from - lineText.length;
+            const tr = view.state.tr.delete(start, to);
+            view.dispatch(tr);
+            editor?.commands.wrapInList('orderedList', { type: isUpper ? 'A' : 'a' });
             return true;
           }
         }
@@ -304,17 +363,25 @@ function TiptapTextEditor({
           height: 0;
           pointer-events: none;
         }
-        .tiptap-editor-container .ProseMirror ol {
-          list-style-type: decimal;
+        .tiptap-editor-container .ProseMirror ol.list-alpha,
+        .tiptap-editor-container .ProseMirror ol[type="a"],
+        .tiptap-editor-container .ProseMirror ol[style*="lower-alpha"] {
+          list-style-type: lower-alpha !important;
           padding-left: 1.5rem;
           margin-top: 0.25rem;
           margin-bottom: 0.25rem;
         }
-        .tiptap-editor-container .ProseMirror ol.list-alpha,
-        .tiptap-editor-container .ProseMirror ol[type="a"],
         .tiptap-editor-container .ProseMirror ol[type="A"],
-        .tiptap-editor-container .ProseMirror ol[style*="lower-alpha"] {
-          list-style-type: lower-alpha;
+        .tiptap-editor-container .ProseMirror ol[style*="upper-alpha"] {
+          list-style-type: upper-alpha !important;
+          padding-left: 1.5rem;
+          margin-top: 0.25rem;
+          margin-bottom: 0.25rem;
+        }
+        .tiptap-editor-container .ProseMirror ol.list-decimal,
+        .tiptap-editor-container .ProseMirror ol[type="1"],
+        .tiptap-editor-container .ProseMirror ol:not(.list-alpha):not([type="a"]):not([type="A"]):not([style*="alpha"]) {
+          list-style-type: decimal !important;
           padding-left: 1.5rem;
           margin-top: 0.25rem;
           margin-bottom: 0.25rem;

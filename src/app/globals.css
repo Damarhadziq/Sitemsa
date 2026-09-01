@@ -303,12 +303,17 @@ html.hide-mobile-bottom-nav .mobile-bottom-nav {
 }
 
 /* Alphabetical list support for modules and prose text */
+ol.list-alpha,
+ol[type="a"],
+ol[style*="lower-alpha"],
 .prose-content ol.list-alpha,
 .prose-content ol[type="a"],
 .prose-content ol[style*="lower-alpha"] {
   list-style-type: lower-alpha !important;
 }
 
+ol[type="A"],
+ol[style*="upper-alpha"],
 .prose-content ol[type="A"],
 .prose-content ol[style*="upper-alpha"] {
   list-style-type: upper-alpha !important;

@@ -83,6 +83,9 @@ export const metadata: Metadata = {
     images: [`${siteUrl}/opengraph-image`],
     creator: "@sitemsa",
   },
+  verification: {
+    google: "4X2iD9T-K1OQU_rvHhvzxCQa9hNE3Gvw5KyXqkR-jAs",
+  },
   robots: {
     index: true,
     follow: true,
@@ -176,6 +179,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${plusJakartaSans.variable} font-sans h-full antialiased`}
     >
       <head>
+        <meta
+          name="google-site-verification"
+          content="4X2iD9T-K1OQU_rvHhvzxCQa9hNE3Gvw5KyXqkR-jAs"
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

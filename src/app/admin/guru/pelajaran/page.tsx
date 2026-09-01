@@ -509,12 +509,21 @@ export default function AdminGuruPelajaranPage() {
 
   const handleDownloadAttachmentFile = async (fileName?: string, fileUrl?: string) => {
     const cleanName = (fileName || 'Lampiran_Materi.pdf').trim();
-    if (fileUrl && fileUrl !== '#' && !fileUrl.startsWith('blob:')) {
+
+    // 1. Data URL (Base64)
+    if (fileUrl && fileUrl.startsWith('data:')) {
       try {
         showToast(`Mengunduh ${cleanName}...`, 'info');
-        const res = await fetch(fileUrl);
-        if (!res.ok) throw new Error('Fetch failed');
-        const blob = await res.blob();
+        const arr = fileUrl.split(',');
+        const mimeMatch = arr[0].match(/:(.*?);/);
+        const mime = mimeMatch ? mimeMatch[1] : 'application/pdf';
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+        const blob = new Blob([u8arr], { type: mime });
         const blobUrl = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = blobUrl;
@@ -525,12 +534,47 @@ export default function AdminGuruPelajaranPage() {
         window.URL.revokeObjectURL(blobUrl);
         showToast(`File ${cleanName} berhasil diunduh!`, 'success');
         return;
-      } catch {
-        console.warn('Direct attachment download fallback');
+      } catch (e) {
+        console.warn('Base64 download error:', e);
       }
     }
 
-    // 100% Valid Standard Compliant PDF Generator
+    // 2. Real URL (Supabase Storage / Remote CDN)
+    if (fileUrl && fileUrl.startsWith('http')) {
+      try {
+        showToast(`Mengunduh ${cleanName}...`, 'info');
+        const res = await fetch(fileUrl);
+        if (res.ok) {
+          const blob = await res.blob();
+          const blobUrl = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = blobUrl;
+          a.download = cleanName;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(blobUrl);
+          showToast(`File ${cleanName} berhasil diunduh!`, 'success');
+          return;
+        }
+      } catch (err) {
+        console.warn('Direct fetch download error, opening link:', err);
+      }
+
+      // Fallback for CORS: trigger browser direct download/view
+      const a = document.createElement('a');
+      a.href = fileUrl;
+      a.download = cleanName;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showToast(`Mengunduh ${cleanName}...`, 'info');
+      return;
+    }
+
+    // 3. 100% Valid Standard Compliant PDF Generator
     try {
       showToast(`Mengunduh berkas ${cleanName}...`, 'info');
       const validBlob = generateValidPdfBlob(

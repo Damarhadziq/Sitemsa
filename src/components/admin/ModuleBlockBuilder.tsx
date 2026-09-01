@@ -521,6 +521,12 @@ export function ModuleBlockBuilder({
   // Custom Dropdowns popover open state
   const [isLevelDropdownOpen, setIsLevelDropdownOpen] = useState(false);
   const [isQuizDropdownOpen, setIsQuizDropdownOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string, _type: 'info' | 'error' | 'success' = 'info') => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
 
   // Blocks state: Populated with full database blocks if editing, or clean initial block with placeholders
   const [blocks, setBlocks] = useState<CanvasBlock[]>(() => {
@@ -676,8 +682,20 @@ export function ModuleBlockBuilder({
     return trimmed;
   };
 
+  const hasAttachmentBlock = blocks.some((b) => b.type === 'attachment');
+
   // Add block
   const handleAddBlock = (type: BlockType, targetIndex?: number) => {
+    if (type === 'attachment' && hasAttachmentBlock) {
+      showToast('Hanya diperbolehkan 1 blok lampiran. Anda dapat menambah berkas tambahan dari panel kanan.', 'info');
+      const existingAttachment = blocks.find((b) => b.type === 'attachment');
+      if (existingAttachment) {
+        setSelectedBlockId(existingAttachment.id);
+        setShowRightSidebar(true);
+      }
+      return;
+    }
+
     setIsDirty(true);
     const actualIndex = targetIndex !== undefined ? targetIndex : insertTargetIndex;
 
@@ -1206,6 +1224,7 @@ export function ModuleBlockBuilder({
             description: autoDescription,
             isPublished: true,
             thumbnail: moduleThumbnail,
+            updatedAt: new Date().toISOString(),
             quizSource: evaluationType
               ? {
                   type: evaluationType,
@@ -1243,6 +1262,7 @@ export function ModuleBlockBuilder({
           description: autoDescription,
           isPublished: false,
           thumbnail: moduleThumbnail,
+          updatedAt: new Date().toISOString(),
           quizSource: evaluationType
             ? {
                 type: evaluationType,
@@ -2504,14 +2524,34 @@ export function ModuleBlockBuilder({
                       )}
 
                       <button
-                        onClick={() => handleAddBlock('attachment')}
-                        className="w-full p-3 rounded-[8px] bg-white border border-[#ECECEC] hover:border-[#2563EB] hover:bg-blue-50/50 text-left flex items-center justify-between text-xs font-semibold transition-all cursor-pointer group"
+                        onClick={() => {
+                          if (hasAttachmentBlock) {
+                            showToast('Hanya diperbolehkan 1 blok lampiran. Anda dapat menambah berkas dari panel samping kanan.', 'info');
+                            const existingAttachment = blocks.find((b) => b.type === 'attachment');
+                            if (existingAttachment) {
+                              setSelectedBlockId(existingAttachment.id);
+                            }
+                            return;
+                          }
+                          handleAddBlock('attachment');
+                        }}
+                        disabled={hasAttachmentBlock}
+                        className={`w-full p-3 rounded-[8px] border text-left flex items-center justify-between text-xs font-semibold transition-all group ${
+                          hasAttachmentBlock
+                            ? 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+                            : 'bg-white border-[#ECECEC] hover:border-[#2563EB] hover:bg-blue-50/50 text-[#2E2D2D] cursor-pointer'
+                        }`}
+                        title={hasAttachmentBlock ? 'Maksimal 1 blok lampiran. Tambahkan berkas tambahan dari panel kanan.' : 'Tambah Blok Lampiran'}
                       >
                         <div className="flex items-center gap-3">
-                          <Paperclip className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
-                          <span className="text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors">Lampiran File</span>
+                          <Paperclip className={`w-4 h-4 ${hasAttachmentBlock ? 'text-slate-400' : 'text-[#737373] group-hover:text-[#2563EB]'} transition-colors`} />
+                          <span className={hasAttachmentBlock ? 'text-slate-400' : 'text-[#2E2D2D] group-hover:text-[#2563EB] transition-colors'}>Lampiran File</span>
                         </div>
-                        <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
+                        {hasAttachmentBlock ? (
+                          <span className="text-[10px] font-bold bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">Tersedia</span>
+                        ) : (
+                          <ChevronRight className="w-4 h-4 text-[#737373] group-hover:text-[#2563EB] transition-colors" />
+                        )}
                       </button>
 
                       <button
@@ -3939,6 +3979,14 @@ export function ModuleBlockBuilder({
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Floating Action Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-8 right-8 z-[100] bg-[#1E293B] text-white text-xs font-semibold px-4 py-3 rounded-[10px] shadow-2xl flex items-center gap-2.5 animate-in fade-in slide-in-from-bottom-2 duration-200 border border-slate-700">
+          <AlertCircle className="w-4 h-4 text-[#60A5FA] shrink-0" />
+          <span>{toastMessage}</span>
         </div>
       )}
 

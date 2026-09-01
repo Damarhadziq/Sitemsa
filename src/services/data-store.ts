@@ -57,6 +57,7 @@ export interface ModuleItem {
   teacherId: string;
   teacherName: string;
   createdAt: string;
+  updatedAt?: string;
   isAiRecommended?: boolean;
   isPublished?: boolean;
   thumbnail?: string;

@@ -114,8 +114,21 @@ interface MaterialDetail {
     fileUrl?: string;
   };
   quizSource?: QuizSource;
+  orderedBlocks?: any[];
   prevMaterial?: { id: number; title: string };
   nextMaterial?: { id: number; title: string };
+}
+
+export function getYouTubeEmbedUrl(url?: string): string {
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (trimmed.includes('youtube.com/embed/')) return trimmed;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = trimmed.match(regExp);
+  if (match && match[2] && match[2].length === 11) {
+    return `https://www.youtube.com/embed/${match[2]}`;
+  }
+  return trimmed;
 }
 
 const MATERIAL_DATABASE: Record<number, MaterialDetail> = {
@@ -2062,8 +2075,12 @@ export default function MateriDetailPage({
       };
     }
 
-    // If storeMod has blocks, build contentSections, stepByStepSection, videoSection, attachment
+    let orderedBlocks: any[] = [];
+
+    // If storeMod has blocks, build contentSections, stepByStepSection, videoSection, attachment AND keep orderedBlocks strictly in sequence
     if (storeMod.blocks && storeMod.blocks.length > 0) {
+      orderedBlocks = storeMod.blocks;
+
       const dynamicSections: ContentSection[] = [];
       let dynamicStepByStep: any = undefined;
       let dynamicVideo: any = undefined;
@@ -2088,7 +2105,7 @@ export default function MateriDetailPage({
           }
 
           dynamicSections.push({
-            id: `sec-${bIdx + 1}`,
+            id: block.id || `sec-${bIdx + 1}`,
             title: block.sectionTitle || 'Heading',
             elements: block.elements && block.elements.length > 0 ? block.elements : undefined,
             paragraphs: paragraphs,
@@ -2097,14 +2114,14 @@ export default function MateriDetailPage({
           });
         } else if (block.type === 'code' && block.codeSnippet) {
           dynamicSections.push({
-            id: `sec-code-${bIdx + 1}`,
+            id: block.id || `sec-code-${bIdx + 1}`,
             title: block.sectionTitle || '',
             paragraphs: [],
             codeSnippet: block.codeSnippet,
           });
         } else if (block.type === 'image' && block.mediaUrl) {
           dynamicSections.push({
-            id: `sec-img-${bIdx + 1}`,
+            id: block.id || `sec-img-${bIdx + 1}`,
             title: block.imageCaption || 'Ilustrasi Materi',
             paragraphs: [],
             items: [{ imageUrl: block.mediaUrl, text: '' }],
@@ -2122,7 +2139,7 @@ export default function MateriDetailPage({
             steps: block.steps.map((s: any, sIdx: number) => ({
               stepNumber: sIdx + 1,
               title: s.title,
-              text: s.desc,
+              text: s.desc || s.text || '',
             })),
           };
         } else if (block.type === 'attachment' && block.attachments && block.attachments.length > 0) {
@@ -2144,15 +2161,71 @@ export default function MateriDetailPage({
         level: (storeMod.level as any) || baseMaterial.level,
         duration: storeMod.duration || baseMaterial.duration,
         author: storeMod.teacherName || baseMaterial.author,
-        updatedAt: storeMod.createdAt || baseMaterial.updatedAt,
+        updatedAt: storeMod.updatedAt || storeMod.createdAt || baseMaterial.updatedAt,
         topics: storeMod.topics || baseMaterial.topics,
         imageUrl: storeMod.thumbnail || baseMaterial.imageUrl,
+        orderedBlocks: orderedBlocks,
         contentSections: dynamicSections.length > 0 ? dynamicSections : (storeMod.description ? [{ id: 'sec-1', title: storeMod.title, paragraphs: [storeMod.description] }] : baseMaterial.contentSections),
         stepByStepSection: dynamicStepByStep || (dynamicSections.length > 0 ? undefined : baseMaterial.stepByStepSection),
         videoSection: dynamicVideo || (dynamicSections.length > 0 ? undefined : baseMaterial.videoSection),
         attachment: dynamicAttachment || undefined,
         quizSource: resolvedQuizSource,
       };
+    }
+
+    // Fallback: build orderedBlocks from baseMaterial
+    if (baseMaterial.videoSection && baseMaterial.videoSection.videoUrl) {
+      orderedBlocks.push({
+        id: 'video-tutorial',
+        type: 'video',
+        sectionTitle: baseMaterial.videoSection.title || 'Video Simulasi & Pembelajaran',
+        mediaUrl: baseMaterial.videoSection.videoUrl,
+        imageCaption: baseMaterial.videoSection.caption || '',
+      });
+    }
+
+    if (baseMaterial.contentSections && baseMaterial.contentSections.length > 0) {
+      baseMaterial.contentSections.forEach((sec: ContentSection) => {
+        orderedBlocks.push({
+          id: sec.id,
+          type: sec.codeSnippet ? 'code' : 'text',
+          sectionTitle: sec.title || '',
+          paragraphs: sec.paragraphs,
+          elements: sec.elements,
+          items: sec.items,
+          callout: sec.callout,
+          codeSnippet: sec.codeSnippet,
+        });
+      });
+    }
+
+    if (baseMaterial.stepByStepSection && baseMaterial.stepByStepSection.steps && baseMaterial.stepByStepSection.steps.length > 0) {
+      orderedBlocks.push({
+        id: 'langkah-praktik',
+        type: 'steps',
+        stepSectionTitle: baseMaterial.stepByStepSection.title || 'Langkah-langkah Praktik',
+        stepSectionSubtitle: baseMaterial.stepByStepSection.description || '',
+        steps: baseMaterial.stepByStepSection.steps.map((s: any) => ({
+          title: s.title || '',
+          desc: s.text || s.description || '',
+          mediaUrl: s.mediaUrl,
+        })),
+      });
+    }
+
+    if (baseMaterial.attachment && baseMaterial.attachment.fileName) {
+      orderedBlocks.push({
+        id: 'lampiran-materi',
+        type: 'attachment',
+        attachments: [
+          {
+            id: 'att-1',
+            fileName: baseMaterial.attachment.fileName,
+            fileSize: baseMaterial.attachment.fileSize || '2.0 MB',
+            fileUrl: baseMaterial.attachment.fileUrl || '#',
+          },
+        ],
+      });
     }
 
     return {
@@ -2164,9 +2237,10 @@ export default function MateriDetailPage({
       level: (storeMod.level as any) || baseMaterial.level,
       duration: storeMod.duration || baseMaterial.duration,
       author: storeMod.teacherName || baseMaterial.author,
-      updatedAt: storeMod.createdAt || baseMaterial.updatedAt,
+      updatedAt: storeMod.updatedAt || storeMod.createdAt || baseMaterial.updatedAt,
       topics: storeMod.topics || baseMaterial.topics,
       imageUrl: storeMod.thumbnail || baseMaterial.imageUrl,
+      orderedBlocks: orderedBlocks,
       attachment: undefined,
       contentSections: storeMod.description ? [{ id: 'sec-1', title: storeMod.title, paragraphs: [storeMod.description] }] : baseMaterial.contentSections,
       quizSource: resolvedQuizSource,
@@ -2203,7 +2277,31 @@ export default function MateriDetailPage({
     };
   }, [quizzes, material, id]);
 
-  const initialSectionId = material.videoSection ? "video-tutorial" : (material.contentSections[0]?.id || "pengantar");
+  const tocItems = useMemo(() => {
+    const blocks = material.orderedBlocks || [];
+    const items: { id: string; label: string }[] = [];
+
+    blocks.forEach((b: any, idx: number) => {
+      const blockId = b.id || `block-${idx}`;
+      if (b.type === 'video' && b.mediaUrl) {
+        items.push({ id: blockId, label: b.sectionTitle || 'Video Simulasi & Pembelajaran' });
+      } else if (b.type === 'steps' && b.steps && b.steps.length > 0) {
+        items.push({ id: blockId, label: b.stepSectionTitle || 'Langkah Kerja & Panduan Praktik' });
+      } else if (b.type === 'code' && b.codeSnippet) {
+        items.push({ id: blockId, label: b.sectionTitle || `Kode Program (${b.codeSnippet.language || 'Snippet'})` });
+      } else if (b.type === 'attachment' && (b.attachments?.length > 0 || b.attachment)) {
+        items.push({ id: blockId, label: 'Lampiran & Berkas Modul' });
+      } else if (b.type === 'text' && b.sectionTitle && b.sectionTitle.trim().length > 0) {
+        items.push({ id: blockId, label: b.sectionTitle });
+      } else if (b.type === 'image' && b.imageCaption && b.imageCaption.trim().length > 0) {
+        items.push({ id: blockId, label: b.imageCaption });
+      }
+    });
+
+    return items;
+  }, [material.orderedBlocks]);
+
+  const initialSectionId = tocItems[0]?.id || "pengantar";
   const [activeSection, setActiveSection] = useState(initialSectionId);
   const [copiedCode, setCopiedCode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -2450,11 +2548,7 @@ export default function MateriDetailPage({
       }
     );
 
-    const observeIds = [
-      ...(material.videoSection ? ["video-tutorial"] : []),
-      ...material.contentSections.map((s: ContentSection) => s.id),
-      ...(material.stepByStepSection ? ["langkah-praktik"] : []),
-    ];
+    const observeIds = tocItems.map((item) => item.id);
 
     observeIds.forEach((id) => {
       const el = document.getElementById(id);
@@ -2462,7 +2556,7 @@ export default function MateriDetailPage({
     });
 
     return () => observer.disconnect();
-  }, [isLoading, material]);
+  }, [isLoading, tocItems]);
 
   const handleScrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
     e.preventDefault();
@@ -2610,219 +2704,277 @@ export default function MateriDetailPage({
                 </div>
               </figure>
 
-              {/* Video Tutorial Section (If Available for Subject) */}
-              {material.videoSection && (
-                <section id="video-tutorial" className="space-y-3 pt-2">
-                  <h2 className="text-lg md:text-xl font-bold text-[#2E2D2D]">
-                    {material.videoSection.title}
-                  </h2>
-
-                  <div className="relative w-full aspect-video rounded-[12px] overflow-hidden border border-[#ECECEC] bg-black">
-                    <iframe
-                      src={material.videoSection.videoUrl}
-                      title={material.videoSection.title}
-                      className="w-full h-full border-0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  </div>
-                </section>
-              )}
-
-              {/* Structured Content Sections */}
+              {/* Structured Content Ordered Blocks (Strict Sequence Preserved from Editor) */}
               <div className="space-y-8">
-                {material.contentSections.map((section: ContentSection) => (
-                  <section
-                    key={section.id}
-                    id={section.id}
-                    className="space-y-4"
-                  >
-                    {section.title && (
-                      <h2 className="text-lg md:text-xl font-bold text-[#2E2D2D]">
-                        {section.title}
-                      </h2>
-                    )}
+                {(material.orderedBlocks || []).map((block: any, bIdx: number) => {
+                  const blockId = block.id || `block-${bIdx}`;
 
-                    {/* Render Elements in Exact Ordered Sequence if available */}
-                    {section.elements && section.elements.length > 0 ? (
-                      <div className="space-y-4">
-                        {section.elements.map((el: any, elIdx: number) => {
-                          if (el.type === 'image' && el.imageUrl) {
-                            return (
-                              <div key={elIdx} className="my-3 w-full">
-                                <div className="overflow-hidden rounded-[12px] border border-[#ECECEC] bg-slate-50 w-full aspect-video">
-                                  {/* eslint-disable-next-next/no-img-element */}
-                                  <img
-                                    src={el.imageUrl}
-                                    alt="Ilustrasi Materi"
-                                    className="w-full h-full object-cover rounded-[12px]"
-                                  />
+                  // 1. VIDEO BLOCK
+                  if (block.type === 'video' && block.mediaUrl) {
+                    const embedUrl = getYouTubeEmbedUrl(block.mediaUrl);
+                    return (
+                      <section key={blockId} id={blockId} className="space-y-3 pt-2 scroll-mt-28">
+                        {block.sectionTitle && (
+                          <h2 className="text-lg md:text-xl font-bold text-[#2E2D2D]">
+                            {block.sectionTitle}
+                          </h2>
+                        )}
+                        <div className="relative w-full aspect-video rounded-[12px] overflow-hidden border border-[#ECECEC] bg-black shadow-xs">
+                          <iframe
+                            src={embedUrl}
+                            title={block.sectionTitle || 'Video Simulasi & Pembelajaran'}
+                            className="w-full h-full border-0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                        {block.imageCaption && (
+                          <p className="text-xs text-[#737373] italic text-center">{block.imageCaption}</p>
+                        )}
+                      </section>
+                    );
+                  }
+
+                  // 2. IMAGE BLOCK
+                  if (block.type === 'image' && block.mediaUrl) {
+                    return (
+                      <section key={blockId} id={blockId} className="space-y-3 scroll-mt-28">
+                        <div className="overflow-hidden rounded-[12px] border border-[#ECECEC] bg-slate-50 w-full aspect-video shadow-2xs">
+                          {/* eslint-disable-next-next/no-img-element */}
+                          <img
+                            src={block.mediaUrl}
+                            alt={block.imageCaption || "Ilustrasi Materi"}
+                            className="w-full h-full object-cover rounded-[12px]"
+                          />
+                        </div>
+                        {block.imageCaption && (
+                          <p className="text-xs text-[#737373] italic text-center">{block.imageCaption}</p>
+                        )}
+                      </section>
+                    );
+                  }
+
+                  // 3. CODE SNIPPET BLOCK
+                  if (block.type === 'code' && block.codeSnippet) {
+                    return (
+                      <section key={blockId} id={blockId} className="space-y-3 scroll-mt-28">
+                        {block.sectionTitle && (
+                          <h2 className="text-lg md:text-xl font-bold text-[#2E2D2D]">
+                            {block.sectionTitle}
+                          </h2>
+                        )}
+                        <div className="bg-[#1E1E2E] rounded-[10px] p-4 space-y-3 text-white overflow-hidden shadow-xs">
+                          <div className="flex items-center justify-between text-xs text-[#A6ADC8] border-b border-[#313244] pb-2">
+                            <span className="font-mono">{block.codeSnippet.language}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleCopyCode(block.codeSnippet!.code)}
+                              className="inline-flex items-center gap-1.5 bg-[#313244] hover:bg-[#45475A] text-white px-2.5 py-1 rounded-[6px] transition-colors text-[11px] cursor-pointer"
+                            >
+                              <HugeiconsIcon icon={copiedCode ? Tick01Icon : Copy01Icon} size={13} />
+                              <span>{copiedCode ? "Tersalin!" : "Salin Kode"}</span>
+                            </button>
+                          </div>
+                          <pre className="font-mono text-xs overflow-x-auto text-[#CDD6F4] leading-relaxed">
+                            <code>{block.codeSnippet.code}</code>
+                          </pre>
+                        </div>
+                      </section>
+                    );
+                  }
+
+                  // 4. STEP-BY-STEP PRACTICE BLOCK
+                  if (block.type === 'steps' && block.steps && block.steps.length > 0) {
+                    return (
+                      <section key={blockId} id={blockId} className="space-y-4 pt-4 scroll-mt-28">
+                        <div>
+                          <h2 className="text-lg md:text-xl font-bold text-[#2E2D2D]">
+                            {block.stepSectionTitle || 'Langkah-langkah Praktik'}
+                          </h2>
+                          {block.stepSectionSubtitle && (
+                            <p className="text-xs md:text-sm font-medium text-[#737373] leading-relaxed mt-1 text-justify">
+                              {block.stepSectionSubtitle}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="bg-white border border-[#ECECEC] rounded-[10px] overflow-hidden divide-y divide-[#ECECEC] shadow-2xs">
+                          {block.steps.map((step: any, sIdx: number) => (
+                            <div
+                              key={sIdx}
+                              className="p-4 md:p-5 space-y-3 bg-white transition-colors hover:bg-[#F6F5FF]"
+                            >
+                              <div className="flex items-center gap-3">
+                                <span className="w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center shrink-0 bg-[#0400F4] text-white">
+                                  {String(sIdx + 1).padStart(2, '0')}
+                                </span>
+                                <h3 className="text-sm md:text-base font-bold text-[#2E2D2D]">
+                                  {step.title}
+                                </h3>
+                              </div>
+
+                              <p className="text-xs md:text-sm font-medium text-[#4A4A4A] leading-relaxed pl-11 text-justify">
+                                {step.desc || step.text}
+                              </p>
+
+                              {step.mediaUrl && (
+                                <div className="pl-11 pt-1">
+                                  <div className="relative w-full h-[200px] md:h-[280px] rounded-[8px] overflow-hidden border border-[#ECECEC] bg-[#FAFAFA]">
+                                    {/* eslint-disable-next-next/no-img-element */}
+                                    <img
+                                      src={step.mediaUrl}
+                                      alt={step.title}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </section>
+                    );
+                  }
+
+                  // 5. ATTACHMENT BLOCK (Multi-File or Single File Supported)
+                  if (block.type === 'attachment') {
+                    const attachments = block.attachments && block.attachments.length > 0
+                      ? block.attachments
+                      : block.attachment ? [block.attachment] : [];
+
+                    if (attachments.length === 0) return null;
+
+                    return (
+                      <section key={blockId} id={blockId} className="space-y-3 pt-2 scroll-mt-28">
+                        {attachments.map((att: any, attIdx: number) => {
+                          const fileName = att.fileName || att.name || 'Dokumen_Lampiran.pdf';
+                          const fileSize = att.fileSize || att.size || '2.0 MB';
+                          const fileUrl = att.fileUrl || att.url || '';
+
+                          return (
+                            <div
+                              key={att.id || attIdx}
+                              className="bg-[#FAFAFA] border border-[#ECECEC] rounded-[12px] p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4 shadow-2xs"
+                            >
+                              <div className="flex items-center gap-3 min-w-0 flex-1">
+                                <div className="w-10 h-10 rounded-[8px] bg-[#F4EFFF] text-[#2563EB] flex items-center justify-center shrink-0">
+                                  <HugeiconsIcon icon={File01Icon} size={20} />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p
+                                    title={fileName}
+                                    className="text-xs md:text-sm font-semibold text-[#2E2D2D] truncate"
+                                  >
+                                    {fileName.replace(/_/g, " ")}
+                                  </p>
+                                  <p className="text-[11px] text-[#737373] truncate">
+                                    Berkas Pendukung • {fileSize}
+                                  </p>
                                 </div>
                               </div>
-                            );
-                          }
-                          if (el.type === 'paragraph' && el.text) {
-                            return (
-                              <SmartParagraph key={elIdx} text={el.text} />
-                            );
-                          }
-                          return null;
-                        })}
-                      </div>
-                    ) : (
-                      <>
-                        {section.paragraphs && section.paragraphs.length > 0 && (
-                          <div className="space-y-2.5">
-                            {section.paragraphs.map((p: string, pIdx: number) => (
-                              <SmartParagraph key={pIdx} text={p} />
-                            ))}
-                          </div>
-                        )}
 
-                        {/* Integrated Per-Point Media Block (Clean Direct Text Layout, Natural Image Resolution, No Captions) */}
-                        {section.items && section.items.length > 0 && (
-                          <div className="space-y-4 my-3">
-                            {section.items.map((item: SectionItem, i: number) => (
-                              <div key={i} className="space-y-2.5">
-                                {item.imageUrl && (
-                                  <div className="my-3 w-full">
-                                    <div className="overflow-hidden rounded-[12px] border border-[#ECECEC] bg-slate-50 w-full aspect-video">
-                                      {/* eslint-disable-next-next/no-img-element */}
-                                      <img
-                                        src={item.imageUrl}
-                                        alt="Ilustrasi Materi"
-                                        className="w-full h-full object-cover rounded-[12px]"
-                                      />
-                                    </div>
-                                  </div>
-                                )}
-
-                                {item.text && (
-                                  <p className="text-xs md:text-sm font-medium text-[#4A4A4A] leading-relaxed text-justify">
-                                    {item.text}
-                                  </p>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </>
-                    )}
-
-                    {/* Highlight / Callout Box (Blue sleek card without title) */}
-                    {section.callout && (
-                      <div className="my-3 p-4 rounded-[12px] bg-[#F6F5FF] border border-[#E8E7FF] text-[#2563EB] text-xs md:text-sm leading-relaxed flex items-start gap-3 shadow-2xs">
-                        <div className="w-1.5 self-stretch bg-[#2563EB] rounded-full shrink-0" />
-                        <p className="text-[#3A3985] font-medium leading-relaxed flex-1 text-justify">
-                          {section.callout}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Code Snippet Box with Copy Button */}
-                    {section.codeSnippet && (
-                      <div className="bg-[#1E1E2E] rounded-[10px] p-4 space-y-3 text-white overflow-hidden">
-                        <div className="flex items-center justify-between text-xs text-[#A6ADC8] border-b border-[#313244] pb-2">
-                          <span className="font-mono">{section.codeSnippet.language}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleCopyCode(section.codeSnippet!.code)}
-                            className="inline-flex items-center gap-1.5 bg-[#313244] hover:bg-[#45475A] text-white px-2.5 py-1 rounded-[6px] transition-colors text-[11px]"
-                          >
-                            <HugeiconsIcon icon={copiedCode ? Tick01Icon : Copy01Icon} size={13} />
-                            <span>{copiedCode ? "Tersalin!" : "Salin Kode"}</span>
-                          </button>
-                        </div>
-                        <pre className="font-mono text-xs overflow-x-auto text-[#CDD6F4] leading-relaxed">
-                          <code>{section.codeSnippet.code}</code>
-                        </pre>
-                      </div>
-                    )}
-                  </section>
-                ))}
-              </div>
-
-              {/* Interactive Step-by-Step Practice Block (Single Frame Container) */}
-              {material.stepByStepSection && (
-                <section id="langkah-praktik" className="space-y-4 pt-6 border-t border-[#ECECEC]">
-                  <div>
-                    <h2 className="text-lg md:text-xl font-bold text-[#2E2D2D]">
-                      {material.stepByStepSection.title}
-                    </h2>
-                    <p className="text-xs md:text-sm font-medium text-[#737373] leading-relaxed mt-1 text-justify">
-                      {material.stepByStepSection.description}
-                    </p>
-                  </div>
-
-                  {/* 1 Single Frame Container Box */}
-                  <div className="bg-white border border-[#ECECEC] rounded-[10px] overflow-hidden divide-y divide-[#ECECEC]">
-                    {material.stepByStepSection.steps.map((step: any) => (
-                      <div
-                        key={step.stepNumber}
-                        className="p-4 md:p-5 space-y-3 bg-white transition-colors hover:bg-[#F6F5FF]"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center shrink-0 bg-[#0400F4] text-white">
-                            {String(step.stepNumber).padStart(2, '0')}
-                          </span>
-                          <h3 className="text-sm md:text-base font-bold text-[#2E2D2D]">
-                            {step.title}
-                          </h3>
-                        </div>
-
-                        <p className="text-xs md:text-sm font-medium text-[#4A4A4A] leading-relaxed pl-11 text-justify">
-                          {step.text}
-                        </p>
-
-                        {/* Admin Guide Media / Foto Panduan tanpa caption */}
-                        {step.mediaUrl && (
-                          <div className="pl-11 pt-1">
-                            <div className="relative w-full h-[200px] md:h-[280px] rounded-[8px] overflow-hidden border border-[#ECECEC] bg-[#FAFAFA]">
-                              <Image
-                                src={step.mediaUrl}
-                                alt={step.title}
-                                fill
-                                className="object-cover"
-                              />
+                              <button
+                                type="button"
+                                onClick={() => handleDownloadAttachment(fileName, fileUrl)}
+                                className="inline-flex items-center justify-center gap-1.5 bg-white border border-[#ECECEC] hover:bg-[#F6F5FF] hover:border-[#2563EB]/40 text-[#2563EB] px-4 py-2.5 sm:py-2 rounded-[6px] text-xs font-semibold transition-all duration-200 shrink-0 w-full sm:w-auto cursor-pointer active:scale-95"
+                              >
+                                <HugeiconsIcon icon={Download01Icon} size={15} />
+                                <span>Unduh Berkas</span>
+                              </button>
                             </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
+                          );
+                        })}
+                      </section>
+                    );
+                  }
 
-              {/* Attachment Download Block (Only if material has attachments) */}
-              {material.attachment && material.attachment.fileName && (
-                <section className="bg-[#FAFAFA] border border-[#ECECEC] rounded-[12px] p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="w-10 h-10 rounded-[8px] bg-[#F4EFFF] text-[#2563EB] flex items-center justify-center shrink-0">
-                      <HugeiconsIcon icon={File01Icon} size={20} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p
-                        title={material.attachment.fileName}
-                        className="text-xs md:text-sm font-semibold text-[#2E2D2D] truncate"
-                      >
-                        {material.attachment.fileName.replace(/_/g, " ")}
-                      </p>
-                      <p className="text-[11px] text-[#737373] truncate">
-                        Modul Pelengkap • {material.attachment.fileSize || '2.0 MB'}
-                      </p>
-                    </div>
-                  </div>
+                  // 6. DEFAULT / TEXT / CALLOUT BLOCK
+                  return (
+                    <section key={blockId} id={blockId} className="space-y-4 scroll-mt-28">
+                      {block.sectionTitle && (
+                        <h2 className="text-lg md:text-xl font-bold text-[#2E2D2D]">
+                          {block.sectionTitle}
+                        </h2>
+                      )}
 
-                  <button
-                    type="button"
-                    onClick={() => handleDownloadAttachment(material.attachment?.fileName, material.attachment?.fileUrl)}
-                    className="inline-flex items-center justify-center gap-1.5 bg-white border border-[#ECECEC] hover:bg-[#F6F5FF] hover:border-[#2563EB]/40 text-[#2563EB] px-4 py-2.5 sm:py-2 rounded-[6px] text-xs font-semibold transition-all duration-200 shrink-0 w-full sm:w-auto cursor-pointer active:scale-95"
-                  >
-                    <HugeiconsIcon icon={Download01Icon} size={15} />
-                    <span>Unduh Modul PDF</span>
-                  </button>
-                </section>
-              )}
+                      {/* Render Elements in Exact Sequence if available */}
+                      {block.elements && block.elements.length > 0 ? (
+                        <div className="space-y-4">
+                          {block.elements.map((el: any, elIdx: number) => {
+                            if (el.type === 'image' && el.imageUrl) {
+                              return (
+                                <div key={elIdx} className="my-3 w-full">
+                                  <div className="overflow-hidden rounded-[12px] border border-[#ECECEC] bg-slate-50 w-full aspect-video shadow-2xs">
+                                    {/* eslint-disable-next-next/no-img-element */}
+                                    <img
+                                      src={el.imageUrl}
+                                      alt="Ilustrasi Materi"
+                                      className="w-full h-full object-cover rounded-[12px]"
+                                    />
+                                  </div>
+                                </div>
+                              );
+                            }
+                            if (el.type === 'paragraph' && el.text) {
+                              return <SmartParagraph key={elIdx} text={el.text} />;
+                            }
+                            return null;
+                          })}
+                        </div>
+                      ) : (
+                        <>
+                          {block.paragraphs && block.paragraphs.length > 0 ? (
+                            <div className="space-y-2.5">
+                              {block.paragraphs.map((p: string, pIdx: number) => (
+                                <SmartParagraph key={pIdx} text={p} />
+                              ))}
+                            </div>
+                          ) : block.textValue ? (
+                            <div className="space-y-2.5">
+                              <SmartParagraph text={block.textValue} />
+                            </div>
+                          ) : null}
+
+                          {block.items && block.items.length > 0 && (
+                            <div className="space-y-4 my-3">
+                              {block.items.map((item: any, i: number) => (
+                                <div key={i} className="space-y-2.5">
+                                  {item.imageUrl && (
+                                    <div className="my-3 w-full">
+                                      <div className="overflow-hidden rounded-[12px] border border-[#ECECEC] bg-slate-50 w-full aspect-video shadow-2xs">
+                                        {/* eslint-disable-next-next/no-img-element */}
+                                        <img
+                                          src={item.imageUrl}
+                                          alt="Ilustrasi Materi"
+                                          className="w-full h-full object-cover rounded-[12px]"
+                                        />
+                                      </div>
+                                    </div>
+                                  )}
+                                  {item.text && (
+                                    <p className="text-xs md:text-sm font-medium text-[#4A4A4A] leading-relaxed text-justify">
+                                      {item.text}
+                                    </p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {(block.callout || block.calloutText) && (
+                        <div className="my-3 p-4 rounded-[12px] bg-[#F6F5FF] border border-[#E8E7FF] text-[#2563EB] text-xs md:text-sm leading-relaxed flex items-start gap-3 shadow-2xs">
+                          <div className="w-1.5 self-stretch bg-[#2563EB] rounded-full shrink-0" />
+                          <p className="text-[#3A3985] font-medium leading-relaxed flex-1 text-justify">
+                            {block.callout || block.calloutText}
+                          </p>
+                        </div>
+                      )}
+                    </section>
+                  );
+                })}
+              </div>
             </article>
 
             {/* Sticky Sidebar Navigation (4 Columns) */}
@@ -2836,51 +2988,23 @@ export default function MateriDetailPage({
 
                 {/* Table of Contents Items */}
                 <nav className="space-y-1">
-                  {material.videoSection && (
-                    <a
-                      href="#video-tutorial"
-                      onClick={(e) => handleScrollToSection(e, "video-tutorial")}
-                      className={`block px-3.5 py-2 text-xs font-medium transition-all duration-200 ${
-                        activeSection === "video-tutorial"
-                          ? "bg-[#F4EFFF] text-[#2563EB] font-semibold border-l-2 border-[#2563EB]"
-                          : "text-[#737373] hover:text-[#2E2D2D] hover:bg-[#FAFAFA] border-l-2 border-transparent"
-                      }`}
-                    >
-                      Video Tutorial Pembelajaran
-                    </a>
-                  )}
-
-                  {material.contentSections.map((sec) => {
-                    const isActive = activeSection === sec.id;
+                  {tocItems.map((item) => {
+                    const isActive = activeSection === item.id;
                     return (
                       <a
-                        key={sec.id}
-                        href={`#${sec.id}`}
-                        onClick={(e) => handleScrollToSection(e, sec.id)}
-                        className={`block px-3.5 py-2.5 text-xs font-medium transition-all duration-200 ${
+                        key={item.id}
+                        href={`#${item.id}`}
+                        onClick={(e) => handleScrollToSection(e, item.id)}
+                        className={`block px-3.5 py-2 text-xs font-medium transition-all duration-200 truncate ${
                           isActive
                             ? "bg-[#F4EFFF] text-[#2563EB] font-semibold border-l-2 border-[#2563EB]"
                             : "text-[#737373] hover:text-[#2E2D2D] hover:bg-[#FAFAFA] border-l-2 border-transparent"
                         }`}
                       >
-                        {sec.title}
+                        {item.label}
                       </a>
                     );
                   })}
-
-                  {material.stepByStepSection && (
-                    <a
-                      href="#langkah-praktik"
-                      onClick={(e) => handleScrollToSection(e, "langkah-praktik")}
-                      className={`block px-3.5 py-2 text-xs font-medium transition-all duration-200 ${
-                        activeSection === "langkah-praktik"
-                          ? "bg-[#F4EFFF] text-[#2563EB] font-semibold border-l-2 border-[#2563EB]"
-                          : "text-[#737373] hover:text-[#2E2D2D] hover:bg-[#FAFAFA] border-l-2 border-transparent"
-                      }`}
-                    >
-                      Langkah Kerja &amp; Panduan Praktik
-                    </a>
-                  )}
                 </nav>
               </div>
 
@@ -2976,48 +3100,24 @@ export default function MateriDetailPage({
 
           {/* Clean list without numbers */}
           <div className="max-h-64 overflow-y-auto space-y-0.5 pr-1">
-            {material.videoSection && (
+            {tocItems.map((item) => (
               <button
+                key={item.id}
                 type="button"
                 onClick={() => {
                   setIsTocOpen(false);
-                  const el = document.getElementById("video-tutorial");
-                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                  const el = document.getElementById(item.id);
+                  if (el) {
+                    const yOffset = -110;
+                    const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                    window.scrollTo({ top: y, behavior: "smooth" });
+                  }
                 }}
                 className="w-full text-left px-3 py-2 rounded-[8px] hover:bg-[#F6F5FF] text-xs font-medium text-[#2E2D2D] hover:text-[#2563EB] transition-colors cursor-pointer block truncate"
               >
-                Video Tutorial Pembelajaran
-              </button>
-            )}
-
-            {material.contentSections.map((sec) => (
-              <button
-                key={sec.id}
-                type="button"
-                onClick={() => {
-                  setIsTocOpen(false);
-                  const el = document.getElementById(sec.id);
-                  if (el) el.scrollIntoView({ behavior: "smooth" });
-                }}
-                className="w-full text-left px-3 py-2 rounded-[8px] hover:bg-[#F6F5FF] text-xs font-medium text-[#2E2D2D] hover:text-[#2563EB] transition-colors cursor-pointer block truncate"
-              >
-                {sec.title}
+                {item.label}
               </button>
             ))}
-
-            {material.stepByStepSection && (
-              <button
-                type="button"
-                onClick={() => {
-                  setIsTocOpen(false);
-                  const el = document.getElementById("langkah-praktik");
-                  if (el) el.scrollIntoView({ behavior: "smooth" });
-                }}
-                className="w-full text-left px-3 py-2 rounded-[8px] hover:bg-[#F6F5FF] text-xs font-medium text-[#2E2D2D] hover:text-[#2563EB] transition-colors cursor-pointer block truncate"
-              >
-                Langkah Kerja &amp; Panduan Praktik
-              </button>
-            )}
           </div>
         </div>
       )}

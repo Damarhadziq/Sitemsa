@@ -435,6 +435,8 @@ export default function AdminGuruPelajaranPage() {
     moduleData: Partial<ModuleItem>,
     blocks: CanvasBlock[]
   ) => {
+    const nowIso = new Date().toISOString();
+
     if (editingModule) {
       updateModule(editingModule.id, {
         title: moduleData.title || editingModule.title,
@@ -446,6 +448,7 @@ export default function AdminGuruPelajaranPage() {
         isPublished: moduleData.isPublished ?? editingModule.isPublished,
         quizSource: moduleData.quizSource || editingModule.quizSource,
         blocks: blocks,
+        updatedAt: nowIso,
       });
 
       ModuleService.updateModule(editingModule.id, {
@@ -458,6 +461,7 @@ export default function AdminGuruPelajaranPage() {
         blocks: blocks,
         isPublished: moduleData.isPublished ?? editingModule.isPublished,
         quizSource: moduleData.quizSource as any,
+        updatedAt: nowIso,
       });
 
       setNewlyAddedMateriId(editingModule.id);
@@ -480,6 +484,8 @@ export default function AdminGuruPelajaranPage() {
         isPublished: moduleData.isPublished ?? true,
         quizSource: moduleData.quizSource,
         blocks: blocks,
+        createdAt: nowIso,
+        updatedAt: nowIso,
       } as any);
 
       ModuleService.createModule({
@@ -496,6 +502,8 @@ export default function AdminGuruPelajaranPage() {
         teacherName: currentTeacherName,
         isPublished: moduleData.isPublished ?? true,
         quizSource: moduleData.quizSource as any,
+        createdAt: nowIso,
+        updatedAt: nowIso,
       });
 
       setNewlyAddedMateriId(fixedId);
@@ -2625,7 +2633,10 @@ export default function AdminGuruPelajaranPage() {
         const authorTeacher = activeMod.teacherId || activeMod.teacherName
           ? teachers.find((t) => t.id === activeMod.teacherId || t.name?.toLowerCase() === activeMod.teacherName?.toLowerCase())
           : null;
-        const modTeacherAvatar = (authorTeacher?.avatar && authorTeacher.avatar.trim()) ? authorTeacher.avatar : (activeMod.teacherName === user?.name ? user?.avatar : undefined);
+        const isCurrentUserAuthor = activeMod.teacherName === user?.name || activeMod.teacherId === user?.id || !activeMod.teacherName;
+        const modTeacherAvatar = (authorTeacher?.avatar && authorTeacher.avatar.trim())
+          ? authorTeacher.avatar
+          : (isCurrentUserAuthor ? user?.avatar : undefined);
 
         return (
           <ModuleInfoModal
@@ -2639,8 +2650,8 @@ export default function AdminGuruPelajaranPage() {
             teacherName={activeMod.teacherName || user?.name || 'Pengajar Sitemsa'}
             teacherRole={user?.role === 'superadmin' ? 'Superadmin Kurikulum Sitemsa' : `Guru Pengampu ${activeMod.subject}`}
             teacherAvatar={modTeacherAvatar}
-            publishDate={activeMod.createdAt || '20 Agustus 2026, 08:30 WIB'}
-            lastUpdate="22 Agustus 2026, 13:45 WIB"
+            publishDate={activeMod.createdAt || '1 September 2026'}
+            lastUpdate={activeMod.updatedAt || activeMod.createdAt || 'Baru saja diperbarui'}
           />
         );
       })()}

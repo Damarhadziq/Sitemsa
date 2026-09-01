@@ -144,13 +144,13 @@ export class ModuleService {
     return dbStore.modules.find((m) => m.id === id) || null;
   }
 
-  static async createModule(data: Omit<ModuleItem, 'id' | 'createdAt'> & { id?: string }): Promise<ModuleItem> {
+  static async createModule(data: Omit<ModuleItem, 'id' | 'createdAt'> & { id?: string; createdAt?: string }): Promise<ModuleItem> {
     this.ensureHydrated();
     const newId = data.id || generateEntityId('mod', data.subject, data.teacherId);
     const newModule: ModuleItem = {
       id: newId,
       ...data,
-      createdAt: new Date().toISOString().split('T')[0],
+      createdAt: data.createdAt || new Date().toISOString().split('T')[0],
       isPublished: data.isPublished !== undefined ? data.isPublished : true,
     };
 

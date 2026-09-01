@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { X, Calendar, Clock, BookOpen, User, CheckCircle2 } from 'lucide-react';
+import { X, Calendar, Clock } from 'lucide-react';
+import { InitialsAvatar } from '@/components/ui/InitialsAvatar';
 
 export interface ModuleInfoModalProps {
   isOpen: boolean;
@@ -13,6 +14,29 @@ export interface ModuleInfoModalProps {
   teacherAvatar?: string;
   publishDate?: string;
   lastUpdate?: string;
+}
+
+function formatIndonesianDate(dateStr?: string): string {
+  if (!dateStr) return 'Baru saja';
+  if (dateStr.includes('WIB') || dateStr.includes('Agustus') || dateStr.includes('September')) {
+    return dateStr;
+  }
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const months = [
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+    const day = d.getDate();
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${day} ${month} ${year}, ${hours}:${minutes} WIB`;
+  } catch {
+    return dateStr;
+  }
 }
 
 export function ModuleInfoModal({
@@ -42,6 +66,9 @@ export function ModuleInfoModal({
 
   if (!isOpen) return null;
 
+  const formattedPublish = formatIndonesianDate(publishDate);
+  const formattedUpdate = formatIndonesianDate(lastUpdate);
+
   return (
     <div
       onClick={onClose}
@@ -51,7 +78,7 @@ export function ModuleInfoModal({
         onClick={(e) => e.stopPropagation()}
         className="bg-white rounded-[16px] border border-[#ECECEC] p-6 max-w-md w-full shadow-xl space-y-5 animate-in zoom-in-95 duration-150 font-sans"
       >
-        {/* 1. Header: Headline title text & cancel X button (Tanpa Subtitle & Tanpa Border) */}
+        {/* 1. Header: Headline title text & cancel X button */}
         <div className="flex items-center justify-between">
           <h3 className="text-base font-bold text-[#2E2D2D]">Informasi Modul</h3>
           <button
@@ -64,7 +91,7 @@ export function ModuleInfoModal({
           </button>
         </div>
 
-        {/* 2. Data Info List (Directly on Canvas, Tanpa Garis Pembatas) */}
+        {/* 2. Data Info List */}
         <div className="space-y-4 px-1">
           {/* Guru Penerbit */}
           <div className="space-y-1">
@@ -72,18 +99,12 @@ export function ModuleInfoModal({
               Dipublikasikan Oleh
             </span>
             <div className="flex items-center gap-3 mt-1.5 p-2.5 rounded-[10px] bg-slate-50 border border-[#ECECEC]">
-              {teacherAvatar ? (
-                /* eslint-disable-next-next/no-img-element */
-                <img
-                  src={teacherAvatar}
-                  alt={teacherName}
-                  className="w-10 h-10 rounded-full object-cover border border-[#ECECEC] shrink-0"
-                />
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 text-[#2563EB] flex items-center justify-center font-bold text-sm shrink-0">
-                  {teacherName.charAt(0)}
-                </div>
-              )}
+              <InitialsAvatar
+                name={teacherName}
+                avatar={teacherAvatar}
+                sizeClass="w-10 h-10"
+                textSizeClass="text-sm font-bold"
+              />
               <div className="min-w-0">
                 <p className="text-sm font-bold text-[#2E2D2D] truncate">{teacherName}</p>
                 <p className="text-[11px] text-[#737373] truncate">
@@ -101,7 +122,7 @@ export function ModuleInfoModal({
             <div className="flex items-center gap-2 mt-0.5">
               <Calendar className="w-4 h-4 text-[#2563EB]" />
               <p className="text-sm font-bold text-[#2E2D2D]">
-                {publishDate}
+                {formattedPublish}
               </p>
             </div>
           </div>
@@ -114,7 +135,7 @@ export function ModuleInfoModal({
             <div className="flex items-center gap-2 mt-0.5">
               <Clock className="w-4 h-4 text-purple-600" />
               <p className="text-sm font-bold text-[#2E2D2D]">
-                {lastUpdate}
+                {formattedUpdate}
               </p>
             </div>
           </div>

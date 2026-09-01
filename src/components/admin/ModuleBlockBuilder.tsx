@@ -995,10 +995,21 @@ export function ModuleBlockBuilder({
 
   const handleDeleteSectionElement = (blockId: string, elIndex: number) => {
     const block = blocks.find((b) => b.id === blockId);
-    if (!block || !block.elements) return;
+    if (!block) return;
 
-    const updated = block.elements.filter((_, idx) => idx !== elIndex);
-    updateBlockById(blockId, { elements: updated });
+    const currentElements: SectionElement[] =
+      block.elements && block.elements.length > 0
+        ? block.elements
+        : [{ id: `el-${block.id}-1`, type: 'paragraph', text: block.textValue || '' }];
+
+    const updated = currentElements.filter((_, idx) => idx !== elIndex);
+    if (updated.length === 0) {
+      updated.push({ id: `el-${Date.now()}`, type: 'paragraph', text: '' });
+    }
+    updateBlockById(blockId, {
+      elements: updated,
+      textValue: updated.find((e) => e.type === 'paragraph')?.text || '',
+    });
   };
 
   const handleMoveSectionElement = (
@@ -1821,7 +1832,7 @@ export function ModuleBlockBuilder({
                                               e.stopPropagation();
                                               handlePromptChangeSectionImage(block.id, elIdx, '');
                                             }}
-                                            className="rounded-[12px] border-2 border-dashed border-slate-300 hover:border-[#2563EB] bg-slate-50/50 p-6 text-center transition-all cursor-pointer group/card w-full"
+                                            className="rounded-[12px] border-2 border-dashed border-slate-300 hover:border-[#2563EB] bg-slate-50/50 p-6 text-center transition-all cursor-pointer group/card w-full relative"
                                           >
                                             <div className="w-10 h-10 rounded-full bg-white border border-[#ECECEC] text-[#2563EB] flex items-center justify-center mx-auto shadow-xs">
                                               <ImageIcon className="w-5 h-5" />
@@ -1829,6 +1840,52 @@ export function ModuleBlockBuilder({
                                             <p className="text-xs font-bold text-[#2E2D2D] mt-2 group-hover/card:text-[#2563EB]">
                                               Klik untuk Menambahkan Gambar
                                             </p>
+
+                                            {/* Action Controls for image placeholder */}
+                                            <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover/elImg:opacity-100 transition-opacity bg-white p-1 rounded-[6px] border border-[#ECECEC] shadow-2xs text-[#2E2D2D]">
+                                              {elIdx > 0 && (
+                                                <button
+                                                  type="button"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleMoveSectionElement(block.id, elIdx, 'up');
+                                                  }}
+                                                  title="Pindah ke Atas"
+                                                  className="p-1 hover:bg-slate-100 rounded text-[#2E2D2D] hover:text-[#2563EB] cursor-pointer"
+                                                >
+                                                  <ArrowUp className="w-3 h-3" />
+                                                </button>
+                                              )}
+                                              {elIdx < elements.length - 1 && (
+                                                <button
+                                                  type="button"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleMoveSectionElement(block.id, elIdx, 'down');
+                                                  }}
+                                                  title="Pindah ke Bawah"
+                                                  className="p-1 hover:bg-slate-100 rounded text-[#2E2D2D] hover:text-[#2563EB] cursor-pointer"
+                                                >
+                                                  <ArrowDown className="w-3 h-3" />
+                                                </button>
+                                              )}
+                                              <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  setDeleteConfirmTarget({
+                                                    type: 'element',
+                                                    title: 'Konfirmasi Hapus Gambar',
+                                                    description: 'Apakah Anda yakin ingin menghapus elemen gambar ini dari bagian materi?',
+                                                    onConfirm: () => handleDeleteSectionElement(block.id, elIdx),
+                                                  });
+                                                }}
+                                                className="p-1 rounded text-[#2E2D2D] hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
+                                                title="Hapus Gambar"
+                                              >
+                                                <Trash2 className="w-3 h-3" />
+                                              </button>
+                                            </div>
                                           </div>
                                         ) : (
                                           <div className="relative overflow-hidden rounded-[12px] border border-[#ECECEC] bg-slate-50 w-full aspect-video">

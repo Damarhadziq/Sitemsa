@@ -2614,7 +2614,7 @@ export function ModuleBlockBuilder({
             {/* Modal Header (Title Only, No Border Line, No Subtitle) */}
             <div className="p-6 pb-0 bg-white shrink-0">
               <h2 className="text-lg sm:text-xl font-bold text-[#2E2D2D]">
-                {initialModule ? 'Konfirmasi Pembaruan Materi' : 'Konfirmasi & Publikasi Materi'}
+                {isAlreadyPublished ? 'Konfirmasi Pembaruan Materi' : 'Konfirmasi & Publikasi Materi'}
               </h2>
             </div>
 
@@ -2729,9 +2729,9 @@ export function ModuleBlockBuilder({
               </div>
 
               {/* 2. ROW: LEVEL & DURASI */}
-              <div className={initialModule ? '' : 'grid grid-cols-1 sm:grid-cols-2 gap-4'}>
-                {/* Level dropdown - only in modal for new modules */}
-                {!initialModule && (
+              <div className={isAlreadyPublished ? '' : 'grid grid-cols-1 sm:grid-cols-2 gap-4'}>
+                {/* Level dropdown - only in modal for new modules or unpublished drafts */}
+                {!isAlreadyPublished && (
                 <div ref={levelDropdownRef} className="space-y-1.5 relative">
                   <label className="font-bold text-xs text-[#2E2D2D] block">Tingkat Kesulitan / Level</label>
                   <div className="relative">
@@ -2787,8 +2787,8 @@ export function ModuleBlockBuilder({
                 </div>
               </div>
 
-              {/* 3. TOPIK BAHASAN - Only for new modules */}
-              {!initialModule && (
+              {/* 3. TOPIK BAHASAN - For new modules and unpublished drafts */}
+              {!isAlreadyPublished && (
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label className="font-bold text-xs text-[#2E2D2D] block">
@@ -2843,8 +2843,8 @@ export function ModuleBlockBuilder({
               </div>
               )}
 
-              {/* 4. BAHAN EVALUASI - Only for new modules */}
-              {!initialModule && (
+              {/* 4. BAHAN EVALUASI - For new modules and unpublished drafts */}
+              {!isAlreadyPublished && (
               <div className="space-y-2 pt-1">
                 <label className="font-bold text-xs text-[#2E2D2D] block">Bahan Evaluasi / Kuis (Opsional)</label>
 
@@ -3110,10 +3110,10 @@ export function ModuleBlockBuilder({
                     {isPublishing ? (
                       <>
                         <RefreshCw className="w-3.5 h-3.5 animate-spin text-white shrink-0" />
-                        <span>{initialModule ? 'Memperbarui Materi...' : 'Menerbitkan Materi...'}</span>
+                        <span>{isAlreadyPublished ? 'Memperbarui Materi...' : 'Menerbitkan Materi...'}</span>
                       </>
                     ) : (
-                      <span>{initialModule ? 'Update Materi' : 'Publish Materi'}</span>
+                      <span>{isAlreadyPublished ? 'Update Materi' : 'Publish Materi'}</span>
                     )}
                   </button>
                 );

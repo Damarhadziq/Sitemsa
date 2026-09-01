@@ -3,7 +3,7 @@
 -- Run this SQL in Supabase SQL Editor (Dashboard > SQL Editor) to sync tables
 -- ==============================================================================
 
--- 1. Ensure tables exist
+-- 1. Ensure tables exist & drop not-null constraint on image if present
 CREATE TABLE IF NOT EXISTS public.users (
   id TEXT PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
@@ -23,9 +23,17 @@ CREATE TABLE IF NOT EXISTS public.team_members (
   handle TEXT NOT NULL,
   division TEXT NOT NULL,
   border_color TEXT DEFAULT '#2563EB',
-  image TEXT,
+  image TEXT DEFAULT '',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Allow empty/nullable image on team_members
+DO $$
+BEGIN
+  ALTER TABLE public.team_members ALTER COLUMN image DROP NOT NULL;
+EXCEPTION
+  WHEN OTHERS THEN NULL;
+END $$;
 
 -- 2. Clear NIP values first to prevent any unique constraint swapping collision
 UPDATE public.users SET nip = NULL;
@@ -110,34 +118,34 @@ ON CONFLICT (email) DO UPDATE SET
   nip = EXCLUDED.nip,
   avatar = EXCLUDED.avatar;
 
--- 5. Delete & Populate public.team_members (using title, subtitle, handle, division, border_color, image)
+-- 5. Delete & Populate public.team_members
 DELETE FROM public.team_members;
 
 INSERT INTO public.team_members (id, title, subtitle, handle, division, border_color, image) VALUES
-  ('tm-1', 'Damar Hadziq H.', 'Developer', '@damarhadziq', 'Pend. Informatika', '#4F46E5', NULL),
-  ('tm-2', 'Mochammad Rizal D. D.', 'Sub-Developer', '@rizaldaffa', 'Pend. Informatika', '#3B82F6', NULL),
-  ('tm-3', 'M. Sulthon Abdullah A.', 'Sub-Developer', '@sulthonazzam', 'Pend. Informatika', '#2563EB', NULL),
-  ('tm-4', 'Lovyca Imeyra E.', 'Sub-Developer', '@lovycaimeyra', 'Pend. Informatika', '#10B981', NULL),
-  ('tm-5', 'Innova Riskianugrah R.', 'Instructional Designer', '@innovariskia', 'BK', '#06B6D4', NULL),
-  ('tm-6', 'Fateka Maulana A. K.', 'Instructional Designer', '@fatekamaulana', 'BK', '#10B981', NULL),
-  ('tm-7', 'Erintan Tsuraya R.', 'Instructional Designer', '@erintantsuraya', 'BK', '#06B6D4', NULL),
-  ('tm-8', 'Dinda Riestia', 'Instructional Designer', '@dindariestia', 'BK', '#8B5CF6', NULL),
-  ('tm-9', 'Ardyan Santoso', 'Instructional Designer', '@ardyansantoso', 'Pend. Otomotif', '#3B82F6', NULL),
-  ('tm-10', 'Satrio', 'Instructional Designer', '@satrio', 'Pend. Otomotif', '#4F46E5', NULL),
-  ('tm-11', 'Agam Ainun Ramadhan', 'Instructional Designer', '@agamainun', 'Pend. Otomotif', '#8B5CF6', NULL),
-  ('tm-12', 'Banu Mahmuda H.', 'Instructional Designer', '@banumahmuda', 'Pend. Elektronika', '#EF4444', NULL),
-  ('tm-13', 'Anisa Susilawati', 'Instructional Designer', '@anisasusilawati', 'Pend. Elektronika', '#8B5CF6', NULL),
-  ('tm-14', 'Nova Milyard', 'Instructional Designer', '@novamilyard', 'Pend. Elektronika', '#EF4444', NULL),
-  ('tm-15', 'Vella Pratika I. N.', 'Instructional Designer', '@vellapratika', 'Pend. Elektronika', '#F59E0B', NULL),
-  ('tm-16', 'Fahrul Adiyansa', 'Instructional Designer', '@fahruladiyansa', 'Pend. Elektronika', '#8B5CF6', NULL),
-  ('tm-17', 'Tubagus Fauzan A.', 'Instructional Designer', '@tubagusfauzan', 'Pend. Elektronika', '#06B6D4', NULL),
-  ('tm-18', 'Brilian Anugraheni', 'Instructional Designer', '@briliananugraheni', 'Pend. Olahraga', '#3B82F6', NULL),
-  ('tm-19', 'Ahmad Luthfi F.', 'Instructional Designer', '@ahmadluthfi', 'Pend. Olahraga', '#F59E0B', NULL),
-  ('tm-20', 'Rinal Febriarso D. P.', 'Instructional Designer', '@rinalfebriarso', 'Pend. Olahraga', '#06B6D4', NULL),
-  ('tm-21', 'Vivi Riska Wardani', 'Instructional Designer', '@viviriska', 'Pend. Seni Tari', '#10B981', NULL),
-  ('tm-22', 'Anita Dwi Ningtyas', 'Instructional Designer', '@anitadwi', 'Pend. Seni Tari', '#EF4444', NULL),
-  ('tm-23', 'Meliana Dwi Yanti', 'Instructional Designer', '@melianadwi', 'Pend. Seni Tari', '#10B981', NULL),
-  ('tm-24', 'Hasnita Ivangka', 'Instructional Designer', '@hasnitaivangka', 'Pend. Seni Tari', '#06B6D4', NULL)
+  ('tm-1', 'Damar Hadziq H.', 'Developer', '@damarhadziq', 'Pend. Informatika', '#4F46E5', ''),
+  ('tm-2', 'Mochammad Rizal D. D.', 'Sub-Developer', '@rizaldaffa', 'Pend. Informatika', '#3B82F6', ''),
+  ('tm-3', 'M. Sulthon Abdullah A.', 'Sub-Developer', '@sulthonazzam', 'Pend. Informatika', '#2563EB', ''),
+  ('tm-4', 'Lovyca Imeyra E.', 'Sub-Developer', '@lovycaimeyra', 'Pend. Informatika', '#10B981', ''),
+  ('tm-5', 'Innova Riskianugrah R.', 'Instructional Designer', '@innovariskia', 'BK', '#06B6D4', ''),
+  ('tm-6', 'Fateka Maulana A. K.', 'Instructional Designer', '@fatekamaulana', 'BK', '#10B981', ''),
+  ('tm-7', 'Erintan Tsuraya R.', 'Instructional Designer', '@erintantsuraya', 'BK', '#06B6D4', ''),
+  ('tm-8', 'Dinda Riestia', 'Instructional Designer', '@dindariestia', 'BK', '#8B5CF6', ''),
+  ('tm-9', 'Ardyan Santoso', 'Instructional Designer', '@ardyansantoso', 'Pend. Otomotif', '#3B82F6', ''),
+  ('tm-10', 'Satrio', 'Instructional Designer', '@satrio', 'Pend. Otomotif', '#4F46E5', ''),
+  ('tm-11', 'Agam Ainun Ramadhan', 'Instructional Designer', '@agamainun', 'Pend. Otomotif', '#8B5CF6', ''),
+  ('tm-12', 'Banu Mahmuda H.', 'Instructional Designer', '@banumahmuda', 'Pend. Elektronika', '#EF4444', ''),
+  ('tm-13', 'Anisa Susilawati', 'Instructional Designer', '@anisasusilawati', 'Pend. Elektronika', '#8B5CF6', ''),
+  ('tm-14', 'Nova Milyard', 'Instructional Designer', '@novamilyard', 'Pend. Elektronika', '#EF4444', ''),
+  ('tm-15', 'Vella Pratika I. N.', 'Instructional Designer', '@vellapratika', 'Pend. Elektronika', '#F59E0B', ''),
+  ('tm-16', 'Fahrul Adiyansa', 'Instructional Designer', '@fahruladiyansa', 'Pend. Elektronika', '#8B5CF6', ''),
+  ('tm-17', 'Tubagus Fauzan A.', 'Instructional Designer', '@tubagusfauzan', 'Pend. Elektronika', '#06B6D4', ''),
+  ('tm-18', 'Brilian Anugraheni', 'Instructional Designer', '@briliananugraheni', 'Pend. Olahraga', '#3B82F6', ''),
+  ('tm-19', 'Ahmad Luthfi F.', 'Instructional Designer', '@ahmadluthfi', 'Pend. Olahraga', '#F59E0B', ''),
+  ('tm-20', 'Rinal Febriarso D. P.', 'Instructional Designer', '@rinalfebriarso', 'Pend. Olahraga', '#06B6D4', ''),
+  ('tm-21', 'Vivi Riska Wardani', 'Instructional Designer', '@viviriska', 'Pend. Seni Tari', '#10B981', ''),
+  ('tm-22', 'Anita Dwi Ningtyas', 'Instructional Designer', '@anitadwi', 'Pend. Seni Tari', '#EF4444', ''),
+  ('tm-23', 'Meliana Dwi Yanti', 'Instructional Designer', '@melianadwi', 'Pend. Seni Tari', '#10B981', ''),
+  ('tm-24', 'Hasnita Ivangka', 'Instructional Designer', '@hasnitaivangka', 'Pend. Seni Tari', '#06B6D4', '')
 ON CONFLICT (id) DO UPDATE SET
   title = EXCLUDED.title,
   subtitle = EXCLUDED.subtitle,

@@ -301,3 +301,15 @@ html.hide-mobile-bottom-nav .mobile-bottom-nav {
   animation: unifiedHorizontalSweep 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   pointer-events: none;
 }
+
+/* Alphabetical list support for modules and prose text */
+.prose-content ol.list-alpha,
+.prose-content ol[type="a"],
+.prose-content ol[style*="lower-alpha"] {
+  list-style-type: lower-alpha !important;
+}
+
+.prose-content ol[type="A"],
+.prose-content ol[style*="upper-alpha"] {
+  list-style-type: upper-alpha !important;
+}

@@ -136,11 +136,13 @@ function TiptapTextEditor({
     const lines = val.split('\n');
     let html = '';
     let inOrderedList = false;
+    let inAlphaList = false;
     let inBulletList = false;
 
     lines.forEach((line) => {
       const trimmed = line.trim();
       const numMatch = trimmed.match(/^(\d+)[\.\)]\s+(.*)$/);
+      const alphaMatch = trimmed.match(/^([a-zA-Z])[\.\)]\s+(.*)$/);
       const bulletMatch = trimmed.match(/^[•\-\*]\s+(.*)$/);
 
       if (numMatch) {
@@ -148,15 +150,37 @@ function TiptapTextEditor({
           html += '</ul>';
           inBulletList = false;
         }
+        if (inAlphaList) {
+          html += '</ol>';
+          inAlphaList = false;
+        }
         if (!inOrderedList) {
           html += '<ol>';
           inOrderedList = true;
         }
         html += `<li><p>${numMatch[2]}</p></li>`;
+      } else if (alphaMatch) {
+        if (inBulletList) {
+          html += '</ul>';
+          inBulletList = false;
+        }
+        if (inOrderedList) {
+          html += '</ol>';
+          inOrderedList = false;
+        }
+        if (!inAlphaList) {
+          html += '<ol class="list-alpha" type="a">';
+          inAlphaList = true;
+        }
+        html += `<li><p>${alphaMatch[2]}</p></li>`;
       } else if (bulletMatch) {
         if (inOrderedList) {
           html += '</ol>';
           inOrderedList = false;
+        }
+        if (inAlphaList) {
+          html += '</ol>';
+          inAlphaList = false;
         }
         if (!inBulletList) {
           html += '<ul>';
@@ -167,6 +191,10 @@ function TiptapTextEditor({
         if (inOrderedList) {
           html += '</ol>';
           inOrderedList = false;
+        }
+        if (inAlphaList) {
+          html += '</ol>';
+          inAlphaList = false;
         }
         if (inBulletList) {
           html += '</ul>';
@@ -179,6 +207,7 @@ function TiptapTextEditor({
     });
 
     if (inOrderedList) html += '</ol>';
+    if (inAlphaList) html += '</ol>';
     if (inBulletList) html += '</ul>';
     return html || `<p>${val}</p>`;
   };
@@ -217,6 +246,21 @@ function TiptapTextEditor({
     editorProps: {
       attributes: {
         class: `outline-none min-h-[1.5rem] break-words text-justify ${className || ''}`,
+      },
+      handleTextInput(view, from, to, text) {
+        if (text === ' ') {
+          const $from = view.state.doc.resolve(from);
+          const lineText = $from.parent.textContent;
+          const match = lineText.match(/^([a-zA-Z])[\.\)]$/);
+          if (match) {
+            const start = from - lineText.length;
+            const tr = view.state.tr.delete(start, to);
+            view.dispatch(tr);
+            editor?.commands.toggleOrderedList();
+            return true;
+          }
+        }
+        return false;
       },
       transformPastedHTML(html) {
         return html
@@ -262,6 +306,15 @@ function TiptapTextEditor({
         }
         .tiptap-editor-container .ProseMirror ol {
           list-style-type: decimal;
+          padding-left: 1.5rem;
+          margin-top: 0.25rem;
+          margin-bottom: 0.25rem;
+        }
+        .tiptap-editor-container .ProseMirror ol.list-alpha,
+        .tiptap-editor-container .ProseMirror ol[type="a"],
+        .tiptap-editor-container .ProseMirror ol[type="A"],
+        .tiptap-editor-container .ProseMirror ol[style*="lower-alpha"] {
+          list-style-type: lower-alpha;
           padding-left: 1.5rem;
           margin-top: 0.25rem;
           margin-bottom: 0.25rem;
@@ -465,6 +518,30 @@ export function ModuleBlockBuilder({
     return () => {
       document.documentElement.classList.remove("modal-open");
       document.body.style.overflow = '';
+    };
+  }, []);
+
+  // Intercept browser back button, Alt+Left shortcuts, and refresh/close tab
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    // Push a dummy history state so hitting back is trapped
+    window.history.pushState({ builderOpen: true }, '');
+
+    const handlePopState = () => {
+      setShowExitConfirmModal(true);
+      window.history.pushState({ builderOpen: true }, '');
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
     };
   }, []);
   

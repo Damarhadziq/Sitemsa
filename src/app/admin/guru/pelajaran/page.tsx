@@ -366,6 +366,8 @@ export default function AdminGuruPelajaranPage() {
     },
   ]);
 
+  const editModuleIdParam = searchParams.get('editModuleId');
+
   // Handle action parameter from query string (e.g. sidebar + button click)
   useEffect(() => {
     if (actionParam === 'add-materi') {
@@ -386,8 +388,18 @@ export default function AdminGuruPelajaranPage() {
         url.searchParams.delete('action');
         window.history.replaceState(null, '', url.pathname + (url.search ? url.search : ''));
       }
+    } else if (editModuleIdParam) {
+      const targetMod = modules.find((m) => m.id === editModuleIdParam);
+      if (targetMod) {
+        handleOpenBlockBuilder(targetMod);
+      }
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('editModuleId');
+        window.history.replaceState(null, '', url.pathname + (url.search ? url.search : ''));
+      }
     }
-  }, [actionParam]);
+  }, [actionParam, editModuleIdParam, modules]);
 
   // DRIBBBLE BLOCK BUILDER MODAL STATE
   const [showBlockBuilder, setShowBlockBuilder] = useState(false);

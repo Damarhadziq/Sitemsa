@@ -125,12 +125,15 @@ export function AdminSidebar() {
     return false;
   };
 
-  const isTeacherMatch = (teacherId?: string, teacherName?: string) => {
+  const isTeacherMatch = (teacherId?: string, teacherName?: string, subject?: string) => {
     if (!user) {
       if (role === 'superadmin') return true;
       return false;
     }
     if (user.role === 'superadmin') return true;
+
+    // Any module/quiz belonging to currentSubject is visible for teachers of this subject
+    if (subject && isSubjectMatch(subject, currentSubject)) return true;
 
     const uId = (user.id || '').toLowerCase().trim();
     const uName = (user.name || '').toLowerCase().trim();
@@ -143,15 +146,16 @@ export function AdminSidebar() {
       if (tName === uName) return true;
       if (tName.includes(uName) || uName.includes(tName)) return true;
     }
+    if (!tName || tName === 'guru sitemsa' || tName === 'pengajar' || tName.includes('guru') || tName.includes('pengajar')) return true;
     return false;
   };
 
   // Filter modules & quizzes for active subject & logged in teacher (guarded against SSR/hydration flash)
   const currentModules = (mounted && user) ? modules.filter(
-    (m) => isSubjectMatch(m.subject, currentSubject) && isTeacherMatch(m.teacherId, m.teacherName)
+    (m) => isSubjectMatch(m.subject, currentSubject) && isTeacherMatch(m.teacherId, m.teacherName, m.subject)
   ) : [];
   const currentQuizzes = (mounted && user) ? quizzes.filter(
-    (q) => isSubjectMatch(q.subject, currentSubject) && isTeacherMatch(q.teacherId, q.teacherName)
+    (q) => isSubjectMatch(q.subject, currentSubject) && isTeacherMatch(q.teacherId, q.teacherName, q.subject)
   ) : [];
 
   const superadminNav = [

@@ -44,6 +44,7 @@ function BuatKuisContent() {
   // Modal States
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showExitConfirmModal, setShowExitConfirmModal] = useState(false);
   const [deleteTargetIndex, setDeleteTargetIndex] = useState<number | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
 
@@ -96,7 +97,7 @@ function BuatKuisContent() {
   }, []);
 
   // Lock global body scroll when any modal is open
-  const isAnyModalOpen = showPublishModal || showSuccessModal || deleteTargetIndex !== null;
+  const isAnyModalOpen = showPublishModal || showSuccessModal || deleteTargetIndex !== null || showExitConfirmModal;
 
   useEffect(() => {
     if (isAnyModalOpen) {
@@ -111,6 +112,30 @@ function BuatKuisContent() {
       document.body.style.overflow = "";
     };
   }, [isAnyModalOpen]);
+
+  // Intercept browser back button, Alt+Left shortcut, and refresh/close tab
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    // Push dummy state to trap back button
+    window.history.pushState({ quizEditorOpen: true }, '');
+
+    const handlePopState = () => {
+      setShowExitConfirmModal(true);
+      window.history.pushState({ quizEditorOpen: true }, '');
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
 
   // Toast / Feedback State
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -336,8 +361,8 @@ function BuatKuisContent() {
         <div className="flex items-center gap-3.5 flex-1 min-w-0 pr-4">
           <button
             type="button"
-            onClick={() => router.push('/admin/guru/pelajaran')}
-            title="Batal"
+            onClick={() => setShowExitConfirmModal(true)}
+            title="Batal / Keluar"
             className="w-9 h-9 rounded-full bg-white border border-[#ECECEC] text-[#737373] hover:text-[#2E2D2D] hover:bg-slate-50 flex items-center justify-center cursor-pointer transition-colors shrink-0"
           >
             <X className="w-4 h-4" />
@@ -984,6 +1009,60 @@ function BuatKuisContent() {
                 className="px-5 py-2.5 rounded-[8px] bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold cursor-pointer transition-colors active:scale-98"
               >
                 Hapus Pertanyaan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 6. EXIT / CANCEL CONFIRMATION MODAL */}
+      {showExitConfirmModal && (
+        <div
+          onClick={() => setShowExitConfirmModal(false)}
+          className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-[16px] border border-[#ECECEC] p-6 w-full max-w-md space-y-5 shadow-2xl animate-in zoom-in-95 duration-200"
+          >
+            {/* Header Title & Close Button */}
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="font-bold text-base text-[#2E2D2D]">Simpan Perubahan Sebelum Keluar?</h3>
+              <button
+                type="button"
+                onClick={() => setShowExitConfirmModal(false)}
+                className="w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                aria-label="Tutup Modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-[#737373] leading-relaxed bg-slate-50 p-3 rounded-[8px] border border-[#ECECEC]">
+              Anda sedang membuat atau mengedit kuis ini. Apakah Anda ingin menyimpannya sebagai draft terlebih dahulu atau keluar tanpa menyimpan?
+            </p>
+
+            {/* Action Buttons: Keluar + Simpan Sebagai Draft */}
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowExitConfirmModal(false);
+                  router.push('/admin/guru/pelajaran');
+                }}
+                className="px-4 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-[#2E2D2D] text-xs font-semibold cursor-pointer transition-colors"
+              >
+                Keluar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowExitConfirmModal(false);
+                  handleSubmitQuiz(false);
+                }}
+                className="px-4 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold shadow-xs cursor-pointer transition-colors"
+              >
+                Simpan Sebagai Draft
               </button>
             </div>
           </div>

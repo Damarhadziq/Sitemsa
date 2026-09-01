@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   TrendingUp,
   TrendingDown,
@@ -22,6 +23,7 @@ import BorderGlow from '@/components/ui/BorderGlow';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminGuruDashboard() {
+  const router = useRouter();
   const { user, role, activeSubjectFilter } = useAuth();
   const { modules, quizzes, students } = useAdminStore();
   const [mounted, setMounted] = useState(false);
@@ -66,12 +68,15 @@ export default function AdminGuruDashboard() {
     return false;
   };
 
-  const isTeacherMatch = (teacherId?: string, teacherName?: string) => {
+  const isTeacherMatch = (teacherId?: string, teacherName?: string, subject?: string) => {
     if (!user) {
       if (role === 'superadmin') return true;
       return false;
     }
     if (user.role === 'superadmin') return true;
+
+    // Any module/quiz belonging to currentSubject is visible for teachers of this subject
+    if (subject && isSubjectMatch(subject, currentSubject)) return true;
 
     const uId = (user.id || '').toLowerCase().trim();
     const uName = (user.name || '').toLowerCase().trim();
@@ -84,15 +89,16 @@ export default function AdminGuruDashboard() {
       if (tName === uName) return true;
       if (tName.includes(uName) || uName.includes(tName)) return true;
     }
+    if (!tName || tName === 'guru sitemsa' || tName === 'pengajar' || tName.includes('guru') || tName.includes('pengajar')) return true;
     return false;
   };
 
   const subjectModules = (mounted && user) ? modules.filter(
-    (m) => isSubjectMatch(m.subject, currentSubject) && isTeacherMatch(m.teacherId, m.teacherName)
+    (m) => isSubjectMatch(m.subject, currentSubject) && isTeacherMatch(m.teacherId, m.teacherName, m.subject)
   ) : [];
 
   const subjectQuizzes = (mounted && user) ? quizzes.filter(
-    (q) => isSubjectMatch(q.subject, currentSubject) && isTeacherMatch(q.teacherId, q.teacherName)
+    (q) => isSubjectMatch(q.subject, currentSubject) && isTeacherMatch(q.teacherId, q.teacherName, q.subject)
   ) : [];
 
   const subjectStudents = students.filter((s) => {
@@ -377,9 +383,21 @@ export default function AdminGuruDashboard() {
 
                 <div className="divide-y divide-[#ECECEC]">
                   {subjectModules.slice(0, 3).map((mod) => (
-                    <div key={mod.id} className="py-3.5 first:pt-0 last:pb-0 flex items-center justify-between">
-                      <div className="space-y-1.5">
-                        <p className="font-semibold text-[#2E2D2D] text-sm">{mod.title}</p>
+                    <div
+                      key={mod.id}
+                      onClick={() => {
+                        if (mod.isPublished === false) {
+                          router.push(`/admin/guru/pelajaran?editModuleId=${mod.id}`);
+                        } else {
+                          router.push(`/admin/guru/pelajaran?item=${mod.id}`);
+                        }
+                      }}
+                      className="py-3.5 first:pt-0 last:pb-0 flex items-center justify-between cursor-pointer group hover:bg-slate-50/80 px-2.5 -mx-2.5 rounded-[8px] transition-colors"
+                    >
+                      <div className="space-y-1.5 min-w-0 pr-3">
+                        <p className="font-semibold text-[#2E2D2D] text-sm group-hover:text-[#2563EB] transition-colors truncate">
+                          {mod.title}
+                        </p>
                         <div className="flex items-center gap-3 text-xs text-[#737373] font-medium">
                           <span className="flex items-center gap-1">
                             <BarChart2 className="w-3.5 h-3.5 text-[#737373]" />
@@ -391,9 +409,15 @@ export default function AdminGuruDashboard() {
                           </span>
                         </div>
                       </div>
-                      <span className="text-[11px] font-semibold text-[#2563EB] bg-blue-50 px-2.5 py-1 rounded-[6px]">
-                        Aktif
-                      </span>
+                      {mod.isPublished === false ? (
+                        <span className="text-[11px] font-bold text-amber-800 bg-amber-100 px-2.5 py-1 rounded-[6px] border border-amber-200 shrink-0">
+                          Draft
+                        </span>
+                      ) : (
+                        <span className="text-[11px] font-semibold text-[#2563EB] bg-blue-50 px-2.5 py-1 rounded-[6px] shrink-0">
+                          Aktif
+                        </span>
+                      )}
                     </div>
                   ))}
 

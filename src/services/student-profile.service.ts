@@ -61,7 +61,7 @@ export const isDummyStudent = (s: any): boolean => {
   const name = (s.name || '').toLowerCase().trim();
   const id = (s.id || '').toLowerCase().trim();
   if (DUMMY_BLACKLIST_EMAILS.has(email)) return true;
-  if (name === 'budi santoso' || name === 'muhammad rizky pratama' || name === 'siti rahmawati' || name === 'siswa sitemsa') return true;
+  if (name === 'budi santoso' || name === 'muhammad rizky pratama' || name === 'siti rahmawati') return true;
   if (id === 'usr-std-2' || id === 'usr-std-3' || id === 'usr-std-4' || id === 'usr-std-5' || id === 'usr-student-1') return true;
   return false;
 };

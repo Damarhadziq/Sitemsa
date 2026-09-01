@@ -23,6 +23,9 @@ import {
 } from "@/services/student-profile.service";
 import { StorageService } from "@/services/storage.service";
 import { InitialsAvatar } from "@/components/ui/InitialsAvatar";
+import { ProgressService } from "@/services/progress.service";
+import { supabase } from "@/lib/supabase";
+import { useAdminStore } from "@/lib/admin-store";
 
 export type ProfileTab = "profile" | "history" | "settings";
 
@@ -64,6 +67,9 @@ export function UserProfileModal({
   const [isSavedToast, setIsSavedToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("Profil berhasil diperbarui");
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [studentAccessedModules, setStudentAccessedModules] = useState<any[]>([]);
+  const [studentQuizHistory, setStudentQuizHistory] = useState<any[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
   // Load from persistent store when modal is opened
   useEffect(() => {
@@ -76,6 +82,53 @@ export function UserProfileModal({
       setGrade(p.grade || "");
       setAvatar(p.avatar || "");
       setBio(p.bio || "");
+
+      const studentId = p.id || p.email || 'std-1';
+      const stdRec = ProgressService.getStudentById(studentId) || (p.email ? ProgressService.getStudentById(p.email) : null);
+      const localModules = stdRec?.accessedModules || [];
+      const localQuizzes = stdRec?.quizHistory || [];
+      setStudentAccessedModules(localModules);
+      setStudentQuizHistory(localQuizzes);
+
+      // Sync cloud quiz attempts from Supabase for this student
+      if (supabase && (p.id || p.email)) {
+        setIsLoadingHistory(true);
+        const query = p.id && p.email ? `student_id.eq.${p.id},student_id.eq.${p.email}` : p.id ? `student_id.eq.${p.id}` : `student_id.eq.${p.email}`;
+        Promise.resolve(
+          supabase
+            .from('quiz_attempts')
+            .select('*')
+            .or(query)
+            .order('created_at', { ascending: false })
+        )
+          .then(({ data: cloudAtts, error }) => {
+            if (!error && cloudAtts && cloudAtts.length > 0) {
+              const mapped = cloudAtts.map((ca: any) => ({
+                id: ca.id,
+                quizId: ca.quiz_id,
+                quizTitle: ca.quiz_title,
+                subject: ca.subject,
+                score: ca.score,
+                maxScore: ca.max_score || 100,
+                status: ca.status || (ca.score >= 75 ? 'Lulus' : 'Perlu Bimbingan'),
+                date: ca.created_at ? ca.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+              }));
+
+              // Merge unique by id
+              const existingIds = new Set(localQuizzes.map((q) => q.id));
+              const merged = [...localQuizzes];
+              mapped.forEach((m: any) => {
+                if (!existingIds.has(m.id)) {
+                  merged.push(m);
+                  existingIds.add(m.id);
+                }
+              });
+              setStudentQuizHistory(merged);
+            }
+          })
+          .catch((err: any) => console.warn('Cloud quiz attempts sync:', err))
+          .finally(() => setIsLoadingHistory(false));
+      }
     }
   }, [isOpen]);
 
@@ -350,29 +403,68 @@ export function UserProfileModal({
                         <HugeiconsIcon icon={Award01Icon} size={15} className="text-[#2563EB]" />
                         Materi yang Telah Dipelajari
                       </h3>
+                      {studentAccessedModules.length > 3 && (
+                        <button
+                          type="button"
+                          onClick={() => setHistorySubView("all-materials")}
+                          className="text-[11px] font-semibold text-[#2563EB] hover:underline cursor-pointer"
+                        >
+                          Lihat Semua ({studentAccessedModules.length})
+                        </button>
+                      )}
                     </div>
 
-                    <div className="border border-[#ECECEC] rounded-[8px] bg-white overflow-hidden p-6 text-center">
-                      <div className="w-10 h-10 rounded-full bg-blue-50 text-[#2563EB] flex items-center justify-center mx-auto mb-2.5">
-                        <HugeiconsIcon icon={Award01Icon} size={20} />
+                    {studentAccessedModules.length === 0 ? (
+                      <div className="border border-[#ECECEC] rounded-[8px] bg-white overflow-hidden p-6 text-center">
+                        <div className="w-10 h-10 rounded-full bg-blue-50 text-[#2563EB] flex items-center justify-center mx-auto mb-2.5">
+                          <HugeiconsIcon icon={Award01Icon} size={20} />
+                        </div>
+                        <p className="text-xs font-bold text-[#2E2D2D] mb-1">
+                          Belum Ada Riwayat Materi
+                        </p>
+                        <p className="text-[11px] text-[#737373] max-w-xs mx-auto mb-3">
+                          Kamu belum menyelesaikan materi pembelajaran. Buka katalog materi untuk mulai belajar!
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onClose();
+                            router.push('/materi');
+                          }}
+                          className="px-3.5 py-1.5 rounded-[6px] bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                        >
+                          Jelajahi Materi
+                        </button>
                       </div>
-                      <p className="text-xs font-bold text-[#2E2D2D] mb-1">
-                        Belum Ada Riwayat Materi
-                      </p>
-                      <p className="text-[11px] text-[#737373] max-w-xs mx-auto mb-3">
-                        Kamu belum menyelesaikan materi pembelajaran. Buka katalog materi untuk mulai belajar!
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          onClose();
-                          router.push('/materi');
-                        }}
-                        className="px-3.5 py-1.5 rounded-[6px] bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
-                      >
-                        Jelajahi Materi
-                      </button>
-                    </div>
+                    ) : (
+                      <div className="border border-[#ECECEC] rounded-[8px] bg-white overflow-hidden divide-y divide-[#ECECEC]">
+                        {studentAccessedModules.slice(0, 3).map((item, idx) => (
+                          <div
+                            key={idx}
+                            onClick={() => {
+                              onClose();
+                              router.push(`/materi/${encodeURIComponent(item.moduleId || item.id || '1')}`);
+                            }}
+                            className="p-3 sm:p-3.5 px-4 hover:bg-[#F6F5FF] transition-colors flex items-center justify-between gap-3 text-xs cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="w-7 h-7 rounded-full bg-blue-50 text-[#2563EB] flex items-center justify-center shrink-0">
+                                <HugeiconsIcon icon={Award01Icon} size={14} />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-bold text-[#2E2D2D] truncate">{item.moduleTitle || item.title}</p>
+                                <span className="text-[10px] text-[#737373]">
+                                  {item.accessedAt ? item.accessedAt.split('T')[0] : 'Baru saja'}
+                                </span>
+                              </div>
+                            </div>
+                            <span className="bg-[#E8E7FF] text-[#2563EB] px-2 py-0.5 rounded-[4px] text-[10px] font-semibold shrink-0">
+                              {item.subject}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* 2. Riwayat Nilai Kuis */}
@@ -382,19 +474,60 @@ export function UserProfileModal({
                         <HugeiconsIcon icon={Award01Icon} size={15} className="text-[#2563EB]" />
                         Hasil &amp; Nilai Uji Pemahaman (Kuis)
                       </h3>
+                      {studentQuizHistory.length > 3 && (
+                        <button
+                          type="button"
+                          onClick={() => setHistorySubView("all-quizzes")}
+                          className="text-[11px] font-semibold text-[#2563EB] hover:underline cursor-pointer"
+                        >
+                          Lihat Semua ({studentQuizHistory.length})
+                        </button>
+                      )}
                     </div>
 
-                    <div className="border border-[#ECECEC] rounded-[8px] bg-white overflow-hidden p-6 text-center">
-                      <div className="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center mx-auto mb-2.5">
-                        <HugeiconsIcon icon={Award01Icon} size={20} />
+                    {studentQuizHistory.length === 0 ? (
+                      <div className="border border-[#ECECEC] rounded-[8px] bg-white overflow-hidden p-6 text-center">
+                        <div className="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center mx-auto mb-2.5">
+                          <HugeiconsIcon icon={Award01Icon} size={20} />
+                        </div>
+                        <p className="text-xs font-bold text-[#2E2D2D] mb-1">
+                          Belum Ada Riwayat Kuis
+                        </p>
+                        <p className="text-[11px] text-[#737373] max-w-xs mx-auto">
+                          Hasil skor evaluasi dan kelulusan kuis akan otomatis tercatat di sini setelah kamu menyelesaikan kuis pengajar.
+                        </p>
                       </div>
-                      <p className="text-xs font-bold text-[#2E2D2D] mb-1">
-                        Belum Ada Riwayat Kuis
-                      </p>
-                      <p className="text-[11px] text-[#737373] max-w-xs mx-auto">
-                        Hasil skor evaluasi dan kelulusan kuis akan otomatis tercatat di sini setelah kamu menyelesaikan kuis pengajar.
-                      </p>
-                    </div>
+                    ) : (
+                      <div className="border border-[#ECECEC] rounded-[8px] bg-white overflow-hidden divide-y divide-[#ECECEC]">
+                        {studentQuizHistory.slice(0, 3).map((quiz, idx) => {
+                          const isPassed = (quiz.score ?? 0) >= 75 || quiz.status === 'Lulus';
+                          return (
+                            <div
+                              key={idx}
+                              className="p-3 sm:p-3.5 px-4 hover:bg-[#F6F5FF] transition-colors flex items-center justify-between gap-3 text-xs"
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${isPassed ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
+                                  <HugeiconsIcon icon={Award01Icon} size={14} />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="font-bold text-[#2E2D2D] truncate">{quiz.quizTitle || quiz.title}</p>
+                                  <span className="text-[10px] text-[#737373]">
+                                    {quiz.subject} &bull; {quiz.date}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className="text-xs font-bold text-[#2E2D2D]">{quiz.score}/100</span>
+                                <span className={`px-2 py-0.5 text-[10px] font-bold rounded-[4px] ${isPassed ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+                                  {quiz.status || (isPassed ? 'Lulus' : 'Perlu Bimbingan')}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -402,88 +535,112 @@ export function UserProfileModal({
               {/* SUBVIEW 2: DEDICATED FULL VIEW - ALL MATERIALS */}
               {historySubView === "all-materials" && (
                 <div className="space-y-3 animate-in fade-in slide-in-from-right-4 duration-200">
-                  <p className="text-xs text-[#737373]">
-                    Menampilkan seluruh daftar materi yang telah Anda pelajari di Sitemsa:
-                  </p>
-
-                  <div className="max-h-[55vh] overflow-y-auto border border-[#ECECEC] rounded-[8px] bg-white">
-                    <ul className="divide-y divide-[#ECECEC]">
-                      {[
-                        { title: "Variabel, Tipe Data & Operasi Logika", subject: "Informatika", progress: 100, status: "Selesai" },
-                        { title: "Komponen Pasif (Resistor, Kapasitor, Induktor)", subject: "Elektronika", progress: 65, status: "Dalam proses" },
-                        { title: "Manajemen Waktu & Teknik Pomodoro", subject: "Bimbingan & Konseling", progress: 100, status: "Selesai" },
-                        { title: "Struktur Percabangan (If-Else & Switch)", subject: "Informatika", progress: 80, status: "Dalam proses" },
-                        { title: "Prinsip Kerja Mesin 4-Langkah", subject: "Otomotif", progress: 40, status: "Dalam proses" },
-                        { title: "Wiraga, Wirama, & Wirasa dalam Tari", subject: "Seni Tari", progress: 100, status: "Selesai" },
-                        { title: "Perulangan & Iterasi Algoritma", subject: "Informatika", progress: 50, status: "Dalam proses" },
-                        { title: "Hukum Ohm & Sirkuit Listrik Dasar", subject: "Elektronika", progress: 100, status: "Selesai" },
-                      ].map((item, idx) => (
-                        <li
-                          key={idx}
-                          className="p-3.5 px-4 hover:bg-[#F6F5FF] transition-colors flex items-center justify-between gap-4 text-xs"
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <span className="font-semibold text-[#2E2D2D] truncate">{item.title}</span>
-                            <span className="bg-[#E8E7FF] text-[#2563EB] px-2 py-0.5 rounded-[4px] text-[10px] font-semibold shrink-0">
-                              {item.subject}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-3 shrink-0 text-[11px]">
-                            <span
-                              className={`font-semibold ${
-                                item.progress === 100 ? "text-emerald-600" : "text-[#2563EB]"
-                              }`}
-                            >
-                              {item.progress}% ({item.status})
-                            </span>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-[#737373]">
+                      Menampilkan seluruh daftar materi yang telah Anda pelajari di Sitemsa:
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setHistorySubView("overview")}
+                      className="text-[11px] font-semibold text-[#2563EB] hover:underline cursor-pointer"
+                    >
+                      Kembali ke Ringkasan
+                    </button>
                   </div>
+
+                  {studentAccessedModules.length === 0 ? (
+                    <div className="border border-[#ECECEC] rounded-[8px] bg-white p-8 text-center">
+                      <p className="text-xs font-bold text-[#2E2D2D] mb-1">Belum Ada Materi yang Dibuka</p>
+                      <p className="text-[11px] text-[#737373] mb-3">Mulai buka modul materi pembelajaran untuk mencatat riwayat.</p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onClose();
+                          router.push('/materi');
+                        }}
+                        className="px-3.5 py-1.5 rounded-[6px] bg-[#2563EB] text-white text-xs font-semibold"
+                      >
+                        Buka Katalog Materi
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="max-h-[55vh] overflow-y-auto border border-[#ECECEC] rounded-[8px] bg-white">
+                      <ul className="divide-y divide-[#ECECEC]">
+                        {studentAccessedModules.map((item, idx) => (
+                          <li
+                            key={idx}
+                            onClick={() => {
+                              onClose();
+                              router.push(`/materi/${encodeURIComponent(item.moduleId || item.id || '1')}`);
+                            }}
+                            className="p-3.5 px-4 hover:bg-[#F6F5FF] transition-colors flex items-center justify-between gap-4 text-xs cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <span className="font-semibold text-[#2E2D2D] truncate">{item.moduleTitle || item.title}</span>
+                              <span className="bg-[#E8E7FF] text-[#2563EB] px-2 py-0.5 rounded-[4px] text-[10px] font-semibold shrink-0">
+                                {item.subject}
+                              </span>
+                            </div>
+                            <span className="text-[11px] font-semibold text-emerald-600 shrink-0">
+                              Dipelajari
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               )}
 
               {/* SUBVIEW 3: DEDICATED FULL VIEW - ALL QUIZZES */}
               {historySubView === "all-quizzes" && (
                 <div className="space-y-3 animate-in fade-in slide-in-from-right-4 duration-200">
-                  <p className="text-xs text-[#737373]">
-                    Menampilkan seluruh riwayat hasil skor kuis dan uji pemahaman Anda:
-                  </p>
-
-                  <div className="max-h-[55vh] overflow-y-auto pr-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {[
-                      { title: "Kuis Variabel & Tipe Data", score: "95/100", correct: "5/5 Benar", grade: "Sangat Baik", date: "14 Agt 2026" },
-                      { title: "Kuis Komponen Pasif", score: "90/100", correct: "9/10 Benar", grade: "Sangat Baik", date: "13 Agt 2026" },
-                      { title: "Kuis Teknik Pomodoro", score: "100/100", correct: "5/5 Benar", grade: "Sempurna", date: "10 Agt 2026" },
-                      { title: "Kuis Algoritma Pemula", score: "85/100", correct: "4/5 Benar", grade: "Baik", date: "08 Agt 2026" },
-                      { title: "Kuis Mesin Otomotif", score: "92/100", correct: "9/10 Benar", grade: "Sangat Baik", date: "05 Agt 2026" },
-                      { title: "Kuis Olahraga & Kebugaran", score: "100/100", correct: "10/10 Benar", grade: "Sempurna", date: "01 Agt 2026" },
-                      { title: "Kuis Struktur Percabangan", score: "88/100", correct: "8/10 Benar", grade: "Sangat Baik", date: "28 Jul 2026" },
-                      { title: "Kuis Hukum Ohm", score: "95/100", correct: "5/5 Benar", grade: "Sangat Baik", date: "20 Jul 2026" },
-                    ].map((quiz, idx) => (
-                      <div
-                        key={idx}
-                        className="p-4 bg-white border border-[#ECECEC] rounded-[8px] space-y-2 hover:bg-[#F6F5FF] transition-colors"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="text-xs font-semibold text-[#2E2D2D]">{quiz.title}</p>
-                          <span className="text-[10px] text-[#737373] shrink-0">{quiz.date}</span>
-                        </div>
-
-                        <div className="flex items-baseline justify-between pt-2 border-t border-[#ECECEC]">
-                          <div>
-                            <span className="text-lg font-bold text-[#2563EB]">{quiz.score}</span>
-                            <span className="text-[11px] text-[#737373] ml-2">({quiz.correct})</span>
-                          </div>
-                          <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-semibold rounded-[4px]">
-                            {quiz.grade}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-[#737373]">
+                      Menampilkan seluruh riwayat hasil skor kuis dan uji pemahaman Anda:
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setHistorySubView("overview")}
+                      className="text-[11px] font-semibold text-[#2563EB] hover:underline cursor-pointer"
+                    >
+                      Kembali ke Ringkasan
+                    </button>
                   </div>
+
+                  {studentQuizHistory.length === 0 ? (
+                    <div className="border border-[#ECECEC] rounded-[8px] bg-white p-8 text-center">
+                      <p className="text-xs font-bold text-[#2E2D2D] mb-1">Belum Ada Kuis yang Dikerjakan</p>
+                      <p className="text-[11px] text-[#737373] mb-3">Selesaikan kuis evaluasi di akhir materi untuk melihat nilai Anda di sini.</p>
+                    </div>
+                  ) : (
+                    <div className="max-h-[55vh] overflow-y-auto pr-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {studentQuizHistory.map((quiz, idx) => {
+                        const isPassed = (quiz.score ?? 0) >= 75 || quiz.status === 'Lulus';
+                        return (
+                          <div
+                            key={idx}
+                            className="p-4 bg-white border border-[#ECECEC] rounded-[8px] space-y-2 hover:bg-[#F6F5FF] transition-colors"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="text-xs font-semibold text-[#2E2D2D]">{quiz.quizTitle || quiz.title}</p>
+                              <span className="text-[10px] text-[#737373] shrink-0">{quiz.date}</span>
+                            </div>
+
+                            <div className="flex items-baseline justify-between pt-2 border-t border-[#ECECEC]">
+                              <div>
+                                <span className="text-lg font-bold text-[#2563EB]">{quiz.score}/100</span>
+                                <span className="text-[11px] text-[#737373] ml-2">({quiz.subject})</span>
+                              </div>
+                              <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-[4px] ${isPassed ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+                                {quiz.status || (isPassed ? 'Lulus' : 'Perlu Bimbingan')}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

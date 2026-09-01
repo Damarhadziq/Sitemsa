@@ -13,10 +13,11 @@ import { useAdminStore } from "@/lib/admin-store";
 import { ProgressService } from "@/services/progress.service";
 import { addUserNotification } from "@/services/notification.service";
 import { recordModuleCompletion } from "@/services/weekly-target.service";
-import { getStudentProfile } from "@/services/student-profile.service";
+import { getStudentProfile, saveStudentProfile } from "@/services/student-profile.service";
 import { toDeterministicUUID } from "@/lib/uuid";
 import { QuizService } from "@/services/quiz.service";
 import { ModuleService } from "@/services/module.service";
+import { supabase } from "@/lib/supabase";
 
 // High-fidelity countdown sound for every tick (3, 2, 1, and Mulai!)
 function playCountdownTick(val: number) {
@@ -520,7 +521,21 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
 
     try {
       const studentProfile = getStudentProfile();
-      const studentId = studentProfile.id || studentProfile.email || "std-1";
+      let studentId = studentProfile.id || studentProfile.email;
+      let studentName = studentProfile.name;
+      let studentEmail = studentProfile.email;
+
+      if (!studentId || !studentEmail) {
+        studentEmail = 'siswa@sitemsa.sch.id';
+        studentName = 'Siswa Sitemsa';
+        studentId = `usr-std-${Date.now()}`;
+        saveStudentProfile({
+          id: studentId,
+          name: studentName,
+          email: studentEmail,
+          grade: 'X PPLG 1',
+        });
+      }
 
       ProgressService.recordQuizAttempt(
         studentId,
@@ -532,17 +547,37 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
           maxScore: 100,
           status: isPassed ? "Lulus" : "Perlu Bimbingan",
         },
-        studentProfile.name,
-        studentProfile.email
+        studentName,
+        studentEmail
       );
 
       ProgressService.updateProgress(
         studentId,
         targetQuizData.subject,
         finalScorePercent,
-        studentProfile.name,
-        studentProfile.email
+        studentName,
+        studentEmail
       );
+
+      // Direct robust Supabase insertion into public.quiz_attempts
+      if (supabase) {
+        supabase
+          .from('quiz_attempts')
+          .insert({
+            student_id: studentId,
+            quiz_id: quizId || "quiz-active",
+            quiz_title: targetQuizData.title,
+            subject: targetQuizData.subject,
+            score: finalScorePercent,
+            max_score: 100,
+            status: isPassed ? "Lulus" : "Perlu Bimbingan",
+          })
+          .then(({ error }) => {
+            if (error) {
+              console.warn('Direct Supabase quiz_attempts insert notice:', error.message);
+            }
+          });
+      }
 
       recordModuleCompletion(quizId || "mod-quiz-active");
 

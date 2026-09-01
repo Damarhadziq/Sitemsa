@@ -144,16 +144,18 @@ export default function AdminGuruMonitoringPage() {
       return hasProgress || hasQuiz || isEnrolled;
     }
 
-    // For specific teacher: Only include students who read this teacher's modules or took this teacher's quizzes
-    const hasReadTeacherModule = s.accessedModules?.some((am) =>
+    // For specific teacher: Include all students with progress, module access, or quiz attempts in currentSubject
+    const hasSubjectProgress = (s.moduleProgress?.[currentSubject] ?? 0) > 0;
+    const hasReadModule = s.accessedModules?.some((am) =>
+      isSubjectMatch(am.subject, currentSubject) ||
       subjectModules.some((sm) => sm.id === am.moduleId || sm.title.toLowerCase() === am.moduleTitle?.toLowerCase() || isTeacherMatch(am.teacherId, am.teacherName))
     );
-
-    const hasTakenTeacherQuiz = s.quizHistory?.some((qh) =>
+    const hasTakenQuiz = s.quizHistory?.some((qh) =>
+      isSubjectMatch(qh.subject, currentSubject) ||
       subjectQuizzes.some((sq) => sq.id === qh.quizId || sq.title.toLowerCase() === qh.quizTitle?.toLowerCase())
     );
 
-    return hasReadTeacherModule || hasTakenTeacherQuiz;
+    return hasSubjectProgress || hasReadModule || hasTakenQuiz;
   });
 
   const filteredStudents = subjectStudents.filter(
@@ -401,8 +403,7 @@ export default function AdminGuruMonitoringPage() {
                     );
 
                     const studentTeacherQuizzes = std.quizHistory.filter((q) => {
-                      if (user?.role === 'superadmin') return isSubjectMatch(q.subject, currentSubject);
-                      return subjectQuizzes.some((sq) => sq.id === q.quizId || sq.title.toLowerCase() === q.quizTitle?.toLowerCase());
+                      return isSubjectMatch(q.subject, currentSubject) || subjectQuizzes.some((sq) => sq.id === q.quizId || sq.title.toLowerCase() === q.quizTitle?.toLowerCase());
                     });
                     const hasQuizzes = studentTeacherQuizzes.length > 0;
                     const totalScore = studentTeacherQuizzes.reduce((acc, q) => acc + q.score, 0);

@@ -137,10 +137,28 @@ export class StudentMonitoringService {
         if (!attemptsErr && cloudAttempts && Array.isArray(cloudAttempts)) {
           cloudAttempts.forEach((att: any) => {
             const studentId = att.student_id;
-            const target =
+            let target =
               Array.from(studentMap.values()).find(
                 (s) => s.id === studentId || s.email.toLowerCase() === String(studentId).toLowerCase()
               );
+
+            if (!target) {
+              const derivedEmail = studentId.includes('@') ? studentId : `${studentId}@sitemsa.sch.id`;
+              const derivedName = studentId.includes('@') ? studentId.split('@')[0] : 'Siswa Sitemsa';
+              target = {
+                id: studentId,
+                nisn: '-',
+                name: derivedName,
+                email: derivedEmail,
+                classGroup: 'X PPLG 1',
+                avatar: `https://i.pravatar.cc/150?u=${studentId}`,
+                lastActive: 'Baru saja',
+                enrolledSubjects: allSubjects,
+                moduleProgress: {},
+                quizHistory: [],
+              };
+              studentMap.set(derivedEmail.toLowerCase(), target);
+            }
 
             if (target) {
               const attemptId = att.id || `att-${target.id}-${att.quiz_id}`;
@@ -157,6 +175,9 @@ export class StudentMonitoringService {
                 });
               }
 
+              if (att.subject && !target.moduleProgress[att.subject]) {
+                target.moduleProgress[att.subject] = 100;
+              }
               target.lastActive = 'Baru saja';
             }
           });

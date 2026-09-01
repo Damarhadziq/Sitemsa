@@ -1032,6 +1032,24 @@ export function ModuleBlockBuilder({
     e.target.value = '';
   };
 
+  // Evaluation QR Code File Picker Handler
+  const handleEvalQrFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const uploadedUrl = await StorageService.uploadImage(file, 'evaluations');
+      setEvalQrUrl(uploadedUrl);
+      setIsDirty(true);
+    } catch (err) {
+      console.warn('Evaluation QR code upload fallback:', err);
+      const objUrl = URL.createObjectURL(file);
+      setEvalQrUrl(objUrl);
+      setIsDirty(true);
+    }
+    e.target.value = '';
+  };
+
   // Trigger Add / Change Attachment
   const triggerAddAttachmentFileFromComputer = (blockId: string, fileItemId?: string) => {
     targetAttachmentBlockIdRef.current = blockId;
@@ -1266,13 +1284,7 @@ export function ModuleBlockBuilder({
       <input
         type="file"
         ref={evalQrInputRef}
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) {
-            setEvalQrUrl(URL.createObjectURL(file));
-          }
-          e.target.value = '';
-        }}
+        onChange={handleEvalQrFileSelect}
         accept="image/*"
         className="hidden"
       />
@@ -3337,38 +3349,6 @@ export function ModuleBlockBuilder({
         </div>
       )}
 
-      {/* EXPANDED BARCODE / QR IMAGE PREVIEW LIGHTBOX MODAL */}
-      {expandedImagePreviewUrl && (
-        <div
-          onClick={() => setExpandedImagePreviewUrl(null)}
-          className="fixed inset-0 z-50 bg-black/75 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="relative max-w-2xl w-full bg-white rounded-[16px] p-4 border border-[#ECECEC] shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col items-center gap-3"
-          >
-            <button
-              type="button"
-              onClick={() => setExpandedImagePreviewUrl(null)}
-              className="absolute right-3 top-3 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors cursor-pointer z-10"
-              title="Tutup Pratinjau"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <h4 className="text-sm font-bold text-[#2E2D2D] pt-1">Pratinjau Gambar Barcode / QR Code</h4>
-
-            <div className="w-full max-h-[70vh] flex items-center justify-center overflow-hidden rounded-[10px] bg-slate-50 p-2 border border-slate-100">
-              <img
-                src={expandedImagePreviewUrl}
-                alt="Barcode / QR Code Preview"
-                className="max-h-[65vh] w-auto object-contain rounded-[6px]"
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ==================== HEADER TOOLBAR MINI-MODALS (EDITING PUBLISHED) ==================== */}
 
       {/* THUMBNAIL UPLOAD MODAL */}
@@ -3913,6 +3893,49 @@ export function ModuleBlockBuilder({
                 className="px-4 py-2 rounded-[8px] text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white transition-colors cursor-pointer shadow-xs"
               >
                 Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* EXPANDED BARCODE / QR IMAGE PREVIEW LIGHTBOX MODAL (TOP-MOST Z-INDEX OVERLAYS ALL MODALS) */}
+      {expandedImagePreviewUrl && (
+        <div
+          onClick={() => setExpandedImagePreviewUrl(null)}
+          className="fixed inset-0 z-[200] bg-black/75 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200 font-sans"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative max-w-md w-full bg-white rounded-[16px] p-5 border border-[#ECECEC] shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col items-center gap-4 text-left"
+          >
+            <button
+              type="button"
+              onClick={() => setExpandedImagePreviewUrl(null)}
+              className="absolute right-4 top-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors cursor-pointer z-10"
+              title="Tutup Pratinjau"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <h4 className="text-sm font-bold text-[#2E2D2D] self-start">Pratinjau Gambar Barcode / QR Code</h4>
+
+            <div className="w-full max-h-[65vh] flex items-center justify-center overflow-hidden rounded-[12px] bg-slate-50 p-4 border border-[#ECECEC]">
+              {/* eslint-disable-next-next/no-img-element */}
+              <img
+                src={expandedImagePreviewUrl}
+                alt="Barcode / QR Code Preview"
+                className="max-h-[50vh] w-auto max-w-full object-contain rounded-[6px]"
+              />
+            </div>
+
+            <div className="flex items-center justify-end w-full pt-1">
+              <button
+                type="button"
+                onClick={() => setExpandedImagePreviewUrl(null)}
+                className="w-full py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold transition-colors cursor-pointer"
+              >
+                Tutup Pratinjau
               </button>
             </div>
           </div>

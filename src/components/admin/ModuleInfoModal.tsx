@@ -20,7 +20,7 @@ export function ModuleInfoModal({
   onClose,
   title,
   subject,
-  teacherName = 'Ibu Siti Rahmawati, S.Pd.',
+  teacherName = 'Pengajar Sitemsa',
   teacherRole,
   teacherAvatar,
   publishDate = '20 Agustus 2026',

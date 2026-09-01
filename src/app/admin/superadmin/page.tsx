@@ -285,7 +285,7 @@ export default function SuperadminDashboard() {
                       <div className="flex items-center gap-3 text-xs text-[#737373]">
                         <span className="flex items-center gap-1">
                           <UserCheck className="w-3.5 h-3.5 text-[#737373]" />
-                          Pak Budi Prasetyo
+                          Mochammad Rizal D. D.
                         </span>
                         <span className="flex items-center gap-1">
                           <Layers className="w-3.5 h-3.5 text-[#737373]" />

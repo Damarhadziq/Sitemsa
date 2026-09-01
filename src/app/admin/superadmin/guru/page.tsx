@@ -356,7 +356,7 @@ export default function SuperadminGuruPage() {
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Contoh: Pak Budi Prasetyo, M.Kom."
+                  placeholder="Contoh: Mochammad Rizal D. D."
                   required
                   className="w-full h-10 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] focus:border-[#2563EB] outline-none"
                 />

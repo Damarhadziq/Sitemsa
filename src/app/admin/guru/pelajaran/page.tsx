@@ -463,8 +463,8 @@ export default function AdminGuruPelajaranPage() {
       setNewlyAddedMateriId(editingModule.id);
       setTimeout(() => setNewlyAddedMateriId(null), 3000);
     } else {
-      const currentTeacherId = user?.id || 't2';
-      const currentTeacherName = user?.name || 'Mochammad Rizal D. D.';
+      const currentTeacherId = user?.id || 't-1';
+      const currentTeacherName = user?.name || 'Guru Pengampu';
       const fixedId = generateEntityId('mod', currentSubject, currentTeacherId);
       addModule({
         id: fixedId,
@@ -781,7 +781,7 @@ export default function AdminGuruPelajaranPage() {
       passScore: 80,
       questionCount: 3,
       teacherId: user?.id || 't-1',
-      teacherName: user?.name || 'Pak Budi Prasetyo, M.Kom.',
+      teacherName: user?.name || 'Guru Pengampu',
       published: true,
       questions: [
         {
@@ -831,7 +831,7 @@ export default function AdminGuruPelajaranPage() {
       passScore: parseInt(manualQuizPassScore, 10) || 75,
       questionCount: manualQuestions.length,
       teacherId: user?.id || 't-1',
-      teacherName: user?.name || 'Pak Budi Prasetyo, M.Kom.',
+      teacherName: user?.name || 'Guru Pengampu',
       published: true,
       questions: manualQuestions.map((q, idx) => ({
         id: generateEntityId('q', currentSubject, user?.id || 't-1'),

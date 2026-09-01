@@ -511,7 +511,7 @@ class BackendDataStore {
       title: '5 Kunci Sukses Praktik Kerja Lapangan (PKL) di Industri Teknologi',
       category: 'Karir & Vokasi',
       readTime: '5 Menit',
-      author: 'Ibu Siti Rahmawati, S.T.',
+      author: 'Innova Riskianugrah R.',
       date: '15 Agu 2026',
       image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80',
       excerpt: 'Persiapan mental, portofolio keahlian, dan etika kerja profesional sebelum memasuki dunia industri.',

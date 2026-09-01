@@ -17,6 +17,7 @@ import {
   BookMarked,
   Sparkles,
   Pencil,
+  Camera,
   Loader2,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
@@ -165,8 +166,8 @@ export function AdminHeader() {
           {showProfileMenu && (
             <div className="absolute right-0 mt-1.5 w-48 bg-white rounded-[10px] border border-[#ECECEC] p-1.5 z-50 space-y-0.5 font-sans animate-in fade-in zoom-in-95 duration-150">
               <div className="px-3 py-2 border-b border-[#ECECEC]">
-                <p className="text-xs font-bold text-[#2E2D2D] truncate">{user?.name || 'Pak Budi Prasetyo, M.Kom.'}</p>
-                <p className="text-[11px] text-[#737373] truncate">{user?.email || 'budi.guru@sitemsa.sch.id'}</p>
+                <p className="text-xs font-bold text-[#2E2D2D] truncate">{user?.name || 'Pengajar Sitemsa'}</p>
+                <p className="text-[11px] text-[#737373] truncate">{user?.email || 'pengajar@sitemsa.sch.id'}</p>
               </div>
 
               <button
@@ -203,50 +204,55 @@ export function AdminHeader() {
         </div>
       </div>
 
-      {/* ADMIN PROFILE MODAL */}
+      {/* MODAL LIHAT & EDIT PROFIL PENGAJAR / SUPERADMIN */}
       {showProfileModal && (
         <div
+          className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
           onClick={() => setShowProfileModal(false)}
-          className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans"
         >
           <div
+            className="bg-white rounded-[24px] border border-[#ECECEC] max-w-md w-full p-6 sm:p-7 shadow-2xl relative space-y-6 animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
-            className="bg-white w-full max-w-sm rounded-[16px] border border-[#ECECEC] p-6 relative animate-in zoom-in-95 duration-150 text-center"
           >
-            {/* Top-Right Close Button */}
-            <button
-              onClick={() => setShowProfileModal(false)}
-              className="absolute top-4 right-4 p-1 rounded-full text-[#737373] hover:text-[#2E2D2D] hover:bg-slate-100 transition-colors cursor-pointer"
-              aria-label="Tutup Modal"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-[#F1F5F9] pb-4">
+              <div className="space-y-0.5">
+                <h2 className="text-lg font-bold text-[#2E2D2D]">Profil Pengajar</h2>
+                <p className="text-xs text-[#737373]">Data kredensial dan identitas pengajar resmi Sitemsa.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowProfileModal(false)}
+                className="w-8 h-8 rounded-full bg-[#F8FAFC] border border-[#ECECEC] flex items-center justify-center text-[#737373] hover:text-[#2E2D2D] transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
-            {/* Profile Avatar Centered + Pencil Edit Icon + Name & Role */}
-            <div className="flex flex-col items-center text-center pt-2 pb-1 space-y-3">
-              <div className="relative">
-                {isUploadingAvatar ? (
-                  <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center border-2 border-[#2563EB]">
-                    <Loader2 className="w-6 h-6 text-[#2563EB] animate-spin" />
-                  </div>
-                ) : user?.avatar ? (
-                  <img
-                    src={user.avatar}
-                    alt={user?.name || 'Profil'}
-                    className="w-20 h-20 rounded-full object-cover border-2 border-[#2563EB]"
-                  />
-                ) : (
-                  <InitialsAvatar
-                    name={user?.name || 'Guru'}
-                    sizeClass="w-20 h-20"
-                    textSizeClass="text-xl"
-                  />
-                )}
+            {/* Profile Avatar Header with Photo Upload Trigger */}
+            <div className="flex flex-col items-center text-center space-y-3 pt-2">
+              <div className="relative group">
+                <div className="w-20 h-20 rounded-full border-2 border-[#2563EB]/20 shadow-sm overflow-hidden flex items-center justify-center bg-blue-50">
+                  {user?.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.name || 'Avatar'}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <InitialsAvatar
+                      name={user?.name || (role === 'superadmin' ? 'Superadmin' : 'Pengajar')}
+                      sizeClass="w-full h-full"
+                      textSizeClass="text-2xl"
+                    />
+                  )}
+                </div>
+
                 <label
-                  title="Update Foto Profil"
-                  className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-[#2563EB] hover:bg-blue-700 text-white flex items-center justify-center cursor-pointer border-2 border-white transition-transform active:scale-95 shadow-xs"
+                  className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#2563EB] text-white flex items-center justify-center shadow-md cursor-pointer hover:bg-blue-700 transition-all"
+                  title="Ganti Foto Profil"
                 >
-                  <Pencil className="w-3.5 h-3.5" />
+                  <Camera className="w-3.5 h-3.5" />
                   <input
                     type="file"
                     accept="image/*"
@@ -258,7 +264,7 @@ export function AdminHeader() {
 
               <div className="space-y-1">
                 <h3 className="text-base font-bold text-[#2E2D2D]">
-                  {user?.name || 'Pak Budi Prasetyo, M.Kom.'}
+                  {user?.name || 'Pengajar Sitemsa'}
                 </h3>
                 <span className="text-[11px] font-bold text-[#2563EB] bg-blue-50 px-2.5 py-0.5 rounded border border-blue-100 inline-block">
                   {role === 'superadmin' ? 'Super Administrator' : 'Pengajar / Guru'}
@@ -266,7 +272,7 @@ export function AdminHeader() {
               </div>
             </div>
 
-            {/* Data Diri Info List (Directly on Modal Canvas, Matching Detail Tim Style) */}
+            {/* Data Diri Info List */}
             <div className="space-y-4 px-1 pt-2 text-left">
               {/* Email Resmi */}
               <div className="space-y-1">
@@ -274,7 +280,7 @@ export function AdminHeader() {
                   Email Resmi
                 </span>
                 <p className="text-sm font-bold text-[#2E2D2D]">
-                  {(user?.email || 'budi.guru@sitemsa.sch.id').replace('@sintesa.id', '@sitemsa.sch.id')}
+                  {(user?.email || 'pengajar@sitemsa.sch.id').replace('@sintesa.id', '@sitemsa.sch.id')}
                 </p>
               </div>
 

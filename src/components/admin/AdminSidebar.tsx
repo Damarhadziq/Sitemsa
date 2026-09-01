@@ -461,21 +461,35 @@ export function AdminSidebar() {
                 type="button"
                 onClick={() => {
                   setShowProfileMenu(false);
+                  setShowProfileModal(true);
+                }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#2E2D2D] hover:text-[#2563EB] hover:bg-[#F8FAFC] rounded-[8px] transition-colors text-left"
+              >
+                <User className="w-4 h-4 text-[#737373]" />
+                <span>Lihat Profil Pengajar</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowProfileMenu(false);
                   setShowSettingsModal(true);
                 }}
-                className="w-full text-left px-3 py-2 rounded-[6px] text-xs font-medium text-[#2E2D2D] hover:bg-slate-50 flex items-center gap-2 transition-colors cursor-pointer"
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#2E2D2D] hover:text-[#2563EB] hover:bg-[#F8FAFC] rounded-[8px] transition-colors text-left"
               >
                 <Settings className="w-3.5 h-3.5 text-[#737373]" />
                 <span>Pengaturan Akun</span>
               </button>
-
+              <div className="h-px bg-[#F1F5F9] my-1" />
               <button
                 type="button"
-                onClick={logout}
-                className="w-full text-left px-3 py-2 rounded-[6px] text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition-colors cursor-pointer"
+                onClick={() => {
+                  setShowProfileMenu(false);
+                  logout();
+                }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 rounded-[8px] transition-colors text-left"
               >
-                <LogOut className="w-3.5 h-3.5 text-rose-600" />
-                <span>Keluar</span>
+                <LogOut className="w-4 h-4 text-rose-500" />
+                <span>Keluar Akun</span>
               </button>
             </div>
           )}
@@ -513,7 +527,7 @@ export function AdminSidebar() {
                   />
                 ) : (
                   <InitialsAvatar
-                    name={user?.name || 'Guru'}
+                    name={user?.name || 'Pengajar Sitemsa'}
                     sizeClass="w-20 h-20"
                     textSizeClass="text-xl"
                   />
@@ -539,7 +553,7 @@ export function AdminSidebar() {
 
               <div className="space-y-1">
                 <h3 className="text-base font-bold text-[#2E2D2D]">
-                  {user?.name || 'Pak Budi Prasetyo, M.Kom.'}
+                  {user?.name || 'Pengajar Sitemsa'}
                 </h3>
                 <span className="text-[11px] font-bold text-[#2563EB] bg-blue-50 px-2.5 py-0.5 rounded border border-blue-100 inline-block">
                   {role === 'superadmin' ? 'Super Administrator' : 'Pengajar / Guru'}

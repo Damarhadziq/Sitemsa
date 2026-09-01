@@ -139,9 +139,8 @@ function BuatKuisContent() {
 
   // Toast / Feedback State
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Realtime Form Validation Checks
+  // Realtime Form Validation Checks & Publication Requirements Checklist
   const isTitleValid = title.trim().length > 0;
   const isPassScoreValid = passScore !== '' && !isNaN(Number(passScore)) && Number(passScore) > 0;
   const hasQuestions = questions.length > 0;
@@ -152,19 +151,55 @@ function BuatKuisContent() {
   const allQuestionsValidKeys = questions.every(
     (q) => q.options[q.correctAnswer] !== undefined && q.options[q.correctAnswer].trim().length > 0
   );
+  const allQuestionsHaveExplanation = questions.every(
+    (q) => q.explanation && q.explanation.trim().length > 0
+  );
 
-  // Entire form mandatory completeness condition: title + each question has title & options with selected answer
-  const isFormComplete =
-    isTitleValid &&
-    isPassScoreValid &&
-    hasQuestions &&
-    allQuestionsHaveText &&
-    allQuestionsHaveAllOptions &&
-    allQuestionsValidKeys;
+  // Requirements checklist items for publishing quiz
+  const publicationRequirements = [
+    {
+      id: 'title',
+      label: 'Judul Kuis Terisi',
+      description: isTitleValid ? 'Judul kuis telah diisi' : 'Masukkan judul kuis',
+      isMet: isTitleValid,
+    },
+    {
+      id: 'subject',
+      label: 'Mata Pelajaran Ditentukan',
+      description: subject ? `Mata pelajaran: ${subject}` : 'Pilih mata pelajaran',
+      isMet: Boolean(subject),
+    },
+    {
+      id: 'kkm',
+      label: 'Batas Nilai Kelulusan (KKM)',
+      description: isPassScoreValid ? `KKM diset ke ${passScore}%` : 'Tentukan batas nilai KKM',
+      isMet: isPassScoreValid,
+    },
+    {
+      id: 'questionsText',
+      label: 'Teks Pertanyaan Soal Lengkap',
+      description: `${questions.filter((q) => q.text.trim().length > 0).length}/${questions.length} pertanyaan terisi`,
+      isMet: hasQuestions && allQuestionsHaveText,
+    },
+    {
+      id: 'options',
+      label: 'Pilihan Jawaban (A-D) Lengkap',
+      description: allQuestionsHaveAllOptions ? 'Semua opsi jawaban terisi' : 'Ada opsi jawaban yang belum lengkap',
+      isMet: allQuestionsHaveAllOptions,
+    },
+    {
+      id: 'keyAndExplanation',
+      label: 'Kunci Jawaban & Pembahasan',
+      description: (allQuestionsValidKeys && allQuestionsHaveExplanation) ? 'Kunci & pembahasan terisi lengkap' : 'Kunci jawaban atau pembahasan belum lengkap',
+      isMet: allQuestionsValidKeys && allQuestionsHaveExplanation,
+    },
+  ];
+
+  const metRequirementsCount = publicationRequirements.filter((item) => item.isMet).length;
+  const isFormComplete = metRequirementsCount === publicationRequirements.length;
 
   // Question Helper Functions
   const handleAddQuestion = () => {
-    const newQuestionNumber = questions.length + 1;
     setQuestions((prev) => [
       ...prev,
       {
@@ -239,9 +274,9 @@ function BuatKuisContent() {
     );
   };
 
-  // Form Submission (Create or Update)
-  const handleSubmitQuiz = (published: boolean) => {
-    if (published && !isFormComplete) {
+  // Form Submission (Always published directly)
+  const handleSubmitQuiz = () => {
+    if (!isFormComplete) {
       alert('Mohon lengkapi seluruh bidang formulir wajib (Judul, Batas KKM, Soal, Kunci Jawaban & Pembahasan) sebelum mempublikasikan kuis.');
       return;
     }
@@ -251,11 +286,7 @@ function BuatKuisContent() {
       return;
     }
 
-    if (published) {
-      setIsPublishing(true);
-    } else {
-      setIsSubmitting(true);
-    }
+    setIsPublishing(true);
 
     try {
       if (existingQuiz) {
@@ -267,7 +298,7 @@ function BuatKuisContent() {
           passScore: Number(passScore) || 75,
           questionCount: questions.length,
           questions,
-          published: isAlreadyPublished ? true : published,
+          published: true,
         });
 
         QuizService.updateQuiz(existingQuiz.id, {
@@ -276,7 +307,7 @@ function BuatKuisContent() {
           duration: duration || '15 Menit',
           passScore: Number(passScore) || 75,
           questions,
-          published: isAlreadyPublished ? true : published,
+          published: true,
         });
         quizzesClientService.update(existingQuiz.id, {
           subject,
@@ -284,19 +315,12 @@ function BuatKuisContent() {
           duration: duration || '15 Menit',
           passScore: Number(passScore) || 75,
           questions,
-          published: isAlreadyPublished ? true : published,
+          published: true,
         } as any).catch((e) => console.warn('Quiz client sync update error:', e));
 
-        if (published) {
-          setIsPublishing(false);
-          setShowPublishModal(false);
-          setShowSuccessModal(true);
-        } else {
-          setToastMessage('Draft kuis berhasil disimpan!');
-          setTimeout(() => {
-            router.push('/admin/guru/pelajaran');
-          }, 1000);
-        }
+        setIsPublishing(false);
+        setShowPublishModal(false);
+        setShowSuccessModal(true);
       } else {
         // Create new quiz
         const newQuizId = addQuiz({
@@ -308,7 +332,7 @@ function BuatKuisContent() {
           questions,
           teacherId: user?.id || 't2',
           teacherName: user?.name || 'Damar Hadziq H.',
-          published,
+          published: true,
         });
 
         QuizService.createQuiz({
@@ -320,7 +344,7 @@ function BuatKuisContent() {
           questions,
           teacherId: user?.id || 't2',
           teacherName: user?.name || 'Damar Hadziq H.',
-          published,
+          published: true,
         });
         quizzesClientService.create({
           id: newQuizId,
@@ -331,31 +355,23 @@ function BuatKuisContent() {
           questions,
           teacherId: user?.id || 't-1',
           teacherName: user?.name || 'Pengajar Sitemsa',
-          published,
+          published: true,
         } as any).catch((e) => console.warn('Quiz client sync create error:', e));
 
-        if (published) {
-          setIsPublishing(false);
-          setShowPublishModal(false);
-          setShowSuccessModal(true);
-        } else {
-          setToastMessage('Draft kuis berhasil disimpan!');
-          setTimeout(() => {
-            router.push('/admin/guru/pelajaran');
-          }, 1000);
-        }
+        setIsPublishing(false);
+        setShowPublishModal(false);
+        setShowSuccessModal(true);
       }
     } catch (err) {
       console.error(err);
       alert('Gagal menyimpan kuis. Mohon periksa kembali inputan Anda.');
       setIsPublishing(false);
-      setIsSubmitting(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-white text-[#2E2D2D] flex flex-col font-sans">
-      {/* 1. TOP HEADER BAR (Matching Tambah Materi: Cancel X + Title Input + Save as draft + Continue) */}
+      {/* 1. TOP HEADER BAR: Cancel X + Title Input + Action Button */}
       <header className="sticky top-0 z-40 bg-white border-b border-[#ECECEC] h-16 px-6 lg:px-12 flex items-center justify-between shrink-0">
         {/* Left Section: Circular Cancel Button + Title Input */}
         <div className="flex items-center gap-3.5 flex-1 min-w-0 pr-4">
@@ -377,34 +393,19 @@ function BuatKuisContent() {
           />
         </div>
 
-        {/* Right Section: Action Buttons (No Draft button if already published, 'Continue' to open Publish Modal) */}
+        {/* Right Section: Action Button */}
         <div className="flex items-center gap-2.5 shrink-0">
-          {!isAlreadyPublished && (
-            <button
-              type="button"
-              disabled={isSubmitting || !title.trim()}
-              onClick={() => handleSubmitQuiz(false)}
-              className={`px-4 py-2 rounded-[8px] border border-[#ECECEC] text-xs font-semibold transition-all ${
-                title.trim() && !isSubmitting
-                  ? 'bg-white hover:bg-slate-50 text-[#2E2D2D] cursor-pointer'
-                  : 'bg-slate-100 text-[#AAAAAA] cursor-not-allowed opacity-50'
-              }`}
-            >
-              Simpan Draft
-            </button>
-          )}
-
           <button
             type="button"
-            disabled={!isFormComplete}
+            disabled={!isFormComplete || isPublishing}
             onClick={() => setShowPublishModal(true)}
-            className={`px-5 py-2 rounded-[8px] text-xs font-semibold transition-all ${
+            className={`px-5 py-2 rounded-[8px] text-xs font-bold transition-all ${
               isFormComplete
                 ? 'bg-[#2563EB] hover:bg-blue-700 text-white cursor-pointer active:scale-98 shadow-xs'
                 : 'bg-slate-100 text-[#AAAAAA] cursor-not-allowed opacity-50 shadow-none'
             }`}
           >
-            Continue
+            {isAlreadyPublished ? 'Update Kuis' : 'Terbitkan Kuis'}
           </button>
         </div>
       </header>
@@ -680,9 +681,76 @@ function BuatKuisContent() {
             </section>
           </div>
 
-          {/* RIGHT SIDEBAR SUMMARY (4 Columns, Realtime Dashboard) */}
+          {/* RIGHT SIDEBAR SUMMARY & PERSYARATAN PUBLIKASI (4 Columns, Realtime Dashboard) */}
           <aside className="lg:col-span-4 space-y-5 lg:sticky lg:top-24">
-            {/* Realtime Ringkasan Kuis Card (Without line divider, without publish button) */}
+            {/* 1. Card Persyaratan Publikasi Kuis */}
+            <div className="bg-white border border-[#ECECEC] rounded-[16px] p-6 space-y-4 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-bold text-[#2E2D2D]">Persyaratan Publikasi</h3>
+                <span
+                  className={`text-[11px] font-bold px-2.5 py-1 rounded-full transition-colors ${
+                    isFormComplete
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      : 'bg-blue-50 text-[#2563EB] border border-blue-100'
+                  }`}
+                >
+                  {metRequirementsCount}/{publicationRequirements.length} Terpenuhi
+                </span>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                <div
+                  className={`h-full transition-all duration-300 ${
+                    isFormComplete ? 'bg-emerald-500' : 'bg-[#2563EB]'
+                  }`}
+                  style={{ width: `${(metRequirementsCount / publicationRequirements.length) * 100}%` }}
+                />
+              </div>
+
+              {/* Checklist Items */}
+              <div className="space-y-2.5 pt-1">
+                {publicationRequirements.map((item) => (
+                  <div
+                    key={item.id}
+                    className={`flex items-start gap-3 p-2.5 rounded-[10px] transition-colors ${
+                      item.isMet
+                        ? 'bg-emerald-50/40 border border-emerald-100/60'
+                        : 'bg-slate-50/60 border border-slate-100'
+                    }`}
+                  >
+                    <div className="mt-0.5 shrink-0">
+                      {item.isMet ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      ) : (
+                        <div className="w-4 h-4 rounded-full border-2 border-slate-300 bg-white" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p
+                        className={`text-xs font-semibold ${
+                          item.isMet ? 'text-[#2E2D2D]' : 'text-slate-500'
+                        }`}
+                      >
+                        {item.label}
+                      </p>
+                      <p className="text-[11px] text-[#737373] mt-0.5 leading-tight">
+                        {item.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {isFormComplete && (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-[10px] flex items-center gap-2 text-xs font-bold text-emerald-800 animate-in fade-in duration-200">
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Semua persyaratan terpenuhi. Kuis siap diterbitkan!</span>
+                </div>
+              )}
+            </div>
+
+            {/* 2. Realtime Ringkasan Kuis Card */}
             <div className="bg-white border border-[#ECECEC] rounded-[16px] p-6 space-y-5">
               <h3 className="text-base font-bold text-[#2E2D2D]">
                 Ringkasan Kuis
@@ -723,7 +791,7 @@ function BuatKuisContent() {
               </div>
             </div>
 
-            {/* Tips Card */}
+            {/* 3. Tips Card */}
             <div className="bg-gradient-to-br from-blue-50/80 via-indigo-50/40 to-white border border-blue-100 rounded-[16px] p-5 space-y-2 text-xs">
               <h4 className="font-bold text-[#2E2D2D]">
                 Tips Menyusun Kuis Vokasi
@@ -890,21 +958,19 @@ function BuatKuisContent() {
 
             {/* Modal Action Buttons (No Top Divider Line) */}
             <div className="flex items-center justify-end gap-2.5 pt-2">
-              {!isAlreadyPublished && (
-                <button
-                  type="button"
-                  disabled={isPublishing}
-                  onClick={() => handleSubmitQuiz(false)}
-                  className="px-4 py-2.5 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-[#2E2D2D] text-xs font-semibold cursor-pointer transition-colors"
-                >
-                  Save as draft
-                </button>
-              )}
+              <button
+                type="button"
+                disabled={isPublishing}
+                onClick={() => setShowPublishModal(false)}
+                className="px-4 py-2.5 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-[#2E2D2D] text-xs font-semibold cursor-pointer transition-colors"
+              >
+                Batal
+              </button>
 
               <button
                 type="button"
                 disabled={isPublishing || !isFormComplete}
-                onClick={() => handleSubmitQuiz(true)}
+                onClick={() => handleSubmitQuiz()}
                 className={`px-6 py-2.5 rounded-[8px] text-xs font-bold transition-all flex items-center justify-center gap-2 ${
                   !isFormComplete || isPublishing
                     ? 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
@@ -914,10 +980,10 @@ function BuatKuisContent() {
                 {isPublishing ? (
                   <>
                     <RefreshCw className="w-3.5 h-3.5 animate-spin text-white shrink-0" />
-                    <span>{isAlreadyPublished ? 'Menerbitkan Ulang...' : 'Menerbitkan Kuis...'}</span>
+                    <span>{isAlreadyPublished ? 'Memperbarui Kuis...' : 'Menerbitkan Kuis...'}</span>
                   </>
                 ) : (
-                  <span>{isAlreadyPublished ? 'Publikasikan Ulang' : 'Publikasikan Kuis'}</span>
+                  <span>{isAlreadyPublished ? 'Update Kuis' : 'Publikasikan Kuis'}</span>
                 )}
               </button>
             </div>
@@ -942,10 +1008,10 @@ function BuatKuisContent() {
 
             <div className="space-y-2">
               <h3 className="font-bold text-lg text-[#2E2D2D]">
-                {isAlreadyPublished ? 'Kuis Berhasil Dipublikasikan Ulang!' : 'Kuis Berhasil Dipublikasikan!'}
+                {isAlreadyPublished ? 'Kuis Berhasil Diperbarui!' : 'Kuis Berhasil Dipublikasikan!'}
               </h3>
               <p className="text-xs text-[#737373] leading-relaxed max-w-xs mx-auto">
-                Kuis evaluasi ini sekarang telah aktif dan siap dikerjakan oleh seluruh siswa di platform Sitemsa.
+                Kuis evaluasi ini sekarang telah aktif dan siap dihubungkan ke materi pembelajaran di platform Sitemsa.
               </p>
             </div>
 
@@ -983,7 +1049,7 @@ function BuatKuisContent() {
               <button
                 type="button"
                 onClick={() => setDeleteTargetIndex(null)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#737373] hover:text-[#2E2D2D] flex items-center justify-center cursor-pointer transition-colors shrink-0"
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#737373] hover:text-[#2E2D2D] flex items-center justify-center transition-colors cursor-pointer shrink-0"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1027,7 +1093,7 @@ function BuatKuisContent() {
           >
             {/* Header Title & Close Button */}
             <div className="flex items-center justify-between gap-3">
-              <h3 className="font-bold text-base text-[#2E2D2D]">Simpan Perubahan Sebelum Keluar?</h3>
+              <h3 className="font-bold text-base text-[#2E2D2D]">Keluar dari Pembuatan Kuis?</h3>
               <button
                 type="button"
                 onClick={() => setShowExitConfirmModal(false)}
@@ -1039,30 +1105,27 @@ function BuatKuisContent() {
             </div>
 
             <p className="text-xs text-[#737373] leading-relaxed bg-slate-50 p-3 rounded-[8px] border border-[#ECECEC]">
-              Anda sedang membuat atau mengedit kuis ini. Apakah Anda ingin menyimpannya sebagai draft terlebih dahulu atau keluar tanpa menyimpan?
+              Perubahan pada kuis yang belum diterbitkan akan hilang. Apakah Anda yakin ingin keluar ke halaman pelajaran?
             </p>
 
-            {/* Action Buttons: Keluar + Simpan Sebagai Draft */}
+            {/* Action Buttons: Batal / Lanjut Mengedit + Keluar */}
             <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowExitConfirmModal(false)}
+                className="px-4 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-[#2E2D2D] text-xs font-semibold cursor-pointer transition-colors"
+              >
+                Lanjut Mengedit
+              </button>
               <button
                 type="button"
                 onClick={() => {
                   setShowExitConfirmModal(false);
                   router.push('/admin/guru/pelajaran');
                 }}
-                className="px-4 py-2 rounded-[8px] bg-slate-100 hover:bg-slate-200 text-[#2E2D2D] text-xs font-semibold cursor-pointer transition-colors"
+                className="px-4 py-2 rounded-[8px] bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs cursor-pointer transition-colors"
               >
                 Keluar
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowExitConfirmModal(false);
-                  handleSubmitQuiz(false);
-                }}
-                className="px-4 py-2 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold shadow-xs cursor-pointer transition-colors"
-              >
-                Simpan Sebagai Draft
               </button>
             </div>
           </div>

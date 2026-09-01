@@ -18,8 +18,8 @@ CREATE TABLE IF NOT EXISTS public.users (
 
 CREATE TABLE IF NOT EXISTS public.team_members (
   id TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
-  role TEXT NOT NULL,
+  title TEXT NOT NULL,
+  subtitle TEXT NOT NULL,
   handle TEXT NOT NULL,
   division TEXT NOT NULL,
   border_color TEXT DEFAULT '#2563EB',
@@ -110,10 +110,10 @@ ON CONFLICT (email) DO UPDATE SET
   nip = EXCLUDED.nip,
   avatar = EXCLUDED.avatar;
 
--- 5. Delete & Populate public.team_members
+-- 5. Delete & Populate public.team_members (using title, subtitle, handle, division, border_color, image)
 DELETE FROM public.team_members;
 
-INSERT INTO public.team_members (id, name, role, handle, division, border_color, image) VALUES
+INSERT INTO public.team_members (id, title, subtitle, handle, division, border_color, image) VALUES
   ('tm-1', 'Damar Hadziq H.', 'Developer', '@damarhadziq', 'Pend. Informatika', '#4F46E5', NULL),
   ('tm-2', 'Mochammad Rizal D. D.', 'Sub-Developer', '@rizaldaffa', 'Pend. Informatika', '#3B82F6', NULL),
   ('tm-3', 'M. Sulthon Abdullah A.', 'Sub-Developer', '@sulthonazzam', 'Pend. Informatika', '#2563EB', NULL),
@@ -139,8 +139,8 @@ INSERT INTO public.team_members (id, name, role, handle, division, border_color,
   ('tm-23', 'Meliana Dwi Yanti', 'Instructional Designer', '@melianadwi', 'Pend. Seni Tari', '#10B981', NULL),
   ('tm-24', 'Hasnita Ivangka', 'Instructional Designer', '@hasnitaivangka', 'Pend. Seni Tari', '#06B6D4', NULL)
 ON CONFLICT (id) DO UPDATE SET
-  name = EXCLUDED.name,
-  role = EXCLUDED.role,
+  title = EXCLUDED.title,
+  subtitle = EXCLUDED.subtitle,
   handle = EXCLUDED.handle,
   division = EXCLUDED.division,
   border_color = EXCLUDED.border_color,

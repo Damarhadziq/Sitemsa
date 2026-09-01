@@ -75,6 +75,9 @@ export interface TeamMemberItem {
   division: string;
   image: string;
   borderColor: string;
+  instagramUrl?: string;
+  linkedinUrl?: string;
+  email?: string;
 }
 
 export interface ModuleItem {

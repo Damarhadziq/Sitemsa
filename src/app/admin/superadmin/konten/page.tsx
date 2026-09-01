@@ -17,6 +17,8 @@ import {
   FileText,
   HelpCircle,
   Users,
+  Camera,
+  Loader2,
 } from 'lucide-react';
 import {
   useAdminStore,
@@ -27,6 +29,9 @@ import {
   TeamMemberItem,
 } from '@/lib/admin-store';
 import { ArticleService } from '@/services/article.service';
+import { TeamService } from '@/services/team.service';
+import { StorageService } from '@/services/storage.service';
+import { InitialsAvatar } from '@/components/ui/InitialsAvatar';
 import { supabase } from '@/lib/supabase';
 
 export default function SuperadminKontenPage() {
@@ -56,11 +61,17 @@ export default function SuperadminKontenPage() {
 
   const [activeTab, setActiveTab] = useState<'hero' | 'articles' | 'subjects' | 'docs' | 'faqs' | 'team'>('hero');
 
-  // Live fetch articles on mount from Supabase
+  // Live fetch articles & team on mount from Supabase
   React.useEffect(() => {
     ArticleService.fetchFromSupabase().then((data) => {
       if (data && data.length > 0) {
         useAdminStore.setState({ articles: data });
+      }
+    });
+
+    TeamService.getTeamMembers().then((data) => {
+      if (data && data.length > 0) {
+        useAdminStore.setState({ teamMembers: data as any });
       }
     });
   }, []);
@@ -119,15 +130,35 @@ export default function SuperadminKontenPage() {
   // Team Member Form Modal state
   const [showTeamModal, setShowTeamModal] = useState(false);
   const [editingTeamMember, setEditingTeamMember] = useState<TeamMemberItem | null>(null);
+  const [isUploadingTeamPhoto, setIsUploadingTeamPhoto] = useState(false);
   const [teamForm, setTeamForm] = useState({
     title: '',
     subtitle: 'Instructional Designer',
     handle: '',
     division: 'Pend. Informatika',
-    image: 'https://i.pravatar.cc/300?img=11',
+    image: '',
     borderColor: '#4F46E5',
+    instagramUrl: '',
+    linkedinUrl: '',
   });
   const [deleteTargetTeam, setDeleteTargetTeam] = useState<TeamMemberItem | null>(null);
+
+  const handleUploadTeamPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingTeamPhoto(true);
+    try {
+      const publicUrl = await StorageService.uploadFile(file, 'team_photos');
+      if (publicUrl) {
+        setTeamForm((prev) => ({ ...prev, image: publicUrl }));
+      }
+    } catch (err) {
+      console.warn('Upload error:', err);
+    } finally {
+      setIsUploadingTeamPhoto(false);
+    }
+  };
 
   const categoryOptions = ['Tips Belajar', 'Teknologi', 'Strategi Belajar', 'Berita Vokasi'];
   const docCategoryOptions: DocArticleItem['category'][] = ['Modul & Pembelajaran', 'Kuis & Barcode', 'Profil & Nilai'];
@@ -351,34 +382,52 @@ export default function SuperadminKontenPage() {
       subtitle: 'Instructional Designer',
       handle: '@username',
       division: 'Pend. Informatika',
-      image: 'https://i.pravatar.cc/300?img=15',
-      borderColor: '#2563EB',
+      image: '',
+      borderColor: '#4F46E5',
+      instagramUrl: '',
+      linkedinUrl: '',
     });
     setShowTeamModal(true);
   };
 
-  const handleOpenEditTeam = (tm: TeamMemberItem) => {
+  const handleOpenEditTeam = (tm: any) => {
     setEditingTeamMember(tm);
     setTeamForm({
-      title: tm.title,
-      subtitle: tm.subtitle,
-      handle: tm.handle,
-      division: tm.division,
-      image: tm.image,
+      title: tm.title || '',
+      subtitle: tm.subtitle || 'Instructional Designer',
+      handle: tm.handle || '',
+      division: tm.division || 'Pend. Informatika',
+      image: tm.image || '',
       borderColor: tm.borderColor || '#2563EB',
+      instagramUrl: tm.instagramUrl || '',
+      linkedinUrl: tm.linkedinUrl || '',
     });
     setShowTeamModal(true);
   };
 
-  const handleSaveTeam = (e: React.FormEvent) => {
+  const handleSaveTeam = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!teamForm.title.trim()) return;
 
+    const payload = {
+      id: editingTeamMember ? editingTeamMember.id : `tm-${Date.now()}`,
+      title: teamForm.title.trim(),
+      subtitle: teamForm.subtitle.trim(),
+      handle: teamForm.handle.trim(),
+      division: teamForm.division,
+      image: teamForm.image,
+      borderColor: teamForm.borderColor || '#2563EB',
+      instagramUrl: teamForm.instagramUrl || (teamForm.handle ? `https://instagram.com/${teamForm.handle.replace('@', '')}` : 'https://instagram.com'),
+      linkedinUrl: teamForm.linkedinUrl || 'https://linkedin.com',
+    };
+
     if (editingTeamMember) {
-      updateTeamMember(editingTeamMember.id, teamForm);
+      updateTeamMember(editingTeamMember.id, payload as any);
     } else {
-      addTeamMember(teamForm);
+      addTeamMember(payload as any);
     }
+
+    await TeamService.saveTeamMember(payload as any);
     setShowTeamModal(false);
   };
 
@@ -798,17 +847,20 @@ export default function SuperadminKontenPage() {
             {teamMembers.map((tm) => (
               <div
                 key={tm.id}
-                className="bg-white rounded-[10px] border border-[#ECECEC] p-4 flex flex-col justify-between space-y-3 hover:border-blue-200 transition-colors"
+                className="bg-white rounded-[12px] border border-[#ECECEC] p-4 flex flex-col justify-between space-y-3 hover:border-blue-200 transition-colors shadow-2xs"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div
-                    className="w-12 h-12 rounded-full p-0.5 border-2 shrink-0 overflow-hidden"
+                    className="w-12 h-12 rounded-full p-0.5 border-2 shrink-0 overflow-hidden flex items-center justify-center bg-slate-50"
                     style={{ borderColor: tm.borderColor || '#2563EB' }}
                   >
-                    {/* eslint-disable-next-next/no-img-element */}
-                    <img src={tm.image} alt={tm.title} className="w-full h-full rounded-full object-cover" />
+                    {tm.image ? (
+                      <img src={tm.image} alt={tm.title} className="w-full h-full rounded-full object-cover" />
+                    ) : (
+                      <InitialsAvatar name={tm.title} sizeClass="w-full h-full" textSizeClass="text-xs" />
+                    )}
                   </div>
-                  <span className="text-[10px] font-semibold text-[#2563EB] bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100 shrink-0">
+                  <span className="text-[10px] font-semibold text-[#2563EB] bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100 shrink-0">
                     {tm.division}
                   </span>
                 </div>
@@ -819,21 +871,32 @@ export default function SuperadminKontenPage() {
                   <p className="text-[11px] text-[#737373] truncate">{tm.handle}</p>
                 </div>
 
-                <div className="pt-2 border-t border-[#ECECEC] flex items-center justify-end gap-1">
-                  <button
-                    onClick={() => handleOpenEditTeam(tm)}
-                    className="p-1.5 rounded-[6px] hover:bg-slate-100 text-[#2E2D2D] cursor-pointer"
-                    title="Edit data anggota"
-                  >
-                    <Edit2 className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => setDeleteTargetTeam(tm)}
-                    className="p-1.5 rounded-[6px] hover:bg-rose-50 text-rose-600 cursor-pointer"
-                    title="Hapus anggota"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                <div className="pt-2 border-t border-[#ECECEC] flex items-center justify-between gap-1">
+                  <div className="flex items-center gap-1.5 text-xs text-[#737373]">
+                    {tm.instagramUrl && (
+                      <span className="text-[10px] bg-pink-50 text-pink-600 px-1.5 py-0.5 rounded font-medium">IG</span>
+                    )}
+                    {tm.linkedinUrl && (
+                      <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-medium">LI</span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => handleOpenEditTeam(tm)}
+                      className="p-1.5 rounded-[6px] hover:bg-slate-100 text-[#2E2D2D] cursor-pointer"
+                      title="Edit data anggota"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => setDeleteTargetTeam(tm)}
+                      className="p-1.5 rounded-[6px] hover:bg-rose-50 text-rose-600 cursor-pointer"
+                      title="Hapus anggota"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -1146,7 +1209,58 @@ export default function SuperadminKontenPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSaveTeam} className="p-6 space-y-4">
+            <form onSubmit={handleSaveTeam} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+              {/* Photo & Avatar Section */}
+              <div>
+                <label className="block text-xs font-bold text-[#2E2D2D] mb-2">Foto Profil Anggota</label>
+                <div className="flex items-center gap-4 bg-slate-50 p-3 rounded-[12px] border border-[#ECECEC]">
+                  <div
+                    className="w-16 h-16 rounded-full p-0.5 border-2 shrink-0 overflow-hidden flex items-center justify-center bg-white relative group"
+                    style={{ borderColor: teamForm.borderColor || '#2563EB' }}
+                  >
+                    {teamForm.image ? (
+                      <img src={teamForm.image} alt="Preview" className="w-full h-full rounded-full object-cover" />
+                    ) : (
+                      <InitialsAvatar name={teamForm.title || 'Team'} sizeClass="w-full h-full" textSizeClass="text-sm" />
+                    )}
+                    {isUploadingTeamPhoto && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full">
+                        <Loader2 className="w-5 h-5 text-white animate-spin" />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-1.5 flex-1">
+                    <div className="flex items-center gap-2">
+                      <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-semibold shadow-2xs transition-colors">
+                        <Camera className="w-3.5 h-3.5" />
+                        <span>{isUploadingTeamPhoto ? 'Mengunggah...' : 'Pilih Foto Baru'}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleUploadTeamPhoto}
+                          disabled={isUploadingTeamPhoto}
+                          className="hidden"
+                        />
+                      </label>
+
+                      {teamForm.image && (
+                        <button
+                          type="button"
+                          onClick={() => setTeamForm({ ...teamForm, image: '' })}
+                          className="px-2.5 py-1.5 rounded-[8px] border border-[#ECECEC] hover:bg-rose-50 text-rose-600 text-xs font-medium transition-colors"
+                        >
+                          Hapus Foto
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-[#737373]">
+                      Format JPG, PNG, atau WEBP. Jika kosong, akan otomatis menampilkan inisial nama.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-bold text-[#2E2D2D] mb-1">Nama Lengkap & Gelar</label>
                 <input
@@ -1212,18 +1326,31 @@ export default function SuperadminKontenPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-[#2E2D2D] mb-1">URL Foto Profil / Avatar</label>
-                <input
-                  type="text"
-                  value={teamForm.image}
-                  onChange={(e) => setTeamForm({ ...teamForm, image: e.target.value })}
-                  placeholder="https://i.pravatar.cc/300?img=11 atau /images/nama.jpg"
-                  className="w-full h-10 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] focus:border-[#2563EB] outline-none"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-[#2E2D2D] mb-1">Link Profil Instagram</label>
+                  <input
+                    type="url"
+                    value={teamForm.instagramUrl || ''}
+                    onChange={(e) => setTeamForm({ ...teamForm, instagramUrl: e.target.value })}
+                    placeholder="https://instagram.com/username"
+                    className="w-full h-10 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] focus:border-[#2563EB] outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#2E2D2D] mb-1">Link Profil LinkedIn</label>
+                  <input
+                    type="url"
+                    value={teamForm.linkedinUrl || ''}
+                    onChange={(e) => setTeamForm({ ...teamForm, linkedinUrl: e.target.value })}
+                    placeholder="https://linkedin.com/in/username"
+                    className="w-full h-10 px-3.5 rounded-[8px] bg-white border border-[#ECECEC] text-xs text-[#2E2D2D] focus:border-[#2563EB] outline-none"
+                  />
+                </div>
               </div>
 
-              <div className="pt-2 flex items-center justify-end gap-2 border-t border-[#ECECEC]">
+              <div className="pt-3 flex items-center justify-end gap-2 border-t border-[#ECECEC]">
                 <button
                   type="button"
                   onClick={() => setShowTeamModal(false)}
@@ -1233,9 +1360,10 @@ export default function SuperadminKontenPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs cursor-pointer shadow-xs"
+                  disabled={isUploadingTeamPhoto}
+                  className="px-5 py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white font-semibold text-xs cursor-pointer shadow-xs disabled:opacity-50"
                 >
-                  Simpan data
+                  Simpan Data Anggota
                 </button>
               </div>
             </form>
@@ -1515,9 +1643,13 @@ export default function SuperadminKontenPage() {
                 Batal
               </button>
               <button
-                onClick={() => {
-                  deleteTeamMember(deleteTargetTeam.id);
-                  setDeleteTargetTeam(null);
+                onClick={async () => {
+                  if (deleteTargetTeam) {
+                    const target = deleteTargetTeam;
+                    deleteTeamMember(target.id);
+                    await TeamService.deleteTeamMember(target.id);
+                    setDeleteTargetTeam(null);
+                  }
                 }}
                 className="px-4 py-2 rounded-[8px] bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 cursor-pointer shadow-xs transition-all"
               >

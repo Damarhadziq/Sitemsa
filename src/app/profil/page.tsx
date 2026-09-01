@@ -52,7 +52,7 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-white flex flex-col font-sans">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-16 w-full flex-1">
+      <main className="max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-36 md:pb-16 w-full flex-1">
         {/* Profile Banner & Overview Card */}
         <section className="mb-8 p-6 md:p-8 bg-[#FAFAFA] border border-[#ECECEC] rounded-[12px] flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex items-center gap-5">

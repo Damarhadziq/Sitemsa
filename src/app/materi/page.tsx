@@ -375,7 +375,7 @@ function MateriLandingContent() {
     <div className="min-h-screen bg-white flex flex-col font-sans">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-28 sm:pb-32 md:pb-16 w-full flex-1">
+      <main className="max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-36 sm:pb-36 md:pb-16 w-full flex-1">
         {/* Header Hero Section */}
         <section className="mb-6 text-center max-w-3xl mx-auto space-y-2 md:space-y-3">
           <h1 className="text-[28px] sm:text-3xl md:text-4xl font-bold text-[#2E2D2D] tracking-tight leading-tight max-w-[290px] sm:max-w-xs md:max-w-none mx-auto">

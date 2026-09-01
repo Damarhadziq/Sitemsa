@@ -308,7 +308,7 @@ export default function DocumentationPage() {
     <div className="min-h-screen bg-white text-[#2E2D2D] flex flex-col font-sans">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-28 sm:pb-32 md:pb-16 w-full flex-1 space-y-6">
+      <main className="max-w-7xl mx-auto px-6 lg:px-12 pt-24 pb-36 md:pb-16 w-full flex-1 space-y-6">
         {/* DESKTOP VIEW (100% ORIGINAL 2-COLUMN UNTOUCHED WITH PAGINATION) */}
         <div className="hidden lg:block space-y-6">
           <section className="space-y-4 max-w-3xl">

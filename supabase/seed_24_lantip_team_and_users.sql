@@ -24,13 +24,17 @@ CREATE TABLE IF NOT EXISTS public.team_members (
   division TEXT NOT NULL,
   border_color TEXT DEFAULT '#2563EB',
   image TEXT DEFAULT '',
+  instagram_url TEXT DEFAULT '',
+  linkedin_url TEXT DEFAULT '',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Allow empty/nullable image on team_members
+-- Allow empty/nullable image, instagram_url, linkedin_url on team_members
 DO $$
 BEGIN
   ALTER TABLE public.team_members ALTER COLUMN image DROP NOT NULL;
+  ALTER TABLE public.team_members ADD COLUMN IF NOT EXISTS instagram_url TEXT DEFAULT '';
+  ALTER TABLE public.team_members ADD COLUMN IF NOT EXISTS linkedin_url TEXT DEFAULT '';
 EXCEPTION
   WHEN OTHERS THEN NULL;
 END $$;
@@ -114,38 +118,40 @@ ON CONFLICT (email) DO UPDATE SET
   nip = EXCLUDED.nip,
   avatar = EXCLUDED.avatar;
 
--- 5. Delete & Populate public.team_members
+-- 5. Delete & Populate public.team_members with Instagram & LinkedIn URLs
 DELETE FROM public.team_members;
 
-INSERT INTO public.team_members (id, title, subtitle, handle, division, border_color, image) VALUES
-  ('tm-1', 'Damar Hadziq H.', 'Developer', '@damarhadziq', 'Pend. Informatika', '#4F46E5', ''),
-  ('tm-2', 'Mochammad Rizal D. D.', 'Sub-Developer', '@rizaldaffa', 'Pend. Informatika', '#3B82F6', ''),
-  ('tm-3', 'M. Sulthon Abdullah A.', 'Sub-Developer', '@sulthonazzam', 'Pend. Informatika', '#2563EB', ''),
-  ('tm-4', 'Lovyca Imeyra E.', 'Sub-Developer', '@lovycaimeyra', 'Pend. Informatika', '#10B981', ''),
-  ('tm-5', 'Innova Riskianugrah R.', 'Instructional Designer', '@innovariskia', 'BK', '#06B6D4', ''),
-  ('tm-6', 'Fateka Maulana A. K.', 'Instructional Designer', '@fatekamaulana', 'BK', '#10B981', ''),
-  ('tm-7', 'Erintan Tsuraya R.', 'Instructional Designer', '@erintantsuraya', 'BK', '#06B6D4', ''),
-  ('tm-8', 'Dinda Riestia', 'Instructional Designer', '@dindariestia', 'BK', '#8B5CF6', ''),
-  ('tm-9', 'Ardyan Santoso', 'Instructional Designer', '@ardyansantoso', 'Pend. Otomotif', '#3B82F6', ''),
-  ('tm-10', 'Satrio', 'Instructional Designer', '@satrio', 'Pend. Otomotif', '#4F46E5', ''),
-  ('tm-11', 'Agam Ainun Ramadhan', 'Instructional Designer', '@agamainun', 'Pend. Otomotif', '#8B5CF6', ''),
-  ('tm-12', 'Banu Mahmuda H.', 'Instructional Designer', '@banumahmuda', 'Pend. Elektronika', '#EF4444', ''),
-  ('tm-13', 'Anisa Susilawati', 'Instructional Designer', '@anisasusilawati', 'Pend. Elektronika', '#8B5CF6', ''),
-  ('tm-14', 'Nova Milyard', 'Instructional Designer', '@novamilyard', 'Pend. Elektronika', '#EF4444', ''),
-  ('tm-15', 'Vella Pratika I. N.', 'Instructional Designer', '@vellapratika', 'Pend. Elektronika', '#F59E0B', ''),
-  ('tm-16', 'Fahrul Adiyansa', 'Instructional Designer', '@fahruladiyansa', 'Pend. Elektronika', '#8B5CF6', ''),
-  ('tm-17', 'Tubagus Fauzan A.', 'Instructional Designer', '@tubagusfauzan', 'Pend. Elektronika', '#06B6D4', ''),
-  ('tm-18', 'Brilian Anugraheni', 'Instructional Designer', '@briliananugraheni', 'Pend. Olahraga', '#3B82F6', ''),
-  ('tm-19', 'Ahmad Luthfi F.', 'Instructional Designer', '@ahmadluthfi', 'Pend. Olahraga', '#F59E0B', ''),
-  ('tm-20', 'Rinal Febriarso D. P.', 'Instructional Designer', '@rinalfebriarso', 'Pend. Olahraga', '#06B6D4', ''),
-  ('tm-21', 'Vivi Riska Wardani', 'Instructional Designer', '@viviriska', 'Pend. Seni Tari', '#10B981', ''),
-  ('tm-22', 'Anita Dwi Ningtyas', 'Instructional Designer', '@anitadwi', 'Pend. Seni Tari', '#EF4444', ''),
-  ('tm-23', 'Meliana Dwi Yanti', 'Instructional Designer', '@melianadwi', 'Pend. Seni Tari', '#10B981', ''),
-  ('tm-24', 'Hasnita Ivangka', 'Instructional Designer', '@hasnitaivangka', 'Pend. Seni Tari', '#06B6D4', '')
+INSERT INTO public.team_members (id, title, subtitle, handle, division, border_color, image, instagram_url, linkedin_url) VALUES
+  ('tm-1', 'Damar Hadziq H.', 'Developer', '@damarhadziq', 'Pend. Informatika', '#4F46E5', '', 'https://instagram.com/damarhadziq', 'https://linkedin.com'),
+  ('tm-2', 'Mochammad Rizal D. D.', 'Sub-Developer', '@rizaldaffa', 'Pend. Informatika', '#3B82F6', '', 'https://instagram.com/rizaldaffa', 'https://linkedin.com'),
+  ('tm-3', 'M. Sulthon Abdullah A.', 'Sub-Developer', '@sulthonazzam', 'Pend. Informatika', '#2563EB', '', 'https://instagram.com/sulthonazzam', 'https://linkedin.com'),
+  ('tm-4', 'Lovyca Imeyra E.', 'Sub-Developer', '@lovycaimeyra', 'Pend. Informatika', '#10B981', '', 'https://instagram.com/lovycaimeyra', 'https://linkedin.com'),
+  ('tm-5', 'Innova Riskianugrah R.', 'Instructional Designer', '@innovariskia', 'BK', '#06B6D4', '', 'https://instagram.com/innovariskia', 'https://linkedin.com'),
+  ('tm-6', 'Fateka Maulana A. K.', 'Instructional Designer', '@fatekamaulana', 'BK', '#10B981', '', 'https://instagram.com/fatekamaulana', 'https://linkedin.com'),
+  ('tm-7', 'Erintan Tsuraya R.', 'Instructional Designer', '@erintantsuraya', 'BK', '#06B6D4', '', 'https://instagram.com/erintantsuraya', 'https://linkedin.com'),
+  ('tm-8', 'Dinda Riestia', 'Instructional Designer', '@dindariestia', 'BK', '#8B5CF6', '', 'https://instagram.com/dindariestia', 'https://linkedin.com'),
+  ('tm-9', 'Ardyan Santoso', 'Instructional Designer', '@ardyansantoso', 'Pend. Otomotif', '#3B82F6', '', 'https://instagram.com/ardyansantoso', 'https://linkedin.com'),
+  ('tm-10', 'Satrio', 'Instructional Designer', '@satrio', 'Pend. Otomotif', '#4F46E5', '', 'https://instagram.com/satrio', 'https://linkedin.com'),
+  ('tm-11', 'Agam Ainun Ramadhan', 'Instructional Designer', '@agamainun', 'Pend. Otomotif', '#8B5CF6', '', 'https://instagram.com/agamainun', 'https://linkedin.com'),
+  ('tm-12', 'Banu Mahmuda H.', 'Instructional Designer', '@banumahmuda', 'Pend. Elektronika', '#EF4444', '', 'https://instagram.com/banumahmuda', 'https://linkedin.com'),
+  ('tm-13', 'Anisa Susilawati', 'Instructional Designer', '@anisasusilawati', 'Pend. Elektronika', '#8B5CF6', '', 'https://instagram.com/anisasusilawati', 'https://linkedin.com'),
+  ('tm-14', 'Nova Milyard', 'Instructional Designer', '@novamilyard', 'Pend. Elektronika', '#EF4444', '', 'https://instagram.com/novamilyard', 'https://linkedin.com'),
+  ('tm-15', 'Vella Pratika I. N.', 'Instructional Designer', '@vellapratika', 'Pend. Elektronika', '#F59E0B', '', 'https://instagram.com/vellapratika', 'https://linkedin.com'),
+  ('tm-16', 'Fahrul Adiyansa', 'Instructional Designer', '@fahruladiyansa', 'Pend. Elektronika', '#8B5CF6', '', 'https://instagram.com/fahruladiyansa', 'https://linkedin.com'),
+  ('tm-17', 'Tubagus Fauzan A.', 'Instructional Designer', '@tubagusfauzan', 'Pend. Elektronika', '#06B6D4', '', 'https://instagram.com/tubagusfauzan', 'https://linkedin.com'),
+  ('tm-18', 'Brilian Anugraheni', 'Instructional Designer', '@briliananugraheni', 'Pend. Olahraga', '#3B82F6', '', 'https://instagram.com/briliananugraheni', 'https://linkedin.com'),
+  ('tm-19', 'Ahmad Luthfi F.', 'Instructional Designer', '@ahmadluthfi', 'Pend. Olahraga', '#F59E0B', '', 'https://instagram.com/ahmadluthfi', 'https://linkedin.com'),
+  ('tm-20', 'Rinal Febriarso D. P.', 'Instructional Designer', '@rinalfebriarso', 'Pend. Olahraga', '#06B6D4', '', 'https://instagram.com/rinalfebriarso', 'https://linkedin.com'),
+  ('tm-21', 'Vivi Riska Wardani', 'Instructional Designer', '@viviriska', 'Pend. Seni Tari', '#10B981', '', 'https://instagram.com/viviriska', 'https://linkedin.com'),
+  ('tm-22', 'Anita Dwi Ningtyas', 'Instructional Designer', '@anitadwi', 'Pend. Seni Tari', '#EF4444', '', 'https://instagram.com/anitadwi', 'https://linkedin.com'),
+  ('tm-23', 'Meliana Dwi Yanti', 'Instructional Designer', '@melianadwi', 'Pend. Seni Tari', '#10B981', '', 'https://instagram.com/melianadwi', 'https://linkedin.com'),
+  ('tm-24', 'Hasnita Ivangka', 'Instructional Designer', '@hasnitaivangka', 'Pend. Seni Tari', '#06B6D4', '', 'https://instagram.com/hasnitaivangka', 'https://linkedin.com')
 ON CONFLICT (id) DO UPDATE SET
   title = EXCLUDED.title,
   subtitle = EXCLUDED.subtitle,
   handle = EXCLUDED.handle,
   division = EXCLUDED.division,
   border_color = EXCLUDED.border_color,
-  image = EXCLUDED.image;
+  image = EXCLUDED.image,
+  instagram_url = EXCLUDED.instagram_url,
+  linkedin_url = EXCLUDED.linkedin_url;

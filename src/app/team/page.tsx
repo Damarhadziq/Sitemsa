@@ -7,17 +7,7 @@ import AnimatedList from "@/components/ui/AnimatedList";
 import { Sparkles, ArrowRight, X, GraduationCap, Building2, Briefcase } from "lucide-react";
 import { useAdminStore } from "@/lib/admin-store";
 
-export interface TeamMember {
-  id?: string;
-  image: string;
-  title: string;
-  subtitle: string;
-  handle: string;
-  borderColor: string;
-  division: string;
-}
-
-import { TeamService, FALLBACK_TEAM_MEMBERS } from "@/services/team.service";
+import { TeamService, FALLBACK_TEAM_MEMBERS, TeamMember } from "@/services/team.service";
 
 // Helper untuk mendapatkan data detail prodi & fakultas presisi sesuai spesifikasi
 const getMemberDetails = (division: string) => {
@@ -161,7 +151,7 @@ export default function TeamPage() {
     <div className="min-h-screen bg-white flex flex-col font-sans">
       <Navbar />
 
-      <main className="flex-1 max-w-7xl mx-auto px-6 lg:px-12 pt-28 pb-8 md:pb-20 w-full">
+      <main className="flex-1 max-w-7xl mx-auto px-6 lg:px-12 pt-28 pb-36 md:pb-20 w-full">
         {/* HEADER SECTION */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-50 via-indigo-50/70 to-blue-50/90 border border-blue-100/90 text-[#2563EB] text-xs font-bold mb-5 shadow-2xs">
@@ -315,10 +305,15 @@ export default function TeamPage() {
               </div>
             </div>
 
-            {/* Social Media Links (No Top Divider Line!) */}
+            {/* Social Media Links (Dynamic Instagram & LinkedIn) */}
             <div className="flex items-center justify-center gap-3 pt-2">
               <a
-                href="https://instagram.com"
+                href={
+                  selectedMember.instagramUrl ||
+                  (selectedMember.handle
+                    ? `https://instagram.com/${selectedMember.handle.replace('@', '')}`
+                    : 'https://instagram.com')
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 py-2.5 rounded-[12px] bg-slate-100 hover:bg-slate-200 text-[#2E2D2D] text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
@@ -331,7 +326,7 @@ export default function TeamPage() {
                 <span>Instagram</span>
               </a>
               <a
-                href="https://linkedin.com"
+                href={selectedMember.linkedinUrl || 'https://linkedin.com'}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 py-2.5 rounded-[12px] bg-blue-50 hover:bg-blue-100 text-[#2563EB] text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"

@@ -2799,7 +2799,6 @@ export default function MateriDetailPage({
                   // 4. STEP-BY-STEP PRACTICE BLOCK
                   if (block.type === 'steps' && block.steps && block.steps.length > 0) {
                     const stepHeading = stripHtml(block.stepSectionTitle) || 'Langkah-langkah Praktik';
-                    const stepSub = stripHtml(block.stepSectionSubtitle);
 
                     return (
                       <section key={blockId} id={blockId} className="space-y-4 pt-4 scroll-mt-28">
@@ -2807,11 +2806,6 @@ export default function MateriDetailPage({
                           <h2 className="text-lg md:text-xl font-bold text-[#2E2D2D]">
                             {stepHeading}
                           </h2>
-                          {stepSub && (
-                            <p className="text-xs md:text-sm font-medium text-[#737373] leading-relaxed mt-1 text-justify">
-                              {stepSub}
-                            </p>
-                          )}
                         </div>
 
                         <div className="bg-white border border-[#ECECEC] rounded-[10px] overflow-hidden divide-y divide-[#ECECEC] shadow-2xs">

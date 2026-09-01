@@ -804,10 +804,9 @@ export function ModuleBlockBuilder({
     } else if (type === 'attachment') {
       newBlock.attachments = [];
     } else if (type === 'steps') {
-      newBlock.stepSectionTitle = 'Panduan Langkah Praktik';
-      newBlock.stepSectionSubtitle = 'Tuliskan deskripsi pengantar atau petunjuk instruksi di sini...';
+      newBlock.stepSectionTitle = '';
       newBlock.steps = [
-        { title: 'Langkah 1', desc: 'Penjelasan instruksi langkah pertama praktikum...' },
+        { title: '', desc: '' },
       ];
     } else if (type === 'callout') {
       newBlock.textValue = 'Prinsip Utama: Deklarasikan variabel dengan nama yang deskriptif dan mencerminkan isi datanya agar kode mudah dibaca oleh tim pengembangan.';
@@ -2307,27 +2306,15 @@ export function ModuleBlockBuilder({
                         {/* 5. STEP BY STEP BLOCK */}
                         {block.type === 'steps' && (
                           <div className="space-y-4">
-                            {/* Section Header: Title & Subtitle (Tanpa garis pembatas) */}
-                            <div className="space-y-1.5">
-                              {/* Judul Section Input */}
-                              <div>
-                                <AutoResizeTextarea
-                                  value={block.stepSectionTitle ?? 'Panduan Langkah Praktik'}
-                                  onChange={(val) => updateBlockById(block.id, { stepSectionTitle: val })}
-                                  placeholder="Tuliskan Judul Section (misal: Panduan Langkah Praktik Eksplorasi Gerak)..."
-                                  className="w-full text-base md:text-lg font-bold text-[#2E2D2D] leading-snug border-none focus:ring-0 outline-none bg-transparent placeholder:text-[#AAAAAA] p-0"
-                                />
-                              </div>
-
-                              {/* Subtitle / Deskripsi Pengantar Input */}
-                              <div>
-                                <AutoResizeTextarea
-                                  value={block.stepSectionSubtitle ?? ''}
-                                  onChange={(val) => updateBlockById(block.id, { stepSectionSubtitle: val })}
-                                  placeholder="Tuliskan subtitle atau deskripsi pengantar (misal: Berdasarkan contoh tema 'Kehidupan di Lingkungan Sekolah')..."
-                                  className="w-full text-xs md:text-sm font-medium text-[#737373] leading-relaxed border-none focus:ring-0 outline-none bg-transparent placeholder:text-[#AAAAAA] p-0"
-                                />
-                              </div>
+                            {/* Section Header: Clean Title Input matching Text Section */}
+                            <div>
+                              <input
+                                type="text"
+                                value={block.stepSectionTitle || ''}
+                                onChange={(e) => updateBlockById(block.id, { stepSectionTitle: e.target.value })}
+                                placeholder="Heading Judul Langkah Praktik..."
+                                className="w-full text-2xl font-bold text-[#2E2D2D] placeholder:text-[#AAAAAA] border-none focus:ring-0 outline-none bg-transparent"
+                              />
                             </div>
 
                             {/* Step Cards List */}

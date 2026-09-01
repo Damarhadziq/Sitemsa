@@ -101,11 +101,11 @@ INSERT INTO public.users (id, email, name, role, nip, avatar) VALUES
 
   -- Demo Siswa
   ('std-1', 'siswa@sitemsa.sch.id', 'Andi Pratama', 'siswa', NULL, NULL)
-ON CONFLICT (id) DO UPDATE SET
+ON CONFLICT (email) DO UPDATE SET
   name = EXCLUDED.name,
-  email = EXCLUDED.email,
   role = EXCLUDED.role,
-  nip = EXCLUDED.nip;
+  nip = EXCLUDED.nip,
+  avatar = EXCLUDED.avatar;
 
 -- 4. Delete & Populate public.team_members
 DELETE FROM public.team_members;
@@ -140,4 +140,5 @@ ON CONFLICT (id) DO UPDATE SET
   role = EXCLUDED.role,
   handle = EXCLUDED.handle,
   division = EXCLUDED.division,
-  border_color = EXCLUDED.border_color;
+  border_color = EXCLUDED.border_color,
+  image = EXCLUDED.image;

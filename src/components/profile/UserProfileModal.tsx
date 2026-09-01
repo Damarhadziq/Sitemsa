@@ -132,20 +132,6 @@ export function UserProfileModal({
     }
   }, [isOpen]);
 
-  const handleClearHistory = () => {
-    if (confirm("Apakah Anda yakin ingin mengosongkan riwayat materi dan kuis belajar ini?")) {
-      const p = savedProfile;
-      const studentId = p.id || p.email || 'std-1';
-      ProgressService.clearStudentHistory(studentId);
-      if (p.email) ProgressService.clearStudentHistory(p.email);
-      setStudentAccessedModules([]);
-      setStudentQuizHistory([]);
-      setToastMessage("Riwayat belajar berhasil dibersihkan");
-      setIsSavedToast(true);
-      setTimeout(() => setIsSavedToast(false), 3000);
-    }
-  };
-
   // Track if any field has changed compared to saved profile
   const hasChanges =
     name !== savedProfile.name ||
@@ -543,18 +529,6 @@ export function UserProfileModal({
                       </div>
                     )}
                   </div>
-
-                  {(studentAccessedModules.length > 0 || studentQuizHistory.length > 0) && (
-                    <div className="pt-1 text-right">
-                      <button
-                        type="button"
-                        onClick={handleClearHistory}
-                        className="text-[11px] font-semibold text-rose-500 hover:text-rose-700 hover:underline cursor-pointer transition-colors"
-                      >
-                        Bersihkan Riwayat Belajar
-                      </button>
-                    </div>
-                  )}
                 </div>
               )}
 

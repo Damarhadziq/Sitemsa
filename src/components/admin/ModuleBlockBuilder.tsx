@@ -50,14 +50,15 @@ const CustomOrderedList = OrderedList.extend({
         default: '1',
         parseHTML: (element) => element.getAttribute('type') || (element.classList.contains('list-alpha') ? 'a' : '1'),
         renderHTML: (attributes) => {
-          if (attributes.type === 'a') {
+          const type = attributes.type || '1';
+          if (type === 'a') {
             return {
               type: 'a',
               class: 'list-alpha pl-6 my-1 space-y-1',
               style: 'list-style-type: lower-alpha !important;',
             };
           }
-          if (attributes.type === 'A') {
+          if (type === 'A') {
             return {
               type: 'A',
               class: 'list-alpha pl-6 my-1 space-y-1',
@@ -71,24 +72,68 @@ const CustomOrderedList = OrderedList.extend({
           };
         },
       },
+      start: {
+        default: 1,
+        parseHTML: (element) => {
+          return element.hasAttribute('start')
+            ? parseInt(element.getAttribute('start') || '1', 10)
+            : 1;
+        },
+        renderHTML: (attributes) => {
+          if (!attributes.start || attributes.start === 1) {
+            return {};
+          }
+          return {
+            start: attributes.start,
+          };
+        },
+      },
     };
   },
   addInputRules() {
     return [
       wrappingInputRule({
-        find: /^(\d+)\.\s$/,
+        find: /^(\d+)[\.\)]\s$/,
         type: this.type,
-        getAttributes: () => ({ type: '1' }),
+        getAttributes: (match) => ({
+          type: '1',
+          start: parseInt(match[1], 10),
+        }),
+        joinPredicate: (match, node) => node.childCount + (node.attrs.start || 1) === parseInt(match[1], 10),
       }),
       wrappingInputRule({
         find: /^([a-z])[\.\)]\s$/,
         type: this.type,
-        getAttributes: () => ({ type: 'a' }),
+        getAttributes: (match) => {
+          const charCode = match[1].toLowerCase().charCodeAt(0);
+          const startNum = charCode - 96;
+          return {
+            type: 'a',
+            start: startNum > 0 ? startNum : 1,
+          };
+        },
+        joinPredicate: (match, node) => {
+          const charCode = match[1].toLowerCase().charCodeAt(0);
+          const startNum = charCode - 96;
+          return node.childCount + (node.attrs.start || 1) === startNum;
+        },
       }),
       wrappingInputRule({
         find: /^([A-Z])[\.\)]\s$/,
         type: this.type,
-        getAttributes: () => ({ type: 'A' }),
+        getAttributes: (match) => {
+          const charCode = match[1].toUpperCase().charCodeAt(0);
+          const startNum = charCode - 64;
+          return {
+            type: 'A',
+            start: startNum > 0 ? startNum : 1,
+          };
+        },
+        joinPredicate: (match, node) => {
+          const charCode = match[1].toUpperCase().charCodeAt(0);
+          const startNum = charCode - 64;
+          return node.childCount + (node.attrs.start || 1) === startNum;
+        },
       }),
     ];
   },
@@ -208,7 +253,8 @@ function TiptapTextEditor({
           inAlphaList = false;
         }
         if (!inOrderedList) {
-          html += '<ol>';
+          const startAttr = numMatch[1] !== '1' ? ` start="${numMatch[1]}"` : '';
+          html += `<ol${startAttr}>`;
           inOrderedList = true;
         }
         html += `<li><p>${numMatch[2]}</p></li>`;
@@ -222,7 +268,11 @@ function TiptapTextEditor({
           inOrderedList = false;
         }
         if (!inAlphaList) {
-          html += '<ol class="list-alpha" type="a">';
+          const isUpper = alphaMatch[1] === alphaMatch[1].toUpperCase() && alphaMatch[1] !== alphaMatch[1].toLowerCase();
+          const charCode = alphaMatch[1].toUpperCase().charCodeAt(0);
+          const startNum = charCode - 64;
+          const startAttr = startNum > 1 ? ` start="${startNum}"` : '';
+          html += `<ol class="list-alpha" type="${isUpper ? 'A' : 'a'}"${startAttr}>`;
           inAlphaList = true;
         }
         html += `<li><p>${alphaMatch[2]}</p></li>`;
@@ -303,19 +353,22 @@ function TiptapTextEditor({
           const lineText = $from.parent.textContent;
           const numMatch = lineText.match(/^(\d+)[\.\)]$/);
           if (numMatch) {
+            const startNum = parseInt(numMatch[1], 10);
             const start = from - lineText.length;
             const tr = view.state.tr.delete(start, to);
             view.dispatch(tr);
-            editor?.commands.wrapInList('orderedList', { type: '1' });
+            editor?.commands.wrapInList('orderedList', { type: '1', start: startNum });
             return true;
           }
           const alphaMatch = lineText.match(/^([a-zA-Z])[\.\)]$/);
           if (alphaMatch) {
             const isUpper = alphaMatch[1] === alphaMatch[1].toUpperCase() && alphaMatch[1] !== alphaMatch[1].toLowerCase();
+            const charCode = alphaMatch[1].toUpperCase().charCodeAt(0);
+            const startNum = charCode - 64;
             const start = from - lineText.length;
             const tr = view.state.tr.delete(start, to);
             view.dispatch(tr);
-            editor?.commands.wrapInList('orderedList', { type: isUpper ? 'A' : 'a' });
+            editor?.commands.wrapInList('orderedList', { type: isUpper ? 'A' : 'a', start: startNum > 0 ? startNum : 1 });
             return true;
           }
         }

@@ -571,11 +571,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       cleanEmail === 'superadmin@sitemsa.sch.id' ||
       cleanEmail === 'superadmin@sintesa.id';
 
-    const isValidSuperadminPassword =
-      cleanPassword === 'admin123' ||
-      cleanPassword === 'admin' ||
-      cleanPassword === 'SitemsaAdmin#2026' ||
-      cleanPassword === 'SintesaAdmin#2026';
+    const isValidSuperadminPassword = cleanPassword === 'admin123';
 
     // 1. Strict Superadmin Authentication
     if (isSuperadminEmail) {
@@ -592,12 +588,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return true;
     }
 
-    // List of allowed teacher passwords
-    const isValidTeacherPassword =
-      cleanPassword === 'admin123' ||
-      cleanPassword === 'GuruSitemsa#2026' ||
-      cleanPassword === 'guru123' ||
-      cleanPassword === '123456';
+    // Fixed Teacher Password: admin123
+    const isValidTeacherPassword = cleanPassword === 'admin123';
 
     // 2. Strict Pre-defined Teacher Match
     if (TEACHER_USERS[cleanEmail]) {

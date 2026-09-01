@@ -38,7 +38,7 @@ END $$;
 -- 2. Clear NIP values first to prevent any unique constraint swapping collision
 UPDATE public.users SET nip = NULL;
 
--- 3. Delete all non-canonical / dummy users outside the 24 Lantip + 1 Superadmin + 1 Demo Siswa
+-- 3. Delete all non-canonical / dummy users outside the 24 Lantip + 1 Superadmin
 DELETE FROM public.users
 WHERE email NOT IN (
   'admin@sitemsa.sch.id',
@@ -65,8 +65,7 @@ WHERE email NOT IN (
   'vivi.guru@sitemsa.sch.id',
   'anita.guru@sitemsa.sch.id',
   'meliana.guru@sitemsa.sch.id',
-  'hasnita.guru@sitemsa.sch.id',
-  'siswa@sitemsa.sch.id'
+  'hasnita.guru@sitemsa.sch.id'
 );
 
 -- 4. Upsert the Exact 1 Superadmin + 24 Lantip Teachers
@@ -108,10 +107,7 @@ INSERT INTO public.users (id, email, name, role, nip, avatar) VALUES
   ('t-tari-1', 'vivi.guru@sitemsa.sch.id', 'Vivi Riska Wardani', 'guru', '19982121 202401 2 021', NULL),
   ('t-tari-2', 'anita.guru@sitemsa.sch.id', 'Anita Dwi Ningtyas', 'guru', '19982222 202401 2 022', NULL),
   ('t-tari-3', 'meliana.guru@sitemsa.sch.id', 'Meliana Dwi Yanti', 'guru', '19982323 202401 2 023', NULL),
-  ('t-tari-4', 'hasnita.guru@sitemsa.sch.id', 'Hasnita Ivangka', 'guru', '19982424 202401 2 024', NULL),
-
-  -- Demo Siswa
-  ('std-1', 'siswa@sitemsa.sch.id', 'Andi Pratama', 'siswa', NULL, NULL)
+  ('t-tari-4', 'hasnita.guru@sitemsa.sch.id', 'Hasnita Ivangka', 'guru', '19982424 202401 2 024', NULL)
 ON CONFLICT (email) DO UPDATE SET
   name = EXCLUDED.name,
   role = EXCLUDED.role,

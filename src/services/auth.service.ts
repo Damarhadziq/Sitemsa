@@ -25,11 +25,7 @@ export class AuthService {
       cleanEmail === 'superadmin@sitemsa.sch.id' ||
       cleanEmail === 'superadmin@sintesa.id';
 
-    const isValidSuperadminPassword =
-      cleanPassword === 'admin123' ||
-      cleanPassword === 'admin' ||
-      cleanPassword === 'SitemsaAdmin#2026' ||
-      cleanPassword === 'SintesaAdmin#2026';
+    const isValidSuperadminPassword = cleanPassword === 'admin123';
 
     if (isSuperadminEmail) {
       if (!isValidSuperadminPassword) return null;
@@ -38,16 +34,12 @@ export class AuthService {
         name: 'Super Administrator Sitemsa',
         email: cleanEmail,
         role: 'superadmin',
-        avatar: 'https://i.pravatar.cc/150?img=68',
+        avatar: '',
       };
     }
 
-    // 2. Strict Teacher in DB Store
-    const isValidTeacherPassword =
-      cleanPassword === 'admin123' ||
-      cleanPassword === 'GuruSitemsa#2026' ||
-      cleanPassword === 'guru123' ||
-      cleanPassword === '123456';
+    // 2. Strict Teacher in DB Store (Fixed Password: admin123)
+    const isValidTeacherPassword = cleanPassword === 'admin123';
 
     const teacher = dbStore.teachers.find(
       (t) => t.email.toLowerCase() === cleanEmail
@@ -61,7 +53,7 @@ export class AuthService {
         email: teacher.email,
         role: 'guru',
         nip: teacher.nip,
-        avatar: teacher.avatar,
+        avatar: teacher.avatar || '',
         assignedSubjects: teacher.assignedSubjects,
       };
     }
@@ -95,7 +87,7 @@ export class AuthService {
         name: 'Super Administrator Sitemsa',
         email: 'admin@sitemsa.sch.id',
         role: 'superadmin',
-        avatar: 'https://i.pravatar.cc/150?img=68',
+        avatar: '',
       };
     }
 

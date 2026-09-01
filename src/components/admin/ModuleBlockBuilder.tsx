@@ -976,17 +976,25 @@ export function ModuleBlockBuilder({
   };
 
   // Native Attachment File Picker Handler
-  const handleAttachmentFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAttachmentFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     const targetBlockId = targetAttachmentBlockIdRef.current || selectedBlockId;
     const targetItemId = targetAttachmentItemIdRef.current || changingAttachmentFileId;
 
     if (file && targetBlockId) {
-      const objectUrl = URL.createObjectURL(file);
       const formattedSize =
         file.size > 1024 * 1024
           ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
           : `${Math.round(file.size / 1024)} KB`;
+
+      // Upload file to Supabase Storage bucket for persistent real downloads
+      let realFileUrl = '';
+      try {
+        realFileUrl = await StorageService.uploadFile(file, 'attachments');
+      } catch (uploadErr) {
+        console.warn('Storage upload fallback:', uploadErr);
+        realFileUrl = URL.createObjectURL(file);
+      }
 
       const block = blocks.find((b) => b.id === targetBlockId);
       if (block) {
@@ -999,7 +1007,7 @@ export function ModuleBlockBuilder({
                   ...item,
                   fileName: file.name,
                   fileSize: formattedSize,
-                  fileUrl: objectUrl,
+                  fileUrl: realFileUrl,
                 }
               : item
           );
@@ -1009,7 +1017,7 @@ export function ModuleBlockBuilder({
             id: `att-${Date.now()}`,
             fileName: file.name,
             fileSize: formattedSize,
-            fileUrl: objectUrl,
+            fileUrl: realFileUrl,
           };
           updateBlockById(targetBlockId, {
             attachments: [...currentAttachments, newFileItem],

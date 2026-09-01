@@ -7,6 +7,14 @@ export class StorageService {
    * If bucket is unavailable, gracefully returns optimized Base64 string.
    */
   static async uploadImage(file: File, folder: string = 'covers'): Promise<string> {
+    return this.uploadFile(file, folder);
+  }
+
+  /**
+   * Upload any file (PDF, DOCX, XLSX, image, etc.) to Supabase Storage bucket
+   * Primary bucket: 'sintesa_uploads'
+   */
+  static async uploadFile(file: File, folder: string = 'attachments'): Promise<string> {
     // 1. Try server-side upload endpoint (bypasses storage RLS and directly writes to sintesa_uploads bucket)
     try {
       const formData = new FormData();
@@ -33,11 +41,11 @@ export class StorageService {
     // 2. Direct browser Supabase upload fallback
     if (supabase) {
       try {
-        const ext = file.name.split('.').pop() || 'jpg';
+        const ext = file.name.split('.').pop() || 'bin';
         const cleanName = file.name.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
         const filePath = `${folder}/${Date.now()}_${cleanName}.${ext}`;
 
-        const possibleBuckets = ['sintesa_uploads', 'materials', 'modules', 'covers', 'public', 'assets'];
+        const possibleBuckets = ['sintesa_uploads', 'attachments', 'materials', 'modules', 'covers', 'public', 'assets'];
 
         for (const bucket of possibleBuckets) {
           try {
@@ -46,7 +54,7 @@ export class StorageService {
               .upload(filePath, file, {
                 cacheControl: '3600',
                 upsert: true,
-                contentType: file.type || 'image/jpeg',
+                contentType: file.type || 'application/octet-stream',
               });
 
             if (error) {

@@ -153,11 +153,12 @@ export function AdminSidebar() {
   };
 
   // Filter modules & quizzes for active subject & logged in teacher (guarded against SSR/hydration flash)
+  // Only published items appear in the sidebar tree hierarchy (drafts stay on the landing page)
   const currentModules = (mounted && user) ? modules.filter(
-    (m) => isSubjectMatch(m.subject, currentSubject) && isTeacherMatch(m.teacherId, m.teacherName)
+    (m) => isSubjectMatch(m.subject, currentSubject) && isTeacherMatch(m.teacherId, m.teacherName) && m.isPublished !== false
   ) : [];
   const currentQuizzes = (mounted && user) ? quizzes.filter(
-    (q) => isSubjectMatch(q.subject, currentSubject) && isTeacherMatch(q.teacherId, q.teacherName)
+    (q) => isSubjectMatch(q.subject, currentSubject) && isTeacherMatch(q.teacherId, q.teacherName) && q.published !== false
   ) : [];
 
   const superadminNav = [

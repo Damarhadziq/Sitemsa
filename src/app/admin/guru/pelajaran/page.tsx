@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
   BookOpen,
@@ -48,6 +49,7 @@ import { ModuleService } from '@/services/module.service';
 import { QuizService } from '@/services/quiz.service';
 import { supabase } from '@/lib/supabase';
 import { generateEntityId } from '@/lib/id-generator';
+import { getMaterialDetailForModule } from '@/app/materi/[id]/page';
 
 export function stripHtml(html?: string): string {
   if (!html) return '';
@@ -361,6 +363,7 @@ export default function AdminGuruPelajaranPage() {
   const [showAddQuizModal, setShowAddQuizModal] = useState(false);
   const [quizModalStep, setQuizModalStep] = useState<'choice' | 'template' | 'manual'>('choice');
   const [uploadedFile, setUploadedFile] = useState<{ name: string; size: string; questionCount: number } | null>(null);
+  const [activeQrModalUrl, setActiveQrModalUrl] = useState<string | null>(null);
 
   // Manual Quiz Form States
   const [manualQuizTitle, setManualQuizTitle] = useState('');
@@ -1811,171 +1814,210 @@ export default function AdminGuruPelajaranPage() {
                 </div>
 
                 {/* 3. BOTTOM SECTION: DESCRIPTION & RECENT READERS SIDE-BY-SIDE */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-                  
-                  {/* Left Column: Informasi & Lampiran Pembelajaran Card */}
-                  <div className="md:col-span-2 bg-white rounded-[12px] border border-[#ECECEC] p-6 space-y-4 shadow-2xs flex flex-col justify-between h-full">
-                    <div className="space-y-4">
+                {(() => {
+                  const dynamicAttachments = (selectedModule.blocks || [])
+                    .filter((b: any) => b.type === 'attachment')
+                    .flatMap((b: any) => b.attachments || []);
+
+                  const staticDetail = (selectedModule.id && typeof selectedModule.id === 'string' && selectedModule.id.startsWith('mod-'))
+                    ? getMaterialDetailForModule(selectedModule.id)
+                    : undefined;
+
+                  const staticAttachments = staticDetail?.attachment?.fileName ? [{
+                    id: 'att-static-1',
+                    name: staticDetail.attachment.fileName,
+                    size: staticDetail.attachment.fileSize || '1.2 MB',
+                    url: '#',
+                    fileType: 'pdf'
+                  }] : [];
+
+                  const moduleAttachments = dynamicAttachments.length > 0 ? dynamicAttachments : staticAttachments;
+                  const moduleQuizSource = selectedModule.quizSource;
+
+                  return (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
                       
-                      {/* Header Title */}
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-bold text-[#2E2D2D] flex items-center gap-2">
-                          <FileCode className="w-4 h-4 text-[#2563EB]" />
-                          Informasi & Lampiran Pembelajaran
-                        </h3>
-                      </div>
-
-                      {/* Evaluasi / Tes & Tautan Akses - SINGLE OPTION PER MODULE */}
-                      <div className="space-y-1.5">
-                        <p className="text-[11px] font-medium text-[#737373]">Akses Ujian & Evaluasi</p>
-                        
-                        {/* Single Test Display based on selected module */}
-                        {selectedModule.id === 'mod-1' ? (
-                          // OPTION 1: KUIS SITEMSA (Judul Quiz, klik menuju detail quiz)
-                          <div className="flex items-center gap-2">
-                            <a
-                              href={`/admin/guru/pelajaran?item=${subjectQuizzes[0]?.id || 'qz-1'}`}
-                              className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-indigo-50 hover:bg-indigo-100/80 text-indigo-700 text-xs font-medium border border-indigo-200/80 transition-all cursor-pointer active:scale-[0.98] group"
-                              title="Klik untuk melihat detail kuis"
-                            >
-                              <Play className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-                              <span className="truncate max-w-[260px]">
-                                {subjectQuizzes[0]?.title || 'Kuis Sirkuit Listrik & Komponen Pasif'}
-                              </span>
-                            </a>
+                      {/* Left Column: Informasi & Lampiran Pembelajaran Card */}
+                      <div className="md:col-span-2 bg-white rounded-[12px] border border-[#ECECEC] p-6 space-y-4 shadow-2xs flex flex-col justify-between h-full">
+                        <div className="space-y-4">
+                          
+                          {/* Header Title */}
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-bold text-[#2E2D2D] flex items-center gap-2">
+                              <FileCode className="w-4 h-4 text-[#2563EB]" />
+                              Informasi & Lampiran Pembelajaran
+                            </h3>
                           </div>
-                        ) : selectedModule.id === 'mod-2' ? (
-                          // OPTION 2: LINK EKSTERNAL (Display link langsung, frame fixed max-width, ellipsis jika panjang, icon copy di kanan)
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-slate-50 border border-[#ECECEC] text-xs max-w-[320px] sm:max-w-[360px] w-full justify-between">
-                              <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                                <ExternalLink className="w-3.5 h-3.5 text-[#2563EB] shrink-0" />
-                                <a
-                                  href="https://forms.google.com/d/e/1FAIpQLSc_Sitemsa_Elektronika_Quiz_2026/viewform"
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="text-[#2563EB] hover:underline font-medium text-[11px] truncate block flex-1"
-                                  title="https://forms.google.com/d/e/1FAIpQLSc_Sitemsa_Elektronika_Quiz_2026/viewform"
+
+                          {/* Evaluasi / Tes & Tautan Akses - DYNAMIC REAL DATA */}
+                          <div className="space-y-1.5">
+                            <p className="text-[11px] font-medium text-[#737373]">Akses Ujian & Evaluasi</p>
+                            
+                            {moduleQuizSource?.type === 'kuis_sitemsa' ? (
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const matchingQuiz = quizzes.find((q) => q.title === moduleQuizSource.title || q.id === (moduleQuizSource as any).quizId);
+                                    if (matchingQuiz) {
+                                      router.push(`/admin/guru/pelajaran?item=${matchingQuiz.id}`);
+                                    } else {
+                                      showToast(`Kuis '${moduleQuizSource.title || 'Evaluasi'}' terhubung`, 'info');
+                                    }
+                                  }}
+                                  className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-indigo-50 hover:bg-indigo-100/80 text-indigo-700 text-xs font-medium border border-indigo-200/80 transition-all cursor-pointer active:scale-[0.98] group"
+                                  title="Klik untuk melihat detail kuis"
                                 >
-                                  https://forms.google.com/d/e/1FAIpQLSc_Sitemsa_Elektronika_Quiz_2026/viewform
-                                </a>
+                                  <Play className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                                  <span className="truncate max-w-[260px]">
+                                    {moduleQuizSource.title || 'Kuis Evaluasi Sitemsa'}
+                                  </span>
+                                </button>
                               </div>
-                              <button
-                                onClick={() => {
-                                  navigator.clipboard.writeText("https://forms.google.com/d/e/1FAIpQLSc_Sitemsa_Elektronika_Quiz_2026/viewform");
-                                  setIsCopied(true);
-                                  setTimeout(() => setIsCopied(false), 2000);
-                                }}
-                                className="p-1 rounded-[4px] hover:bg-slate-200 text-[#737373] hover:text-[#2563EB] transition-colors cursor-pointer shrink-0 ml-1"
-                                title="Salin Tautan"
-                              >
-                                {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                              </button>
-                            </div>
+                            ) : ((moduleQuizSource?.type as string) === 'link_eksternal' || (moduleQuizSource?.type as string) === 'external_link') && moduleQuizSource?.externalUrl ? (
+                              <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-slate-50 border border-[#ECECEC] text-xs max-w-[320px] sm:max-w-[360px] w-full justify-between">
+                                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                                    <ExternalLink className="w-3.5 h-3.5 text-[#2563EB] shrink-0" />
+                                    <a
+                                      href={moduleQuizSource.externalUrl}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-[#2563EB] hover:underline font-medium text-[11px] truncate block flex-1"
+                                      title={moduleQuizSource.externalUrl}
+                                    >
+                                      {moduleQuizSource.externalUrl}
+                                    </a>
+                                  </div>
+                                  <button
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(moduleQuizSource.externalUrl!);
+                                      setIsCopied(true);
+                                      showToast('Tautan kuis berhasil disalin!', 'success');
+                                      setTimeout(() => setIsCopied(false), 2000);
+                                    }}
+                                    className="p-1 rounded-[4px] hover:bg-slate-200 text-[#737373] hover:text-[#2563EB] transition-colors cursor-pointer shrink-0 ml-1"
+                                    title="Salin Tautan"
+                                  >
+                                    {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                                  </button>
+                                </div>
+                              </div>
+                            ) : moduleQuizSource?.type === 'qr_code' && moduleQuizSource.qrImageUrl ? (
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => {
+                                    setActiveQrModalUrl(moduleQuizSource.qrImageUrl || null);
+                                    setShowQrModal(true);
+                                  }}
+                                  className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-purple-50 hover:bg-purple-100/80 text-purple-700 text-xs font-medium border border-purple-200/80 transition-all cursor-pointer active:scale-[0.98]"
+                                >
+                                  <QrCode className="w-3.5 h-3.5 text-purple-600" />
+                                  <span>Lihat Qr Code Ujian</span>
+                                </button>
+                              </div>
+                            ) : (
+                              <p className="text-xs text-[#AAAAAA] italic">Belum ada evaluasi atau kuis yang ditautkan</p>
+                            )}
                           </div>
-                        ) : (
-                          // OPTION 3: QR CODE (Lihat Qr Code Ujian)
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => setShowQrModal(true)}
-                              className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-purple-50 hover:bg-purple-100/80 text-purple-700 text-xs font-medium border border-purple-200/80 transition-all cursor-pointer active:scale-[0.98]"
-                            >
-                              <QrCode className="w-3.5 h-3.5 text-purple-600" />
-                              <span>Lihat Qr Code Ujian</span>
-                            </button>
+
+                          {/* File & Lampiran Materi Buttons - DYNAMIC REAL DATA */}
+                          <div className="space-y-1.5">
+                            <p className="text-[11px] font-medium text-[#737373]">File & Berkas Lampiran</p>
+                            {moduleAttachments.length > 0 ? (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {moduleAttachments.map((att: any, idx: number) => {
+                                  const isPdf = (att.name || '').toLowerCase().endsWith('.pdf') || att.fileType === 'pdf';
+                                  return (
+                                    <a
+                                      key={att.id || idx}
+                                      href={att.url || '#'}
+                                      target={att.url && att.url !== '#' ? '_blank' : undefined}
+                                      rel="noreferrer"
+                                      onClick={(e) => {
+                                        if (!att.url || att.url === '#') {
+                                          e.preventDefault();
+                                          showToast(`Mengunduh file: ${att.name}`, 'info');
+                                        }
+                                      }}
+                                      className="flex items-center justify-between p-2 rounded-[8px] bg-slate-50/80 border border-[#ECECEC] hover:border-blue-300 hover:bg-blue-50/40 transition-all group cursor-pointer"
+                                    >
+                                      <div className="flex items-center gap-2 truncate">
+                                        <div className={`w-6 h-6 rounded-[5px] flex items-center justify-center shrink-0 ${isPdf ? 'bg-rose-50 border border-rose-100 text-rose-600' : 'bg-blue-50 border border-blue-100 text-[#2563EB]'}`}>
+                                          {isPdf ? <FileText className="w-3 h-3 text-rose-600" /> : <FileCode className="w-3 h-3 text-[#2563EB]" />}
+                                        </div>
+                                        <span className="text-xs font-medium text-[#2E2D2D] truncate group-hover:text-[#2563EB]">
+                                          {att.name}
+                                        </span>
+                                      </div>
+                                      <Download className="w-3.5 h-3.5 text-[#737373] group-hover:text-[#2563EB] shrink-0 ml-2" />
+                                    </a>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <p className="text-xs text-[#AAAAAA] italic">Tidak ada berkas lampiran</p>
+                            )}
                           </div>
-                        )}
-                      </div>
 
-                      {/* File & Lampiran Materi Buttons */}
-                      <div className="space-y-1.5">
-                        <p className="text-[11px] font-medium text-[#737373]">File & Berkas Lampiran</p>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          <a
-                            href="#"
-                            onClick={(e) => { e.preventDefault(); showToast("Mengunduh file: Modul_Praktikum_Elektronika.pdf", "info"); }}
-                            className="flex items-center justify-between p-2 rounded-[8px] bg-slate-50/80 border border-[#ECECEC] hover:border-blue-300 hover:bg-blue-50/40 transition-all group cursor-pointer"
-                          >
-                            <div className="flex items-center gap-2 truncate">
-                              <div className="w-6 h-6 rounded-[5px] bg-rose-50 border border-rose-100 flex items-center justify-center shrink-0">
-                                <FileText className="w-3 h-3 text-rose-600" />
+                          {/* Topik Pembahasan - DYNAMIC REAL DATA */}
+                          <div className="space-y-1.5">
+                            <p className="text-[11px] font-medium text-[#737373]">Topik Pembahasan</p>
+                            {selectedModule.topics && selectedModule.topics.length > 0 ? (
+                              <div className="flex flex-wrap gap-2">
+                                {selectedModule.topics.map((tp, idx) => (
+                                  <span key={idx} className="text-xs font-medium text-[#2563EB] bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded-[6px]">
+                                    {tp}
+                                  </span>
+                                ))}
                               </div>
-                              <span className="text-xs font-medium text-[#2E2D2D] truncate group-hover:text-[#2563EB]">
-                                Modul_Praktikum_Elektronika.pdf
-                              </span>
-                            </div>
-                            <Download className="w-3.5 h-3.5 text-[#737373] group-hover:text-[#2563EB] shrink-0 ml-2" />
-                          </a>
+                            ) : (
+                              <p className="text-xs text-[#AAAAAA] italic">Belum ada topik pembahasan</p>
+                            )}
+                          </div>
 
-                          <a
-                            href="#"
-                            onClick={(e) => { e.preventDefault(); showToast("Mengunduh file: Lembar_Kerja_Resistor.docx", "info"); }}
-                            className="flex items-center justify-between p-2 rounded-[8px] bg-slate-50/80 border border-[#ECECEC] hover:border-blue-300 hover:bg-blue-50/40 transition-all group cursor-pointer"
-                          >
-                            <div className="flex items-center gap-2 truncate">
-                              <div className="w-6 h-6 rounded-[5px] bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
-                                <FileCode className="w-3 h-3 text-[#2563EB]" />
-                              </div>
-                              <span className="text-xs font-medium text-[#2E2D2D] truncate group-hover:text-[#2563EB]">
-                                Lembar_Kerja_Resistor.docx
-                              </span>
-                            </div>
-                            <Download className="w-3.5 h-3.5 text-[#737373] group-hover:text-[#2563EB] shrink-0 ml-2" />
-                          </a>
                         </div>
                       </div>
 
-                      {/* Topik Pembahasan */}
-                      <div className="space-y-1.5">
-                        <p className="text-[11px] font-medium text-[#737373]">Topik Pembahasan</p>
-                        <div className="flex flex-wrap gap-2">
-                          {selectedModule.topics.map((tp, idx) => (
-                            <span key={idx} className="text-xs font-medium text-[#2563EB] bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded-[6px]">
-                              {tp}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                    </div>
-                  </div>
-
-                  {/* Right Column: Recent Readers Student Table (LIMITED TO 3 ITEMS, NO SLANTED ARROW) */}
-                  <div className="bg-white rounded-[12px] border border-[#ECECEC] p-5 space-y-4 shadow-2xs flex flex-col justify-between h-full">
-                    <div>
-                      <h3 className="text-sm font-bold text-[#2E2D2D] pb-2 flex items-center gap-2">
-                        <Users className="w-4 h-4 text-[#2563EB]" />
-                        Siswa Terakhir Akses
-                      </h3>
-                      <div className="divide-y divide-slate-100">
-                        {recentReaders.slice(0, 3).map((rr, idx) => (
-                          <div key={idx} className="py-3 flex items-center justify-between">
-                            <div className="space-y-1">
-                              <p className="text-xs font-bold text-[#2E2D2D] leading-tight">{rr.name}</p>
-                              <p className="text-xs font-medium text-[#737373] leading-none">{rr.time}</p>
+                      {/* Right Column: Recent Readers Student Table (LIMITED TO 3 ITEMS, NO SLANTED ARROW) */}
+                      <div className="bg-white rounded-[12px] border border-[#ECECEC] p-5 space-y-4 shadow-2xs flex flex-col justify-between h-full">
+                        <div>
+                          <h3 className="text-sm font-bold text-[#2E2D2D] pb-2 flex items-center gap-2">
+                            <Users className="w-4 h-4 text-[#2563EB]" />
+                            Siswa Terakhir Akses
+                          </h3>
+                          {recentReaders.length > 0 ? (
+                            <div className="divide-y divide-slate-100">
+                              {recentReaders.slice(0, 3).map((rr, idx) => (
+                                <div key={idx} className="py-3 flex items-center justify-between">
+                                  <div className="space-y-1">
+                                    <p className="text-xs font-bold text-[#2E2D2D] leading-tight">{rr.name}</p>
+                                    <p className="text-xs font-medium text-[#737373] leading-none">{rr.time}</p>
+                                  </div>
+                                  <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded shrink-0">
+                                    {rr.status}
+                                  </span>
+                                </div>
+                              ))}
                             </div>
-                            <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded shrink-0">
-                              {rr.status}
-                            </span>
-                          </div>
-                        ))}
+                          ) : (
+                            <div className="py-8 text-center">
+                              <p className="text-xs text-[#AAAAAA] italic">Belum ada siswa yang membaca materi ini.</p>
+                            </div>
+                          )}
+                        </div>
 
-                        {recentReaders.length === 0 && (
-                          <div className="py-6 text-center text-xs text-[#737373]">
-                            Belum ada siswa yang membaca materi ini.
-                          </div>
-                        )}
+                        <Link
+                          href="/admin/guru/monitoring"
+                          className="w-full py-2 text-center text-xs font-bold text-[#2563EB] hover:bg-blue-50 rounded-[8px] transition-colors block"
+                        >
+                          Lihat Semua Monitoring Siswa
+                        </Link>
                       </div>
-                    </div>
 
-                    <a
-                      href="/admin/guru/monitoring"
-                      className="text-xs font-bold text-[#2563EB] hover:underline flex items-center justify-center pt-2 transition-colors"
-                    >
-                      <span>Lihat Semua Monitoring Siswa</span>
-                    </a>
-                  </div>
-                </div>
+                    </div>
+                  );
+                })()}
 
               </div>
             )}
@@ -2539,6 +2581,41 @@ export default function AdminGuruPelajaranPage() {
           />
         );
       })()}
+
+      {/* QR Code Modal Preview */}
+      {showQrModal && activeQrModalUrl && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans">
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white max-w-sm w-full rounded-[16px] p-6 border border-[#ECECEC] shadow-2xl flex flex-col items-center gap-4 animate-in zoom-in-95 duration-200 relative"
+          >
+            <button
+              onClick={() => {
+                setShowQrModal(false);
+                setActiveQrModalUrl(null);
+              }}
+              className="absolute right-4 top-4 p-1 rounded-full hover:bg-slate-100 text-[#737373] hover:text-[#2E2D2D] transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <h3 className="text-sm font-bold text-[#2E2D2D]">QR Code Ujian & Evaluasi</h3>
+            <div className="p-3 bg-slate-50 rounded-[12px] border border-[#ECECEC]">
+              {/* eslint-disable-next-next/no-img-element */}
+              <img src={activeQrModalUrl} alt="QR Code" className="w-56 h-56 object-contain" />
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setShowQrModal(false);
+                setActiveQrModalUrl(null);
+              }}
+              className="w-full py-2.5 rounded-[8px] bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold transition-colors cursor-pointer"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );

@@ -348,7 +348,8 @@ export function ModuleBlockBuilder({
   onClose,
   onSave,
 }: ModuleBlockBuilderProps) {
-  const dbDetail = initialModule ? getMaterialDetailForModule(initialModule.id || initialModule.title) : undefined;
+  const isAlreadyPublished = initialModule?.isPublished === true;
+  const dbDetail = (initialModule && isAlreadyPublished) ? getMaterialDetailForModule(initialModule.id || initialModule.title) : undefined;
 
   // Title & Level state
   const [moduleTitle, setModuleTitle] = useState(
@@ -363,9 +364,9 @@ export function ModuleBlockBuilder({
 
   // Dynamic Topics / Tags state (Dribbble Style Tag Input)
   const [moduleTopics, setModuleTopics] = useState<string[]>(
-    (initialModule?.topics && initialModule.topics.length > 0)
+    initialModule?.topics && Array.isArray(initialModule.topics)
       ? initialModule.topics
-      : (dbDetail?.topics || [])
+      : (isAlreadyPublished && dbDetail?.topics ? dbDetail.topics : [])
   );
   const [tagInputText, setTagInputText] = useState('');
   const tagInputRef = useRef<HTMLInputElement | null>(null);
@@ -414,7 +415,6 @@ export function ModuleBlockBuilder({
   };
 
   // Publish / Draft Confirmation Modal state & Success Modal state
-  const isAlreadyPublished = initialModule?.isPublished === true;
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showExitConfirmModal, setShowExitConfirmModal] = useState(false);
@@ -1101,7 +1101,7 @@ export function ModuleBlockBuilder({
           ? (textVal.length > 140 ? textVal.slice(0, 140) + '...' : textVal)
           : 'Materi pembelajaran interaktif Sitemsa.';
 
-        const finalTopics = moduleTopics && moduleTopics.length > 0 ? moduleTopics : ['Materi Pembelajaran', 'Praktikum'];
+        const finalTopics = moduleTopics && Array.isArray(moduleTopics) ? moduleTopics : [];
 
         onSave(
           {
@@ -1138,7 +1138,7 @@ export function ModuleBlockBuilder({
         ? (textVal.length > 140 ? textVal.slice(0, 140) + '...' : textVal)
         : 'Materi pembelajaran interaktif Sitemsa.';
 
-      const finalTopics = moduleTopics && moduleTopics.length > 0 ? moduleTopics : ['Materi Pembelajaran', 'Praktikum'];
+      const finalTopics = moduleTopics && Array.isArray(moduleTopics) ? moduleTopics : [];
 
       onSave(
         {
@@ -1249,8 +1249,8 @@ export function ModuleBlockBuilder({
             <Pencil className="w-3.5 h-3.5 text-[#737373] shrink-0" />
           </div>
 
-          {/* HEADER TOOLBAR (only when editing published module) */}
-          {initialModule && (
+          {/* HEADER TOOLBAR (only when editing already published module) */}
+          {isAlreadyPublished && (
             <div
               onClick={(e) => e.stopPropagation()}
               className="flex items-center gap-2.5 ml-1 pl-3 border-l border-[#ECECEC]"
@@ -1390,7 +1390,7 @@ export function ModuleBlockBuilder({
             <span>
               {isUploadingThumbnail
                 ? 'Memuat Cover...'
-                : initialModule
+                : isAlreadyPublished
                 ? 'Update Materi'
                 : 'Continue'}
             </span>

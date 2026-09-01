@@ -2927,7 +2927,9 @@ export function ModuleBlockBuilder({
       {/* PUBLISH / DRAFT CONFIRMATION MODAL WITH REFINED STYLE */}
       {showPublishModal && (
         <div
-          onClick={() => setShowPublishModal(false)}
+          onClick={() => {
+            if (!isPublishing) setShowPublishModal(false);
+          }}
           className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-in fade-in duration-200 font-sans"
         >
           <div
@@ -2936,8 +2938,13 @@ export function ModuleBlockBuilder({
           >
             <button
               type="button"
-              onClick={() => setShowPublishModal(false)}
-              className="absolute right-4 top-4 z-10 w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors cursor-pointer"
+              disabled={isPublishing}
+              onClick={() => {
+                if (!isPublishing) setShowPublishModal(false);
+              }}
+              className={`absolute right-4 top-4 z-10 w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#475569] hover:text-[#0F172A] flex items-center justify-center transition-colors ${
+                isPublishing ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
+              }`}
               aria-label="Tutup Modal"
             >
               <X className="w-4 h-4" />

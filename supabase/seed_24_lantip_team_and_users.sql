@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS public.users (
   email TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
   role TEXT NOT NULL DEFAULT 'guru',
-  nip TEXT,
+  nip TEXT UNIQUE,
   avatar TEXT,
   phone TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -27,7 +27,10 @@ CREATE TABLE IF NOT EXISTS public.team_members (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 2. Delete all non-canonical / dummy users outside the 24 Lantip + 1 Superadmin + 1 Demo Siswa
+-- 2. Clear NIP values first to prevent any unique constraint swapping collision
+UPDATE public.users SET nip = NULL;
+
+-- 3. Delete all non-canonical / dummy users outside the 24 Lantip + 1 Superadmin + 1 Demo Siswa
 DELETE FROM public.users
 WHERE email NOT IN (
   'admin@sitemsa.sch.id',
@@ -58,7 +61,7 @@ WHERE email NOT IN (
   'siswa@sitemsa.sch.id'
 );
 
--- 3. Upsert the Exact 1 Superadmin + 24 Lantip Teachers
+-- 4. Upsert the Exact 1 Superadmin + 24 Lantip Teachers
 INSERT INTO public.users (id, email, name, role, nip, avatar) VALUES
   -- Superadmin
   ('sa-1', 'admin@sitemsa.sch.id', 'Super Administrator Sitemsa', 'superadmin', '19850101 201001 1 001', NULL),
@@ -107,7 +110,7 @@ ON CONFLICT (email) DO UPDATE SET
   nip = EXCLUDED.nip,
   avatar = EXCLUDED.avatar;
 
--- 4. Delete & Populate public.team_members
+-- 5. Delete & Populate public.team_members
 DELETE FROM public.team_members;
 
 INSERT INTO public.team_members (id, name, role, handle, division, border_color, image) VALUES

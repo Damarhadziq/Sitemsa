@@ -1320,6 +1320,26 @@ export function ModuleBlockBuilder({
           : 'Materi pembelajaran interaktif Sitemsa.';
 
         const finalTopics = moduleTopics && Array.isArray(moduleTopics) ? moduleTopics : [];
+        const sanitizedBlocks = blocks.map((b) => {
+          if (b.type === 'steps') {
+            return {
+              ...b,
+              stepSectionTitle: stripHtml(b.stepSectionTitle),
+              stepSectionSubtitle: stripHtml(b.stepSectionSubtitle),
+              steps: (b.steps || []).map((s) => ({
+                ...s,
+                title: stripHtml(s.title),
+              })),
+            };
+          }
+          if (b.type === 'text') {
+            return {
+              ...b,
+              sectionTitle: stripHtml(b.sectionTitle),
+            };
+          }
+          return b;
+        });
 
         onSave(
           {
@@ -1341,7 +1361,7 @@ export function ModuleBlockBuilder({
                 }
               : undefined,
           },
-          blocks
+          sanitizedBlocks
         );
 
         setIsPublishing(false);
@@ -1358,6 +1378,26 @@ export function ModuleBlockBuilder({
         : 'Materi pembelajaran interaktif Sitemsa.';
 
       const finalTopics = moduleTopics && Array.isArray(moduleTopics) ? moduleTopics : [];
+      const sanitizedBlocks = blocks.map((b) => {
+        if (b.type === 'steps') {
+          return {
+            ...b,
+            stepSectionTitle: stripHtml(b.stepSectionTitle),
+            stepSectionSubtitle: stripHtml(b.stepSectionSubtitle),
+            steps: (b.steps || []).map((s) => ({
+              ...s,
+              title: stripHtml(s.title),
+            })),
+          };
+        }
+        if (b.type === 'text') {
+          return {
+            ...b,
+            sectionTitle: stripHtml(b.sectionTitle),
+          };
+        }
+        return b;
+      });
 
       onSave(
         {
@@ -1379,7 +1419,7 @@ export function ModuleBlockBuilder({
               }
             : undefined,
         },
-        blocks
+        sanitizedBlocks
       );
       setShowPublishModal(false);
       onClose();

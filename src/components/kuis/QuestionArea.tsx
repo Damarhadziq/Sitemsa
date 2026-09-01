@@ -15,6 +15,8 @@ import { addUserNotification } from "@/services/notification.service";
 import { recordModuleCompletion } from "@/services/weekly-target.service";
 import { getStudentProfile } from "@/services/student-profile.service";
 import { toDeterministicUUID } from "@/lib/uuid";
+import { QuizService } from "@/services/quiz.service";
+import { ModuleService } from "@/services/module.service";
 
 // High-fidelity countdown sound for every tick (3, 2, 1, and Mulai!)
 function playCountdownTick(val: number) {
@@ -177,6 +179,34 @@ const DEFAULT_QUIZ_QUESTIONS = [
 export function QuestionArea({ quizId }: { quizId?: string }) {
   const router = useRouter();
   const { quizzes, modules } = useAdminStore();
+  const [cloudQuizzes, setCloudQuizzes] = useState<any[]>([]);
+  const [cloudModules, setCloudModules] = useState<any[]>([]);
+  const [isSyncing, setIsSyncing] = useState(true);
+
+  // Sync latest cloud quizzes and modules from Supabase on mount
+  useEffect(() => {
+    Promise.all([
+      QuizService.fetchFromSupabase(),
+      ModuleService.fetchFromSupabase(),
+    ]).then(([cq, cm]) => {
+      if (cq && cq.length > 0) {
+        const formatted = cq.map((q: any) => ({
+          ...q,
+          questionCount: q.questionCount ?? (q.questions ? q.questions.length : 0),
+        }));
+        setCloudQuizzes(formatted);
+        useAdminStore.setState({ quizzes: formatted });
+      }
+      if (cm && cm.length > 0) {
+        setCloudModules(cm);
+        useAdminStore.setState({ modules: cm });
+      }
+    }).catch((err) => {
+      console.warn('Sync quiz error in QuestionArea:', err);
+    }).finally(() => {
+      setIsSyncing(false);
+    });
+  }, []);
 
   const playInstantSound = (type: "correct" | "wrong" | "result" | "remedial" | "countdown") => {
     if (typeof window === "undefined") return;
@@ -197,10 +227,36 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
   // Find Target Quiz & Subject Metadata
   const targetQuizData = useMemo(() => {
     const cleanQuizId = quizId ? decodeURIComponent(quizId).trim() : "";
+    const allQuizzes = cloudQuizzes.length > 0 ? cloudQuizzes : quizzes;
+    const allModules = cloudModules.length > 0 ? cloudModules : modules;
 
     if (cleanQuizId) {
-      // 1. By Module ID first (exact material navigation or deterministic UUID match)
-      const byModule = modules.find(
+      // 1. Direct ID or UUID match in allQuizzes
+      const byDirectQuiz = allQuizzes.find(
+        (q) =>
+          q.id === cleanQuizId ||
+          toDeterministicUUID(q.id) === cleanQuizId.toLowerCase() ||
+          String(q.id).toLowerCase() === cleanQuizId.toLowerCase()
+      );
+
+      if (byDirectQuiz && byDirectQuiz.questions && byDirectQuiz.questions.length > 0) {
+        return {
+          title: byDirectQuiz.title,
+          subject: byDirectQuiz.subject || "Informatika",
+          passScore: byDirectQuiz.passScore || 75,
+          moduleId: cleanQuizId,
+          questions: byDirectQuiz.questions.map((q: any, idx: number) => ({
+            id: q.id || `q-${idx}`,
+            text: q.text,
+            options: Array.isArray(q.options) ? q.options.filter((opt: string) => opt && opt.trim().length > 0) : [],
+            correctAnswer: typeof q.correctAnswer === 'number' ? q.correctAnswer : 0,
+            explanation: q.explanation || "Pembahasan materi kuis Sitemsa.",
+          })),
+        };
+      }
+
+      // 2. By Module ID first (exact material navigation or deterministic UUID match)
+      const byModule = allModules.find(
         (m) =>
           m.id === cleanQuizId ||
           toDeterministicUUID(m.id) === cleanQuizId.toLowerCase() ||
@@ -209,22 +265,35 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
       );
 
       if (byModule) {
-        const subQuiz = quizzes.find(
-          (q) =>
-            (q.moduleId && (q.moduleId === byModule.id || toDeterministicUUID(q.moduleId) === cleanQuizId.toLowerCase())) ||
-            q.subject.toLowerCase() === byModule.subject.toLowerCase()
-        );
+        const quizSourceTitle = byModule.quizSource?.title ? byModule.quizSource.title.toLowerCase().trim() : '';
+        const quizSourceId = (byModule.quizSource as any)?.quizId || (byModule.quizSource as any)?.id;
+
+        // Try find matching quiz in allQuizzes
+        const subQuiz = allQuizzes.find((q) => {
+          if (quizSourceId && (q.id === quizSourceId || toDeterministicUUID(q.id) === toDeterministicUUID(quizSourceId))) return true;
+          if (q.moduleId && (q.moduleId === byModule.id || toDeterministicUUID(q.moduleId) === cleanQuizId.toLowerCase())) return true;
+          if (quizSourceTitle && quizSourceTitle !== 'kuis evaluasi' && quizSourceTitle !== 'uji pemahaman materi') {
+            const qTitle = q.title.toLowerCase().trim();
+            if (qTitle === quizSourceTitle || qTitle.includes(quizSourceTitle) || quizSourceTitle.includes(qTitle)) return true;
+          }
+          const modTitle = byModule.title.toLowerCase().trim();
+          const qTitle = q.title.toLowerCase().trim();
+          if (qTitle === modTitle || qTitle.includes(modTitle) || modTitle.includes(qTitle)) return true;
+          if (q.subject && byModule.subject && q.subject.toLowerCase() === byModule.subject.toLowerCase() && q.questions && q.questions.length > 0) return true;
+          return false;
+        });
+
         if (subQuiz && subQuiz.questions && subQuiz.questions.length > 0) {
           return {
             title: subQuiz.title,
             subject: subQuiz.subject || byModule.subject,
             passScore: subQuiz.passScore || 75,
             moduleId: byModule.id,
-            questions: subQuiz.questions.map((q, idx) => ({
+            questions: subQuiz.questions.map((q: any, idx: number) => ({
               id: q.id || `q-${idx}`,
               text: q.text,
-              options: q.options.filter((opt) => opt.trim().length > 0),
-              correctAnswer: q.correctAnswer,
+              options: Array.isArray(q.options) ? q.options.filter((opt: string) => opt && opt.trim().length > 0) : [],
+              correctAnswer: typeof q.correctAnswer === 'number' ? q.correctAnswer : 0,
               explanation: q.explanation || "Pembahasan materi kuis Sitemsa.",
             })),
           };
@@ -239,30 +308,27 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
         };
       }
 
-      // 2. By ID, UUID, or Title in quizzes
-      const byQuizId = quizzes.find(
+      // 3. By ID, UUID, or Title in allQuizzes
+      const byQuizId = allQuizzes.find(
         (q) =>
           q.id === cleanQuizId ||
           toDeterministicUUID(q.id) === cleanQuizId.toLowerCase() ||
           (q.moduleId && (q.moduleId === cleanQuizId || toDeterministicUUID(q.moduleId) === cleanQuizId.toLowerCase())) ||
           q.title.toLowerCase().includes(cleanQuizId.toLowerCase())
       );
-      if (byQuizId) {
+      if (byQuizId && byQuizId.questions && byQuizId.questions.length > 0) {
         return {
           title: byQuizId.title,
           subject: byQuizId.subject || "Informatika",
           passScore: byQuizId.passScore || 75,
           moduleId: cleanQuizId,
-          questions:
-            byQuizId.questions && byQuizId.questions.length > 0
-              ? byQuizId.questions.map((q, idx) => ({
-                  id: q.id || `q-${idx}`,
-                  text: q.text,
-                  options: q.options.filter((opt) => opt.trim().length > 0),
-                  correctAnswer: q.correctAnswer,
-                  explanation: q.explanation || "Pembahasan materi kuis Sitemsa.",
-                }))
-              : DEFAULT_QUIZ_QUESTIONS,
+          questions: byQuizId.questions.map((q: any, idx: number) => ({
+            id: q.id || `q-${idx}`,
+            text: q.text,
+            options: Array.isArray(q.options) ? q.options.filter((opt: string) => opt && opt.trim().length > 0) : [],
+            correctAnswer: typeof q.correctAnswer === 'number' ? q.correctAnswer : 0,
+            explanation: q.explanation || "Pembahasan materi kuis Sitemsa.",
+          })),
         };
       }
     }
@@ -274,7 +340,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
       moduleId: cleanQuizId || "1",
       questions: DEFAULT_QUIZ_QUESTIONS,
     };
-  }, [quizId, quizzes, modules]);
+  }, [quizId, quizzes, modules, cloudQuizzes, cloudModules]);
 
   const questionsList = targetQuizData.questions;
 
@@ -692,7 +758,7 @@ export function QuestionArea({ quizId }: { quizId?: string }) {
 
           {/* 2x2 Answer Grid with White Framed Cards & Color Shift Only */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 w-full max-w-3xl">
-            {currentQuestion.options.map((optionText, index) => {
+            {currentQuestion.options.map((optionText: string, index: number) => {
               const isSelected = selectedOption === index;
               const isCorrectOption = index === currentQuestion.correctAnswer;
               const isSelectedWrong = isAnswerChecked && isSelected && !isCorrectOption;

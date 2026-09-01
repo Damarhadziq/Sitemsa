@@ -1674,6 +1674,19 @@ const getLevelBadgeClass = (level: string) => {
   }
 };
 
+export function stripHtml(html: string = ''): string {
+  if (!html) return '';
+  return html
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function SmartParagraph({ text }: { text: string }) {
   if (!text) return null;
 
@@ -2284,17 +2297,17 @@ export default function MateriDetailPage({
     blocks.forEach((b: any, idx: number) => {
       const blockId = b.id || `block-${idx}`;
       if (b.type === 'video' && b.mediaUrl) {
-        items.push({ id: blockId, label: b.sectionTitle || 'Video Simulasi & Pembelajaran' });
+        items.push({ id: blockId, label: stripHtml(b.sectionTitle) || 'Video Simulasi & Pembelajaran' });
       } else if (b.type === 'steps' && b.steps && b.steps.length > 0) {
-        items.push({ id: blockId, label: b.stepSectionTitle || 'Langkah Kerja & Panduan Praktik' });
+        items.push({ id: blockId, label: stripHtml(b.stepSectionTitle) || 'Langkah Kerja & Panduan Praktik' });
       } else if (b.type === 'code' && b.codeSnippet) {
-        items.push({ id: blockId, label: b.sectionTitle || `Kode Program (${b.codeSnippet.language || 'Snippet'})` });
+        items.push({ id: blockId, label: stripHtml(b.sectionTitle) || `Kode Program (${b.codeSnippet.language || 'Snippet'})` });
       } else if (b.type === 'attachment' && (b.attachments?.length > 0 || b.attachment)) {
         items.push({ id: blockId, label: 'Lampiran & Berkas Modul' });
       } else if (b.type === 'text' && b.sectionTitle && b.sectionTitle.trim().length > 0) {
-        items.push({ id: blockId, label: b.sectionTitle });
+        items.push({ id: blockId, label: stripHtml(b.sectionTitle) });
       } else if (b.type === 'image' && b.imageCaption && b.imageCaption.trim().length > 0) {
-        items.push({ id: blockId, label: b.imageCaption });
+        items.push({ id: blockId, label: stripHtml(b.imageCaption) });
       }
     });
 
@@ -2785,15 +2798,18 @@ export default function MateriDetailPage({
 
                   // 4. STEP-BY-STEP PRACTICE BLOCK
                   if (block.type === 'steps' && block.steps && block.steps.length > 0) {
+                    const stepHeading = stripHtml(block.stepSectionTitle) || 'Langkah-langkah Praktik';
+                    const stepSub = stripHtml(block.stepSectionSubtitle);
+
                     return (
                       <section key={blockId} id={blockId} className="space-y-4 pt-4 scroll-mt-28">
                         <div>
                           <h2 className="text-lg md:text-xl font-bold text-[#2E2D2D]">
-                            {block.stepSectionTitle || 'Langkah-langkah Praktik'}
+                            {stepHeading}
                           </h2>
-                          {block.stepSectionSubtitle && (
+                          {stepSub && (
                             <p className="text-xs md:text-sm font-medium text-[#737373] leading-relaxed mt-1 text-justify">
-                              {block.stepSectionSubtitle}
+                              {stepSub}
                             </p>
                           )}
                         </div>
@@ -2809,13 +2825,13 @@ export default function MateriDetailPage({
                                   {String(sIdx + 1).padStart(2, '0')}
                                 </span>
                                 <h3 className="text-sm md:text-base font-bold text-[#2E2D2D]">
-                                  {step.title}
+                                  {stripHtml(step.title) || `Langkah ${sIdx + 1}`}
                                 </h3>
                               </div>
 
-                              <p className="text-xs md:text-sm font-medium text-[#4A4A4A] leading-relaxed pl-11 text-justify">
-                                {step.desc || step.text}
-                              </p>
+                              <div className="pl-11">
+                                <SmartParagraph text={step.desc || step.text || ''} />
+                              </div>
 
                               {step.mediaUrl && (
                                 <div className="pl-11 pt-1">
@@ -2823,7 +2839,7 @@ export default function MateriDetailPage({
                                     {/* eslint-disable-next-next/no-img-element */}
                                     <img
                                       src={step.mediaUrl}
-                                      alt={step.title}
+                                      alt={stripHtml(step.title)}
                                       className="w-full h-full object-cover"
                                     />
                                   </div>
@@ -2861,22 +2877,25 @@ export default function MateriDetailPage({
                                   <HugeiconsIcon icon={File01Icon} size={20} />
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                  <p
-                                    title={fileName}
-                                    className="text-xs md:text-sm font-semibold text-[#2E2D2D] truncate"
-                                  >
-                                    {fileName.replace(/_/g, " ")}
+                                  <p className="text-xs sm:text-sm font-bold text-[#2E2D2D] truncate">
+                                    {fileName}
                                   </p>
-                                  <p className="text-[11px] text-[#737373] truncate">
-                                    Berkas Pendukung • {fileSize}
+                                  <p className="text-[11px] text-[#737373] mt-0.5">
+                                    PDF &bull; {fileSize}
                                   </p>
                                 </div>
                               </div>
 
                               <button
                                 type="button"
-                                onClick={() => handleDownloadAttachment(fileName, fileUrl)}
-                                className="inline-flex items-center justify-center gap-1.5 bg-white border border-[#ECECEC] hover:bg-[#F6F5FF] hover:border-[#2563EB]/40 text-[#2563EB] px-4 py-2.5 sm:py-2 rounded-[6px] text-xs font-semibold transition-all duration-200 shrink-0 w-full sm:w-auto cursor-pointer active:scale-95"
+                                onClick={() => {
+                                  if (fileUrl) {
+                                    window.open(fileUrl, '_blank');
+                                  } else {
+                                    alert('Berkas lampiran sedang diproses.');
+                                  }
+                                }}
+                                className="w-full sm:w-auto px-4 py-2 bg-white border border-[#ECECEC] hover:bg-[#F6F5FF] hover:border-[#2563EB]/40 text-[#2563EB] text-xs font-semibold rounded-[8px] flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs shrink-0"
                               >
                                 <HugeiconsIcon icon={Download01Icon} size={15} />
                                 <span>Unduh Berkas</span>
@@ -2893,7 +2912,7 @@ export default function MateriDetailPage({
                     <section key={blockId} id={blockId} className="space-y-4 scroll-mt-28">
                       {block.sectionTitle && (
                         <h2 className="text-lg md:text-xl font-bold text-[#2E2D2D]">
-                          {block.sectionTitle}
+                          {stripHtml(block.sectionTitle)}
                         </h2>
                       )}
 
@@ -2908,7 +2927,7 @@ export default function MateriDetailPage({
                                     {/* eslint-disable-next-next/no-img-element */}
                                     <img
                                       src={el.imageUrl}
-                                      alt="Ilustrasi Materi"
+                                      alt={stripHtml(el.imageCaption) || "Ilustrasi Materi"}
                                       className="w-full h-full object-cover rounded-[12px]"
                                     />
                                   </div>
@@ -2952,9 +2971,7 @@ export default function MateriDetailPage({
                                     </div>
                                   )}
                                   {item.text && (
-                                    <p className="text-xs md:text-sm font-medium text-[#4A4A4A] leading-relaxed text-justify">
-                                      {item.text}
-                                    </p>
+                                    <SmartParagraph text={item.text} />
                                   )}
                                 </div>
                               ))}
@@ -2966,9 +2983,9 @@ export default function MateriDetailPage({
                       {(block.callout || block.calloutText) && (
                         <div className="my-3 p-4 rounded-[12px] bg-[#F6F5FF] border border-[#E8E7FF] text-[#2563EB] text-xs md:text-sm leading-relaxed flex items-start gap-3 shadow-2xs">
                           <div className="w-1.5 self-stretch bg-[#2563EB] rounded-full shrink-0" />
-                          <p className="text-[#3A3985] font-medium leading-relaxed flex-1 text-justify">
-                            {block.callout || block.calloutText}
-                          </p>
+                          <div className="text-[#3A3985] font-medium leading-relaxed flex-1 text-justify">
+                            <SmartParagraph text={block.callout || block.calloutText} />
+                          </div>
                         </div>
                       )}
                     </section>

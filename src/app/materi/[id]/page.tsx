@@ -3004,18 +3004,31 @@ export default function MateriDetailPage({
 
             {/* QR Code Container */}
             <div className="space-y-3 text-center">
-              <div className="relative w-56 h-56 mx-auto border border-[#ECECEC] rounded-[12px] p-3 bg-white flex items-center justify-center">
-                {material.quizSource.qrImageUrl ? (
-                  <Image
-                    src={material.quizSource.qrImageUrl}
-                    alt="QR Code Kuis"
-                    fill
-                    unoptimized
-                    className="object-contain p-2"
-                  />
-                ) : (
-                  <div className="text-xs text-[#737373]">QR Code tidak tersedia</div>
-                )}
+              <div className="relative w-56 h-56 mx-auto border border-[#ECECEC] rounded-[12px] p-3 bg-white flex items-center justify-center overflow-hidden shadow-2xs">
+                {(() => {
+                  const qrUrl = material.quizSource.qrImageUrl;
+                  const isValidUrl = Boolean(qrUrl && !qrUrl.startsWith('blob:') && qrUrl.trim().length > 5);
+                  const fallbackDynamicQr = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(
+                    material.quizSource.externalUrl || (typeof window !== 'undefined' ? window.location.href : `https://sitemsa.vercel.app/materi/${material.id}`)
+                  )}`;
+
+                  const targetSrc = isValidUrl ? qrUrl! : fallbackDynamicQr;
+
+                  return (
+                    /* eslint-disable-next-next/no-img-element */
+                    <img
+                      src={targetSrc}
+                      alt="QR Code Kuis"
+                      className="w-full h-full object-contain p-1 rounded-[6px]"
+                      onError={(e) => {
+                        const img = e.currentTarget;
+                        if (img.src !== fallbackDynamicQr) {
+                          img.src = fallbackDynamicQr;
+                        }
+                      }}
+                    />
+                  );
+                })()}
               </div>
               <p className="text-xs text-[#737373] leading-relaxed">
                 Pindai Barcode / QR Code di atas menggunakan kamera ponsel Anda untuk masuk ke kuis <strong className="text-[#2E2D2D] font-semibold">{material.quizSource.externalPlatformName || "Eksternal"}</strong> dari pengajar.

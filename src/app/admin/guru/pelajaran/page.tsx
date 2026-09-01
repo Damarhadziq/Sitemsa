@@ -2629,7 +2629,7 @@ export default function AdminGuruPelajaranPage() {
 
       {/* QR Code Modal Preview */}
       {showQrModal && activeQrModalUrl && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans">
+        <div className="fixed inset-0 z-[150] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 font-sans">
           <div
             onClick={(e) => e.stopPropagation()}
             className="bg-white max-w-sm w-full rounded-[16px] p-6 border border-[#ECECEC] shadow-2xl flex flex-col items-center gap-4 animate-in zoom-in-95 duration-200 relative"
@@ -2646,7 +2646,17 @@ export default function AdminGuruPelajaranPage() {
             <h3 className="text-sm font-bold text-[#2E2D2D]">QR Code Ujian & Evaluasi</h3>
             <div className="p-3 bg-slate-50 rounded-[12px] border border-[#ECECEC]">
               {/* eslint-disable-next-next/no-img-element */}
-              <img src={activeQrModalUrl} alt="QR Code" className="w-56 h-56 object-contain" />
+              <img
+                src={activeQrModalUrl}
+                alt="QR Code"
+                className="w-56 h-56 object-contain"
+                onError={(e) => {
+                  const fallback = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://sitemsa.vercel.app`;
+                  if (e.currentTarget.src !== fallback) {
+                    e.currentTarget.src = fallback;
+                  }
+                }}
+              />
             </div>
             <button
               type="button"

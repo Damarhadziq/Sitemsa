@@ -68,15 +68,12 @@ export default function AdminGuruDashboard() {
     return false;
   };
 
-  const isTeacherMatch = (teacherId?: string, teacherName?: string, subject?: string) => {
+  const isTeacherMatch = (teacherId?: string, teacherName?: string) => {
     if (!user) {
       if (role === 'superadmin') return true;
       return false;
     }
     if (user.role === 'superadmin') return true;
-
-    // Any module/quiz belonging to currentSubject is visible for teachers of this subject
-    if (subject && isSubjectMatch(subject, currentSubject)) return true;
 
     const uId = (user.id || '').toLowerCase().trim();
     const uName = (user.name || '').toLowerCase().trim();
@@ -84,21 +81,26 @@ export default function AdminGuruDashboard() {
     const tId = (teacherId || '').toLowerCase().trim();
     const tName = (teacherName || '').toLowerCase().trim();
 
+    // 1. Direct ID match
     if (tId && uId && tId === uId) return true;
+
+    // 2. Strict Teacher Name match
     if (tName && uName) {
       if (tName === uName) return true;
-      if (tName.includes(uName) || uName.includes(tName)) return true;
+      const cleanTName = tName.replace(/[^a-z0-9]/gi, '');
+      const cleanUName = uName.replace(/[^a-z0-9]/gi, '');
+      if (cleanTName === cleanUName) return true;
     }
-    if (!tName || tName === 'guru sitemsa' || tName === 'pengajar' || tName.includes('guru') || tName.includes('pengajar')) return true;
+
     return false;
   };
 
   const subjectModules = (mounted && user) ? modules.filter(
-    (m) => isSubjectMatch(m.subject, currentSubject) && isTeacherMatch(m.teacherId, m.teacherName, m.subject)
+    (m) => isSubjectMatch(m.subject, currentSubject) && isTeacherMatch(m.teacherId, m.teacherName)
   ) : [];
 
   const subjectQuizzes = (mounted && user) ? quizzes.filter(
-    (q) => isSubjectMatch(q.subject, currentSubject) && isTeacherMatch(q.teacherId, q.teacherName, q.subject)
+    (q) => isSubjectMatch(q.subject, currentSubject) && isTeacherMatch(q.teacherId, q.teacherName)
   ) : [];
 
   const subjectStudents = students.filter((s) => {

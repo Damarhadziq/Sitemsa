@@ -172,7 +172,7 @@ export default function AdminGuruPelajaranPage() {
   const itemIdParam = searchParams.get('item');
 
   const { user, role, activeSubjectFilter } = useAuth();
-  const { modules, quizzes, addModule, updateModule, deleteModule, addQuiz, deleteQuiz } = useAdminStore();
+  const { modules, quizzes, teachers, addModule, updateModule, deleteModule, addQuiz, deleteQuiz } = useAdminStore();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -212,15 +212,12 @@ export default function AdminGuruPelajaranPage() {
     return false;
   };
 
-  const isTeacherMatch = (teacherId?: string, teacherName?: string, subject?: string) => {
+  const isTeacherMatch = (teacherId?: string, teacherName?: string) => {
     if (!user) {
       if (role === 'superadmin') return true;
       return false;
     }
     if (user.role === 'superadmin') return true;
-
-    // Any module/quiz belonging to currentSubject is visible for teachers of this subject
-    if (subject && isSubjectMatch(subject, currentSubject)) return true;
 
     const uId = (user.id || '').toLowerCase().trim();
     const uName = (user.name || '').toLowerCase().trim();
@@ -228,20 +225,25 @@ export default function AdminGuruPelajaranPage() {
     const tId = (teacherId || '').toLowerCase().trim();
     const tName = (teacherName || '').toLowerCase().trim();
 
+    // 1. Direct ID match
     if (tId && uId && tId === uId) return true;
+
+    // 2. Strict Teacher Name match
     if (tName && uName) {
       if (tName === uName) return true;
-      if (tName.includes(uName) || uName.includes(tName)) return true;
+      const cleanTName = tName.replace(/[^a-z0-9]/gi, '');
+      const cleanUName = uName.replace(/[^a-z0-9]/gi, '');
+      if (cleanTName === cleanUName) return true;
     }
-    if (!tName || tName === 'guru sitemsa' || tName === 'pengajar' || tName.includes('guru') || tName.includes('pengajar')) return true;
+
     return false;
   };
 
   const subjectModules = (mounted && user) ? modules.filter(
-    (m) => isSubjectMatch(m.subject, currentSubject) && isTeacherMatch(m.teacherId, m.teacherName, m.subject)
+    (m) => isSubjectMatch(m.subject, currentSubject) && isTeacherMatch(m.teacherId, m.teacherName)
   ) : [];
   const subjectQuizzes = (mounted && user) ? quizzes.filter(
-    (q) => isSubjectMatch(q.subject, currentSubject) && isTeacherMatch(q.teacherId, q.teacherName, q.subject)
+    (q) => isSubjectMatch(q.subject, currentSubject) && isTeacherMatch(q.teacherId, q.teacherName)
   ) : [];
 
   // Selected item ID from query param (null = Landing Overview mode)
@@ -318,6 +320,19 @@ export default function AdminGuruPelajaranPage() {
     }, 300);
     return () => clearTimeout(timer);
   }, [selectedItemId, currentSubject]);
+
+  // Auto-clear item parameter if item does not belong to logged-in teacher
+  useEffect(() => {
+    if (selectedItemId && !isLoading && mounted) {
+      if (!selectedModule && !selectedQuiz) {
+        if (typeof window !== 'undefined') {
+          const url = new URL(window.location.href);
+          url.searchParams.delete('item');
+          window.history.replaceState(null, '', url.pathname + (url.search ? url.search : ''));
+        }
+      }
+    }
+  }, [selectedItemId, selectedModule, selectedQuiz, isLoading, mounted]);
 
   // TOAST NOTIFICATION & NEW ITEM HIGHLIGHT STATES
   const [toast, setToast] = useState<{ message: React.ReactNode; type: 'success' | 'info' | 'warning' } | null>(null);
@@ -1126,8 +1141,8 @@ export default function AdminGuruPelajaranPage() {
           </div>
         ) : (
           <>
-            {/* LANDING OVERVIEW VIEW (WHEN NO ITEM IS SELECTED) */}
-            {!selectedItemId && (
+            {/* LANDING OVERVIEW VIEW (WHEN NO ITEM IS SELECTED OR FOREIGN ITEM PARAM) */}
+            {(!selectedItemId || (!selectedModule && !selectedQuiz)) && (
               <div className="space-y-6">
                 
                 {/* SEARCH RESULTS MODE (DIRECT CARDS GRID, NO SECTION HEADERS) */}
@@ -2471,43 +2486,59 @@ export default function AdminGuruPelajaranPage() {
           </div>
         )}
       {/* DETAIL MODAL INFO WITH DETAIL TIM LIST LAYOUT */}
-      {(selectedModule || selectedInfoModule) && (
-        <ModuleInfoModal
-          isOpen={showDetailInfoModal}
-          onClose={() => {
-            setShowDetailInfoModal(false);
-            setSelectedInfoModule(null);
-          }}
-          title={(selectedModule || selectedInfoModule)!.title}
-          subject={(selectedModule || selectedInfoModule)!.subject}
-          teacherName={(selectedModule || selectedInfoModule)!.teacherName || user?.name || 'Ibu Siti Rahmawati, S.Pd.'}
-          teacherRole={user?.role === 'superadmin' ? 'Superadmin Kurikulum Sitemsa' : `Guru Pengampu ${(selectedModule || selectedInfoModule)!.subject}`}
-          teacherAvatar={user?.avatar}
-          publishDate={(selectedModule || selectedInfoModule)!.createdAt || '20 Agustus 2026, 08:30 WIB'}
-          lastUpdate="22 Agustus 2026, 13:45 WIB"
-        />
-      )}
+      {(selectedModule || selectedInfoModule) && (() => {
+        const activeMod = (selectedModule || selectedInfoModule)!;
+        const authorTeacher = activeMod.teacherId || activeMod.teacherName
+          ? teachers.find((t) => t.id === activeMod.teacherId || t.name?.toLowerCase() === activeMod.teacherName?.toLowerCase())
+          : null;
+        const modTeacherAvatar = (authorTeacher?.avatar && authorTeacher.avatar.trim()) ? authorTeacher.avatar : (activeMod.teacherName === user?.name ? user?.avatar : undefined);
+
+        return (
+          <ModuleInfoModal
+            isOpen={showDetailInfoModal}
+            onClose={() => {
+              setShowDetailInfoModal(false);
+              setSelectedInfoModule(null);
+            }}
+            title={activeMod.title}
+            subject={activeMod.subject}
+            teacherName={activeMod.teacherName || user?.name || 'Pengajar Sitemsa'}
+            teacherRole={user?.role === 'superadmin' ? 'Superadmin Kurikulum Sitemsa' : `Guru Pengampu ${activeMod.subject}`}
+            teacherAvatar={modTeacherAvatar}
+            publishDate={activeMod.createdAt || '20 Agustus 2026, 08:30 WIB'}
+            lastUpdate="22 Agustus 2026, 13:45 WIB"
+          />
+        );
+      })()}
 
       {/* QUIZ INFO MODAL */}
-      {(selectedQuiz || selectedInfoQuiz) && (
-        <QuizInfoModal
-          isOpen={showDetailQuizInfoModal}
-          onClose={() => {
-            setShowDetailQuizInfoModal(false);
-            setSelectedInfoQuiz(null);
-          }}
-          title={(selectedQuiz || selectedInfoQuiz)!.title}
-          subject={(selectedQuiz || selectedInfoQuiz)!.subject}
-          questionCount={(selectedQuiz || selectedInfoQuiz)!.questions ? (selectedQuiz || selectedInfoQuiz)!.questions.length : ((selectedQuiz || selectedInfoQuiz)!.questionCount || 0)}
-          passScore={(selectedQuiz || selectedInfoQuiz)!.passScore || 75}
-          duration={(selectedQuiz || selectedInfoQuiz)!.duration || '15 Menit'}
-          teacherName={(selectedQuiz || selectedInfoQuiz)!.teacherName || user?.name || 'Guru Sitemsa'}
-          teacherRole={user?.role === 'superadmin' ? 'Superadmin Kurikulum Sitemsa' : `Guru Pengampu ${(selectedQuiz || selectedInfoQuiz)!.subject}`}
-          teacherAvatar={user?.avatar}
-          publishDate={(selectedQuiz || selectedInfoQuiz)!.createdAt || '20 Agustus 2026'}
-          published={(selectedQuiz || selectedInfoQuiz)!.published !== false}
-        />
-      )}
+      {(selectedQuiz || selectedInfoQuiz) && (() => {
+        const activeQuiz = (selectedQuiz || selectedInfoQuiz)!;
+        const authorTeacher = activeQuiz.teacherId || activeQuiz.teacherName
+          ? teachers.find((t) => t.id === activeQuiz.teacherId || t.name?.toLowerCase() === activeQuiz.teacherName?.toLowerCase())
+          : null;
+        const quizTeacherAvatar = (authorTeacher?.avatar && authorTeacher.avatar.trim()) ? authorTeacher.avatar : (activeQuiz.teacherName === user?.name ? user?.avatar : undefined);
+
+        return (
+          <QuizInfoModal
+            isOpen={showDetailQuizInfoModal}
+            onClose={() => {
+              setShowDetailQuizInfoModal(false);
+              setSelectedInfoQuiz(null);
+            }}
+            title={activeQuiz.title}
+            subject={activeQuiz.subject}
+            questionCount={activeQuiz.questions ? activeQuiz.questions.length : (activeQuiz.questionCount || 0)}
+            passScore={activeQuiz.passScore || 75}
+            duration={activeQuiz.duration || '15 Menit'}
+            teacherName={activeQuiz.teacherName || user?.name || 'Guru Sitemsa'}
+            teacherRole={user?.role === 'superadmin' ? 'Superadmin Kurikulum Sitemsa' : `Guru Pengampu ${activeQuiz.subject}`}
+            teacherAvatar={quizTeacherAvatar}
+            publishDate={activeQuiz.createdAt || '20 Agustus 2026'}
+            published={activeQuiz.published !== false}
+          />
+        );
+      })()}
 
     </div>
   );

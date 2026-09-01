@@ -708,6 +708,11 @@ export function ModuleBlockBuilder({
   const [tempVideoUrl, setTempVideoUrl] = useState('');
   const [activeQrModalUrl, setActiveQrModalUrl] = useState<string | null>(null);
 
+  // Dynamic Uploading states for Canvas Blocks & Modals
+  const [uploadingImageTarget, setUploadingImageTarget] = useState<{ blockId: string; elIndex?: number } | null>(null);
+  const [uploadingAttachmentBlockId, setUploadingAttachmentBlockId] = useState<string | null>(null);
+  const [isUploadingEvalQr, setIsUploadingEvalQr] = useState(false);
+
   // Attachment file upload state
   const [changingAttachmentFileId, setChangingAttachmentFileId] = useState<string | null>(null);
   const [copiedBlockId, setCopiedBlockId] = useState<string | null>(null);
@@ -1033,8 +1038,10 @@ export function ModuleBlockBuilder({
   const handlePromptChangeSectionImage = (blockId: string, elIndex: number, currentUrl?: string) => {
     setEditingSectionImage({ blockId, elIndex });
     setEditingImageId(blockId);
-    setImageUploadMode('computer');
-    setTempImageUrl(currentUrl || '');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+      fileInputRef.current.click();
+    }
   };
 
   // Native Image File Picker Handler
@@ -1042,42 +1049,47 @@ export function ModuleBlockBuilder({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const targetSection = editingSectionImage;
+    const targetBlockId = editingImageId;
+
+    if (targetSection) {
+      setUploadingImageTarget({ blockId: targetSection.blockId, elIndex: targetSection.elIndex });
+    } else if (targetBlockId) {
+      setUploadingImageTarget({ blockId: targetBlockId });
+    }
+
     try {
       const uploadedUrl = await StorageService.uploadImage(file, 'images');
 
-      if (editingSectionImage) {
+      if (targetSection) {
         handleUpdateSectionElement(
-          editingSectionImage.blockId,
-          editingSectionImage.elIndex,
+          targetSection.blockId,
+          targetSection.elIndex,
           { imageUrl: uploadedUrl }
         );
-        setEditingSectionImage(null);
-        setEditingImageId(null);
-        return;
+      } else if (targetBlockId) {
+        updateBlockById(targetBlockId, { mediaUrl: uploadedUrl });
       }
-
-      if (editingImageId) {
-        updateBlockById(editingImageId, { mediaUrl: uploadedUrl });
-        setEditingImageId(null);
-      }
-    } catch {
+      setIsDirty(true);
+    } catch (err) {
+      console.warn('Storage upload fallback:', err);
       const objectUrl = URL.createObjectURL(file);
 
-      if (editingSectionImage) {
+      if (targetSection) {
         handleUpdateSectionElement(
-          editingSectionImage.blockId,
-          editingSectionImage.elIndex,
+          targetSection.blockId,
+          targetSection.elIndex,
           { imageUrl: objectUrl }
         );
-        setEditingSectionImage(null);
-        setEditingImageId(null);
-        return;
+      } else if (targetBlockId) {
+        updateBlockById(targetBlockId, { mediaUrl: objectUrl });
       }
-
-      if (editingImageId) {
-        updateBlockById(editingImageId, { mediaUrl: objectUrl });
-        setEditingImageId(null);
-      }
+      setIsDirty(true);
+    } finally {
+      setUploadingImageTarget(null);
+      setEditingSectionImage(null);
+      setEditingImageId(null);
+      e.target.value = '';
     }
   };
 
@@ -1088,6 +1100,7 @@ export function ModuleBlockBuilder({
     const targetItemId = targetAttachmentItemIdRef.current || changingAttachmentFileId;
 
     if (file && targetBlockId) {
+      setUploadingAttachmentBlockId(targetBlockId);
       const formattedSize =
         file.size > 1024 * 1024
           ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
@@ -1131,6 +1144,7 @@ export function ModuleBlockBuilder({
         }
         setIsDirty(true);
       }
+      setUploadingAttachmentBlockId(null);
     }
     setChangingAttachmentFileId(null);
     targetAttachmentBlockIdRef.current = null;
@@ -1143,6 +1157,7 @@ export function ModuleBlockBuilder({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setIsUploadingEvalQr(true);
     try {
       const uploadedUrl = await StorageService.uploadImage(file, 'evaluations');
       setEvalQrUrl(uploadedUrl);
@@ -1152,8 +1167,10 @@ export function ModuleBlockBuilder({
       const objUrl = URL.createObjectURL(file);
       setEvalQrUrl(objUrl);
       setIsDirty(true);
+    } finally {
+      setIsUploadingEvalQr(false);
+      e.target.value = '';
     }
-    e.target.value = '';
   };
 
   // Trigger Add / Change Attachment
@@ -1177,12 +1194,14 @@ export function ModuleBlockBuilder({
     setIsDirty(true);
   };
 
-  // Image Upload Modal trigger
+  // Image Upload trigger for standalone image block
   const handlePromptChangeImage = (id: string, currentUrl?: string) => {
     setEditingSectionImage(null);
     setEditingImageId(id);
-    setImageUploadMode('computer');
-    setTempImageUrl(currentUrl || '');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+      fileInputRef.current.click();
+    }
   };
 
   const handleSaveImageModal = () => {
@@ -1826,7 +1845,13 @@ export function ModuleBlockBuilder({
                                     ) : (
                                       /* Image Element */
                                       <div className="relative group/elImg my-2 flex justify-center w-full">
-                                        {!el.imageUrl ? (
+                                        {uploadingImageTarget?.blockId === block.id && uploadingImageTarget?.elIndex === elIdx ? (
+                                          <div className="rounded-[12px] border-2 border-dashed border-[#2563EB] bg-blue-50/70 p-8 text-center flex flex-col items-center justify-center space-y-2 w-full animate-pulse my-2">
+                                            <Loader2 className="w-6 h-6 text-[#2563EB] animate-spin" />
+                                            <p className="text-xs font-bold text-[#2563EB]">Sedang Mengunggah Gambar...</p>
+                                            <p className="text-[11px] text-[#737373]">Menyimpan gambar ke server...</p>
+                                          </div>
+                                        ) : !el.imageUrl ? (
                                           <div
                                             onClick={(e) => {
                                               e.stopPropagation();
@@ -2068,7 +2093,13 @@ export function ModuleBlockBuilder({
                         {/* 2. IMAGE BLOCK */}
                         {block.type === 'image' && (
                           <div>
-                            {!block.mediaUrl ? (
+                            {uploadingImageTarget?.blockId === block.id && uploadingImageTarget?.elIndex === undefined ? (
+                              <div className="rounded-[12px] border-2 border-dashed border-[#2563EB] bg-blue-50/70 p-12 text-center flex flex-col items-center justify-center space-y-2 w-full animate-pulse my-2">
+                                <Loader2 className="w-8 h-8 text-[#2563EB] animate-spin" />
+                                <p className="text-xs font-bold text-[#2563EB]">Sedang Mengunggah Gambar...</p>
+                                <p className="text-[11px] text-[#737373]">Menyimpan berkas gambar ke server...</p>
+                              </div>
+                            ) : !block.mediaUrl ? (
                               <div
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -2177,7 +2208,14 @@ export function ModuleBlockBuilder({
                               </h4>
                             </div>
 
-                            {(!block.attachments || block.attachments.length === 0) ? (
+                            {uploadingAttachmentBlockId === block.id && (
+                              <div className="p-3.5 rounded-[10px] bg-blue-50/80 border border-blue-200 flex items-center justify-center gap-2 text-xs font-bold text-[#2563EB] animate-pulse">
+                                <Loader2 className="w-4 h-4 animate-spin text-[#2563EB]" />
+                                <span>Sedang mengunggah berkas lampiran...</span>
+                              </div>
+                            )}
+
+                            {(!block.attachments || block.attachments.length === 0) && uploadingAttachmentBlockId !== block.id ? (
                               <div
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -2197,7 +2235,7 @@ export function ModuleBlockBuilder({
                               </div>
                             ) : (
                               <div className="space-y-2">
-                                {block.attachments.map((fileItem) => {
+                                {(block.attachments || []).map((fileItem) => {
                                   const fileName = fileItem.fileName || (fileItem as any).name || 'Dokumen Terlampir';
                                   const fileSize = fileItem.fileSize || (fileItem as any).size || 'File';
                                   return (
@@ -2482,10 +2520,16 @@ export function ModuleBlockBuilder({
                   {/* FILE LIST IN SIDEBAR */}
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-[#737373]">Daftar Berkas Terlampir ({selectedBlock.attachments?.length || 0}):</label>
-                    {(!selectedBlock.attachments || selectedBlock.attachments.length === 0) ? (
+                    {uploadingAttachmentBlockId === selectedBlock.id && (
+                      <div className="p-2.5 rounded-[8px] bg-blue-50 border border-blue-200 flex items-center justify-center gap-2 text-xs font-semibold text-[#2563EB] animate-pulse">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[#2563EB]" />
+                        <span>Mengunggah berkas...</span>
+                      </div>
+                    )}
+                    {(!selectedBlock.attachments || selectedBlock.attachments.length === 0) && uploadingAttachmentBlockId !== selectedBlock.id ? (
                       <p className="text-xs text-slate-400 italic py-2">Belum ada file terlampir.</p>
                     ) : (
-                      selectedBlock.attachments.map((fileItem) => {
+                      (selectedBlock.attachments || []).map((fileItem) => {
                         const fileName = fileItem.fileName || (fileItem as any).name || 'Dokumen Terlampir';
                         const fileSize = fileItem.fileSize || (fileItem as any).size || 'File';
                         return (
@@ -3276,7 +3320,12 @@ export function ModuleBlockBuilder({
                         </div>
                         <div className="space-y-1.5">
                           <label className="font-bold text-xs text-[#2E2D2D] block">Gambar Barcode / QR Code</label>
-                          {!evalQrUrl ? (
+                          {isUploadingEvalQr ? (
+                            <div className="w-full py-2.5 px-4 rounded-[8px] border border-blue-200 bg-blue-50/70 text-xs font-bold text-[#2563EB] flex items-center justify-center gap-2 animate-pulse">
+                              <Loader2 className="w-4 h-4 animate-spin text-[#2563EB]" />
+                              <span>Mengunggah Gambar Barcode / QR Code...</span>
+                            </div>
+                          ) : !evalQrUrl ? (
                             <button
                               type="button"
                               onClick={() => evalQrInputRef.current?.click()}
@@ -3957,7 +4006,12 @@ export function ModuleBlockBuilder({
                       </div>
                       <div className="space-y-1.5">
                         <label className="font-bold text-xs text-[#2E2D2D] block">Gambar Barcode / QR Code</label>
-                        {!evalQrUrl ? (
+                        {isUploadingEvalQr ? (
+                          <div className="w-full py-2.5 px-4 rounded-[8px] border border-blue-200 bg-blue-50/70 text-xs font-bold text-[#2563EB] flex items-center justify-center gap-2 animate-pulse">
+                            <Loader2 className="w-4 h-4 animate-spin text-[#2563EB]" />
+                            <span>Mengunggah Gambar Barcode / QR Code...</span>
+                          </div>
+                        ) : !evalQrUrl ? (
                           <button
                             type="button"
                             onClick={() => evalQrInputRef.current?.click()}

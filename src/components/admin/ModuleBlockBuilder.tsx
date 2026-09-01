@@ -594,9 +594,10 @@ export function ModuleBlockBuilder({
     };
   }, []);
 
-  // Intercept browser back button, Alt+Left shortcuts, and refresh/close tab
+  // Intercept browser back button, Alt+Left shortcuts, and refresh/close tab only when there are unsaved changes
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!isDirty) return;
       e.preventDefault();
       e.returnValue = '';
     };
@@ -606,7 +607,11 @@ export function ModuleBlockBuilder({
     window.history.pushState({ builderOpen: true }, '');
 
     const handlePopState = () => {
-      setShowExitConfirmModal(true);
+      if (isDirty) {
+        setShowExitConfirmModal(true);
+      } else {
+        onClose();
+      }
       window.history.pushState({ builderOpen: true }, '');
     };
 
@@ -616,7 +621,7 @@ export function ModuleBlockBuilder({
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('popstate', handlePopState);
     };
-  }, []);
+  }, [isDirty, onClose]);
   
   // State for Right Sidebar Visibility & Target Insert Position
   const [showRightSidebar, setShowRightSidebar] = useState(true);

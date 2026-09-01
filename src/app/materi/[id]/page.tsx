@@ -38,6 +38,7 @@ import { recordModuleCompletion, isModuleCompletedByStudent } from "@/services/w
 import { addUserNotification } from "@/services/notification.service";
 import { StudyAnalyticsService } from "@/services/analytics.service";
 import { getStudentScopedStorageKey, getStudentProfile } from "@/services/student-profile.service";
+import { ProgressService } from "@/services/progress.service";
 import { toDeterministicUUID } from "@/lib/uuid";
 
 export type QuizSourceType = "internal" | "barcode" | "external_link";
@@ -2116,6 +2117,25 @@ export default function MateriDetailPage({
         localStorage.setItem(key, JSON.stringify(filtered.slice(0, 30)));
       } catch (e) {
         console.error(e);
+      }
+
+      // Record student reading access for teacher monitoring
+      try {
+        const profile = getStudentProfile();
+        ProgressService.recordModuleAccess(
+          profile.id || 'std-1',
+          {
+            id: String(material.id),
+            title: material.title,
+            subject: material.subject,
+            teacherName: material.author,
+          },
+          profile.name || 'Siswa Sitemsa',
+          profile.email || 'siswa@sitemsa.sch.id',
+          profile.avatar
+        );
+      } catch (e) {
+        console.error('Error recording module access for monitoring:', e);
       }
     }
   }, [material]);

@@ -104,23 +104,44 @@ export default function AdminGuruDashboard() {
   ) : [];
 
   const subjectStudents = students.filter((s) => {
-    const hasProgress = (s.moduleProgress?.[currentSubject] ?? 0) > 0;
-    const hasQuiz = s.quizHistory?.some(
-      (q) => isSubjectMatch(q.subject, currentSubject)
+    if (user?.role === 'superadmin') {
+      const hasProgress = (s.moduleProgress?.[currentSubject] ?? 0) > 0;
+      const hasQuiz = s.quizHistory?.some(
+        (q) => isSubjectMatch(q.subject, currentSubject)
+      );
+      const isEnrolled = s.enrolledSubjects?.some(
+        (sub) => isSubjectMatch(sub, currentSubject)
+      );
+      return hasProgress || hasQuiz || isEnrolled;
+    }
+
+    // For specific teacher: Only include students who read this teacher's modules or took this teacher's quizzes
+    const hasReadTeacherModule = s.accessedModules?.some((am) =>
+      subjectModules.some((sm) => sm.id === am.moduleId || sm.title.toLowerCase() === am.moduleTitle?.toLowerCase() || isTeacherMatch(am.teacherId, am.teacherName))
     );
-    const isEnrolled = s.enrolledSubjects?.some(
-      (sub) => isSubjectMatch(sub, currentSubject)
+
+    const hasTakenTeacherQuiz = s.quizHistory?.some((qh) =>
+      subjectQuizzes.some((sq) => sq.id === qh.quizId || sq.title.toLowerCase() === qh.quizTitle?.toLowerCase())
     );
-    return hasProgress || hasQuiz || isEnrolled;
+
+    return hasReadTeacherModule || hasTakenTeacherQuiz;
   });
 
-  // Calculate students needing remedial for this subject (score < 75 or status === 'Perlu Bimbingan')
+  // Calculate students needing remedial ONLY for quizzes published by THIS teacher
   const subjectRemedialStudents = subjectStudents
     .map((s) => {
-      const subjectQuizzes = (s.quizHistory || []).filter((q) => isSubjectMatch(q.subject, currentSubject));
-      const failedQuizzes = subjectQuizzes.filter((q) => q.score < 75 || q.status === 'Perlu Bimbingan');
-      if (failedQuizzes.length === 0) return null;
-      const latestFailed = failedQuizzes[0];
+      const teacherFailedQuizzes = (s.quizHistory || []).filter((q) => {
+        if (user?.role === 'superadmin') {
+          return isSubjectMatch(q.subject, currentSubject) && (q.score < 75 || q.status === 'Perlu Bimbingan');
+        }
+        return (
+          subjectQuizzes.some((sq) => sq.id === q.quizId || sq.title.toLowerCase() === q.quizTitle?.toLowerCase()) &&
+          (q.score < 75 || q.status === 'Perlu Bimbingan')
+        );
+      });
+
+      if (teacherFailedQuizzes.length === 0) return null;
+      const latestFailed = teacherFailedQuizzes[0];
       return {
         student: s,
         quizTitle: latestFailed.quizTitle || 'Kuis Evaluasi',
@@ -134,12 +155,16 @@ export default function AdminGuruDashboard() {
   let totalScore = 0;
   let scoreCount = 0;
   subjectStudents.forEach((s) => {
-    (s.quizHistory || [])
-      .filter((q) => isSubjectMatch(q.subject, currentSubject))
-      .forEach((q) => {
+    (s.quizHistory || []).forEach((q) => {
+      const isMatch = user?.role === 'superadmin'
+        ? isSubjectMatch(q.subject, currentSubject)
+        : subjectQuizzes.some((sq) => sq.id === q.quizId || sq.title.toLowerCase() === q.quizTitle?.toLowerCase());
+      
+      if (isMatch) {
         totalScore += q.score;
         scoreCount++;
-      });
+      }
+    });
   });
   const avgSubjectScore = scoreCount > 0 ? Math.round(totalScore / scoreCount) : 0;
 

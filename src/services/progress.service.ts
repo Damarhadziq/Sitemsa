@@ -83,10 +83,55 @@ export class ProgressService {
     return student;
   }
 
+  static recordModuleAccess(studentId: string, module: {
+    id: string;
+    title: string;
+    subject: string;
+    teacherId?: string;
+    teacherName?: string;
+  }, studentName?: string, studentEmail?: string, avatar?: string): StudentRecord {
+    this.ensureHydrated();
+    const student = this.getOrCreateStudent(studentId, studentName, studentEmail, avatar);
+    
+    if (!student.accessedModules) {
+      student.accessedModules = [];
+    }
+
+    const exists = student.accessedModules.find(
+      (m) => m.moduleId === module.id || m.moduleTitle.toLowerCase() === module.title.toLowerCase()
+    );
+
+    if (!exists) {
+      student.accessedModules.push({
+        moduleId: module.id,
+        moduleTitle: module.title,
+        subject: module.subject,
+        teacherId: module.teacherId,
+        teacherName: module.teacherName,
+        accessedAt: new Date().toISOString(),
+      });
+    }
+
+    const currentProg = student.moduleProgress[module.subject] || 0;
+    student.moduleProgress[module.subject] = Math.min(100, Math.max(currentProg, 25));
+    student.lastActive = 'Baru saja';
+    this.persist();
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('sintesa-student-progress-updated', {
+        detail: { studentId, subject: module.subject, moduleId: module.id }
+      }));
+    }
+
+    return student;
+  }
+
   static recordQuizAttempt(studentId: string, attempt: {
     quizId: string;
     quizTitle: string;
     subject: string;
+    teacherId?: string;
+    teacherName?: string;
     score: number;
     maxScore: number;
     status: 'Lulus' | 'Perlu Bimbingan';

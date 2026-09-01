@@ -133,8 +133,19 @@ export interface StudentRecord {
   lastActive: string;
   enrolledSubjects: string[];
   moduleProgress: Record<string, number>; // subject -> percentage
+  accessedModules?: {
+    moduleId: string;
+    moduleTitle: string;
+    subject: string;
+    teacherId?: string;
+    teacherName?: string;
+    accessedAt: string;
+  }[];
   quizHistory: {
     id: string;
+    quizId?: string;
+    teacherId?: string;
+    teacherName?: string;
     subject: string;
     quizTitle: string;
     score: number;

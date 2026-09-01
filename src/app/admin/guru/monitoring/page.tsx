@@ -18,23 +18,71 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { LoadingTimeoutBoundary } from '@/components/ui/LoadingTimeoutBoundary';
 
 export default function AdminGuruMonitoringPage() {
-  const { user, activeSubjectFilter } = useAuth();
-  const { students, modules } = useAdminStore();
+  const { user, role, activeSubjectFilter } = useAuth();
+  const { students, modules, quizzes } = useAdminStore();
 
   const assignedSubjects = user?.assignedSubjects || ['Informatika'];
   const currentSubject = activeSubjectFilter || assignedSubjects[0] || 'Informatika';
 
+  const isSubjectMatch = (mSub?: string, curSub?: string) => {
+    if (!mSub || !curSub) return false;
+    const a = mSub.toLowerCase().replace(/[^a-z]/g, '');
+    const b = curSub.toLowerCase().replace(/[^a-z]/g, '');
+    if (a === b) return true;
+    if ((a.includes('olahraga') || a.includes('keolahragaan') || a.includes('pjok') || a.includes('jasmani')) &&
+        (b.includes('olahraga') || b.includes('keolahragaan') || b.includes('pjok') || b.includes('jasmani'))) {
+      return true;
+    }
+    if ((a.includes('konseling') || a.includes('bk')) && (b.includes('konseling') || b.includes('bk'))) {
+      return true;
+    }
+    if ((a.includes('tari') || a.includes('senitari')) && (b.includes('tari') || b.includes('senitari'))) {
+      return true;
+    }
+    if (a.includes('otomotif') && b.includes('otomotif')) {
+      return true;
+    }
+    if (a.includes('elektronika') && b.includes('elektronika')) {
+      return true;
+    }
+    if (a.includes(b) || b.includes(a)) return true;
+    return false;
+  };
+
+  const isTeacherMatch = (teacherId?: string, teacherName?: string) => {
+    if (!user) {
+      if (role === 'superadmin') return true;
+      return false;
+    }
+    if (user.role === 'superadmin') return true;
+
+    const uId = (user.id || '').toLowerCase().trim();
+    const uName = (user.name || '').toLowerCase().trim();
+
+    const tId = (teacherId || '').toLowerCase().trim();
+    const tName = (teacherName || '').toLowerCase().trim();
+
+    // 1. Direct ID match
+    if (tId && uId && tId === uId) return true;
+
+    // 2. Strict Teacher Name match
+    if (tName && uName) {
+      if (tName === uName) return true;
+      const cleanTName = tName.replace(/[^a-z0-9]/gi, '');
+      const cleanUName = uName.replace(/[^a-z0-9]/gi, '');
+      if (cleanTName === cleanUName) return true;
+    }
+
+    return false;
+  };
+
   const subjectModules = modules.filter(
-    (m) =>
-      m.subject === currentSubject &&
-      (!user ||
-        user.role === 'superadmin' ||
-        m.teacherId === user.id ||
-        m.teacherName?.toLowerCase() === user.name?.toLowerCase() ||
-        m.teacherName?.toLowerCase().includes(user.name?.toLowerCase()) ||
-        user.name?.toLowerCase().includes(m.teacherName?.toLowerCase()))
+    (m) => isSubjectMatch(m.subject, currentSubject) && isTeacherMatch(m.teacherId, m.teacherName)
   );
-  const totalSubjectModules = subjectModules.length || 3;
+  const subjectQuizzes = quizzes.filter(
+    (q) => isSubjectMatch(q.subject, currentSubject) && isTeacherMatch(q.teacherId, q.teacherName)
+  );
+  const totalSubjectModules = subjectModules.length || 1;
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStudentModal, setSelectedStudentModal] = useState<StudentRecord | null>(null);
@@ -85,14 +133,27 @@ export default function AdminGuruMonitoringPage() {
   }, [selectedStudentModal]);
 
   const subjectStudents = students.filter((s) => {
-    const hasProgress = (s.moduleProgress?.[currentSubject] ?? 0) > 0;
-    const hasQuiz = s.quizHistory?.some(
-      (q) => q.subject.toLowerCase() === currentSubject.toLowerCase()
+    if (user?.role === 'superadmin') {
+      const hasProgress = (s.moduleProgress?.[currentSubject] ?? 0) > 0;
+      const hasQuiz = s.quizHistory?.some(
+        (q) => isSubjectMatch(q.subject, currentSubject)
+      );
+      const isEnrolled = s.enrolledSubjects?.some(
+        (sub) => isSubjectMatch(sub, currentSubject)
+      );
+      return hasProgress || hasQuiz || isEnrolled;
+    }
+
+    // For specific teacher: Only include students who read this teacher's modules or took this teacher's quizzes
+    const hasReadTeacherModule = s.accessedModules?.some((am) =>
+      subjectModules.some((sm) => sm.id === am.moduleId || sm.title.toLowerCase() === am.moduleTitle?.toLowerCase() || isTeacherMatch(am.teacherId, am.teacherName))
     );
-    const isEnrolled = s.enrolledSubjects?.some(
-      (sub) => sub.toLowerCase() === currentSubject.toLowerCase()
+
+    const hasTakenTeacherQuiz = s.quizHistory?.some((qh) =>
+      subjectQuizzes.some((sq) => sq.id === qh.quizId || sq.title.toLowerCase() === qh.quizTitle?.toLowerCase())
     );
-    return hasProgress || hasQuiz || isEnrolled;
+
+    return hasReadTeacherModule || hasTakenTeacherQuiz;
   });
 
   const filteredStudents = subjectStudents.filter(
@@ -159,10 +220,13 @@ export default function AdminGuruMonitoringPage() {
 
       filteredStudents.forEach((std, idx) => {
         const progress = std.moduleProgress?.[currentSubject] || 0;
-        const subjectQuizzes = std.quizHistory?.filter((q) => q.subject.toLowerCase() === currentSubject.toLowerCase()) || [];
-        const hasQuizzes = subjectQuizzes.length > 0;
-        const totalScore = subjectQuizzes.reduce((acc, q) => acc + q.score, 0);
-        const avgScore = hasQuizzes ? Math.round(totalScore / subjectQuizzes.length) : null;
+        const studentTeacherQuizzes = (std.quizHistory || []).filter((q) => {
+          if (user?.role === 'superadmin') return isSubjectMatch(q.subject, currentSubject);
+          return subjectQuizzes.some((sq) => sq.id === q.quizId || sq.title.toLowerCase() === q.quizTitle?.toLowerCase());
+        });
+        const hasQuizzes = studentTeacherQuizzes.length > 0;
+        const totalScore = studentTeacherQuizzes.reduce((acc, q) => acc + q.score, 0);
+        const avgScore = hasQuizzes ? Math.round(totalScore / studentTeacherQuizzes.length) : null;
         const status = hasQuizzes
           ? (avgScore !== null && avgScore >= 75 ? 'Tuntas' : 'Perlu Bimbingan')
           : (progress > 0 ? 'Membaca Materi' : 'Belum Mulai');
@@ -336,12 +400,13 @@ export default function AdminGuruMonitoringPage() {
                       Math.round((progress / 100) * totalSubjectModules)
                     );
 
-                    const subjectQuizzes = std.quizHistory.filter(
-                      (q) => q.subject.toLowerCase() === currentSubject.toLowerCase()
-                    );
-                    const hasQuizzes = subjectQuizzes.length > 0;
-                    const totalScore = subjectQuizzes.reduce((acc, q) => acc + q.score, 0);
-                    const avgScore = hasQuizzes ? Math.round(totalScore / subjectQuizzes.length) : null;
+                    const studentTeacherQuizzes = std.quizHistory.filter((q) => {
+                      if (user?.role === 'superadmin') return isSubjectMatch(q.subject, currentSubject);
+                      return subjectQuizzes.some((sq) => sq.id === q.quizId || sq.title.toLowerCase() === q.quizTitle?.toLowerCase());
+                    });
+                    const hasQuizzes = studentTeacherQuizzes.length > 0;
+                    const totalScore = studentTeacherQuizzes.reduce((acc, q) => acc + q.score, 0);
+                    const avgScore = hasQuizzes ? Math.round(totalScore / studentTeacherQuizzes.length) : null;
                     const isPassed = hasQuizzes ? (avgScore !== null && avgScore >= 75) : false;
 
                     return (
@@ -531,7 +596,10 @@ export default function AdminGuruMonitoringPage() {
 
                 <div className="space-y-2">
                   {selectedStudentModal.quizHistory
-                    .filter((q) => q.subject.toLowerCase() === currentSubject.toLowerCase())
+                    .filter((q) => {
+                      if (user?.role === 'superadmin') return isSubjectMatch(q.subject, currentSubject);
+                      return subjectQuizzes.some((sq) => sq.id === q.quizId || sq.title.toLowerCase() === q.quizTitle?.toLowerCase());
+                    })
                     .map((q) => (
                       <div
                         key={q.id}

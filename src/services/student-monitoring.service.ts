@@ -99,12 +99,18 @@ export class StudentMonitoringService {
         const target = studentMap.get(cleanEmail) || Array.from(studentMap.values()).find((s) => s.id === lp.id);
         if (target) {
           target.moduleProgress = { ...target.moduleProgress, ...lp.moduleProgress };
+          if (lp.accessedModules && lp.accessedModules.length > 0) {
+            target.accessedModules = lp.accessedModules;
+          }
           if (lp.quizHistory && lp.quizHistory.length > 0) {
             const existingQIds = new Set(target.quizHistory.map((q) => q.id));
             lp.quizHistory.forEach((qh) => {
               if (!existingQIds.has(qh.id)) {
                 target.quizHistory.push({
                   id: qh.id,
+                  quizId: qh.quizId,
+                  teacherId: qh.teacherId,
+                  teacherName: qh.teacherName,
                   subject: qh.subject,
                   quizTitle: qh.quizTitle,
                   score: qh.score,

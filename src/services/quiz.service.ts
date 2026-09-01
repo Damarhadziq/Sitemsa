@@ -89,10 +89,16 @@ export class QuizService {
           }
         });
 
-        // Merge cloud quizzes with locally saved quizzes
+        // Merge cloud quizzes with locally saved quizzes (deduplicating by subject + title)
         const mergedMap = new Map<string, QuizItem>();
-        (dbStore.quizzes || []).forEach((q) => mergedMap.set(q.id, q));
-        Array.from(uniqueMap.values()).forEach((q) => mergedMap.set(q.id, q));
+        (dbStore.quizzes || []).forEach((q) => {
+          const titleKey = `${(q.subject || '').toLowerCase().trim()}_${(q.title || '').toLowerCase().trim()}`;
+          mergedMap.set(titleKey, q);
+        });
+        Array.from(uniqueMap.values()).forEach((q) => {
+          const titleKey = `${(q.subject || '').toLowerCase().trim()}_${(q.title || '').toLowerCase().trim()}`;
+          mergedMap.set(titleKey, q);
+        });
 
         const finalMerged = Array.from(mergedMap.values());
         dbStore.quizzes = finalMerged;

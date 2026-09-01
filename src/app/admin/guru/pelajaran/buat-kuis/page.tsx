@@ -275,7 +275,7 @@ function BuatKuisContent() {
   };
 
   // Form Submission (Always published directly)
-  const handleSubmitQuiz = () => {
+  const handleSubmitQuiz = async () => {
     if (!isFormComplete) {
       alert('Mohon lengkapi seluruh bidang formulir wajib (Judul, Batas KKM, Soal, Kunci Jawaban & Pembahasan) sebelum mempublikasikan kuis.');
       return;
@@ -301,7 +301,7 @@ function BuatKuisContent() {
           published: true,
         });
 
-        QuizService.updateQuiz(existingQuiz.id, {
+        await QuizService.updateQuiz(existingQuiz.id, {
           subject,
           title: title.trim(),
           duration: duration || '15 Menit',
@@ -309,14 +309,6 @@ function BuatKuisContent() {
           questions,
           published: true,
         });
-        quizzesClientService.update(existingQuiz.id, {
-          subject,
-          title: title.trim(),
-          duration: duration || '15 Menit',
-          passScore: Number(passScore) || 75,
-          questions,
-          published: true,
-        } as any).catch((e) => console.warn('Quiz client sync update error:', e));
 
         setIsPublishing(false);
         setShowPublishModal(false);
@@ -335,7 +327,7 @@ function BuatKuisContent() {
           published: true,
         });
 
-        QuizService.createQuiz({
+        await QuizService.createQuiz({
           id: newQuizId,
           subject,
           title: title.trim(),
@@ -346,17 +338,6 @@ function BuatKuisContent() {
           teacherName: user?.name || 'Damar Hadziq H.',
           published: true,
         });
-        quizzesClientService.create({
-          id: newQuizId,
-          subject,
-          title: title.trim(),
-          duration: duration || '15 Menit',
-          passScore: Number(passScore) || 75,
-          questions,
-          teacherId: user?.id || 't-1',
-          teacherName: user?.name || 'Pengajar Sitemsa',
-          published: true,
-        } as any).catch((e) => console.warn('Quiz client sync create error:', e));
 
         setIsPublishing(false);
         setShowPublishModal(false);

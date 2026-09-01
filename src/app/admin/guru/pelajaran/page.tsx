@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
@@ -36,7 +36,7 @@ import {
   Search,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
-import { useAdminStore, ModuleItem, QuizQuestion } from '@/lib/admin-store';
+import { useAdminStore, ModuleItem, QuizItem, QuizQuestion } from '@/lib/admin-store';
 import { modulesClientService } from '@/services/client/modules.client';
 import { generateValidPdfBlob } from '@/lib/pdf-generator';
 import { quizzesClientService } from '@/services/client/quizzes.client';
@@ -242,19 +242,42 @@ export default function AdminGuruPelajaranPage() {
     return false;
   };
 
-  const subjectModules = (mounted && user) ? modules.filter(
-    (m) => isSubjectMatch(m.subject, currentSubject) && isTeacherMatch(m.teacherId, m.teacherName)
-  ) : [];
-  const subjectQuizzes = (mounted && user) ? quizzes.filter(
-    (q) => isSubjectMatch(q.subject, currentSubject) && isTeacherMatch(q.teacherId, q.teacherName)
-  ) : [];
+  const subjectModules = useMemo(() => {
+    if (!mounted || !user) return [];
+    const filtered = modules.filter(
+      (m: ModuleItem) => isSubjectMatch(m.subject, currentSubject) && isTeacherMatch(m.teacherId, m.teacherName)
+    );
+    const uniqueMap = new Map<string, ModuleItem>();
+    filtered.forEach((m: ModuleItem) => {
+      const key = `${(m.subject || '').toLowerCase().trim()}_${(m.title || '').toLowerCase().trim()}`;
+      if (!uniqueMap.has(key)) {
+        uniqueMap.set(key, m);
+      }
+    });
+    return Array.from(uniqueMap.values());
+  }, [mounted, user, modules, currentSubject]);
+
+  const subjectQuizzes = useMemo(() => {
+    if (!mounted || !user) return [];
+    const filtered = quizzes.filter(
+      (q: QuizItem) => isSubjectMatch(q.subject, currentSubject) && isTeacherMatch(q.teacherId, q.teacherName)
+    );
+    const uniqueMap = new Map<string, QuizItem>();
+    filtered.forEach((q: QuizItem) => {
+      const key = `${(q.subject || '').toLowerCase().trim()}_${(q.title || '').toLowerCase().trim()}`;
+      if (!uniqueMap.has(key)) {
+        uniqueMap.set(key, q);
+      }
+    });
+    return Array.from(uniqueMap.values());
+  }, [mounted, user, quizzes, currentSubject]);
 
   // Selected item ID from query param (null = Landing Overview mode)
   const selectedItemId = itemIdParam || null;
   const actionParam = searchParams.get('action');
 
-  const selectedModule = selectedItemId ? subjectModules.find((m) => m.id === selectedItemId) : null;
-  const selectedQuiz = selectedItemId ? subjectQuizzes.find((q) => q.id === selectedItemId) : null;
+  const selectedModule = selectedItemId ? subjectModules.find((m: ModuleItem) => m.id === selectedItemId) : null;
+  const selectedQuiz = selectedItemId ? subjectQuizzes.find((q: QuizItem) => q.id === selectedItemId) : null;
 
   // Live fetch from Supabase on mount to ensure IDs are 100% in sync without wiping local creations
   useEffect(() => {
@@ -262,9 +285,14 @@ export default function AdminGuruPelajaranPage() {
       if (cloudModules && cloudModules.length > 0) {
         useAdminStore.setState((state) => {
           const existing = state.modules || [];
-          const map = new Map(existing.map((m) => [m.id, m]));
+          const map = new Map<string, any>();
+          existing.forEach((m: ModuleItem) => {
+            const key = `${(m.subject || '').toLowerCase().trim()}_${(m.title || '').toLowerCase().trim()}`;
+            map.set(key, m);
+          });
           cloudModules.forEach((c) => {
-            map.set(c.id, {
+            const key = `${(c.subject || '').toLowerCase().trim()}_${(c.title || '').toLowerCase().trim()}`;
+            map.set(key, {
               id: c.id,
               subject: c.subject,
               title: c.title,
@@ -291,9 +319,14 @@ export default function AdminGuruPelajaranPage() {
       if (cloudQuizzes && cloudQuizzes.length > 0) {
         useAdminStore.setState((state) => {
           const existing = state.quizzes || [];
-          const map = new Map(existing.map((q) => [q.id, q]));
+          const map = new Map<string, any>();
+          existing.forEach((q: QuizItem) => {
+            const key = `${(q.subject || '').toLowerCase().trim()}_${(q.title || '').toLowerCase().trim()}`;
+            map.set(key, q);
+          });
           cloudQuizzes.forEach((q) => {
-            map.set(q.id, {
+            const key = `${(q.subject || '').toLowerCase().trim()}_${(q.title || '').toLowerCase().trim()}`;
+            map.set(key, {
               id: q.id,
               subject: q.subject,
               title: q.title,

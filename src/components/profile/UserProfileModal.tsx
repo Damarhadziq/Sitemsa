@@ -607,8 +607,8 @@ export function UserProfileModal({
                                 {item.subject}
                               </span>
                             </div>
-                            <span className="text-[11px] font-semibold text-emerald-600 shrink-0">
-                              Dipelajari
+                            <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-[4px] shrink-0">
+                              100% Selesai
                             </span>
                           </li>
                         ))}

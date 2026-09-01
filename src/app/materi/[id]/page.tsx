@@ -2343,25 +2343,6 @@ export default function MateriDetailPage({
       } catch (e) {
         console.error(e);
       }
-
-      // Record student reading access for teacher monitoring
-      try {
-        const profile = getStudentProfile();
-        ProgressService.recordModuleAccess(
-          profile.id || 'std-1',
-          {
-            id: String(material.id),
-            title: material.title,
-            subject: material.subject,
-            teacherName: material.author,
-          },
-          profile.name || 'Siswa Sitemsa',
-          profile.email || 'siswa@sitemsa.sch.id',
-          profile.avatar
-        );
-      } catch (e) {
-        console.error('Error recording module access for monitoring:', e);
-      }
     }
   }, [material]);
 
@@ -2470,20 +2451,50 @@ export default function MateriDetailPage({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Record 100% completion in history and monitoring
+  const markModuleCompletedInSystem = () => {
+    if (!material) return;
+    try {
+      const profile = getStudentProfile();
+      ProgressService.recordModuleAccess(
+        profile.id || profile.email || 'std-1',
+        {
+          id: String(material.id),
+          title: material.title,
+          subject: material.subject,
+          teacherName: material.author,
+        },
+        profile.name || 'Siswa Sitemsa',
+        profile.email || 'siswa@sitemsa.sch.id',
+        profile.avatar
+      );
+      ProgressService.updateProgress(
+        profile.id || profile.email || 'std-1',
+        material.subject,
+        100,
+        profile.name,
+        profile.email
+      );
+    } catch (e) {
+      console.error('Error recording completed module access:', e);
+    }
+  };
+
   // Smart Read Auto-Completion Trigger:
-  // Completes automatically when student scrolls >= 75% AND spends >= 15 seconds reading
+  // Completes automatically when student reaches >= 80% scroll and spends >= 10 seconds reading
   useEffect(() => {
     if (!material || isMarkedDone) return;
 
-    if (scrollProgress >= 75 && readingSeconds >= 15) {
+    if (scrollProgress >= 80 && readingSeconds >= 10) {
       setIsMarkedDone(true);
       recordModuleCompletion(String(material.id));
-      showToast("Materi selesai dibaca");
+      markModuleCompletedInSystem();
+      showToast("Materi selesai dipelajari (100%)");
 
       addUserNotification({
         type: 'materi',
         title: 'Materi Selesai Dipelajari',
-        message: `Kamu telah menuntaskan pembelajaran "${material.title}". Target mingguanmu berhasil tercatat.`,
+        message: `Kamu telah menuntaskan pembelajaran "${material.title}". Target belajarmu berhasil tercatat.`,
         linkUrl: `/materi/${material.id}`,
       });
     }
@@ -2493,11 +2504,12 @@ export default function MateriDetailPage({
     if (isMarkedDone || !material) return;
     setIsMarkedDone(true);
     recordModuleCompletion(String(material.id));
-    showToast("Materi selesai dibaca");
+    markModuleCompletedInSystem();
+    showToast("Materi selesai dipelajari (100%)");
     addUserNotification({
       type: 'materi',
       title: 'Materi Selesai Dipelajari',
-      message: `Selamat! Kamu telah menyelesaikan materi "${material.title}". Target mingguanmu bertambah.`,
+      message: `Selamat! Kamu telah menyelesaikan materi "${material.title}". Target belajarmu bertambah.`,
       linkUrl: `/materi/${material.id}`,
     });
   };

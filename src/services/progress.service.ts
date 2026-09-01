@@ -170,6 +170,20 @@ export class ProgressService {
     }
   }
 
+  static clearStudentHistory(studentId: string): void {
+    this.ensureHydrated();
+    const student = dbStore.students.find((s) => s.id === studentId || s.email === studentId);
+    if (student) {
+      student.accessedModules = [];
+      student.quizHistory = [];
+      student.moduleProgress = {};
+      this.persist();
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('sintesa-student-progress-cleared', { detail: { studentId } }));
+    }
+  }
+
   static getMonitoringSummary(subjectFilter?: string) {
     this.ensureHydrated();
     const allStudents = dbStore.students;

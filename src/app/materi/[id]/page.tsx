@@ -1987,15 +1987,35 @@ export default function MateriDetailPage({
       (storeMod.quizSource.title || storeMod.quizSource.externalUrl || storeMod.quizSource.qrImageUrl)
     );
 
-    const resolvedQuizSource = hasConfiguredQuizSource && storeMod.quizSource ? {
-      type: storeMod.quizSource.type === 'kuis_sitemsa' ? 'internal' : storeMod.quizSource.type === 'qr_code' ? 'barcode' : 'external_link',
-      title: storeMod.quizSource.title || 'Uji Pemahaman Materi',
-      description: 'Ikuti kuis evaluasi untuk menguji pemahaman materi ini.',
-      externalUrl: storeMod.quizSource.externalUrl,
-      qrImageUrl: storeMod.quizSource.qrImageUrl,
-      externalPlatformName: 'Platform Eksternal',
-      internalUrl: `/kuis/${toDeterministicUUID(storeMod.id)}`,
-    } : undefined;
+    let resolvedQuizSource: any = undefined;
+    if (hasConfiguredQuizSource && storeMod.quizSource) {
+      const rawType = String(storeMod.quizSource.type || '').toLowerCase();
+      const isInternal = rawType === 'kuis_sitemsa' || rawType === 'internal';
+      const isQr = rawType === 'qr_code' || rawType === 'barcode';
+      const resolvedType: 'internal' | 'barcode' | 'external_link' = isInternal ? 'internal' : isQr ? 'barcode' : 'external_link';
+
+      let extPlatformName = 'Platform Eksternal';
+      if (storeMod.quizSource.externalUrl) {
+        const urlLower = storeMod.quizSource.externalUrl.toLowerCase();
+        if (urlLower.includes('forms.google') || urlLower.includes('docs.google.com/forms')) {
+          extPlatformName = 'Google Forms';
+        } else if (urlLower.includes('quizizz.com')) {
+          extPlatformName = 'Quizizz';
+        } else if (urlLower.includes('kahoot')) {
+          extPlatformName = 'Kahoot';
+        }
+      }
+
+      resolvedQuizSource = {
+        type: resolvedType,
+        title: storeMod.quizSource.title || 'Uji Pemahaman Materi',
+        description: 'Ikuti kuis evaluasi untuk menguji pemahaman materi ini.',
+        externalUrl: storeMod.quizSource.externalUrl,
+        qrImageUrl: storeMod.quizSource.qrImageUrl,
+        externalPlatformName: extPlatformName,
+        internalUrl: `/kuis/${toDeterministicUUID(storeMod.id)}`,
+      };
+    }
 
     // If storeMod has blocks, build contentSections, stepByStepSection, videoSection, attachment
     if (storeMod.blocks && storeMod.blocks.length > 0) {
@@ -2329,13 +2349,14 @@ export default function MateriDetailPage({
   const handleStartQuizClick = (e: React.MouseEvent) => {
     const qSource = material?.quizSource;
     if (!qSource) return;
-    if (qSource.type === "barcode") {
+    const rawType = String(qSource.type || '').toLowerCase();
+    if (rawType === 'barcode' || rawType === 'qr_code') {
       e.preventDefault();
       setActiveQuizModal("barcode");
-    } else if (qSource.type === "external_link") {
+    } else if (rawType === 'external_link' || rawType === 'link_eksternal') {
       e.preventDefault();
       setActiveQuizModal("link_confirm");
-    } else if (qSource.type === "internal") {
+    } else if (rawType === 'internal' || rawType === 'kuis_sitemsa') {
       e.preventDefault();
       setActiveQuizModal("internal_ready");
     }

@@ -65,8 +65,16 @@ export class ModuleService {
             item.quiz_source_type !== 'NONE' &&
             (item.quiz_source_title || item.external_url || item.qr_image_url)
           ) {
+            const rawType = String(item.quiz_source_type || '').toLowerCase();
+            const normalizedType =
+              rawType === 'kuis_sitemsa' || rawType === 'internal'
+                ? 'kuis_sitemsa'
+                : rawType === 'qr_code' || rawType === 'barcode'
+                ? 'qr_code'
+                : 'link_eksternal';
+
             validQuizSource = {
-              type: (item.quiz_source_type === 'KUIS_SITEMSA' ? 'kuis_sitemsa' : item.quiz_source_type === 'LINK_EKSTERNAL' ? 'link_eksternal' : 'qr_code') as any,
+              type: normalizedType as any,
               title: item.quiz_source_title || 'Kuis Evaluasi',
               externalUrl: item.external_url || undefined,
               qrImageUrl: item.qr_image_url || undefined,

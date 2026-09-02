@@ -279,12 +279,8 @@ function MateriLandingContent() {
   // Synchronize dynamic modules directly from Supabase cloud
   useEffect(() => {
     ModuleService.fetchFromSupabase().then((cloudModules) => {
-      if (cloudModules && Array.isArray(cloudModules)) {
-        useAdminStore.setState((state) => {
-          const map = new Map((state.modules || []).map((m) => [m.id, m]));
-          cloudModules.forEach((m) => map.set(m.id, m));
-          return { modules: Array.from(map.values()) };
-        });
+      if (cloudModules && Array.isArray(cloudModules) && cloudModules.length > 0) {
+        useAdminStore.setState({ modules: cloudModules });
       }
     });
   }, []);

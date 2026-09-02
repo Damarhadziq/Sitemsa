@@ -2,7 +2,7 @@ import { dbStore, ModuleItem } from './data-store';
 import { supabase } from '@/lib/supabase';
 import { generateEntityId } from '@/lib/id-generator';
 
-const STORAGE_KEY = 'sintesa_modules_cache_v1';
+const STORAGE_KEY = 'sintesa_modules_cache_v2';
 
 export class ModuleService {
   private static ensureHydrated() {
@@ -46,7 +46,7 @@ export class ModuleService {
         return dbStore.modules;
       }
 
-      if (data && Array.isArray(data)) {
+      if (data && Array.isArray(data) && data.length > 0) {
         const mapped: ModuleItem[] = data.map((item: any) => {
           let parsedBlocks = item.blocks;
           if (!parsedBlocks && item.content) {
@@ -101,17 +101,9 @@ export class ModuleService {
           };
         });
 
-        // Merge cloud modules with locally saved modules so freshly created items are NEVER wiped out
-        const mergedMap = new Map<string, ModuleItem>();
-        // First set existing local modules
-        (dbStore.modules || []).forEach((m) => mergedMap.set(m.id, m));
-        // Then override/add cloud modules
-        mapped.forEach((m) => mergedMap.set(m.id, m));
-
-        const finalMerged = Array.from(mergedMap.values());
-        dbStore.modules = finalMerged;
+        dbStore.modules = mapped;
         this.persist();
-        return finalMerged;
+        return mapped;
       }
     } catch (e) {
       console.warn('Supabase modules exception:', e);
